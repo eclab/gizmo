@@ -119,6 +119,9 @@ uint8_t stopClock(uint8_t fromButton)
     {
     if (fromButton && (options.clock == USE_MIDI_CLOCK || options.clock == CONSUME_MIDI_CLOCK))
         return 0;
+        
+    if (clockState != CLOCK_RUNNING)
+    	return 0;
 
     clockState = CLOCK_STOPPED;
 
@@ -134,7 +137,10 @@ uint8_t startClock(uint8_t fromButton)
     {
     if (fromButton && (options.clock == USE_MIDI_CLOCK || options.clock == CONSUME_MIDI_CLOCK))
         return 0;
-
+        
+	if (clockState != CLOCK_STOPPED)
+		return 0;
+		
     notePulseCountdown = 1;
     beatCountdown = 1;
     drawBeatToggle = 0;
@@ -150,6 +156,9 @@ uint8_t startClock(uint8_t fromButton)
         
 uint8_t continueClock(uint8_t fromButton)
     {
+    if (clockState != CLOCK_STOPPED)
+    	return 0;
+    	
     if (fromButton && (options.clock == USE_MIDI_CLOCK || options.clock == CONSUME_MIDI_CLOCK))
         return 0;
 

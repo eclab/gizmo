@@ -368,7 +368,7 @@ void writeFooterAndSend()
         {
         blinkPoint(led, 7, 0);
         }
-    else
+    else 
         {
         if (drawBeatToggle)
             {
