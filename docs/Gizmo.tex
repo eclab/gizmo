@@ -16,7 +16,7 @@ By Sean Luke\quad sean@cs.gmu.edu}\\
 
 \noindent Gizmo is a small MIDI device intended to be inserted between the MIDI OUT of one device and the MIDI IN of one or more other devices.  There are a number of tools like this, such as the esteemed MIDIPal \footnote{MIDIPal is quite similar to Gizmo in functionality and goals, but I wasn't even aware of the existence of MIDIPal when I started building Gizmo.  And besides, re-inventing the wheel is fun!  MIDIPal's page is http:/\!/mutable-instruments.net/midipal\ \ This device has been discontinued, but its open source software lives on in other hardware clones, such as the MIDIGal (https:/\!/midisizer.com/midigal/)  } or the variety of tools from MIDISolutions\footnote{http:/\!/www.midisolutions.com/}
 
-Gizmo is the unholy union of an Arduino Uno or Mega 2560,\footnote{http:/\!/arduino.cc} an Adafruit 16x8 I2C LED matrix\footnote{https:/\!/www.adafruit.com/categories/326\quad I use the 1.2-inch 16x8 matrix with red round LEDs, which works well.  This particular model can be found at https:/\!/www.adafruit.com/products/2037}, and a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898} to perform a variety of helpful MIDI tasks.  Gizmo has several built-in applications, and assuming there's space\footnote{On the Uno there's basically no extra space: we're close to the limit.  So if you want to do a big application you really should use a Mega.} you can develop additional applications for it.
+Gizmo is the unholy union of an Arduino Uno or Arduino Mega 2560,\footnote{http:/\!/arduino.cc} an Adafruit 16x8 I2C LED matrix\footnote{https:/\!/www.adafruit.com/categories/326\quad I use the 1.2-inch 16x8 matrix with red round LEDs, which works well.  This particular model can be found at https:/\!/www.adafruit.com/products/2037}, and a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898} to perform a variety of helpful MIDI tasks.  Gizmo has several built-in applications, and assuming there's space\footnote{On the Uno there's basically no extra space: we're at the limit.  So if you want to do an application you really should use a Mega.} you can develop additional applications for it.
 
 This is a software project: the hardware is just three off-the-shelf boards and four wires.  There's no enclosure, no custom board.  If you'd like to do that, I'd welcome seeing it.
 
@@ -518,10 +518,12 @@ The Controller allows you to assign to each of two buttons and two potentiometer
 			\(\infty\)\>Seconds\>(never scroll)\>\smash{\includegraphics[width=0.48in]{infinity}}\\
 			\end{tabbing}
 		\end{description}
-	\item{\bf Voltage} (or {\bf No Voltage}\\
-		Toggles whether Gizmo will send voltage information out via the optional DACs in response to notes played or to Controller potentiometers being turned.  
+%	\item{\bf Voltage} (or {\bf No Voltage)}\\
+%		Toggles whether Gizmo will send voltage information out via the optional DACs in response to notes played or to Controller potentiometers being turned.  
 	\item{\bf The About Screen}\\
 		Presently says:\quad GIZMO V1 (C) 2016 BY SEAN LUKE
+	\item{\bf Starting, Stopping, and Continuing the Clock}
+		This isn't a menu option.  But if you are in the Options menu, you can control the clock:  pressing the Middle Button will {\bf start} or {\bf stop} the clock.  Long-pressing 
 	\end{description}
 
 \end{document}
