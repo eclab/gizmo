@@ -16,7 +16,7 @@ By Sean Luke\quad sean@cs.gmu.edu}\\
 
 \noindent Gizmo is a small MIDI device intended to be inserted between the MIDI OUT of one device and the MIDI IN of one or more other devices.  There are a number of tools like this, such as the esteemed MIDIPal \footnote{MIDIPal is quite similar to Gizmo in functionality and goals, but I wasn't even aware of the existence of MIDIPal when I started building Gizmo.  And besides, re-inventing the wheel is fun!  MIDIPal's page is http:/\!/mutable-instruments.net/midipal\ \ This device has been discontinued, but its open source software lives on in other hardware clones, such as the MIDIGal (https:/\!/midisizer.com/midigal/) or MIDIBro (http:/\!/www.audiothingies.com/product/midibro/)} or the variety of tools from MIDISolutions\footnote{http:/\!/www.midisolutions.com/}
 
-Gizmo is the unholy union of an Arduino Uno or Arduino Mega 2560,\footnote{http:/\!/arduino.cc} an Adafruit 16x8 I2C LED matrix\footnote{https:/\!/www.adafruit.com/categories/326\quad I use the 1.2-inch 16x8 matrix with red round LEDs, which works well.  This particular model can be found at https:/\!/www.adafruit.com/products/2037}, and a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898} to perform a variety of helpful MIDI tasks.  Gizmo has several built-in applications, and assuming there's space\footnote{On the Uno there's basically no extra space: we're at the limit.  So if you want to do an application you really should use a Mega.} you can develop additional applications for it.
+Gizmo is the unholy union of an Arduino Uno or Arduino Mega 2560,\footnote{http:/\!/arduino.cc} an Adafruit 16x8 I2C LED matrix\footnote{https:/\!/www.adafruit.com/categories/326\quad I use the 1.2-inch 16x8 matrix with red round LEDs, which works well.  This particular model can be found at https:/\!/www.adafruit.com/products/2037}, and a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898} to perform a variety of helpful MIDI tasks.  Gizmo has several built-in applications, and assuming there's space\footnote{As of this writing, Gizmo on the Arduino Uno uses 32,252 bytes out of 32,256 available.  So if you're like to extend Gizmo on the Uno, you'll need to make sure your extension fits within 4 bytes :-)  Instead: get a Mega.} you can develop additional applications for it.
 
 This is a software project: the hardware is just three off-the-shelf boards and four wires.  There's no enclosure, no custom board.  If you'd like to do that, I'd welcome seeing it.
 
@@ -140,7 +140,7 @@ This procedure initializes the memory, options, and files in the device.  Now yo
 
 \begin{wrapfigure}{r}{3in}
 \vspace{-1.5em}\includegraphics[width=3in]{OverallLayout.pdf}
-\vspace{-2em}\caption{\small High-Level Gizmo Layout}\vspace{-2em}
+\vspace{-2em}\caption{\small High-Level Gizmo Layout}
 \label{HighLevelGizmoLayout}
 \end{wrapfigure}
 
@@ -150,10 +150,11 @@ Gizmo's top-level interface layout is a menu hierarchy.  You select menu items, 
 
 \begin{wrapfigure}{r}{1.6in}
 \includegraphics[width=1.6in]{Application.pdf}
-\vspace{-2em}\caption{\small Application Values}\vspace{-2em}
+\vspace{-2em}\caption{\small Application Values}
+\label{applicationvalues}
 \end{wrapfigure}
 
-The current application LEDs light up right-to-left in a certain pattern with increasing application numbers, as shown in the figure at right.  Gizmo's interface can presently support up to eleven top-level applications.  
+The current application LEDs light up right-to-left in a certain pattern with increasing application numbers, as shown in Figure \ref{applicationvalues}.  Gizmo's interface can presently support up to eleven top-level applications.  
 
 Also shown in Figure \ref{HighLevelGizmoLayout} are the {\bf Beat/Bypass} light and the {\bf Note Pulse} light.  The Beat/Bypass turns on and off every {\it beat} (quarter note).  This shows the current {\bf tempo}.\footnote{A beat occurs every 24 {\it pulses} of a MIDI Clock or Gizmo's internal clock.}  The Note Pulse light turns on and off every {\it note pulse}: this is the speed you have chosen for the arpeggiator, step sequencer, etc.  Note pulses are defined in terms of note value: for example, if the note pulse is presently in sixteenth notes, then this light will turn on and off four times faster than the beat light, which is in quarter notes. The note pulse light is also affected by the degree of swing (syncopation) you have defined.
 
@@ -198,7 +199,7 @@ Gizmo will reset all of its flash RAM and reboot.  This means that all options w
 \begin{wrapfigure}{r}{2in}
 \vspace{-1.5em}\includegraphics[width=2in]{Gizmo1.pdf}
 \vspace{-2em}\caption{\small Boot Screen}\vspace{-2em}
-\label{HighLevelGizmoLayout}
+\label{BootScreen}
 \end{wrapfigure}
 
 If you power up Gizmo, or press its reset button, it will display its {\bf boot screen}, which includes the version number (at right, the version number is ``1'').
@@ -217,13 +218,36 @@ The arpeggiator allows you to play different kinds of arpeggios, and also to cre
 
 An arpeggio is a pattern for repeatedly playing the notes in a chord.  When you hold down a chord on the keyboard, the arpeggiator uses this pattern to play the notes, typically one at a time, according to the pattern selected.  Patterns do not specify exact notes, but rather note orderings.  For example, an arpeggio might be defined as 1, 2, 2, 3, 4, 2, 3: if 1 is set to be the root (lowest) note of your chord, then if you play a C7 chord (C E G B$\flat$), then the arpeggiator will repeat the sequence C E E G B$\flat$ E G.  This pattern will repeat as long as you hold down the keys in the chord.  
 
-Alternatively if you toggle the {\bf latch}, then the playing will continue after you have released the keys, and will only shift to a new chord when you hold down a new chord.  Latch mode is toggled by pressing the Middle button while playing an arpeggio.  When Latch mode is engaged, an LED will light as shown in Figure \ref{arpeggiator}.
+Alternatively if you toggle the {\bf latch}, then the playing will continue after you have released the keys, and will only shift to a new chord when you release all notes and then hold down an entirely new chord.  Latch mode is toggled by pressing the Middle button while playing an arpeggio.  When Latch mode is engaged, an LED will light as shown in Figure \ref{arpeggiator}.
+
+\begin{wrapfigure}{r}{2.7in}
+\begin{center}
+\vspace{-4em}\includegraphics[width=1in]{updown}
+\vspace{-1em}
+\caption{Up, Down, and Up-Down Symbols}
+\vspace{-3em}
+\end{center}
+\end{wrapfigure}
+
 
 \paragraph{Playing Preset Arpeggios}
 
-There are five preset arpeggios: {\it up}, {\it down}, {\it up-down}, {\it chord}, and {\it random}.  
+There are six preset arpeggios: {\it up}, {\it down}, {\it up-down}, {\it random}, {\it chord repeat}, and {\it assign}.  They work as follows:
 
-\begin{wrapfigure}{r}{3in}
+\begin{itemize}
+\item {\bf Up}.  Each note in your chord is played in turn, lowest note first.  When all notes are exhausted, the pattern is repeated.
+\item {\bf Down}.  Each note in your chord is played in turn, highest note first.  When all notes are exhausted, the pattern is repeated.
+\item {\bf Up-Down}.  Each note in your chord is played in turn, lowest note first, up to but not including the highest note.  When all notes are exhausted, all notes in the chord are played in turn, highest note first, down to but not including the lowest note.  When all notes are again exhausted, this pattern repeats.
+
+\item {\bf Random}.  Notes in your chord are played at random.  Gizmo tries not to play the same not twice in a row.
+\item {\bf Chord Repeat}.  The entire chord is repeatedly played in its entirety.
+\item {\bf Assign}. Each note in your chord is played in turn, in the order in which you had pressed the keys when you formed the chord.  When all notes are exhausted, the pattern is repeated.
+\end{itemize}
+
+While playing a preset arpeggio, you can select the number of octaves by scrolling the left knob to {\bf Octaves} and pressing the Select button.  If you have an octaves value \(\geq 0\), then when the arpeggiator exhausts its notes, it will repeat them again one octave higher, then another octave higher, and so on, up to the number of octaves chosen. You an select any value from 0--6 octaves.\footnote{Note that this means that if your chord is larger than one octave, you may not get what you expected.  For example, if you are playing UP with C5 E5 G5 D6, and with octaves\(=\)1, then the arpeggiator will play C5 E5 G5 D6 C6 E6 G6 D7.  Note that C6 is played after D6 is played.  That's the current behavior right now anyway.}
+
+\begin{wrapfigure}{r}{1.6in}
+\vspace{-1em}
 \begin{center}
 \vspace{-1.5em}\includegraphics[width=1in]{arpeggioexample.pdf}\\
 Example Arpeggio\\[2em]
@@ -232,10 +256,52 @@ Ascending Notes\\in Sparse Mode\\[2em]
 \vspace{-1.5em}\includegraphics[width=1in]{arpeggiodoubleup.pdf}\\
 Ascending Notes\\in Dense Mode\\
 \end{center}
-\vspace{-2em}\caption{\small General Gauge Display and Frequent MIDI Display}\vspace{-2em}
-\label{generalgauge}
+\vspace{-1em}\caption{\small Example Arpeggio Editing Displays}
+\label{arpeggioediting}
 \end{wrapfigure}
 
+
+\paragraph{Creating an Arpeggio}
+
+The last menu option in the top-level Arpeggiator menu is {\bf Create}.  If you choose this, you can create an Arpeggio.  To do this you enter notes one by one.  These won't be the {\it actual} notes that are played when you hold down a chord.  Rather, after you save the result, the Arpeggiator will compact these notes into a sequence of consecutive numbers.  For example, if you play C3 E3 G3 E3 G2, then the Arpeggiator will compact these into 2 3 4 3 1.  Then when you play this as an arpeggio, the Arpeggiator will assign each of these numbers, in order, to the notes in your chord. 
+
+The first question you will be asked is {\bf ROOT}: the Arpeggiator is asking you to specify the note in your arpeggio pattern which will correspond to the root (lowest) note in a played chord.  This allows you to make a pattern which plays notes both above and below the played chord.  For example, if the Root is C3, then the above pattern will instruct the Arpeggiator to play its final note {\it below} the chord root.
+
+After you have entered the root, the Arpeggiator will wait for you to start playing notes.  You can enter a sequence of up to 32 notes, including 15 unique notes.  You can also enter rests by pressing the Middle button.  If you enter more than 15 unique notes, or more than 32 notes in total, the Arpeggiator will simply refuse to accept the next note.
+
+As you enter notes, they are displayed in the left half of the LED, and the latest note pitch is displayed in the right half. Figure \ref{arpeggioediting} shows different arpeggio patterns.  If you have eight or fewer unique notes in your pattern, then they will be displayed in {\it sparse mode} as shown at right.  If you have over eight notes, they will be displayed in {\it dense mode} in order to show all of the notes.  The LEDs don't show the notes per se, but rather the consecutive numbers that the notes represent.  For example, the ascending notes shown at right could be C, D, E, F, G, A, B, C, or they could be C, C\(\sharp\), D, D\(\sharp\), E, F, F\(\sharp\), B.
+
+If you don't like the latest portion of your arpeggio, you can scroll the cursor back to an earlier section by turning the right knob.  Then if you start playing, the later notes will be discarded and the arpeggio pattern will continue from where the cursor was.  You can also scroll to view your past notes, then scroll all the way back to continue.
+
+When you are satisfied with your arpeggio, Long-Press the Select button to save.  You'll be asked for a slot to save in, and after that, you'll be back in the main Arpeggiator menu.
+
+\paragraph{Playing a User-Created Arpeggio}
+
+To play a user-created arpeggio, from the main Arpeggiator menu, choose one of the numbers 0--9, each of which represents the arpeggiator slot you had saved your arpeggio in (these options appear after the preset options).  Then hold down a chord!
+
+The preset arpeggio patterns (such as Up-Down) vary with the number of notes in your chord: if you hold down five notes for example, and octaves=0, then five notes will be played in the arpeggio pattern.  This isn't the case for user-created arpeggios, which have a fixed user-specified number of notes.
+
+What happens if your arpeggio is designed for three notes but you hold down  five notes in your chord?  Only three of your five notes will be played.
+
+What happens if your arpeggio is designed for five notes but you hold down only three notes in your chord?  Then notes from the bottom (or top, as appropriate) of your chord will be transposed up/down one octave to make up the remaining notes.
+
+Also, because they are fixed in size, user-created arpeggios do not respond to the octaves option.
+
+\paragraph{More Arpeggiator Options}
+
+Beyond Octaves, the arpeggio responds to a number of options in the Options Menu, and indeed you can call up the Options Menu from within the arpeggiator play screen\,---\,just turn the left knob to scroll pass the Octaves menu option, and you'll see Options.  Select that and you're in the Option menu.\footnote{Recall that the Options Menu is for options shared among several applications: that's why it's a separate menu.  That and code space issues.}
+
+See Section \ref{options} for detailed information on each of the options.  The Arpeggiator responds to the following options:
+
+\vspace{1em}
+\begin{tabular}{llll}
+Tempo& 			In MIDI&		Transpose&	MIDI Clock\\
+Note Speed& 		Out MIDI& 	Volume	&\\
+Swing& 			Control MIDI&	Length	&\\
+\end{tabular}
+
+\vspace{1em}
+Of particular interest to you may be Length and Tempo.
 
 \section {The Step Sequencer}
 \section {The Recorder}
@@ -421,11 +487,12 @@ The Controller allows you to assign to each of two buttons and two potentiometer
 		\end{description}
 
 	\item{\bf Swing}\\
-			Swing, or {\bf syncopation}, is the degree to which every even eighth note is delayed.  0\% means no swing at all.  100\% means so much swing that the even note plays at the same time as the next even eighth note.  That's a lot.
+			Swing, or {\bf syncopation}, is the degree to which every other note is delayed.  0\% means no swing at all.  100\% means so much swing that the even note plays at the same time as the next even note.  That's a lot.
 		\begin{description}
 		\item{\bf \textit{Choose}}: 0\% ... 100\% (larger percentages are more swing, that is, longer delay every other note)
 		\end{description}
 
+		Swing is only applied if the Note Speed is set to thirty-second, sixteenth, eighth, quarter, or half-notes.
 
 	\item{\bf Transpose}\\
 		Here you can state that any notes generated by Gizmo be {\bf transposed} up or down by as much as 60 notes. If a note is transposed to the point that it exceeds the MIDI range, it is not played.  When appropriate, some applications (such as the MIDI Gauge) ignore this option. 
@@ -534,14 +601,14 @@ The Controller allows you to assign to each of two buttons and two potentiometer
 %		Toggles whether Gizmo will send voltage information out via the optional DACs in response to notes played or to Controller potentiometers being turned.  
 	\item{\bf The About Screen}\\
 		Presently says:\quad GIZMO V1 (C) 2016 BY SEAN LUKE
-	\item{\bf Starting, Stopping, and Continuing the Clock}\\
-		This isn't a menu option.  But if you are in the Options menu, you can control the clock:  pressing the Middle Button will toggle {\bf starting} or {\bf stopping} the clock (and send a MIDI Start or Stop message).  Long-pressing will toggle {\bf continuing} the clock (and send a MIDI Continue message).  The difference between Start and Continue is that Start implies resetting playing from the beginning, whereas Continue implies ``unpausing", or continuing from where we had last stopped.  
-		
-		Pressing the Middle Button won't do anything if the MIDI Clock is set to {\bf Use} or {\bf Consume} (in which case the MIDI Clock is out of your control).  See the {\bf MIDI Clock} menu item earlier in this section.
-		
-		You can also start/stop/continue the clock via an NRPN message (see {\bf Control MIDI} earlier).
-		
-		Note that starting and stopping the clock doesn't mean that an application starts or stops playing.  However, the Start message {\it will} cause applications to reset themselves to the beginning when appropriate.   This means that if you want to start/stop/pause/continue the Step Sequencer (for example), you can do it as follows: first stop the clock (either here or via NRPN), then start the sequencer playing.  Note that it won't play because there's no clock pulses.  But now you can start, stop, and pause/continue the sequencer by controlling the Start/Stop/Continue clock messages directly.
 	\end{description}
+
+	\subsection{Starting, Stopping, and Continuing the Clock}
+%		This isn't a menu option.  But if you are in the Options menu, you can control the clock:  pressing the Middle Button will toggle {\bf starting} or {\bf stopping} the clock (and send a MIDI Start or Stop message).  Long-pressing will toggle {\bf continuing} the clock (and send a MIDI Continue message).  The difference between Start and Continue is that Start implies resetting playing from the beginning, whereas Continue implies ``unpausing", or continuing from where we had last stopped.  
+%
+%		Pressing the Middle Button won't do anything if the MIDI Clock is set to {\bf Use} or {\bf Consume} (in which case the MIDI Clock is out of your control).  See the {\bf MIDI Clock} menu item earlier in this section.
+%		
+%		You can also start/stop/continue the clock via an NRPN message (see {\bf Control MIDI} earlier).
+		You can start/stop/continue the clock via an NRPN message (see {\bf Control MIDI} earlier).  Note that starting and stopping the clock doesn't mean that an application starts or stops playing.  However, the Start message {\it will} cause applications to reset themselves to the beginning when appropriate.   This means that if you want to start/stop/pause/continue the Step Sequencer (for example), you can do it as follows: first stop the clock, then start the sequencer playing.  Note that it won't play because there's no clock pulses.  But now you can start, stop, and pause/continue the sequencer by controlling the Start/Stop/Continue clock messages directly.
 
 \end{document}
