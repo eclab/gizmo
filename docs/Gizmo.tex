@@ -14,7 +14,7 @@
 By Sean Luke\quad sean@cs.gmu.edu}\\
 \\
 
-\noindent Gizmo is a small MIDI device intended to be inserted between the MIDI OUT of one device and the MIDI IN of one or more other devices.  There are a number of tools like this, such as the esteemed MIDIPal \footnote{MIDIPal is quite similar to Gizmo in functionality and goals, but I wasn't even aware of the existence of MIDIPal when I started building Gizmo.  And besides, re-inventing the wheel is fun!  MIDIPal's page is http:/\!/mutable-instruments.net/midipal\ \ This device has been discontinued, but its open source software lives on in other hardware clones, such as the MIDIGal (https:/\!/midisizer.com/midigal/)  } or the variety of tools from MIDISolutions\footnote{http:/\!/www.midisolutions.com/}
+\noindent Gizmo is a small MIDI device intended to be inserted between the MIDI OUT of one device and the MIDI IN of one or more other devices.  There are a number of tools like this, such as the esteemed MIDIPal \footnote{MIDIPal is quite similar to Gizmo in functionality and goals, but I wasn't even aware of the existence of MIDIPal when I started building Gizmo.  And besides, re-inventing the wheel is fun!  MIDIPal's page is http:/\!/mutable-instruments.net/midipal\ \ This device has been discontinued, but its open source software lives on in other hardware clones, such as the MIDIGal (https:/\!/midisizer.com/midigal/) or MIDIBro (http:/\!/www.audiothingies.com/product/midibro/)} or the variety of tools from MIDISolutions\footnote{http:/\!/www.midisolutions.com/}
 
 Gizmo is the unholy union of an Arduino Uno or Arduino Mega 2560,\footnote{http:/\!/arduino.cc} an Adafruit 16x8 I2C LED matrix\footnote{https:/\!/www.adafruit.com/categories/326\quad I use the 1.2-inch 16x8 matrix with red round LEDs, which works well.  This particular model can be found at https:/\!/www.adafruit.com/products/2037}, and a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898} to perform a variety of helpful MIDI tasks.  Gizmo has several built-in applications, and assuming there's space\footnote{On the Uno there's basically no extra space: we're at the limit.  So if you want to do an application you really should use a Mega.} you can develop additional applications for it.
 
@@ -24,7 +24,7 @@ Gizmo comes built-in with the following applications and other capabilities:
 
 \paragraph{Applications}
 \begin{itemize}
-\item {\bf Arpeggiator.}  Gizmo's arpeggiator has built-in up, down, up/down, repeated chord, and random arpeggios spanning one to three octaves.  Additionally, you can define up to ten additional arpeggiator patterns, each up to 32 notes long, involving up to 15 different chord notes, plus rests.  Arpeggios can be {\it latched} (or not), meaning that they may continue to play even after you have released the keys.  You can specify  the note value relative to the tempo (ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), the output MIDI channel, and the degree of swing (syncopation).  Gizmo will show the arpeggio on-screen.
+\item {\bf Arpeggiator.}  Gizmo's arpeggiator has built-in up, down, up/down, repeated chord, note-assign, and random arpeggios spanning one to three octaves.  Additionally, you can define up to ten additional arpeggiator patterns, each up to 32 notes long, involving up to 15 different chord notes, plus rests.  Arpeggios can be {\it latched} (or not), meaning that they may continue to play even after you have released the keys.  You can specify  the note value relative to the tempo (ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), the output MIDI channel, and the degree of swing (syncopation).  Gizmo will show the arpeggio on-screen.
 \item {\bf Step Sequencer.}  Gizmo's step sequencer can be organized as 12 16-note tracks, 8 24-note tracks, or 6 32-note tracks.  Each note in a track can have its own unique pitch and velocity, or be a rest, or continue (lengthen, tie) the previous note.  You can also fix the velocity for an entire track, mute tracks, fade their volume, specify their independent output MIDI channels, specify the note value relative to the tempo (again ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), and the degree of swing (syncopation).    The step sequencer lets you edit in two modes: either by triggering independent steps like a classic drum sequencer, or by playing a sequence of notes.  The Arduino Uno can store up to two sequences in its slots (shared with the Recorder, discussed next).  The Mega can store up to nine sequences.  Gizmo will show and edit sequences on-screen.
 \item {\bf Recorder.}  The Arduino doesn't have a lot of memory, but we provide a note recorder which records and plays back up to 64 notes (pitch and velocity) played over 21 measures. The recorder has 16-voice polyphony.   It's enough to record a very short ditty.  You can also set the recorder to loop the recording while playing, and to provide a click track.  The Arduino Uno can store up to two recordings in its slots (shared with the Step Sequencer).  The Mega can store up to nine recordings.
 \item {\bf MIDI Gauge.}  The gauge will display all incoming MIDI information on one or all channels.  Note on, note off, and polyphonic aftertouch are shown with pitch and velocity (or pressure).  Channel aftertouch is shown with the appropriate pitch.  Program changes indicate the number.  Pitch bends indicate the value in full 14-bit.  Channel control, NRPN, and RPN messages display the number, value, and whether the value is being set, incremented, or decremented.  Sysex, song position, song select, tune request, start, continue, stop, and system reset are simply noted.  Rapid-fire MIDI signals such as MIDI clock, active sensing, and time code just turn on individual LEDs.
@@ -36,7 +36,9 @@ Gizmo comes built-in with the following applications and other capabilities:
 As if this weren't enough, Gizmo also comes with the following capabilities.  All of these settings are automatically saved permanently in memory.
 
 \begin{itemize}
-\item {\bf Tempo and the MIDI Clock.}  Gizmo can sync to an external MIDI clock, can ignore it and use its own internal clock, and can emit the same as a MIDI clock.  Gizmo can also pass the external MIDI clock through or block it.  When using its own internal clock, Gizmo supports tempos ranging from 1 to 1024 BPM.  Gizmo applications can also be set with a {\it note value} (or {\it note speed}) to play their notes relative to this clock, ranging from eighth triplets (1/24 beat) to double whole notes (8 beats).  At any time, Gizmo pulses on-screen LEDs indicating the clock and note speed pulses.  Finally, Gizmo can be configured to vary the degree of {\it swing} or {\it syncopation}.
+\item {\bf Tempo and the MIDI Clock.}  Gizmo can sync to an external MIDI clock, can ignore it and use its own internal clock, and can emit the same as a MIDI clock.  Gizmo can also pass the external MIDI clock through or block it.  When using its own internal clock, Gizmo supports tempos ranging from 1 to 1024 BPM.  You can start, pause/unpause, and stop this clock (sending the appropriate MIDI Start, Stop, or Continue signals).  Gizmo can also divide the MIDI clock, thereby outputting a slower clock than it is inputting.
+
+Gizmo applications can also be set with a {\it note value} (or {\it note speed}) to play their notes relative to this clock, ranging from eighth triplets (1/24 beat) to double whole notes (8 beats).  At any time, Gizmo pulses on-screen LEDs indicating the clock and note speed pulses.  Finally, Gizmo can be configured to vary the degree of {\it swing} or {\it syncopation}.
 
 \item {\bf In and Out MIDI Channels}  Gizmo can be configured with input and output MIDI channels (some applications will use these: others will have multiple channels and will treat these as defaults).  Both channels can be turned off, and the input channel can be OMNI.  Gizmo pulses on-board LEDs indicating incoming and outgoing MIDI data.  
 
@@ -44,7 +46,7 @@ As if this weren't enough, Gizmo also comes with the following capabilities.  Al
 
 \item {\bf Transposition and Volume Control}  You transpose all of Gizmo's MIDI output pitch by anywhere from \(-60...60\) steps.  Additionally you can multiply the MIDI output velocity (volume) by multiples of two ranging from \(1/8\) to \(8\).
 
-\item {\bf Bypass.}  You can quickly put Gizmo in Bypass mode, to pass through all MIDI signals and generate no new ones.
+\item {\bf Bypass.}  You can quickly put Gizmo in Bypass mode, to pass through all MIDI signals and generate no new ones.  Putting Gizmo in Bypass mode will also send an All Notes Off message, so toggling Bypass is also a useful way to hush your synthesizer.
 
 \item {\bf Screen Brightness and Menu Delay}  You can change the screen brightness.  Also, many of Gizmo's menus display the first few letters of a menu item, then pause for some interval of time before they start scrolling the full item.  You can change this interval.
 
@@ -119,6 +121,8 @@ Attach the four wires for SDA, SCL, 5V, and GND between the MIDI Shield and the 
 \end{enumerate}
 
 \item {\bf Install the FortySevenEffects MIDI Library}\quad But not straight off of its website.\footnote{https:/\!/github.com/FortySevenEffects/arduino\_midi\_library}  The MIDI library is in a state of flux and is having some significant additions being made.  The Gizmo code is extremely sensitive to code size (at least on the Uno).  Thus for now, use the version I include in Gizmo's Github repository.
+
+\item {\bf Install the SoftReset Library}\quad A copy of it is in Gizmo's Github repository.
 
 \item {\bf Switch the MIDI Shield to ``Prog''}
 
@@ -450,7 +454,7 @@ The Controller allows you to assign to each of two buttons and two potentiometer
 		\begin{description}
 		\item{\bf \textit{Choose}}: No Channel, Channels 1...16, or ALL Channels\hspace{0.25in}\smash{\includegraphics[width=1in]{none.pdf}}\hspace{0.2in}\smash{\includegraphics[width=1in]{all.pdf}}\\
 		\end{description}
-	\item{\bf Out MIDI}
+	\item{\bf Out MIDI}\\
 		Many applications emit notes etc. via a specific output MIDI channel.  You specify it here.  Other applications can emit notes on several different channels, in which case this value determines the default channel used.
 		\begin{description}
 		\item{\bf \textit{Choose}}: No Channel, or Channels 1...16\hspace{0.5in}\smash{\includegraphics[width=1in]{none.pdf}}
@@ -476,9 +480,10 @@ The Controller allows you to assign to each of two buttons and two potentiometer
 		7	&	Any Value &Any Value & MSB& Start Clock.  If Gizmo's clock is stopped, resets and starts it.  When appropriate, sends a MIDI START message.\\
 		8	& Any Value	&Any Value & MSB& Stop Clock.  If Gizmo's clock is playing, stops it.  When appropriate, sends a MIDI STOP message.\\
 		9	&	Any Value &Any Value & MSB & Continue Clock.    If Gizmo's clock is stopped, continues it.  When appropriate, sends a MIDI CONTINUE message.\\
-		
-		
-		\end{tabular}
+		\end{tabular}\\
+		\\
+		\\
+		You can also start/stop/continue the clock via by pressing the Middle button while in the Options menu (see {\bf Starting, Stopping, and Continuing the Clock} at the end of this section).
 		
 	\item{\bf MIDI Clock}\\
 		Gizmo can respond to a MIDI clock, ignore it, or emit its own MIDI clock.  The use of the {\bf Options\(\boldsymbol\rightarrow\)Tempo} setting will depend on the setting chosen here.
@@ -494,6 +499,13 @@ The Controller allows you to assign to each of two buttons and two potentiometer
 			\>~~~~~~Don't let any external MIDI clock pass through.\\
 			\end{tabbing}
 		\end{description}
+
+		You can also start/stop/continue the clock via by pressing the Middle button while in the Options menu (see {\bf Starting, Stopping, and Continuing the Clock} at the end of this section), or by sending an appropriate NRPN message (see {\bf Control MIDI} earlier).
+		
+	\item{\bf Click} or {\bf No Click}\\
+		This toggles the note played by Gizmo to provide a click track for applications such as the Step Sequencer or Recorder.  If you select {\bf Click}, you will be asked to play a {\bf note}.  The note pitch and velocity form the click.  If you select {\bf No Click}, this turns off the click track.
+		
+\hspace{\fill}\smash{\\\includegraphics[width=1in]{note.pdf}}\vspace{-1.5em}
 
 	\item{\bf Screen Brightness}\\
 		This changes the brightness of the LED matrix.
@@ -522,8 +534,14 @@ The Controller allows you to assign to each of two buttons and two potentiometer
 %		Toggles whether Gizmo will send voltage information out via the optional DACs in response to notes played or to Controller potentiometers being turned.  
 	\item{\bf The About Screen}\\
 		Presently says:\quad GIZMO V1 (C) 2016 BY SEAN LUKE
-	\item{\bf Starting, Stopping, and Continuing the Clock}
-		This isn't a menu option.  But if you are in the Options menu, you can control the clock:  pressing the Middle Button will {\bf start} or {\bf stop} the clock.  Long-pressing 
+	\item{\bf Starting, Stopping, and Continuing the Clock}\\
+		This isn't a menu option.  But if you are in the Options menu, you can control the clock:  pressing the Middle Button will toggle {\bf starting} or {\bf stopping} the clock (and send a MIDI Start or Stop message).  Long-pressing will toggle {\bf continuing} the clock (and send a MIDI Continue message).  The difference between Start and Continue is that Start implies resetting playing from the beginning, whereas Continue implies ``unpausing", or continuing from where we had last stopped.  
+		
+		Pressing the Middle Button won't do anything if the MIDI Clock is set to {\bf Use} or {\bf Consume} (in which case the MIDI Clock is out of your control).  See the {\bf MIDI Clock} menu item earlier in this section.
+		
+		You can also start/stop/continue the clock via an NRPN message (see {\bf Control MIDI} earlier).
+		
+		Note that starting and stopping the clock doesn't mean that an application starts or stops playing.  However, the Start message {\it will} cause applications to reset themselves to the beginning when appropriate.   This means that if you want to start/stop/pause/continue the Step Sequencer (for example), you can do it as follows: first stop the clock (either here or via NRPN), then start the sequencer playing.  Note that it won't play because there's no clock pulses.  But now you can start, stop, and pause/continue the sequencer by controlling the Start/Stop/Continue clock messages directly.
 	\end{description}
 
 \end{document}
