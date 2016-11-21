@@ -117,7 +117,7 @@ void pulseClock()
 
 uint8_t stopClock(uint8_t fromButton)
     {
-    if (fromButton && (options.clock == USE_MIDI_CLOCK || options.clock == CONSUME_MIDI_CLOCK))
+    if (fromButton && (options.clock <= CONSUME_MIDI_CLOCK))
         return 0;
         
     if (clockState != CLOCK_RUNNING)
@@ -127,6 +127,10 @@ uint8_t stopClock(uint8_t fromButton)
 
     if (options.clock == GENERATE_MIDI_CLOCK || options.clock == USE_MIDI_CLOCK && !bypass)
         { MIDI.sendRealTime(MIDIStop); TOGGLE_OUT_LED(); }
+
+    // if we stop the clock some notes may be playing.  We reset them here.
+    sendAllNotesOff();
+
     return 1;
     }
 
@@ -135,7 +139,7 @@ extern uint8_t drawNotePulseToggle;
 
 uint8_t startClock(uint8_t fromButton)
     {
-    if (fromButton && (options.clock == USE_MIDI_CLOCK || options.clock == CONSUME_MIDI_CLOCK))
+    if (fromButton && (options.clock <= CONSUME_MIDI_CLOCK))
         return 0;
         
 	if (clockState != CLOCK_STOPPED)
@@ -151,6 +155,23 @@ uint8_t startClock(uint8_t fromButton)
 
     if (options.clock == GENERATE_MIDI_CLOCK || options.clock == USE_MIDI_CLOCK && !bypass)
         { MIDI.sendRealTime(MIDIStart); TOGGLE_OUT_LED(); }
+
+    // When we start the clock we want to have applications starting at their initial points.
+    // NOTE: It may be that instead actually want to START them playing.  But I don't think so.
+    // I think the user should "arm" the applications by starting them manually but in the
+    // situation where the system clock is currently stopped.  Then he can control them via
+    // the system clock like this. 
+    if (application == STATE_STEP_SEQUENCER)
+    	{
+    	// reset the step sequencer
+    	resetStepSequencer();
+		}    	
+    else if (application == STATE_RECORDER)
+    	{
+    	// reset the recorder
+    	resetRecorder();
+    	}
+
     return 1;
     }
         
@@ -159,7 +180,7 @@ uint8_t continueClock(uint8_t fromButton)
     if (clockState != CLOCK_STOPPED)
     	return 0;
     	
-    if (fromButton && (options.clock == USE_MIDI_CLOCK || options.clock == CONSUME_MIDI_CLOCK))
+    if (fromButton && (options.clock <= CONSUME_MIDI_CLOCK))
         return 0;
 
     clockState = CLOCK_RUNNING;

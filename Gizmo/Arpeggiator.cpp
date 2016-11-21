@@ -105,6 +105,9 @@ void playArpeggio()
                 int16_t max = local.arp.numChordNotes * (int16_t)(options.arpeggiatorPlayOctaves + 1) - 1;
                 switch(local.arp.number)
                     {
+                    case ARPEGGIATOR_NUMBER_ASSIGN:
+                    	// Fall Thru
+                    	// [The magic here is that we do exactly the same as UP, except that in arpeggiatorAddNote we don't insert the note in order, but just tack it on the end!]
                     case ARPEGGIATOR_NUMBER_UP:
                         {
                         if (local.arp.currentPosition == ARP_POSITION_START)
@@ -113,9 +116,12 @@ void playArpeggio()
                             }
                         else
                             {
-                            local.arp.currentPosition++;
-                            if (local.arp.currentPosition > max)
-                                local.arp.currentPosition = 0;
+                            // though local.arp.currentPosition is signed and incrementAndWrap expects unsigned, it's okay
+                            // because local.arp.currentPosition will never be < 0 at this point, nor > 127.
+                            local.arp.currentPosition = incrementAndWrap(local.arp.currentPosition, max - 1);
+                            //local.arp.currentPosition++;
+                            //if (local.arp.currentPosition > max)
+                            //    local.arp.currentPosition = 0;
                             }
                         }
                     break;
@@ -288,7 +294,9 @@ void arpeggiatorAddNote(uint8_t note)
         local.arp.goingDown = 0;
 
     // add note                        
-    if (local.arp.numChordNotes == 0 || (local.arp.chordNotes[local.arp.numChordNotes - 1] & 127) < note)  // just append us
+    if ((local.arp.numChordNotes == 0) || 
+    	((local.arp.chordNotes[local.arp.numChordNotes - 1] & 127) < note) || 
+    	(local.arp.number == ARPEGGIATOR_NUMBER_ASSIGN))  // just append us
         {
         local.arp.chordNotes[local.arp.numChordNotes] = note;
         local.arp.numChordNotes++;
@@ -326,8 +334,8 @@ void stateArpeggiator()
         local.arp.playing = 0;  // don't want to add and remove notes right now
         sendAllNotesOff();
         }
-    const char* menuItems[16] = { up_p, down_p, PSTR("%"), PSTR("RANDOM"), PSTR("CHORD REPEAT"), PSTR("0"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("CREATE")};
-    result = doMenuDisplay(menuItems, 16, STATE_NONE,  STATE_ROOT, 1);
+    const char* menuItems[17] = { up_p, down_p, PSTR("%"), PSTR("RANDOM"), PSTR("ASSIGN"), PSTR("CHORD"), PSTR("0"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("CREATE")};
+    result = doMenuDisplay(menuItems, 17, STATE_NONE,  STATE_ROOT, 1);
 
     entry = true;
     switch (result)

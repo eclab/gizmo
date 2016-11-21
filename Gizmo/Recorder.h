@@ -138,5 +138,7 @@ void stateRecorderPlay();
 
 void stateRecorderMenu();
 
+void resetRecorder();
+
 #endif
 

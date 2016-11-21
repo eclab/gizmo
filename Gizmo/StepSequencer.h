@@ -230,5 +230,7 @@ void stateStepSequencerMenu();
 
 void stopStepSequencer();
 
+void resetStepSequencer();
+
 #endif
 

@@ -39,7 +39,7 @@ void loadNote(uint8_t load, uint8_t id, uint16_t time)
         }
     }
 
-void resetToStartOfSong()
+void resetRecorder()
     {
     local.recorder.tick = -1;
     local.recorder.currentPos = 0;
@@ -58,7 +58,7 @@ void stateRecorderPlay()
        
     if (entry)
         {
-        resetToStartOfSong();
+        resetRecorder();
         local.recorder.status = RECORDER_STOPPED;
         local.recorder.tickoff = 0;
         if ((currentDisplay == -1) || (data.slot.type != slotTypeForApplication(STATE_RECORDER))) // initialize
@@ -270,7 +270,7 @@ void stateRecorderPlay()
             if (local.recorder.tickoff == 3)        // prepare, allow one tick for early notes (see RECORDER_RECORDING)
                 {
                 memset(local.recorder.notes, NO_NOTE, MAX_RECORDER_NOTES_PLAYING);
-                resetToStartOfSong();
+                resetRecorder();
                 data.slot.data.recorder.length = 0;
                 data.slot.data.recorder.notes = 0;
                 }
@@ -285,7 +285,7 @@ void stateRecorderPlay()
 
     if (ended)
         {
-        resetToStartOfSong();
+        resetRecorder();
         sendAllNotesOff();
         if (ended == ENDED)
             local.recorder.status = RECORDER_STOPPED;
@@ -335,7 +335,7 @@ void stateRecorderMenu()
     uint8_t result;
     if (entry)
         {
-        resetToStartOfSong();
+        resetRecorder();
         sendAllNotesOff();
         local.recorder.status = RECORDER_STOPPED;
         }

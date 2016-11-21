@@ -201,10 +201,15 @@ uint16_t getNewCursorXPos(uint8_t trackLen)
     return ((pot[RIGHT_POT] * (trackLen + 1)) >> 10) - 1;  ///  / 1024 - 1;
     }
 
+void resetStepSequencer()
+	{
+    local.stepSequencer.currentPlayPosition = 0;
+	}
+	
 void stopStepSequencer()
     {
+    resetStepSequencer();
     local.stepSequencer.playState = PLAY_STATE_STOPPED;
-    local.stepSequencer.currentPlayPosition = 0;
     sendAllNotesOff();
     }
 

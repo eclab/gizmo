@@ -15,11 +15,12 @@
 //// MIDI CLOCK OPTIONS SETTINGS
 // We have five options for handling the MIDI clock (or producing our own)
 // These are the possible settings for options.clock
-#define IGNORE_MIDI_CLOCK 0      // Use our own internal clock, but pass any MIDI clock through
-#define USE_MIDI_CLOCK 1         // Use external MIDI clock, and pass it through
+#define USE_MIDI_CLOCK 0         // Use external MIDI clock, and pass it through
+#define DIVIDE_MIDI_CLOCK 1      // Use external MIDI clock, and pass it through, but slowed down to the given NOTE VALUE
 #define CONSUME_MIDI_CLOCK 2     // Use external MIDI clock, but don't pass it through
-#define GENERATE_MIDI_CLOCK 3    // Use our own internal clock and produce an outgoing MIDI clock from it, rather than passing through any MIDI clock
-#define BLOCK_MIDI_CLOCK 4       // Use our own internal clock.  Don't pass through or generate any MIDI clock.
+#define IGNORE_MIDI_CLOCK 3      // Use our own internal clock, but pass any MIDI clock through
+#define GENERATE_MIDI_CLOCK 4    // Use our own internal clock and produce an outgoing MIDI clock from it, rather than passing through any MIDI clock
+#define BLOCK_MIDI_CLOCK 5       // Use our own internal clock.  Don't pass through or generate any MIDI clock.
 
 
 // I don't want to do MIDI Namespace stuff.  
@@ -122,9 +123,9 @@
 #define STATE_SPLIT_CHANNEL 61
 #define STATE_SPLIT_NOTE 62
 #else
-#define STATE_OPTIONS_ABOUT 63
-#define STATE_SPLIT_CHANNEL 64
-#define STATE_SPLIT_NOTE 65
+#define STATE_OPTIONS_ABOUT 59
+#define STATE_SPLIT_CHANNEL 60
+#define STATE_SPLIT_NOTE 61
 #endif
 
 

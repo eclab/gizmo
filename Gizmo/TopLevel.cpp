@@ -922,10 +922,8 @@ void go()
             buttonPressedCountdown[i]--;
 
 
-    // update our internal clock
-    if (options.clock == GENERATE_MIDI_CLOCK || 
-        options.clock == IGNORE_MIDI_CLOCK || 
-        options.clock == BLOCK_MIDI_CLOCK)
+    // update our internal clock if we're making one
+    if (options.clock >= IGNORE_MIDI_CLOCK)
         {
         if (currentTime > targetNextPulseTime)
             {
@@ -975,6 +973,11 @@ void go()
             beatCountdown = PULSES_PER_BEAT;
             }
         }
+  
+  	if (notePulse && options.clock == USE_MIDI_CLOCK)
+  		{
+  		MIDI.sendRealTime(MIDIClock); TOGGLE_OUT_LED(); 
+  		}
   
     // update the screen, read from the sensors, or update the board LEDs
     updateDisplay = update();
@@ -1174,9 +1177,9 @@ void go()
                         }
                                 
                     if (str != NULL)
-                        {                               
+                        {           
                         char b[5];
-
+                                            
                         clearBuffer();
                                 
                         // If we're incrementing/decrementing, add UP or DOWN
@@ -1271,6 +1274,7 @@ void go()
         break;
         case STATE_OPTIONS:
             {
+            /*
             if (isUpdated(MIDDLE_BUTTON, RELEASED))
                 {
                 if (getClockState() == CLOCK_RUNNING)
@@ -1283,6 +1287,7 @@ void go()
                 {
                 continueClock(true);
                 }
+            */
 
 #ifdef USE_DACS
             const char* menuItems[15] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
@@ -1791,8 +1796,8 @@ void go()
                 {
                 backupOptions = options; 
                 }
-            const char* menuItems[5] = { PSTR("IGNORE"), PSTR("USE"), PSTR("CONSUME"),  PSTR("GENERATE"), PSTR("BLOCK") };
-            result = doMenuDisplay(menuItems, 5, STATE_NONE, STATE_NONE, 1);
+            const char* menuItems[6] = { PSTR("USE"), PSTR("DIVIDE"), PSTR("CONSUME"), PSTR("IGNORE"), PSTR("GENERATE"), PSTR("BLOCK") };
+            result = doMenuDisplay(menuItems, 6, STATE_NONE, STATE_NONE, 1);
             switch (result)
                 {
                 case NO_MENU_SELECTED:
@@ -1805,7 +1810,7 @@ void go()
                     if (options.clock != backupOptions.clock)  // got something new
                         {
                         // If I'm moving to being controlled by MIDI I should assume I'm stopped
-                        if (options.clock == USE_MIDI_CLOCK || options.clock == CONSUME_MIDI_CLOCK)
+                        if (options.clock <= CONSUME_MIDI_CLOCK)
                             {
                             stopClock(false);
                             }
@@ -1899,7 +1904,8 @@ void go()
             if (entry)
                 {
                 backupOptions = options; 
-                const uint8_t _glyphs[11] = { (FONT_3x5) + GLYPH_3x5_0,
+                const uint8_t _glyphs[11] = { 
+                	(FONT_3x5) + GLYPH_3x5_0,
                     (FONT_8x5) + GLYPH_8x5_ONE_EIGHTH,
                     (FONT_8x5) + GLYPH_8x5_ONE_FOURTH,
                     (FONT_8x5) + GLYPH_8x5_ONE_THIRD,
@@ -1909,7 +1915,8 @@ void go()
                     (FONT_3x5) + GLYPH_3x5_3,
                     (FONT_3x5) + GLYPH_3x5_4,
                     (FONT_3x5) + GLYPH_3x5_8,
-                    (FONT_8x5) + GLYPH_8x5_INFINITY };
+                    (FONT_8x5) + GLYPH_8x5_INFINITY 
+                    };
                 result = doGlyphDisplay(_glyphs, 11, NO_GLYPH, options.menuDelay );
                 }
             else result = doGlyphDisplay(NULL, 11, NO_GLYPH, options.menuDelay);
@@ -2051,7 +2058,7 @@ void handleClockCommand(void (*clockFunction)(), midi::MidiType clockMIDI)
         TOGGLE_OUT_LED();
         }
     // note NOT else, so that bypass will pass through the clock even if we "CONSUME" it
-    if (options.clock == USE_MIDI_CLOCK || options.clock == CONSUME_MIDI_CLOCK)
+    if (options.clock <= CONSUME_MIDI_CLOCK)
         {
         clockFunction();
         }

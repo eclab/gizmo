@@ -127,8 +127,9 @@
 #define ARPEGGIATOR_NUMBER_DOWN 1
 #define ARPEGGIATOR_NUMBER_UP_DOWN 2
 #define ARPEGGIATOR_NUMBER_RANDOM 3
-#define ARPEGGIATOR_NUMBER_CHORD_REPEAT 4
-#define ARPEGGIATOR_NUMBER_CREATE 14
+#define ARPEGGIATOR_NUMBER_ASSIGN 4
+#define ARPEGGIATOR_NUMBER_CHORD_REPEAT 5
+#define ARPEGGIATOR_NUMBER_CREATE 16
 
 // Constants for including a blinky cursor when drawing the arpeggio.
 // EDIT_CURSOR_POS puts the cursor just beyond the current arpeggio edit position.
