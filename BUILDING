@@ -1,0 +1,56 @@
+Necessary Modifications to Build the Code 
+=========================================
+
+You will need to modify your Arduino libraries slightly in order to build
+this code successfully.  Here are the items:
+
+
+
+-- Add Nonblocking writes to Wire.cpp and Wire.h
+   This will dramatically speed up Wire.cpp for our purposes
+
+1. Identify your Wire.cpp and Wire.h files.  On the Mac they're located in 
+   Arduino.app/Contents/Java/hardware/arduino/avr/libraries/Wire/src
+
+2. Add the following line inside the "public" method space in Wire.h:
+
+	    uint8_t endTransmissionNonblocking();
+
+3. Add the following method to Wire.cpp:
+
+
+	uint8_t TwoWire::endTransmissionNonblocking()
+		{
+ 		// transmit buffer (blocking)
+  		uint8_t ret = twi_writeTo(txAddress, txBuffer, txBufferLength, 0, 1);
+  		return ret;
+		}
+
+
+
+
+-- Reduce the I2C buffer size from 32 to 20.
+   This gives us some extra static RAM space.
+
+1. Identify you Wire.h file.  On the Mac it's located in
+   Arduino.app/Contents/Java/hardware/arduino/avr/libraries/Wire/src
+
+2. Change the BUFFER_LENGTH constant as follows:
+
+	#define BUFFER_LENGTH 20   // Was 32
+
+3. Identify your twi.h file.  On the Mac it's located in
+   Arduino.app/Contents/Java/hardware/arduino/avr/libraries/Wire/src/utility/twi.h
+
+4. Change the TWIBUFFER_LENGTH constant as follows:
+
+	#define TWI_BUFFER_LENGTH 20    // Was 32
+
+
+
+
+
+
+
+
+
