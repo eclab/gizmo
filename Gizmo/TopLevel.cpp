@@ -423,7 +423,7 @@ void writeFooterAndSend()
 
 
 
-#define MAX_MENU_ITEMS 16
+#define MAX_MENU_ITEMS 17
 #define MAX_MENU_ITEM_LENGTH 30
 #define NO_MENU_SELECTED 100
 #define MENU_SELECTED 101
@@ -996,8 +996,13 @@ void go()
                 {
                 optionsReturnState = STATE_ROOT;
                 }
+#if defined(__AVR_ATmega2560__)
+            const char* menuItems[7] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), options_p };
+            doMenuDisplay(menuItems, 7, STATE_ARPEGGIATOR, STATE_ROOT, 1);
+#else
             const char* menuItems[6] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), options_p };
             doMenuDisplay(menuItems, 6, STATE_ARPEGGIATOR, STATE_ROOT, 1);
+#endif
             }
         break;  
         case STATE_ARPEGGIATOR:
@@ -1272,9 +1277,53 @@ void go()
                 drawMIDIChannel(options.channelIn);                
             }
         break;
+        
+#if defined(__AVR_ATmega2560__)
+        
+          case STATE_SPLIT:
+          	{
+          	if (entry)      
+          		{
+          		entry = false;
+          		}
+        
+			  // despite the select button release ignoring, we occasionally get button
+			  // bounces on the select button so I'm moving the main stuff to the middle button
+			  // and only having long releases on the select button
+				
+			  if (isUpdated(MIDDLE_BUTTON, RELEASED))
+				  {
+				  goDownState(STATE_SPLIT_NOTE);
+				  }
+			  else if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
+				  {
+				  goDownState(STATE_SPLIT_CHANNEL);
+				  }
+			  else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
+				  {
+				  options.splitControls = !options.splitControls;
+				  saveOptions();
+				  }
+			  else if (isUpdated(BACK_BUTTON, RELEASED))
+				  {
+				  goUpState(STATE_ROOT);
+				  }
+			  else if (updateDisplay)
+				  {
+				  clearScreen();
+				  writeNotePitch(led2, options.splitNote);
+				  write3x5Glyph(led, options.splitControls == 0 ? GLYPH_3x5_R : GLYPH_3x5_L, 5);
+				  }
+			  }
+          break;
+
+#endif
+
         case STATE_OPTIONS:
             {
-            /*
+
+#if defined(__AVR_ATmega2560__)
+           // We don't have space for this on the Uno.  :-(
             if (isUpdated(MIDDLE_BUTTON, RELEASED))
                 {
                 if (getClockState() == CLOCK_RUNNING)
@@ -1287,7 +1336,7 @@ void go()
                 {
                 continueClock(true);
                 }
-            */
+#endif
 
 #ifdef USE_DACS
             const char* menuItems[15] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
@@ -1308,49 +1357,13 @@ void go()
             playApplication();     
             }
         break;
-        /*
-          case STATE_SPLIT:
-          {
-          if (entry)      
-          {
-          entry = false;
-          }
         
-          // despite the select button release ignoring, we occasionally get button
-          // bounces on the select button so I'm moving the main stuff to the middle button
-          // and only having long releases on the select button
-                
-          if (isUpdated(MIDDLE_BUTTON, RELEASED))
-          {
-          state = STATE_SPLIT_NOTE;
-          entry = true;
-          }
-          else if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
-          {
-          state = STATE_SPLIT_CHANNEL;
-          entry = true;
-          }
-          else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
-          {
-          options.splitControls = !options.splitControls;
-          saveOptions();
-          }
-          else if (isUpdated(BACK_BUTTON, RELEASED))
-          {
-          goUpState(STATE_ROOT);
-          }
-          else if (updateDisplay)
-          {
-          clearScreen();
-          writeNotePitch(led2, options.splitNote);
-          write3x5Glyph(led, options.splitControls == 0 ? GLYPH_3x5_R : GLYPH_3x5_L, 5);
-          }
-          }
-          break;
-        */
         
-        case STATE_SPLIT:
-            // FALL THRU
+#if !defined(__AVR_ATmega2560__)
+	case STATE_UNDEFINED_1:
+		// FALL THRU
+#endif
+
         case STATE_UNDEFINED_2:
             // FALL THRU
         case STATE_UNDEFINED_3:
@@ -1961,28 +1974,29 @@ void go()
             }
         break;
 
-/*
-  case STATE_SPLIT_CHANNEL:
-  {
-  stateNumerical(0, 16, options.splitChannel, backupOptions.splitChannel, true, true, OTHER_NONE, STATE_SPLIT);
-  }
-  break;
+#if defined(__AVR_ATmega2560__)// We don't have space for this on the Uno :-(
 
-  case STATE_SPLIT_NOTE:
-  {
-  if (stateEnterNote(GLYPH_NOTE, STATE_SPLIT, false) != NO_NOTE)
-  {
-  options.splitNote = itemNumber;
-  saveOptions();
-  goUpState(STATE_SPLIT);
-  }
-  else if (isUpdated(BACK_BUTTON, RELEASED))
-  {
-  goUpState(STATE_SPLIT);
-  }
-  }
-  break;
-*/
+		  case STATE_SPLIT_CHANNEL:
+			  {
+			  stateNumerical(0, 16, options.splitChannel, backupOptions.splitChannel, true, true, OTHER_NONE, STATE_SPLIT);
+			  }
+		  break;
+
+		  case STATE_SPLIT_NOTE:
+			  {
+			  if (stateEnterNote(GLYPH_NOTE, STATE_SPLIT) != NO_NOTE)
+				  {
+				  options.splitNote = itemNumber;
+				  saveOptions();
+				  goUpState(STATE_SPLIT);
+				  }
+			  else if (isUpdated(BACK_BUTTON, RELEASED))
+				  {
+				  goUpState(STATE_SPLIT);
+				  }
+			  }
+		  break;
+#endif
      
         // END SWITCH       
         }
@@ -2093,17 +2107,18 @@ void handleClock()
     handleClockCommand(pulseClock, MIDIClock);
     }
 
-/*
+#if defined(__AVR_ATmega2560__)
+// We don't have space for this on the Uno :-(
   uint8_t applicationSplit()
-  {
-  if (application == STATE_SPLIT && !bypass)
-  {
-  TOGGLE_OUT_LED();
-  return 1;
-  }
-  return 0;
-  }
-*/
+	{
+	if (application == STATE_SPLIT && !bypass)
+		{
+		TOGGLE_OUT_LED();
+		return 1;
+		}
+	return 0;
+	}
+#endif
 
 void handleNoteOff(byte channel, byte note, byte velocity)
     {
@@ -2111,10 +2126,12 @@ void handleNoteOff(byte channel, byte note, byte velocity)
         {
         if (application == STATE_ARPEGGIATOR && local.arp.playing)
             arpeggiatorRemoveNote(note);
-        /*
+
+#if defined(__AVR_ATmega2560__)
+        // We don't have space for this on the Uno :-(
           else if (application == STATE_SPLIT && !bypass)
           sendNoteOff(note, velocity, note < options.splitNote ? options.splitChannel : options.channelOut);
-        */
+#endif
 
 #ifdef USE_DACS
         if (lastNotePlayed == note)
@@ -2142,12 +2159,14 @@ void handleNoteOn(byte channel, byte note, byte velocity)
             local.arp.velocity = velocity;
             arpeggiatorAddNote(note);
             }
-        /*
+
+#if defined(__AVR_ATmega2560__)
+        // We don't have space for this on the Uno // 
           else if (application == STATE_SPLIT && !bypass)
           {
           sendNoteOn(note, velocity, note < options.splitNote ?  options.splitChannel : options.channelOut);
           }
-        */
+#endif
 
 #ifdef USE_DACS
         if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_A &&
@@ -2164,17 +2183,19 @@ void handleNoteOn(byte channel, byte note, byte velocity)
   
 void handleAfterTouchPoly(byte channel, byte note, byte pressure)
     {
-    /*
+    
+#if defined(__AVR_ATmega2560__)
+    // We don't have space for this on the Uno :-(
       if (updateMIDI(channel, MIDI_AFTERTOUCH_POLY, note, pressure))
-      {
-      if (applicationSplit())
-      { 
-      int16_t n = note + (uint16_t)options.transpose;
-      n = bound(n, 0, 127);
-      MIDI.sendPolyPressure((uint8_t) n, pressure, note < options.splitNote ?  options.splitChannel : options.channelOut);
-      }
-      }
-    */
+		  {
+		  if (applicationSplit())
+			  { 
+			  int16_t n = note + (uint16_t)options.transpose;
+			  n = bound(n, 0, 127);
+			  MIDI.sendPolyPressure((uint8_t) n, pressure, note < options.splitNote ?  options.splitChannel : options.channelOut);
+			  }
+		  }
+#endif
     updateMIDI(channel, MIDI_AFTERTOUCH_POLY, note, pressure);
 
     if (bypass) TOGGLE_OUT_LED();
@@ -2556,10 +2577,12 @@ GLOBAL struct _controlParser midiControlParser;
 void handleGeneralControlChange(byte channel, byte number, byte value)
     {
     if (bypass) TOGGLE_OUT_LED();
-    /*
+
+#if defined(__AVR_ATmega2560__)
+    // We don't have space for this on the Uno :-(
       else if (application == STATE_SPLIT && channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
       { MIDI.sendControlChange(number, options.channelOut, value); TOGGLE_OUT_LED(); return; }
-    */
+#endif
             
     // we're only interested in parsing CHANNEL IN and CHANNEL CONTROL    
     _controlParser* parser;
@@ -2665,7 +2688,7 @@ void handleGeneralControlChange(byte channel, byte number, byte value)
             else if (parser->status == RPN_END || parser->status == RPN_MSB || parser->status == RPN_INCREMENT_DECREMENT)
                 {
                 parser->controllerValueMSB = value;
-                handleRPN(channel, controllerNumber , ((uint16_t)value) << 7, VALUE_MSB_ONLY);
+                handleRPN(channel, controllerNumber, ((uint16_t)value) << 7, VALUE_MSB_ONLY);
                 parser->status = RPN_MSB;
                 }
             else parser->status = INVALID;
@@ -2695,7 +2718,7 @@ void handleGeneralControlChange(byte channel, byte number, byte value)
                 }
             else if (parser->status == RPN_END || parser->status == RPN_MSB || parser->status == RPN_INCREMENT_DECREMENT)
                 {
-                handleRPN(channel, controllerNumber , (value ? value : 1), INCREMENT);
+                handleRPN(channel, controllerNumber, (value ? value : 1), INCREMENT);
                 parser->status = RPN_INCREMENT_DECREMENT;
                 }
             else parser->status = INVALID;
@@ -2706,12 +2729,12 @@ void handleGeneralControlChange(byte channel, byte number, byte value)
             {
             if (parser->status == NRPN_END || parser->status == NRPN_MSB || parser->status == NRPN_INCREMENT_DECREMENT)
                 {
-                handleNRPN(channel, controllerNumber , (value ? value : 1), DECREMENT);
+                handleNRPN(channel, controllerNumber, (value ? value : 1), DECREMENT);
                 parser->status = NRPN_INCREMENT_DECREMENT;
                 }
             else if (parser->status == RPN_END || parser->status == RPN_MSB || parser->status == RPN_INCREMENT_DECREMENT)
                 {
-                handleRPN(channel, controllerNumber , (value ? value : 1), DECREMENT);
+                handleRPN(channel, controllerNumber, (value ? value : 1), DECREMENT);
                 parser->status = RPN_INCREMENT_DECREMENT;
                 }
             else parser->status = INVALID;
@@ -2731,25 +2754,30 @@ void handleGeneralControlChange(byte channel, byte number, byte value)
 void handleProgramChange(byte channel, byte number)
     {
     updateMIDI(channel, MIDI_PROGRAM_CHANGE, number, 1);
-/*    if (updateMIDI(channel, MIDI_PROGRAM_CHANGE, number, 1))
+
+#if defined(__AVR_ATmega2560__)
+	// We don't have space for this on the Uno :-(  
+	if (updateMIDI(channel, MIDI_PROGRAM_CHANGE, number, 1))
       {
-      if (applicationSplit())
-      { MIDI.sendProgramChange(number, options.channelOut); }
+      if (applicationSplit()) { MIDI.sendProgramChange(number, options.channelOut); }
       }
-*/
+#endif
+
     if (bypass) TOGGLE_OUT_LED();
     }
   
 void handleAfterTouchChannel(byte channel, byte pressure)
     {
     updateMIDI(channel, MIDI_AFTERTOUCH, 1, pressure);
-    /*
+
+#if defined(__AVR_ATmega2560__)
+	// We don't have space for this on the Uno :-(  
       if (updateMIDI(channel, MIDI_AFTERTOUCH, 1, pressure))
       {
       if (applicationSplit())
       { MIDI.sendAfterTouch(pressure, options.channelOut); }
       }
-    */
+#endif
 
     if (bypass) TOGGLE_OUT_LED();
     }
@@ -2757,13 +2785,15 @@ void handleAfterTouchChannel(byte channel, byte pressure)
 void handlePitchBend(byte channel, int bend)
     {
     updateMIDI(channel, MIDI_PITCH_BEND, 1, (uint16_t) bend + 8192);
-    /*
+
+#if defined(__AVR_ATmega2560__)
+	// We don't have space for this on the Uno :-(  
       if (updateMIDI(channel, MIDI_PITCH_BEND, 1, (uint16_t) bend + 8192))
       {                    
       if (applicationSplit())
       { MIDI.sendPitchBend(bend, options.channelOut); }
       }
-    */
+#endif
     
     if (bypass) TOGGLE_OUT_LED();
     }

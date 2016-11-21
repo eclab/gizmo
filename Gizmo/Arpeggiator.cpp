@@ -100,7 +100,7 @@ void playArpeggio()
         {
         if (local.arp.numChordNotes > 0)
             {
-            if (local.arp.number <= ARPEGGIATOR_NUMBER_RANDOM)
+            if (local.arp.number <= ARPEGGIATOR_NUMBER_ASSIGN)
                 {
                 int16_t max = local.arp.numChordNotes * (int16_t)(options.arpeggiatorPlayOctaves + 1) - 1;
                 switch(local.arp.number)
@@ -118,10 +118,7 @@ void playArpeggio()
                             {
                             // though local.arp.currentPosition is signed and incrementAndWrap expects unsigned, it's okay
                             // because local.arp.currentPosition will never be < 0 at this point, nor > 127.
-                            local.arp.currentPosition = incrementAndWrap(local.arp.currentPosition, max - 1);
-                            //local.arp.currentPosition++;
-                            //if (local.arp.currentPosition > max)
-                            //    local.arp.currentPosition = 0;
+                            local.arp.currentPosition = incrementAndWrap(local.arp.currentPosition, max + 1);
                             }
                         }
                     break;
@@ -318,9 +315,6 @@ void arpeggiatorAddNote(uint8_t note)
         }
     }
 
-#define ARPEGGIATOR_CREATE_MENU 15
-#define ARPEGGIATOR_UP_MENU 0
-
 // Choose an arpeggiation, or to create one
 void stateArpeggiator()
     {
@@ -347,7 +341,7 @@ void stateArpeggiator()
         break;
         case MENU_SELECTED:
             {
-            if (currentDisplay == ARPEGGIATOR_CREATE_MENU)
+            if (currentDisplay == ARPEGGIATOR_NUMBER_CREATE)
                 {
                 goDownState(STATE_ARPEGGIATOR_CREATE);
                 }
@@ -366,7 +360,7 @@ void stateArpeggiator()
         }
     }
 
-GLOBAL static uint8_t arpeggiatorGlyphs[5] = { GLYPH_3x5_UP, GLYPH_3x5_DOWN, GLYPH_3x5_UP_DOWN, GLYPH_3x5_R, GLYPH_3x5_C };
+GLOBAL static uint8_t arpeggiatorGlyphs[6] = { GLYPH_3x5_UP, GLYPH_3x5_DOWN, GLYPH_3x5_UP_DOWN, GLYPH_3x5_R, GLYPH_3x5_A, GLYPH_3x5_C };
 
 // Handle the menu structure for playing an arpeggio
 void stateArpeggiatorPlay()
@@ -583,7 +577,7 @@ void stateArpeggiatorCreateEdit()
                 SET_ARP_NOTEX(local.arp.currentPosition, index);
                 local.arp.currentPosition++;
                 data.arp.length = local.arp.currentPosition;
-
+                
                 // RESORTING
                 // At this point, chordNotes contains some numChordNotes notes,
                 // and data.arp... contains indexes into this array.  We want to
@@ -592,21 +586,21 @@ void stateArpeggiatorCreateEdit()
                 // First, we back up chordNotes
                 uint8_t backupChordNotes[local.arp.numChordNotes];
                 memcpy(backupChordNotes, local.arp.chordNotes, local.arp.numChordNotes);
-                        
-                // Next we sort chordNotes.  Insertion sort FTW!
-                uint8_t j;
+ 				
+                // Next we sort chordNotes low to high.  Insertion sort FTW
+                int8_t j;  // j goes negative so we have to be signed
                 for(uint8_t i = 1; i < local.arp.numChordNotes; i++)
                     {
                     uint8_t val = local.arp.chordNotes[i];
-                    j = i-1;
-                    while(j >= 0 && local.arp.chordNotes[j] > val)
+                    j = i - 1;
+                    while((j >= 0) && (local.arp.chordNotes[j] > val))
                         {
                         local.arp.chordNotes[j + 1] = local.arp.chordNotes[j];
                         j = j - 1;
                         }
-                    local.arp.chordNotes[j+1] = val;
+                    local.arp.chordNotes[j + 1] = val;
                     }
-                        
+                    
                 // Now we reassign chordNotes in the ARP values.  This is O(n^2) :-(
                 for(uint8_t i = 0; i < data.arp.length; i++)    
                     {

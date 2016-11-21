@@ -45,13 +45,16 @@ struct _options
     uint8_t recorderRepeat;
     uint8_t click;
     uint8_t clickVelocity;
-        
-/*
+     
+#if defined(__AVR_ATmega2560__)
   uint8_t splitControls;
   uint8_t splitChannel;
   uint8_t splitNote;
+#endif
+
+#ifdef USE_DACS 
   uint8_t voltage;
-*/
+#endif
     };
 
 // The options struct which is saved and loaded and used
