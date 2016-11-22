@@ -313,7 +313,7 @@ Of particular interest to you may be Length and Tempo.
 
 \section {The Note Recorder}
 
-The Note Recorder lets you record and play back approximately 64 notes\footnote{Why {\it approximately} 64? Because the recorder is recording MIDI NOTE ON and NOTE OFF messages.  If you provide 64 pairs of these messages, it'll take up exactly all the available memory.  But you could plausibly send a few more NOTE ON than NOTE OFF messages, in which case at the end of the recording all the remaining outstanding notes will be terminated.  This would allow you to squeeze in a few (perhaps 16) more notes in rare circumstances.  But I'd not rely on it.} spread over 21 measures.\footnote{Why 21?  Because notes are stored with a timestamp of eleven bits, resulting in \(2^11 = 2048\) timesteps.  A single timestep is 1/24 of a quarter note, and a quarter note is 1/4 of a measure, so we have \(2048 / 24 / 4 = 21 1/3\) measures.  We round that down to 21.}  You can save up to two recordings on an Arduino Uno and nine recordings on a Mega.
+The Note Recorder lets you record and play back approximately 64 notes\footnote{Why {\it approximately} 64? Because the recorder is recording MIDI NOTE ON and NOTE OFF messages.  If you provide 64 pairs of these messages, it'll take up exactly all the available memory.  But you could plausibly send a few more NOTE ON than NOTE OFF messages, in which case at the end of the recording all the remaining outstanding notes will be terminated.  This would allow you to squeeze in a few (perhaps 16) more notes in rare circumstances.  But I'd not rely on it.  BTW, if you looked carefully you would have noted that the Note Display in Figure \ref{recorder} has space for 16 more notes too.} spread over 21 measures.\footnote{Why 21?  Because notes are stored with a timestamp of eleven bits, resulting in \(2^11 = 2048\) timesteps.  A single timestep is 1/24 of a quarter note, and a quarter note is 1/4 of a measure, so we have \(2048 / 24 / 4 = 21 1/3\) measures.  We round that down to 21.}  You can save up to two recordings on an Arduino Uno and nine recordings on a Mega.
 
 The Note Recorder screen has two major parts.  The {\it Note Display} section indicates the current note number being played (and hints at the remaining notes available).  The {\it Measure Display} section indicates the current measure being played (and again hints at the remaining measures available).  When recording a song, each of these sections will contain a single lit LED indicating the current note or measure position.  When playing a song, the Note Display and Measure Display will each also contain an additional lit LED indicating the position of the end of the song.
 
@@ -346,6 +346,7 @@ You can choose {\bf Repeat Mode} from a menu by Long-Pressing the Select (right)
 
 You can save your recorded song by pressing the Select Button.  Gizmo will ask you to select a slot to save in, then it will exit the Recorder.
 
+\paragraph{More Recorder Options}  
 You can also choose the Options Menu from inside the Note Recorder: it's part of the menu brought up by Long-Pressing the Select button.  The Recorder responds to a number of options:
 
 \vspace{1em}
@@ -355,11 +356,12 @@ Click& 			Out MIDI& 	Volume	\\
 MIDI Clock& 			Control MIDI	\\
 \end{tabular}
 
+\vspace{1em}
 Of particular use to you will be Tempo and Click.  Click gives you an audible click track: and the count-in is also clicked for you.
 
-\paragraph{Quantization}
+\paragraph{Recording and Quantization}
 
-The Recorder presently quantizes to each MIDI Clock pulse, that is, 1/24 of a quarter note.
+The Recorder records nothing but MIDI NOTE ON and NOTE OFF messages.  It presently quantizes these messages, rounding them up or down to the nearest MIDI Clock pulse, that is, 1/24 of a quarter note.
 
 \section {The MIDI Gauge}
 
