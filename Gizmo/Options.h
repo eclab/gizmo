@@ -21,7 +21,6 @@ struct _options
 
     // then 8-bit stuff
     uint8_t screenBrightness;
-    uint8_t menuDelay ;                         // Corresponds to DEFAULT_MENU_DELAY
     uint8_t clock ;                     // Chosen option for handling the MIDI clock
     uint8_t noteSpeedType ;             // Type of note speed the user has chosen (see LEDDisplay.h for a list of them)
     uint8_t swing;
@@ -47,14 +46,15 @@ struct _options
     uint8_t clickVelocity;
      
 #if defined(__AVR_ATmega2560__)
+  uint8_t menuDelay ;                         // Corresponds to DEFAULT_MENU_DELAY
   uint8_t splitControls;
   uint8_t splitChannel;
   uint8_t splitNote;
-#endif
-
 #ifdef USE_DACS 
   uint8_t voltage;
-#endif
+#endif	// USE_DACS
+#endif	// defined(__AVR_ATmega2560__)
+
     };
 
 // The options struct which is saved and loaded and used

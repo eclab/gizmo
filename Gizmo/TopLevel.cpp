@@ -10,7 +10,7 @@
 MIDI_CREATE_DEFAULT_INSTANCE();
 
 
-
+#if defined(__AVR_ATmega2560__)
 ///// SCROLL DELAY
 ///// 
 
@@ -30,8 +30,7 @@ void setMenuDelay(uint8_t index)
     if (index > 10) index = 5;
     setScrollDelays(menuDelays[index], DEFAULT_SHORT_DELAY);
     }
-
-
+#endif
 
 GLOBAL uint8_t state = STATE_ROOT;                     // The current state
 GLOBAL uint8_t application = STATE_ARPEGGIATOR;           // The top state (the application, so to speak): we display a dot indicating this.
@@ -1322,7 +1321,7 @@ void go()
         case STATE_OPTIONS:
             {
 
-#if defined(__AVR_ATmega2560__)
+//#if defined(__AVR_ATmega2560__)
            // We don't have space for this on the Uno.  :-(
             if (isUpdated(MIDDLE_BUTTON, RELEASED))
                 {
@@ -1336,13 +1335,15 @@ void go()
                 {
                 continueClock(true);
                 }
-#endif
+//#endif
 
+#if defined(__AVR_ATmega2560__)
 #ifdef USE_DACS
             const char* menuItems[15] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
                                           PSTR("VOLUME"), PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), 
                                           ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
-                                          PSTR("BRIGHTNESS"), PSTR("MENU DELAY"), 
+                                          PSTR("BRIGHTNESS"), 
+                                          PSTR("MENU DELAY"), 
                                           (options.voltage ? voltage_p : PSTR("NO VOLTAGE")),
                                           PSTR("GIZMO V1 (C) 2016 SEAN LUKE") };
             doMenuDisplay(menuItems, 15, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
@@ -1350,10 +1351,20 @@ void go()
             const char* menuItems[14] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
                                           PSTR("VOLUME"), PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), 
                                           ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
-                                          PSTR("BRIGHTNESS"), PSTR("MENU DELAY"), 
+                                          PSTR("BRIGHTNESS"), 
+                                          PSTR("MENU DELAY"), 
                                           PSTR("GIZMO V1 (C) 2016 SEAN LUKE") };
             doMenuDisplay(menuItems, 14, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
-#endif
+#endif // USE_DACS
+#else
+            const char* menuItems[13] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
+                                          PSTR("VOLUME"), PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), 
+                                          ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
+                                          PSTR("BRIGHTNESS"),
+                                          PSTR("GIZMO V1 (C) 2016 SEAN LUKE") };
+            doMenuDisplay(menuItems, 13, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
+#endif // defined(__AVR_ATmega2560__)
+
             playApplication();     
             }
         break;
@@ -1911,6 +1922,7 @@ void go()
             playApplication();     
             }
         break;
+#if defined(__AVR_ATmega2560__)
         case STATE_OPTIONS_MENU_DELAY:
             {
             uint8_t result;
@@ -1957,6 +1969,8 @@ void go()
             playApplication();     
             }
         break;
+#endif
+
 #ifdef USE_DACS
         case STATE_OPTIONS_VOLTAGE:
             {
@@ -2576,13 +2590,9 @@ GLOBAL struct _controlParser midiControlParser;
 
 void handleGeneralControlChange(byte channel, byte number, byte value)
     {
-    if (bypass) TOGGLE_OUT_LED();
-
-#if defined(__AVR_ATmega2560__)
-    // We don't have space for this on the Uno :-(
-      else if (application == STATE_SPLIT && channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
-      { MIDI.sendControlChange(number, options.channelOut, value); TOGGLE_OUT_LED(); return; }
-#endif
+    if (!bypass) 
+		MIDI.sendControlChange(number, options.channelOut, value);
+	TOGGLE_OUT_LED();
             
     // we're only interested in parsing CHANNEL IN and CHANNEL CONTROL    
     _controlParser* parser;
@@ -2748,61 +2758,44 @@ void handleGeneralControlChange(byte channel, byte number, byte value)
 
 
 
-
+// This is a little support function meant to shorten code in the following functions.
+void toggleLEDsAndSetNewItem(byte _itemType)
+	{
+	newItem = NEW_ITEM;
+	itemType = _itemType;
+	TOGGLE_IN_LED(); 
+	TOGGLE_OUT_LED();
+	}
 
 
 void handleProgramChange(byte channel, byte number)
     {
     updateMIDI(channel, MIDI_PROGRAM_CHANGE, number, 1);
-
-#if defined(__AVR_ATmega2560__)
-	// We don't have space for this on the Uno :-(  
-	if (updateMIDI(channel, MIDI_PROGRAM_CHANGE, number, 1))
-      {
-      if (applicationSplit()) { MIDI.sendProgramChange(number, options.channelOut); }
-      }
-#endif
-
-    if (bypass) TOGGLE_OUT_LED();
+    if (!bypass) 
+		MIDI.sendProgramChange(number, options.channelOut);
+    TOGGLE_OUT_LED();
     }
   
 void handleAfterTouchChannel(byte channel, byte pressure)
     {
     updateMIDI(channel, MIDI_AFTERTOUCH, 1, pressure);
-
-#if defined(__AVR_ATmega2560__)
-	// We don't have space for this on the Uno :-(  
-      if (updateMIDI(channel, MIDI_AFTERTOUCH, 1, pressure))
-      {
-      if (applicationSplit())
-      { MIDI.sendAfterTouch(pressure, options.channelOut); }
-      }
-#endif
-
-    if (bypass) TOGGLE_OUT_LED();
+    if (!bypass) 
+      MIDI.sendAfterTouch(pressure, options.channelOut);
+    TOGGLE_OUT_LED();
     }
   
 void handlePitchBend(byte channel, int bend)
     {
     updateMIDI(channel, MIDI_PITCH_BEND, 1, (uint16_t) bend + 8192);
-
-#if defined(__AVR_ATmega2560__)
-	// We don't have space for this on the Uno :-(  
-      if (updateMIDI(channel, MIDI_PITCH_BEND, 1, (uint16_t) bend + 8192))
-      {                    
-      if (applicationSplit())
-      { MIDI.sendPitchBend(bend, options.channelOut); }
-      }
-#endif
-    
-    if (bypass) TOGGLE_OUT_LED();
+    if (!bypass) 
+    	MIDI.sendPitchBend(bend, options.channelOut);
+	TOGGLE_OUT_LED();
     }
   
 void handleTimeCodeQuarterFrame(byte data)
     {
-    toggleBothLEDs();
-    newItem = NEW_ITEM;
-    itemType = MIDI_TIME_CODE;
+    toggleLEDsAndSetNewItem(MIDI_TIME_CODE);
+    //itemType = MIDI_TIME_CODE;
 
     // always pass through.
     MIDI.sendTimeCodeQuarterFrame(data);
@@ -2811,9 +2804,8 @@ void handleTimeCodeQuarterFrame(byte data)
 
 void handleSystemExclusive(byte* array, unsigned size)
     {
-    toggleBothLEDs();
-    newItem = NEW_ITEM;
-    itemType = MIDI_SYSTEM_EXCLUSIVE;
+    toggleLEDsAndSetNewItem(MIDI_SYSTEM_EXCLUSIVE);
+    //itemType = MIDI_SYSTEM_EXCLUSIVE;
 
     // always pass through
     MIDI.sendSysEx(size, array);
@@ -2821,9 +2813,8 @@ void handleSystemExclusive(byte* array, unsigned size)
   
 void handleSongPosition(unsigned beats)
     {
-    toggleBothLEDs();
-    newItem = NEW_ITEM;
-    itemType = MIDI_SONG_POSITION;
+    toggleLEDsAndSetNewItem(MIDI_SONG_POSITION);
+    //itemType = MIDI_SONG_POSITION;
 
     // always pass through
     MIDI.sendSongPosition(beats);
@@ -2831,9 +2822,8 @@ void handleSongPosition(unsigned beats)
 
 void handleSongSelect(byte songnumber)
     {
-    toggleBothLEDs();
-    newItem = NEW_ITEM;
-    itemType = MIDI_SONG_SELECT;
+    toggleLEDsAndSetNewItem(MIDI_SONG_SELECT);
+    //itemType = MIDI_SONG_SELECT;
 
     // always pass through
     MIDI.sendSongSelect(songnumber);
@@ -2841,9 +2831,8 @@ void handleSongSelect(byte songnumber)
   
 void handleTuneRequest()
     {
-    toggleBothLEDs();
-    newItem = NEW_ITEM;
-    itemType = MIDI_TUNE_REQUEST;
+    toggleLEDsAndSetNewItem(MIDI_TUNE_REQUEST);
+    //itemType = MIDI_TUNE_REQUEST;
 
     // always pass through
     MIDI.sendTuneRequest();
@@ -2851,9 +2840,8 @@ void handleTuneRequest()
   
 void handleActiveSensing()
     {
-    toggleBothLEDs();
-    newItem = NEW_ITEM;
-    itemType = MIDI_ACTIVE_SENSING;
+    toggleLEDsAndSetNewItem(MIDI_ACTIVE_SENSING);
+    //itemType = MIDI_ACTIVE_SENSING;
         
     // always pass through
     MIDI.sendRealTime(MIDIActiveSensing);
@@ -2861,9 +2849,8 @@ void handleActiveSensing()
   
 void handleSystemReset()
     {
-    toggleBothLEDs();
-    newItem = NEW_ITEM;
-    itemType = MIDI_SYSTEM_RESET;
+    toggleLEDsAndSetNewItem(MIDI_SYSTEM_RESET);
+    //itemType = MIDI_SYSTEM_RESET;
 
     // always pass through
     MIDI.sendRealTime(MIDISystemReset);

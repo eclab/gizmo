@@ -317,7 +317,7 @@ void stateRecorderPlay()
             }
                 
         if (options.recorderRepeat)
-            setPoint(led2, 5, 0);
+            setPoint(led2, 6, 0);
         }
     }
         

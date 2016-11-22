@@ -33,9 +33,5 @@ extern volatile uint8_t *port_SELECT_BUTTON;
 // Toggles the MIDI OUT LED (green)
 #define TOGGLE_OUT_LED() (*(port_LED_GREEN) ^= (LED_GREEN_mask))
 
-// This is a little support function meant to shorten code.
-// All it does is call TOGGLE_IN_LED and TOGGLE_OUT_LED
-void toggleBothLEDs() ;
-
 #endif
 

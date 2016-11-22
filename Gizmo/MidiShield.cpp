@@ -16,6 +16,3 @@ GLOBAL volatile uint8_t *port_SELECT_BUTTON;
 
 GLOBAL uint8_t potPin[2] = { A0, A1 };
 
-// This is a little support function meant to shorten code in the following functions.
-void toggleBothLEDs() {TOGGLE_IN_LED(); TOGGLE_OUT_LED(); }
-

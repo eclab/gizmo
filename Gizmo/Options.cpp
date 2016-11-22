@@ -23,8 +23,10 @@ void loadOptions()
     loadData((char*)(&options), OPTIONS_OFFSET, sizeof(options));
     setPulseRate(options.tempo);
     setNotePulseRate(options.noteSpeedType);
-    setMenuDelay(options.menuDelay);
     setScreenBrightness(options.screenBrightness);
+#if defined(__AVR_ATmega2560__)
+    setMenuDelay(options.menuDelay);
+#endif
     }
 
 
@@ -45,7 +47,6 @@ void resetOptions()
     
     // now just set the ones that aren't zero
     options.screenBrightness = 3;  // not too dim, not mind-numbingly bright
-    options.menuDelay = 6;  // corresponds to DEFAULT_MENU_DELAY
     options.tempo = 120;
     options.noteSpeedType = NOTE_SPEED_SIXTEENTH;  // default.  This also allows swing
     options.channelIn = 1;
@@ -53,8 +54,11 @@ void resetOptions()
     options.noteLength = 100;
     options.volume = 3;  // corresponds to no volume modification
     options.click = NO_NOTE;
-//      options.splitChannel = 1;
-//      options.splitNote = 60;  // Middle C
+#if defined(__AVR_ATmega2560__)
+    options.menuDelay = 6;  // corresponds to DEFAULT_MENU_DELAY
+    options.splitChannel = 1;
+	options.splitNote = 60;  // Middle C
+#endif
     }
 
 

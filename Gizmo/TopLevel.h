@@ -181,10 +181,12 @@
 #define STATE_OPTIONS_MIDI_CLOCK 55
 #define STATE_OPTIONS_CLICK 56
 #define STATE_OPTIONS_SCREEN_BRIGHTNESS 57
-#define STATE_OPTIONS_MENU_DELAY 58
+#ifdef USE_DACS
+#define STATE_OPTIONS_VOLTAGE 58
 #define STATE_OPTIONS_ABOUT 59
-#define STATE_SPLIT_CHANNEL 60
-#define STATE_SPLIT_NOTE 61
+#else
+#define STATE_OPTIONS_ABOUT 58
+#endif // USE_DACS
 #endif // defined(__AVR_ATmega2560__)
 
 
@@ -353,12 +355,16 @@ extern unsigned char led[LED_WIDTH];
 extern unsigned char led2[LED_WIDTH];
 
 
+
+#if defined(__AVR_ATmega2560__)
 // SET MENU DELAY
 // Changes the menu delay to a desired value (between 0: no menu delay, and 11: infinite menu delay).  The default is 5
 void setMenuDelay(uint8_t index);
 
 // The index values passed into setMenuDelay correspond to the following delays (but these
 // constants may NOT be passed into setMenuDelay).
+
+#endif
 
 #define DEFAULT_SHORT_DELAY (60 >> 3)
 #define NO_MENU_DELAY  (DEFAULT_SHORT_DELAY)
@@ -372,7 +378,6 @@ void setMenuDelay(uint8_t index);
 #define QUADRUPLE_MENU_DELAY (3085 >> 3)
 #define EIGHT_TIMES_MENU_DELAY (6157 >> 3)
 #define HIGH_MENU_DELAY  (NO_SCROLLING)
-
 
 
 
