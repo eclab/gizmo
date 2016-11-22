@@ -224,7 +224,7 @@ Alternatively if you toggle the {\bf latch}, then the playing will continue afte
 \begin{center}
 \vspace{-4em}\includegraphics[width=1in]{updown}
 \vspace{-1em}
-\caption{Up, Down, and Up-Down Symbols}
+\caption{\small Up, Down, and Up-Down Symbols}
 \vspace{-3em}
 \end{center}
 \end{wrapfigure}
@@ -304,7 +304,63 @@ Swing& 			Control MIDI&	Length	&\\
 Of particular interest to you may be Length and Tempo.
 
 \section {The Step Sequencer}
-\section {The Recorder}
+
+\begin{wrapfigure}{r}{3in}
+\vspace{-4em}\includegraphics[width=3in]{recorder.pdf}
+\vspace{-2em}\caption{\small Recorder Display}\vspace{-1em}
+\label{recorder}
+\end{wrapfigure}
+
+\section {The Note Recorder}
+
+The Note Recorder lets you record and play back approximately 64 notes\footnote{Why {\it approximately} 64? Because the recorder is recording MIDI NOTE ON and NOTE OFF messages.  If you provide 64 pairs of these messages, it'll take up exactly all the available memory.  But you could plausibly send a few more NOTE ON than NOTE OFF messages, in which case at the end of the recording all the remaining outstanding notes will be terminated.  This would allow you to squeeze in a few (perhaps 16) more notes in rare circumstances.  But I'd not rely on it.} spread over 21 measures.\footnote{Why 21?  Because notes are stored with a timestamp of eleven bits, resulting in \(2^11 = 2048\) timesteps.  A single timestep is 1/24 of a quarter note, and a quarter note is 1/4 of a measure, so we have \(2048 / 24 / 4 = 21 1/3\) measures.  We round that down to 21.}  You can save up to two recordings on an Arduino Uno and nine recordings on a Mega.
+
+The Note Recorder screen has two major parts.  The {\it Note Display} section indicates the current note number being played (and hints at the remaining notes available).  The {\it Measure Display} section indicates the current measure being played (and again hints at the remaining measures available).  When recording a song, each of these sections will contain a single lit LED indicating the current note or measure position.  When playing a song, the Note Display and Measure Display will each also contain an additional lit LED indicating the position of the end of the song.
+
+\begin{wrapfigure}{r}{1in}
+\vspace{-1.5em}\includegraphics[width=1in]{none.pdf}
+\vspace{-2em}\caption{\small None}\vspace{-2em}
+\label{none}
+\end{wrapfigure}
+
+When you choose the Note Recorder from the root menu, you will be asked to either load a recording from a slot.  You can do this, or you can create a new empty recording by choosing ``-~-~-~-'' (meaning {\it none}).  After this you will enter the Note Recorder.
+
+\begin{wrapfigure}{r}{1.5in}
+\includegraphics[width=1.5in]{recorderstatus.pdf}
+\vspace{-2em}\caption{\small Recorder Status LEDs}\vspace{-2em}
+\label{recorderstatus}
+\end{wrapfigure}
+
+The Note Recorder is always in one of four states, indicated the patterns at right:
+
+\begin{itemize}
+\item Stopped
+\item Playing
+\item Counting off beats prior to Recording
+\item Recording
+\end{itemize}
+
+When you enter the Note Recorder, the state is initially Stopped.  To start playing a song, press the middle button.  To stop playing (or stop recording), you also press the middle button.  To start recording a song, Long Press the middle button.  The recorder will count off four beats for you, then start recording.
+
+You can choose {\bf Repeat Mode} from a menu by Long-Pressing the Select (right) Button.  When in repeat mode, the recorder repeats the song it is playing at the measure boundary after it has finished playing the song.  Repeat mode also toggles an LED (see Figure \ref{recorder}).
+
+You can save your recorded song by pressing the Select Button.  Gizmo will ask you to select a slot to save in, then it will exit the Recorder.
+
+You can also choose the Options Menu from inside the Note Recorder: it's part of the menu brought up by Long-Pressing the Select button.  The Recorder responds to a number of options:
+
+\vspace{1em}
+\begin{tabular}{lll}
+Tempo& 		In MIDI&		Transpose	\\
+Click& 			Out MIDI& 	Volume	\\
+MIDI Clock& 			Control MIDI	\\
+\end{tabular}
+
+Of particular use to you will be Tempo and Click.  Click gives you an audible click track: and the count-in is also clicked for you.
+
+\paragraph{Quantization}
+
+The Recorder presently quantizes to each MIDI Clock pulse, that is, 1/24 of a quarter note.
+
 \section {The MIDI Gauge}
 
 \begin{wrapfigure}{r}{3in}
@@ -331,11 +387,12 @@ MIDI messages are displayed as follows:  Some MIDI messages are extremely freque
 
 \begin{itemize}
 \item {\bf Pitch Bend}\quad The 14-bit value is displayed
+\item {\bf Channel Aftertouch}.  ``AT'' is displayed, followed by the value.
 \item {\bf Program Change}\quad ``PC'' is displayed, followed by the value.
-\item {\bf Channel Control}\quad Text is scrolled indicating CC, the parameter, and the value.
-\item {\bf NRPN}\quad Text is scrolled indicating NRPN, the parameter, and the value (both MSB-only, and MSB+LSB values), plus whether the value was set, incremented, or decremented.
-\item {\bf RPN}\quad Text is scrolled indicating NRPN, the parameter, and the value (both MSB-only, and MSB+LSB values), plus whether the value was set, incremented, or decremented.
-\item {\bf System Exclusive}\quad ``SYSX'' is displayed.
+\item {\bf Channel Control (CC)}\quad The value is shown first, then text is scrolled with the value, then ``CC'', then the parameter.
+\item {\bf Registered Parameter Number (RPN)}\quad The value (7-bit MSB only) is shown first, then text is scrolled with the value (MSB), then ``RPN'', then the parameter (14-bit), then in parentheses the 14-bit (MSB+LSB) value.
+\item {\bf Non-Registered Parameter Number (NRPN)}\quad The value (7-bit MSB only) is shown first, then text is scrolled with the value (MSB), then ``NRPN'', then the parameter (14-bit), then in parentheses the 14-bit (MSB+LSB) value.
+\item {\bf System Exclusive}\quad ``SYSX'' is displayed.\footnote{Note that the version of the MIDI library on which Gizmo relies presently doesn't handle large System Exclusive messages well.}
 \item {\bf Song Position}\quad ``SPOS'' is displayed.
 \item {\bf Song Select}\quad ``SSEL'' is displayed.
 \item {\bf Tune Request}\quad ``TREQ'' is displayed.
@@ -351,7 +408,6 @@ MIDI messages are displayed as follows:  Some MIDI messages are extremely freque
 \item {\bf Active Sensing}
 \item {\bf MIDI Time Code}
 \item {\bf MIDI Clock}
-\item {\bf Channel Aftertouch}.  This one is special.  If you press the {\bf middle button}, you can toggle whether aftertouch is displayed as a simple toggled LED, or if the display should say ``AT'', followed by the aftertouch value.
 \end{itemize}
 
 \begin{wrapfigure}{r}{3in}
@@ -363,8 +419,6 @@ MIDI messages are displayed as follows:  Some MIDI messages are extremely freque
 \paragraph{Note Display}
 
 Note messages are displayed with both the {\bf pitch} (at left) and the {\bf velocity} (at right) of the note value, plus the particular kind of message in question: {\bf Note On, Note Off,} and {\bf Polyphonic Aftertouch}.
-
-Polyphonic Aftertouch is special.  If you press the {\bf middle button}, you can toggle whether aftertouch is displayed as a simple toggled LED (along with Channel Aftertouch), or if the aftertouch information should be displayed like the Note On/Off data.
 
 \begin{wrapfigure}{r}{1.6in}
 \vspace{1em}\includegraphics[width=1.6in]{notefunction.pdf}
@@ -579,24 +633,28 @@ The Controller allows you to assign to each of two buttons and two potentiometer
 		\begin{description}
 		\item{\bf \textit{Choose}}: 1...16 (higher values are brighter)
 		\end{description}
-	\item{\bf Menu Delay}\\
-		Gizmo often will display text (such as ``SWING'') by filling the screen with the first few letters (in this case, ``SWI''), then pausing for a certain delay, then scrolling through the whole word horizontally. You can specify how long that pause is here.
-		\begin{description}
-			\item{\bf \textit{Choose}}:
-			\begin{tabbing}
-			0\hspace{2em}\=Seconds\hspace{1in}\=(scroll immediately)\\
-			1/8\>Seconds\\
-			1/4\>Seconds\\
-			1/3\>Seconds\>\hspace{1.5in}\=\smash{\includegraphics[width=2in]{fractions.pdf}}\\
-			1/2\>Seconds\\
-			1\>Second\>(default)\\
-			2\>Seconds\\
-			3\>Seconds\\
-			4\>Seconds\\
-			8\>Seconds\\
-			\(\infty\)\>Seconds\>(never scroll)\>\smash{\includegraphics[width=0.48in]{infinity}}\\
-			\end{tabbing}
-		\end{description}
+		
+		
+%	\item{\bf Menu Delay}\\
+%		Gizmo often will display text (such as ``SWING'') by filling the screen with the first few letters (in this case, ``SWI''), then pausing for a certain delay, then scrolling through the whole word horizontally. You can specify how long that pause is here.
+%		\begin{description}
+%			\item{\bf \textit{Choose}}:
+%			\begin{tabbing}
+%			0\hspace{2em}\=Seconds\hspace{1in}\=(scroll immediately)\\
+%			1/8\>Seconds\\
+%			1/4\>Seconds\\
+%			1/3\>Seconds\>\hspace{1.5in}\=\smash{\includegraphics[width=2in]{fractions.pdf}}\\
+%			1/2\>Seconds\\
+%			1\>Second\>(default)\\
+%			2\>Seconds\\
+%			3\>Seconds\\
+%			4\>Seconds\\
+%			8\>Seconds\\
+%			\(\infty\)\>Seconds\>(never scroll)\>\smash{\includegraphics[width=0.48in]{infinity}}\\
+%			\end{tabbing}
+%		\end{description}
+
+
 %	\item{\bf Voltage} (or {\bf No Voltage)}\\
 %		Toggles whether Gizmo will send voltage information out via the optional DACs in response to notes played or to Controller potentiometers being turned.  
 	\item{\bf The About Screen}\\
@@ -604,11 +662,12 @@ The Controller allows you to assign to each of two buttons and two potentiometer
 	\end{description}
 
 	\subsection{Starting, Stopping, and Continuing the Clock}
-%		This isn't a menu option.  But if you are in the Options menu, you can control the clock:  pressing the Middle Button will toggle {\bf starting} or {\bf stopping} the clock (and send a MIDI Start or Stop message).  Long-pressing will toggle {\bf continuing} the clock (and send a MIDI Continue message).  The difference between Start and Continue is that Start implies resetting playing from the beginning, whereas Continue implies ``unpausing", or continuing from where we had last stopped.  
-%
-%		Pressing the Middle Button won't do anything if the MIDI Clock is set to {\bf Use} or {\bf Consume} (in which case the MIDI Clock is out of your control).  See the {\bf MIDI Clock} menu item earlier in this section.
-%		
-%		You can also start/stop/continue the clock via an NRPN message (see {\bf Control MIDI} earlier).
-		You can start/stop/continue the clock via an NRPN message (see {\bf Control MIDI} earlier).  Note that starting and stopping the clock doesn't mean that an application starts or stops playing.  However, the Start message {\it will} cause applications to reset themselves to the beginning when appropriate.   This means that if you want to start/stop/pause/continue the Step Sequencer (for example), you can do it as follows: first stop the clock, then start the sequencer playing.  Note that it won't play because there's no clock pulses.  But now you can start, stop, and pause/continue the sequencer by controlling the Start/Stop/Continue clock messages directly.
+		This isn't a menu option: but if you are in the Options menu, you can control the clock:  pressing the Middle Button will toggle {\bf starting} or {\bf stopping} the clock (and send a MIDI Start or Stop message).  Long-pressing will toggle {\bf continuing} the clock (and send a MIDI Continue message).  The difference between Start and Continue is that Start implies resetting playing from the beginning, whereas Continue implies ``unpausing", or continuing from where we had last stopped.  
+
+		Pressing the Middle Button won't do anything if the MIDI Clock is set to {\bf Use} or {\bf Consume} (in which case the MIDI Clock is out of your control).  See the {\bf MIDI Clock} menu item earlier in this section.
+		
+		You can also start/stop/continue the clock via an NRPN message (see {\bf Control MIDI} earlier).
+		
+		Note that starting and stopping the clock doesn't mean that an application starts or stops playing.  However, the Start message {\it will} cause applications to reset themselves to the beginning when appropriate.   This means that if you want to start/stop/pause/continue the Step Sequencer (for example), you can do it as follows: first stop the clock, then start the sequencer playing.  Note that it won't play because there's no clock pulses.  But now you can start, stop, and pause/continue the sequencer by controlling the Start/Stop/Continue clock messages directly.
 
 \end{document}
