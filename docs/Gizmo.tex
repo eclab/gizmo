@@ -28,7 +28,9 @@ Gizmo comes built-in with the following applications and other capabilities:
 \item {\bf Step Sequencer.}  Gizmo's step sequencer can be organized as 12 16-note tracks, 8 24-note tracks, or 6 32-note tracks.  Each note in a track can have its own unique pitch and velocity, or be a rest, or continue (lengthen, tie) the previous note.  You can also fix the velocity for an entire track, mute tracks, fade their volume, specify their independent output MIDI channels, specify the note value relative to the tempo (again ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), and the degree of swing (syncopation).    The step sequencer lets you edit in two modes: either by triggering independent steps like a classic drum sequencer, or by playing a sequence of notes.  The Arduino Uno can store up to two sequences in its slots (shared with the Recorder, discussed next).  The Mega can store up to nine sequences.  Gizmo will show and edit sequences on-screen.
 \item {\bf Recorder.}  The Arduino doesn't have a lot of memory, but we provide a note recorder which records and plays back up to 64 notes (pitch and velocity) played over 21 measures. The recorder has 16-voice polyphony.   It's enough to record a very short ditty.  You can also set the recorder to loop the recording while playing, and to provide a click track.  The Arduino Uno can store up to two recordings in its slots (shared with the Step Sequencer).  The Mega can store up to nine recordings.
 \item {\bf MIDI Gauge.}  The gauge will display all incoming MIDI information on one or all channels.  Note on, note off, and polyphonic aftertouch are shown with pitch and velocity (or pressure).  Channel aftertouch is shown with the appropriate pitch.  Program changes indicate the number.  Pitch bends indicate the value in full 14-bit.  Channel control, NRPN, and RPN messages display the number, value, and whether the value is being set, incremented, or decremented.  Sysex, song position, song select, tune request, start, continue, stop, and system reset are simply noted.  Rapid-fire MIDI signals such as MIDI clock, active sensing, and time code just turn on individual LEDs.
-\item {\bf MIDI Control Surface}.  Gizmo has two potentiometers and two buttons.  Each can be configured to send a unique Program Change, Control Change, NRPN, or RPN commands, or optionally to output voltage values via either of two DACs.  The potentiometers can only send MSB values.
+\item {\bf MIDI Control Surface}.  Gizmo has two potentiometers and two buttons.  Each can be configured to send a unique Program Change, Control Change, NRPN, or RPN commands, or (on the Mega) output voltage values via either of two DACs.  The potentiometers can only send MSB values.
+
+\item {\bf \textit{Mega Only:}\quad Keyboard Splitting}  You can split incoming MIDI notes by pitch and route them to different MIDI out channels.
 \end{itemize}
 
 \paragraph{Other Cool Stuff}
@@ -48,7 +50,11 @@ Gizmo applications can also be set with a {\it note value} (or {\it note speed})
 
 \item {\bf Bypass.}  You can quickly put Gizmo in Bypass mode, to pass through all MIDI signals and generate no new ones.  Putting Gizmo in Bypass mode will also send an All Notes Off message, so toggling Bypass is also a useful way to hush your synthesizer.
 
-\item {\bf Screen Brightness and Menu Delay}  You can change the screen brightness.  Also, many of Gizmo's menus display the first few letters of a menu item, then pause for some interval of time before they start scrolling the full item.  You can change this interval.
+\item {\bf Screen Brightness and Menu Delay}  You can change the screen brightness.  
+
+\item {\bf \textit{Mega Only}\quad Menu Delay}  Many of Gizmo's menus display the first few letters of a menu item, then pause for some interval of time before they start scrolling the full item.  You can change this interval.
+
+\item {\bf \textit{Mega Only}\quad Control Voltage}  You can configure Gizmo to optionally output voltage values from 0--5V, through two DACs, in response to notes being played.    One voltage output is in response to the note pitch, and the other is in response to the note velocity.  This would allow you to control non-MIDI devices which respond instead to voltage.
 
 \end{itemize} 
 
@@ -57,11 +63,8 @@ Gizmo applications can also be set with a {\it note value} (or {\it note speed})
 I have written but not tested some additional code.  It won't appear on the Uno version (not enough space) but may show up on the Mega version.  This stuff includes:
 
 \begin{itemize}
-\item {\bf Control Voltage}  You can configure Gizmo to optionally output voltage values from 0--5V, through two DACs, in response to notes being played.    One voltage output is in response to the note pitch, and the other is in response to the note velocity.  This would allow you to control non-MIDI devices which respond instead to voltage.
 
 \item {\bf Per-MIDI Device Options}  There will be an area for specific kinds of MIDI devices.  For example, I have written code to convert NRPN values into the unusual sysex messages required by the Kawai K4 Synthesizer so it can be manipulated easily via a standard MIDI controller.
-
-\item {\bf Keyboard Splitting}  You can split incoming MIDI notes by pitch and route them to different MIDI out channels.
 
 \end{itemize}
 
@@ -146,17 +149,11 @@ This procedure initializes the memory, options, and files in the device.  Now yo
 
 Gizmo has a modest interface: a 16x8 LED display, two additional on-board LEDs (red and green), three buttons, and two potentiometers (dials): but it strives hard to make good use of these.  
 
-Gizmo's top-level interface layout is a menu hierarchy.  You select menu items, which may take you deeper into the hierarchy, or you can go back up towards the top of the hierarchy.  The top level menu chooses between different {\bf applications}.  Once you have entered an application, its {\bf application number} is displayed in the {\bf current application region} (see Figure \ref{HighLevelGizmoLayout}).
+Gizmo's top-level interface layout is a menu hierarchy.  You select menu items, which may take you deeper into the hierarchy, or you can go back up towards the top of the hierarchy.  The top level menu chooses between different {\bf applications}.  Once you have entered an application, its {\bf application number} is displayed in the {\bf current application region} (see Figure~\ref{HighLevelGizmoLayout}).
 
-\begin{wrapfigure}{r}{1.6in}
-\includegraphics[width=1.6in]{Application.pdf}
-\vspace{-2em}\caption{\small Application Values}
-\label{applicationvalues}
-\end{wrapfigure}
+The current application LEDs light up right-to-left in a certain pattern with increasing application numbers, as shown in Figure~\ref{applicationvalues}.  Gizmo's interface can presently support up to eleven top-level applications.  
 
-The current application LEDs light up right-to-left in a certain pattern with increasing application numbers, as shown in Figure \ref{applicationvalues}.  Gizmo's interface can presently support up to eleven top-level applications.  
-
-Also shown in Figure \ref{HighLevelGizmoLayout} are the {\bf Beat/Bypass} light and the {\bf Note Pulse} light.  The Beat/Bypass turns on and off every {\it beat} (quarter note).  This shows the current {\bf tempo}.\footnote{A beat occurs every 24 {\it pulses} of a MIDI Clock or Gizmo's internal clock.}  The Note Pulse light turns on and off every {\it note pulse}: this is the speed you have chosen for the arpeggiator, step sequencer, etc.  Note pulses are defined in terms of note value: for example, if the note pulse is presently in sixteenth notes, then this light will turn on and off four times faster than the beat light, which is in quarter notes. The note pulse light is also affected by the degree of swing (syncopation) you have defined.
+Also shown in Figure~\ref{HighLevelGizmoLayout} are the {\bf Beat/Bypass} light and the {\bf Note Pulse} light.  The Beat/Bypass turns on and off every {\it beat} (quarter note).  This shows the current {\bf tempo}.\footnote{A beat occurs every 24 {\it pulses} of a MIDI Clock or Gizmo's internal clock.}  The Note Pulse light turns on and off every {\it note pulse}: this is the speed you have chosen for the arpeggiator, step sequencer, etc.  Note pulses are defined in terms of note value: for example, if the note pulse is presently in sixteenth notes, then this light will turn on and off four times faster than the beat light, which is in quarter notes. The note pulse light is also affected by the degree of swing (syncopation) you have defined.
 
 The reset of the screen is given over to the application.  In many cases an application will display text and other data in the {\bf Application Display} region, while lighting up certain status LEDs in the {\bf Application Footer}.
 
@@ -164,11 +161,17 @@ You wend your way through menus, choose applications, and manipulate them using 
 
 \paragraph{Buttons}  The left button is called the {\bf back button}.  The right button is called the {\bf select button}.  The center button is called (unsurprisingly) the {\bf middle button}.   The buttons respond to being {\bf pressed} and immediately released, and also respond to {\bf long presses}: holding a button down for a long time (presently one-half second) and then releasing it. 
 
+\begin{wrapfigure}{r}{1.6in}
+\includegraphics[width=1.6in]{Application.pdf}
+\vspace{-2em}\caption{\small Application Values}\vspace{-4em}
+\label{applicationvalues}
+\end{wrapfigure}
+
 Buttons do different things.  Here are certain common items:
 
 \begin{itemize}
 \item {\bf Pressing the Back Button}\quad This is the ``escape'' or ``cancel'' button: it {\bf always goes back up the menu hierarchy.}  Thus you can't ever get lost\,---\,just keep pressing the Back button and you'll eventually find yourself at the root menu.
-\item {\bf Long-Pressing the Back Button}\quad This toggles {\bf bypass mode}, where Gizmo tries hard to act as if it's just a coupler between its input and output MIDI wires.  In bypass mode, the {\bf Beat/Bypass} light (Figure \ref{HighLevelGizmoLayout}) will stop beating and instead will flash rapidly.
+\item {\bf Long-Pressing the Back Button}\quad This toggles {\bf bypass mode}, where Gizmo tries hard to act as if it's just a coupler between its input and output MIDI wires.  In bypass mode, the {\bf Beat/Bypass} light (Figure~\ref{HighLevelGizmoLayout}) will stop beating and instead will flash rapidly.
 \item {\bf Pressing the Select Button}\quad If you're being presented with a menu of options, or a number to choose, or a glyph to choose, the Select button will select the currently-displayed option.  In some applications (such as the Step Sequencer, Arpeggiator, and Recorder) the Select Button is assigned other tasks.
 \end{itemize}
 
@@ -194,6 +197,7 @@ Gizmo must be initialized before it can be used.  You can also do a factory rese
 
 Gizmo will reset all of its flash RAM and reboot.  This means that all options will be set to their default state, and all file storage (including arpeggios) will be emptied.
 
+\clearpage
 \section{Starting Gizmo}
 
 \begin{wrapfigure}{r}{2in}
@@ -218,7 +222,7 @@ The arpeggiator allows you to play different kinds of arpeggios, and also to cre
 
 An arpeggio is a pattern for repeatedly playing the notes in a chord.  When you hold down a chord on the keyboard, the arpeggiator uses this pattern to play the notes, typically one at a time, according to the pattern selected.  Patterns do not specify exact notes, but rather note orderings.  For example, an arpeggio might be defined as 1, 2, 2, 3, 4, 2, 3: if 1 is set to be the root (lowest) note of your chord, then if you play a C7 chord (C E G B$\flat$), then the arpeggiator will repeat the sequence C E E G B$\flat$ E G.  This pattern will repeat as long as you hold down the keys in the chord.  
 
-Alternatively if you toggle the {\bf latch}, then the playing will continue after you have released the keys, and will only shift to a new chord when you release all notes and then hold down an entirely new chord.  Latch mode is toggled by pressing the Middle button while playing an arpeggio.  When Latch mode is engaged, an LED will light as shown in Figure \ref{arpeggiator}.
+Alternatively if you toggle the {\bf latch}, then the playing will continue after you have released the keys, and will only shift to a new chord when you release all notes and then hold down an entirely new chord.  Latch mode is toggled by pressing the Middle button while playing an arpeggio.  When Latch mode is engaged, an LED will light as shown in Figure~\ref{arpeggiator}.
 
 \begin{wrapfigure}{r}{2.7in}
 \begin{center}
@@ -269,7 +273,7 @@ The first question you will be asked is {\bf ROOT}: the Arpeggiator is asking yo
 
 After you have entered the root, the Arpeggiator will wait for you to start playing notes.  You can enter a sequence of up to 32 notes, including 15 unique notes.  You can also enter rests by pressing the Middle button.  If you enter more than 15 unique notes, or more than 32 notes in total, the Arpeggiator will simply refuse to accept the next note.
 
-As you enter notes, they are displayed in the left half of the LED, and the latest note pitch is displayed in the right half. Figure \ref{arpeggioediting} shows different arpeggio patterns.  If you have eight or fewer unique notes in your pattern, then they will be displayed in {\it sparse mode} as shown at right.  If you have over eight notes, they will be displayed in {\it dense mode} in order to show all of the notes.  The LEDs don't show the notes per se, but rather the consecutive numbers that the notes represent.  For example, the ascending notes shown at right could be C, D, E, F, G, A, B, C, or they could be C, C\(\sharp\), D, D\(\sharp\), E, F, F\(\sharp\), B.
+As you enter notes, they are displayed in the left half of the LED, and the latest note pitch is displayed in the right half. Figure~\ref{arpeggioediting} shows different arpeggio patterns.  If you have eight or fewer unique notes in your pattern, then they will be displayed in {\it sparse mode} as shown at right.  If you have over eight notes, they will be displayed in {\it dense mode} in order to show all of the notes.  The LEDs don't show the notes per se, but rather the consecutive numbers that the notes represent.  For example, the ascending notes shown at right could be C, D, E, F, G, A, B, C, or they could be C, C\(\sharp\), D, D\(\sharp\), E, F, F\(\sharp\), B.
 
 If you don't like the latest portion of your arpeggio, you can scroll the cursor back to an earlier section by turning the right knob.  Then if you start playing, the later notes will be discarded and the arpeggio pattern will continue from where the cursor was.  You can also scroll to view your past notes, then scroll all the way back to continue.
 
@@ -289,7 +293,7 @@ Also, because they are fixed in size, user-created arpeggios do not respond to t
 
 \paragraph{More Arpeggiator Options}
 
-Beyond Octaves, the arpeggio responds to a number of options in the Options Menu, and indeed you can call up the Options Menu from within the arpeggiator play screen\,---\,just turn the left knob to scroll pass the Octaves menu option, and you'll see Options.  Select that and you're in the Option menu.\footnote{Recall that the Options Menu is for options shared among several applications: that's why it's a separate menu.  That and code space issues.}
+Beyond Octaves, the arpeggiator responds to a number of options in the Options Menu, and indeed you can call up the Options Menu from within the arpeggiator play screen\,---\,just turn the left knob to scroll pass the Octaves menu option, and you'll see Options.  Select that and you're in the Option menu.\footnote{Recall that the Options Menu is for options shared among several applications: that's why it's a separate menu.  That and code space issues.}
 
 See Section \ref{options} for detailed information on each of the options.  The Arpeggiator responds to the following options:
 
@@ -303,7 +307,90 @@ Swing& 			Control MIDI&	Length	&\\
 \vspace{1em}
 Of particular interest to you may be Length and Tempo.
 
+\begin{wrapfigure}{r}{3in}
+\vspace{-4em}\includegraphics[width=3in]{stepsequencer}
+\vspace{-2em}\caption{\small Step Sequencer Display}\vspace{-1em}
+\label{stepsequencer}
+\end{wrapfigure}
+
 \section {The Step Sequencer}
+
+The Step Sequencer makes it easy to create 16-note, 24-note, or 32-note multitrack loops common on devices such as drum machines.  16-note loops have up to twelve tracks.  24-note loops have up to eight.  32-note loops have up to six tracks.
+
+\begin{wrapfigure}{r}{1in}
+\vspace{-1.5em}\includegraphics[width=1in]{none.pdf}
+\vspace{-2em}\caption{\small None}\vspace{-1em}
+\label{none}
+\end{wrapfigure}
+
+When you choose the Step Sequencer from the root menu, you will be asked to load a sequence from a slot.  You can do this, or you can create a new empty sequence by choosing ``-~-~-~-'' (meaning {\it none}).  Slots are displayed by number, plus an ``R'' (for Recorder) or ``S'' (for Step Sequencer) if the slot is filled with a file by one of the two applications.  This letter blinks if the file isn't the type of your current application.
+
+If you have chosen {\it none}, or have chosen an empty slot or one presently filled by the Recorder, you have to initialize the slot first: you'll be asked to choose between 16, 24, or 32 notes per track. After this you are taken to the main Step Sequencer display.  
+
+Figure~\ref{stepsequencer} shows the general step sequencer display structure.  The {\it Tracks} region is where sequencer tracks are displayed and edited.  The {\it Track Number} area tells you the number of the currently-edited track.  Figure~\ref{tracknumber} explains how to interpret this.  The {\it Stopped} LED tells you if the step sequencer is currently stopped (or playing).  The {\it Track Uses a Default Velocity} LED tell you if all notes in the current track are fixed to the same velocity, or permitted to use different velocities.  The {\it Track Uses a Fader} LED is lit when the pre-track fader (volume) is set to something other than maximum volume for the current track.  Finally, the {\it MIDI Out Channel for Track} tells you what channel the current track is playing.  The patterns for the MIDI Out Channel for Track are the same as those in Figure~\ref{midichannelvalues}, except that MIDI Out does not support ALL (OMNI).
+
+\clearpage
+
+\begin{wrapfigure}{r}{1.8in}
+\includegraphics[width=1.8in]{track.pdf}
+\vspace{-2em}\caption{\small Track Numbers}\vspace{-2em}
+\label{tracknumber}
+\end{wrapfigure}
+
+Each track has a blinking {\it edit cursor} which determines, normally, where notes are entered if you play them.  The location of this cursor is determined by the potentiometers.  You select your current track by turning the left knob.  In a given track, you choose the current note position by turning the right knob.  The Tracks region also displays a blinking vertical set of LEDs which indicate which notes in the tracks the Step Sequencer is currently playing.  As the Step Sequencer plays notes, this vertical group heads to the right, eventually wrapping around.  This is the {\it play position cursor}.
+
+Each track takes up one or two rows in the Tracks area: 16-note tracks take a single row, and 24-note and 32-note tracks take two rows.    There can be up to twelve tracks, yet the tracks display region is only six LEDs high.  This of course means that  the Tracks region scrolls as you turn the left knob.
+
+You enter notes by moving the edit cursor to the a location, then pressing keys.  You can also press the Middle Button to enter a rest, or Long Press the Middle Button to enter a {\it continuation}.  A continuation just means ``keep playing the previous note'': it essentially lengthens the previous note.  You can enter multiple continuations in series to make a note as long as you like.
+
+Pressing the Select button will toggle whether the Step Sequencer is playing.  When you start playing the Step Sequencer, it waits for the clock to reach a measure boundary before beginning.  Furthermore, even if you start playing the Step Sequencer, if the clock isn't running it won't play at all.
+
+\begin{wrapfigure}{r}{1in}
+\vspace{-3em}\includegraphics[width=1in]{playpositionmode}
+\vspace{-1em}
+\caption{\small Play Position Mode Cursor.  The current track is marked by the two dots.}\vspace{-2em}
+\label{playpositionmode}
+\end{wrapfigure}
+
+\paragraph{Play Position Mode}
+
+If you turn the right knob fully to the left, you will find that the cursor scrolls right off the left side of the screen.  At this point you are in {\bf play position mode}.  Here, if you press a key, it is entered at the play position cursor.
+
+In play position mode, the function of the Middle Button changes.  Now if you press the Middle Button, it will toggle muting the current track.  You can tell a track is muted because the LEDs at each end of the track are blinking.  Additionally, if you Long Press the Middle Button, it will erase all the notes on the current track (but not change its settings).
+
+You can tell you're in play position mode because the play position cursor has changed to include two dots which indicate the current track, as shown in Figure~\ref{playpositionmode}.
+
+Play position mode isn't all that easy to enter notes, particularly if there is any degree of swing: I'd stick with the normal mode.  You can get out of play position mode just by turning the right knob so that the edit cursor is once again on-screen.
+
+\paragraph{Menu Options}
+
+If you Long Press the Select button, you'll call up the Step Sequencer's menu.  The Step Sequencer has a number of options:
+
+\begin{itemize}
+\item {\bf Reset Track}\quad This wipes out and resets the track.  Unlike Long-Pressing the Middle Button while in Play Position mode, this doesn't just clear the track of notes: it also resets all of its settings to their defaults.
+\item {\bf Length}\quad This specifies the note length of notes in the track, as a percentage (0 is fully staccato and 100 is fully legato).   You can choose numerical values, or choose ``DFLT'', which tells the Step Sequencer to use the default note length specified in the Options menu (see Section \ref{options}).
+\item {\bf Out MIDI (Track)}\quad This specifies the MIDI Out Channel for notes in the track,    You can choose a value 1...16, or choose ``DFLT'', which tells the Step Sequencer to use the default MIDI Out Channel specified in the Options menu (see Section \ref{options}).
+\item {\bf Velocity}\quad This lets you specify a velocity that {\it all} notes in the track will use (as a value 0...127).  If you would instead prefer that each note in the track use its own independent velocity as you had entered them, you can choose ``DFLT''\footnote{Yes, I realize that ``default'' isn't the best term here.}
+\item {\bf Fader}\quad This lets you specify a volume modifier which is multiplied against the velocities of the notes in the track.  Possible values are 0...127, where 0 completely hushes the notes, and 127 lets them play at their specified velocities. 
+\item {\bf No Echo} or {\bf Echo} \quad This toggles {\it no-echo mode}.  Normally when you enter a note, it's automatically played so you get some feedback.  But in some circumstances (such as when you enter notes from a synthesizer's keyboard, but are having the sequencer play sequences out to that same synthesizer) this isn't desirable.  In no-echo mode, you can prevent the note from being automatically played.
+\item {\bf Save} \quad This saves the sequence. You then choose the slot to save in.  Slots are again displayed by number, plus an ``R'' (for Recorder) or ``S'' (for Step Sequencer).
+\item {\bf Options} \quad This brings up the Options menu.
+\end{itemize}
+
+\paragraph{More Step Sequencer Options}
+
+Beyond the settings above, the step sequencer responds to a number of options in the Options Menu.  See Section \ref{options} for detailed information on each of the options.  The Step Sequencer responds to the following options:
+
+\vspace{1em}
+\begin{tabular}{llll}
+Tempo& 			In MIDI&		Transpose&	MIDI Clock\\
+Note Speed& 		Out MIDI& 	Volume	&	Click\\
+Swing& 			Control MIDI&	Length	&\\
+\end{tabular}
+
+\vspace{1em}
+Of particular use are Tempo, Note Speed, Swing, and especially Click.
+
 
 \begin{wrapfigure}{r}{3in}
 \vspace{-4em}\includegraphics[width=3in]{recorder.pdf}
@@ -313,21 +400,23 @@ Of particular interest to you may be Length and Tempo.
 
 \section {The Note Recorder}
 
-The Note Recorder lets you record and play back approximately 64 notes\footnote{Why {\it approximately} 64? Because the recorder is recording MIDI NOTE ON and NOTE OFF messages.  If you provide 64 pairs of these messages, it'll take up exactly all the available memory.  But you could plausibly send a few more NOTE ON than NOTE OFF messages, in which case at the end of the recording all the remaining outstanding notes will be terminated.  This would allow you to squeeze in a few (perhaps 16) more notes in rare circumstances.  But I'd not rely on it.  BTW, if you looked carefully you would have noted that the Note Display in Figure \ref{recorder} has space for 16 more notes too.} spread over 21 measures.\footnote{Why 21?  Because notes are stored with a timestamp of eleven bits, resulting in \(2^11 = 2048\) timesteps.  A single timestep is 1/24 of a quarter note, and a quarter note is 1/4 of a measure, so we have \(2048 / 24 / 4 = 21 1/3\) measures.  We round that down to 21.}  You can save up to two recordings on an Arduino Uno and nine recordings on a Mega.
+The Note Recorder lets you record and play back approximately 64 notes\footnote{Why {\it approximately} 64? Because the recorder is recording MIDI NOTE ON and NOTE OFF messages.  If you provide 64 pairs of these messages, it'll take up exactly all the available memory.  But you could plausibly send a few more NOTE ON than NOTE OFF messages, in which case at the end of the recording all the remaining outstanding notes will be terminated.  This would allow you to squeeze in a few (perhaps 16) more notes in rare circumstances.  But I'd not rely on it.  BTW, if you looked carefully you would have noted that the Note Display in Figure~\ref{recorder} has space for 16 more notes too.} spread over 21 measures.\footnote{Why 21?  Because notes are stored with a timestamp of eleven bits, resulting in \(2^11 = 2048\) timesteps.  A single timestep is 1/24 of a quarter note, and a quarter note is 1/4 of a measure, so we have \(2048 / 24 / 4 = 21 1/3\) measures.  We round that down to 21.}  You can save up to two recordings on an Arduino Uno and nine recordings on a Mega.
 
 The Note Recorder screen has two major parts.  The {\it Note Display} section indicates the current note number being played (and hints at the remaining notes available).  The {\it Measure Display} section indicates the current measure being played (and again hints at the remaining measures available).  When recording a song, each of these sections will contain a single lit LED indicating the current note or measure position.  When playing a song, the Note Display and Measure Display will each also contain an additional lit LED indicating the position of the end of the song.
 
 \begin{wrapfigure}{r}{1in}
 \vspace{-1.5em}\includegraphics[width=1in]{none.pdf}
-\vspace{-2em}\caption{\small None}\vspace{-2em}
+\vspace{-2em}\caption{\small None}\vspace{-1em}
 \label{none}
 \end{wrapfigure}
 
-When you choose the Note Recorder from the root menu, you will be asked to either load a recording from a slot.  You can do this, or you can create a new empty recording by choosing ``-~-~-~-'' (meaning {\it none}).  After this you will enter the Note Recorder.
+When you choose the Note Recorder from the root menu, you will be asked to load a recording from a slot.  You can do this, or you can create a new empty recording by choosing ``-~-~-~-'' (meaning {\it none}).  Slots are displayed by number, plus an ``R'' (for Recorder) or ``S'' (for Step Sequencer) if the slot is filled with a file by one of the two applications.  This letter blinks if the file isn't the type of your current application.
+
+After this you will enter the Note Recorder.
 
 \begin{wrapfigure}{r}{1.5in}
 \includegraphics[width=1.5in]{recorderstatus.pdf}
-\vspace{-2em}\caption{\small Recorder Status LEDs}\vspace{-2em}
+\vspace{-2em}\caption{\small Recorder Status LEDs}\vspace{-4em}
 \label{recorderstatus}
 \end{wrapfigure}
 
@@ -342,9 +431,9 @@ The Note Recorder is always in one of four states, indicated the patterns at rig
 
 When you enter the Note Recorder, the state is initially Stopped.  To start playing a song, press the middle button.  To stop playing (or stop recording), you also press the middle button.  To start recording a song, Long Press the middle button.  The recorder will count off four beats for you, then start recording.
 
-You can choose {\bf Repeat Mode} from a menu by Long-Pressing the Select (right) Button.  When in repeat mode, the recorder repeats the song it is playing at the measure boundary after it has finished playing the song.  Repeat mode also toggles an LED (see Figure \ref{recorder}).
+You can choose {\bf Repeat Mode} from a menu by Long-Pressing the Select (right) Button.  When in repeat mode, the recorder repeats the song it is playing at the measure boundary after it has finished playing the song.  Repeat mode also toggles an LED (see Figure~\ref{recorder}).
 
-You can save your recorded song by pressing the Select Button.  Gizmo will ask you to select a slot to save in, then it will exit the Recorder.
+You can save your recorded song by pressing the Select Button.  Gizmo will ask you to select a slot to save in, then it will exit the Recorder.  Slots are again displayed by number, plus an ``R'' (for Recorder) or ``S'' (for Step Sequencer).
 
 \paragraph{More Recorder Options}  
 You can also choose the Options Menu from inside the Note Recorder: it's part of the menu brought up by Long-Pressing the Select button.  The Recorder responds to a number of options:
@@ -373,16 +462,17 @@ The Recorder records nothing but MIDI NOTE ON and NOTE OFF messages.  It present
 
 The MIDI gauge listens to incoming MIDI messages and displays them on-screen.  This only occurs if the MIDI IN channel is something other than NO CHANNEL (See {\bf Options\(\boldsymbol\rightarrow\) In MIDI}, in Section \ref{options}).
 
+There are three kinds of MIDI messages for purposes of display.  {\it General} messages take up the whole screen with a single message.  {\it Note} messages split the screen between pitch and velocity of the given note (on, off, polyphonic aftertouch).  Finally {\it Frequent} messages are simply displayed by lighting a specific LED to indicate their presence. 
+
+
+
+
+
 \begin{wrapfigure}{r}{2in}
-\vspace{-23em}\includegraphics[width=2in]{midichannel.pdf}
+\includegraphics[width=2in]{midichannel.pdf}
 \vspace{-2em}\caption{\small MIDI Channel Values}\vspace{-2em}
+\label{midichannelvalues}
 \end{wrapfigure}
-
-
-MIDI messages are displayed as follows:  Some MIDI messages are extremely frequent and essentially impossible to display usefully.  
-
-
-
 
 
 \paragraph{General Gauge Display}  These are simple displays which take up the entire screen.
@@ -404,7 +494,38 @@ MIDI messages are displayed as follows:  Some MIDI messages are extremely freque
 \item {\bf System Reset}\quad ``RSET'' is displayed.
 \end{itemize}
 
-\paragraph{Frequent MIDI Display}  These are messages which are too fast to display usefully in most cases.  In each case, a specific LED will be toggled (see Figure \ref{generalgauge}).
+\begin{wrapfigure}{r}{3in}
+\vspace{-5em}\includegraphics[width=3in]{NoteGauge.pdf}
+\vspace{-2em}\caption{\small Note Gauge Layout}\vspace{-1em}
+\label{notegauge}
+\end{wrapfigure}
+
+
+\paragraph{Note Display}
+
+Note messages are displayed with both the {\bf pitch} (at left) and the {\bf velocity} (at right) of the note value, plus the particular kind of message in question: {\bf Note On, Note Off,} and {\bf Polyphonic Aftertouch}.
+
+How do you distinguish between a Note On, Note Off, or Polyphonic Aftertouch message?  Figure~\ref{notegauge} shows a four-LED region, in orange, where a certain pattern is displayed to indicate this.  The patterns are shown in Figure~\ref{notefunction}.
+
+\begin{wrapfigure}{r}{1.6in}
+\vspace{-1em}\includegraphics[width=1.6in]{notefunction.pdf}
+\vspace{-2em}\caption{\small Note Function}\vspace{-1em}
+\label{notefunction}
+\end{wrapfigure}
+
+
+Note pitches are displayed by showing the note (such as B$\flat$), with the octave number directly below it.  MIDI has eleven different octaves (0--10): Middle C is the bottom note of octave 5.  The octave number is displayed as shown in Figure~\ref{octave}.  As usual, the MIDI In Channel is shown below that.
+
+\clearpage
+
+
+\begin{wrapfigure}{r}{1.8in}
+\includegraphics[width=1.8in]{octave.pdf}
+\vspace{-2em}\caption{\small Octave Values}\vspace{-6em}
+\label{octave}
+\end{wrapfigure}
+
+\paragraph{Frequent MIDI Display}  These are messages which are too fast to display usefully in most cases.  In each case, a specific LED will be toggled (see Figure~\ref{generalgauge}).
 
 \paragraph{}\vspace{-2em}\begin{itemize}
 \item {\bf Active Sensing}
@@ -412,31 +533,6 @@ MIDI messages are displayed as follows:  Some MIDI messages are extremely freque
 \item {\bf MIDI Clock}
 \end{itemize}
 
-\begin{wrapfigure}{r}{3in}
-\vspace{-1.5em}\includegraphics[width=3in]{NoteGauge.pdf}
-\vspace{-2em}\caption{\small Note Gauge Layout}\vspace{-1em}
-\label{notegauge}
-\end{wrapfigure}
-
-\paragraph{Note Display}
-
-Note messages are displayed with both the {\bf pitch} (at left) and the {\bf velocity} (at right) of the note value, plus the particular kind of message in question: {\bf Note On, Note Off,} and {\bf Polyphonic Aftertouch}.
-
-\begin{wrapfigure}{r}{1.6in}
-\vspace{1em}\includegraphics[width=1.6in]{notefunction.pdf}
-\vspace{-2em}\caption{\small Note Function}\vspace{-1em}
-\label{notefunction}
-\end{wrapfigure}
-
-How do you distinguish between a Note On, Note Off, or Polyphonic Aftertouch message?  Figure \ref{notegauge} shows a four-LED region, in orange, where a certain pattern is displayed to indicate this.  The patterns are shown in Figure \ref{notefunction}/
-
-\begin{wrapfigure}{r}{1.8in}
-\vspace{1em}\includegraphics[width=1.8in]{octave.pdf}
-\vspace{-2em}\caption{\small Octave Values}\vspace{-1em}
-\label{octave}
-\end{wrapfigure}
-
-Note pitches are displayed by showing the note (such as B$\flat$), with the octave number directly below it.  MIDI has eleven different octaves (0--10): Middle C is the bottom note of octave 5.  The octave number is displayed as shown in Figure \ref{octave}.  As usual, the MIDI In Channel is shown below that.
 
 
 \section {The Controller}
@@ -453,42 +549,23 @@ The Controller allows you to assign to each of two buttons and two potentiometer
 	
 	Note that for the time being the controller will only send (MSB) values between 0...127.  It cannot send 14-bit NRPN and RPN values.  This is largely a limitation of the resolution of the potentiometers.
 
-	\item{\bf Left Knob}
+	\item{\bf Left Knob} and {\bf Right Knob}
 	
-	This submenu lets you select your control type and parameter number for the left potentiometer.
+	These submenus let you select your control type and parameter number for the left and right potentiometers.
 	
-	You are first given the option of what kind of {\bf control type} (OFF, CC, NRPN, RPN, PC) you would like to manipulate with the left knob.  If OFF, then turning the knob will not do anything.
+	In each, you are first given the option of what kind of {\bf control type} (OFF, CC, NRPN, RPN, PC) you would like to manipulate with the left knob.  If OFF, then turning the knob will not do anything.
 
 	After you have selected a control type, if you have selected CC, NRPN, or RPN, you will be then asked to select a {\bf controller parameter number}.  (Otherwise ,for PC and OFF, you will go back to the top-level Controller Menu).  CC parameter numbers may range 0 ... 119.  NRPN and RPN parameter numbers may range 0 ... 16383. When you have completed this, you will be sent back to the top-level Controller menu.
 
-	\item{\bf Right Knob}
+	\item{\bf Middle Button} and {\bf Select Button}
 	
-	This submenu lets you select your control type and parameter number for the right potentiometer.
+	Thees submenus let you select your control type, parameter number, and on/off values for the middle and select buttons.
 	
-	You are first given the option of what kind of {\bf control type} (OFF, CC, NRPN, RPN, PC) you would like to manipulate with the right knob.  If OFF, then turning the knob will not do anything.
-
-	After you have selected a control type, if you have selected CC, NRPN, or RPN, you will be then asked to select a {\bf controller parameter number}.  (Otherwise ,for PC and OFF, you will go back to the top-level Controller Menu).  CC parameter numbers may range 0 ... 119.  NRPN and RPN parameter numbers may range 0 ... 16383. When you have completed this, you will be sent back to the top-level Controller menu.
-	
-	\item{\bf Middle Button}
-	
-	This submenu lets you select your control type, parameter number, and on/off values for the middle button.
-	
-	You are first given the option of what kind of {\bf control type} (OFF, CC, NRPN, RPN, PC) you would like to manipulate with the middle button.  If OFF, then pressing the button will not do anything.
+	In each, you are first given the option of what kind of {\bf control type} (OFF, CC, NRPN, RPN, PC) you would like to manipulate with the middle button.  If OFF, then pressing the button will not do anything.
 
 	After you have selected a control type, if you have selected CC, NRPN, or RPN, you will be then asked to select a {\bf controller parameter number}.  (Otherwise ,for PC and OFF, you will go back to the top-level Controller Menu).  CC parameter numbers may range 0 ... 119.  NRPN and RPN parameter numbers may range 0 ... 16383.
 	
 	When you have completed this, you will be then asked to enter the value sent when the button is {\bf pressed}.  This value must be 0...127 (the Controller does not send 14-bit values).  Afterwards, you will be similarly asked to enter the value sent when the button is {\bf pressed again} (the buttons act as toggles).  When you have completed this, you will be sent back to the top-level Controller menu.
-
-	\item{\bf Select Button}
-	
-	This submenu lets you select your control type, parameter number, and on/off values for the select button.
-	
-	You are first given the option of what kind of {\bf control type} (OFF, CC, NRPN, RPN, PC) you would like to manipulate with the select button.  If OFF, then pressing the button will not do anything.
-
-	After you have selected a control type, if you have selected CC, NRPN, or RPN, you will be then asked to select a {\bf controller parameter number}.  (Otherwise ,for PC and OFF, you will go back to the top-level Controller Menu).  CC parameter numbers may range 0 ... 119.  NRPN and RPN parameter numbers may range 0 ... 16383.
-	
-	When you have completed this, you will be then asked to enter the value sent when the button is {\bf pressed}.  This value must be 0...127 (the Controller does not send 14-bit values).  Afterwards, you will be similarly asked to enter the value sent when the button is {\bf pressed again} (the buttons act as toggles).  When you have completed this, you will be sent back to the top-level Controller menu.
-
 	\end{description}
 
 \section {Options}
@@ -500,7 +577,7 @@ The Controller allows you to assign to each of two buttons and two potentiometer
 
 
 	\item{\bf Tempo}\\
-	If Gizmo is following its own internal clock rather than relying on an external MIDI clock , this specifies how fast a quarter note is.  If Gizmo is following an external MIDI clock, this value is ignored, and the MIDI clock's specification of a quarter note is used instead.  (See {\bf Options\(\boldsymbol\rightarrow\)MIDI~Clock}).  When not in {\bf Bypass Mode}, the tempo is shown by the pulsing on/off of the {\bf Beat / Bypass Light} (see Figure \ref{HighLevelGizmoLayout}). 
+	If Gizmo is following its own internal clock rather than relying on an external MIDI clock , this specifies how fast a quarter note is.  If Gizmo is following an external MIDI clock, this value is ignored, and the MIDI clock's specification of a quarter note is used instead.  (See {\bf Options\(\boldsymbol\rightarrow\)MIDI~Clock}).  When not in {\bf Bypass Mode}, the tempo is shown by the pulsing on/off of the {\bf Beat / Bypass Light} (see Figure~\ref{HighLevelGizmoLayout}). 
 	
 		\begin{description}
 		\item{\bf \textit{Choose}}: 1 ... 999 Beats Per Minute.  Note that this is a large number, and so may require you to choose it with the left potentiometer, then fine-tune it with the right potentiometer.\footnote{Gizmo can go lots faster than 999: in theory it could go clear to 31200 or so.  But then your synthesizer would explode and we wouldn't want that.}
@@ -515,15 +592,15 @@ The Controller allows you to assign to each of two buttons and two potentiometer
 		so is producing notes at twice that speed.  You specify the 
 		note speed here.
 		
-		Note speed is shown by pulsing the {\bf Note Pulse Light} (Figure \ref{HighLevelGizmoLayout}).
+		Note speed is shown by pulsing the {\bf Note Pulse Light} (Figure~\ref{HighLevelGizmoLayout}).
 
 		\begin{description}
 			\item{\bf \textit{Choose}}:
 			\begin{tabbing}
-			Eighth Triplet\hspace{10em}\=\(\myfrac{1}{24}\)\hspace{1em}\=Beat\\
-			Quarter Triplet\>\(\myfrac{1}{12}\)\>Beat\\
+			Eighth Triplet (Triplet 64th Note)\hspace{3em}\=\(\myfrac{1}{24}\)\hspace{1em}\=Beat\\
+			Quarter Triplet (Triplet 32nd Note)\>\(\myfrac{1}{12}\)\>Beat\\
 			Thirty-Second Note\>\(\myfrac{1}{8}\)\>Beat\hspace{0.7in}\=\smash{\includegraphics[width=2in]{NoteSpeed1.pdf}}\\
-			Half Triplet\>\(\myfrac{1}{6}\)\>Beat\\
+			Half Triplet (Triplet 16th Note)\>\(\myfrac{1}{6}\)\>Beat\\
 			\\
 			Sixteenth Note\>\(\myfrac{1}{4}\)\>Beat\\
 			Triplet\>\(\myfrac{1}{3}\)\>Beat\\
@@ -615,6 +692,8 @@ The Controller allows you to assign to each of two buttons and two potentiometer
 			\begin{tabbing}
 			Ignore\hspace{0.5in}\=Use an internal clock but let any external MIDI clock pass through.\\
 			Use\>Use an external MIDI clock and also let it pass through.\\
+			Divide\>Use an external MIDI Clock.  Don't pass it through, but instead send out MIDI\\
+			\>~~~~~~clock messages whenever a Note Pulse occurs.\\
 			Consume\>Use an external MIDI clock but don't let it pass through.\\
 			Generate\>Use an internal clock and emit it as a MIDI clock.\\
 			\>~~~~~~Don't let any external MIDI clock pass through.\\	
@@ -622,6 +701,30 @@ The Controller allows you to assign to each of two buttons and two potentiometer
 			\>~~~~~~Don't let any external MIDI clock pass through.\\
 			\end{tabbing}
 		\end{description}
+
+The {\bf Divide} option is special: instead of sending MIDI clock every pulse, it sends MIDI clock every note pulse, thus slowing down (dividing) the clock signal.  To set the Note Pulse, see the {\bf Note Speed} option earlier.  The division is as follows:
+
+\begin{center}\begin{tabular}{@{}lr@{}}
+{\it Note Speed}&{\it Divisor}\\
+				\hline\\[-0.9em]
+
+Eighth Triplet (Triplet 64th Note)	&1\\
+Quarter Triplet (Triplet 32nd Note)	&2\\
+Thirty-Second Note				&3\\
+Half Triplet (Triplet 16th Note)		&4\\
+Sixteenth Note					&6\\
+Triplet						&8\\
+Eighth Note					&12\\
+Quarter Note					&24\\
+Quarter Note Tied to Triplet		&32\\
+Dotted Quarter Note				&36\\
+Half Note						&48\\
+Half Note Tied to Two Triplets		&64\\
+Dotted Half Note				&72\\
+Whole Note					&96\\
+Dotted Whole Note				&144\\
+Double Whole Note				&192\\
+\end{tabular}\end{center}
 
 		You can also start/stop/continue the clock via by pressing the Middle button while in the Options menu (see {\bf Starting, Stopping, and Continuing the Clock} at the end of this section), or by sending an appropriate NRPN message (see {\bf Control MIDI} earlier).
 		
@@ -637,28 +740,29 @@ The Controller allows you to assign to each of two buttons and two potentiometer
 		\end{description}
 		
 		
-%	\item{\bf Menu Delay}\\
-%		Gizmo often will display text (such as ``SWING'') by filling the screen with the first few letters (in this case, ``SWI''), then pausing for a certain delay, then scrolling through the whole word horizontally. You can specify how long that pause is here.
-%		\begin{description}
-%			\item{\bf \textit{Choose}}:
-%			\begin{tabbing}
-%			0\hspace{2em}\=Seconds\hspace{1in}\=(scroll immediately)\\
-%			1/8\>Seconds\\
-%			1/4\>Seconds\\
-%			1/3\>Seconds\>\hspace{1.5in}\=\smash{\includegraphics[width=2in]{fractions.pdf}}\\
-%			1/2\>Seconds\\
-%			1\>Second\>(default)\\
-%			2\>Seconds\\
-%			3\>Seconds\\
-%			4\>Seconds\\
-%			8\>Seconds\\
-%			\(\infty\)\>Seconds\>(never scroll)\>\smash{\includegraphics[width=0.48in]{infinity}}\\
-%			\end{tabbing}
-%		\end{description}
+	\item{\bf \textit{Mega Only:}\quad Menu Delay}\\
+		Gizmo often will display text (such as ``SWING'') by filling the screen with the first few letters (in this case, ``SWI''), then {\it delaying} for a certain interval, then scrolling through the whole word horizontally. You can specify how long that delay is.
+		\begin{description}
+			\item{\bf \textit{Choose}}:
+			\begin{tabbing}
+			0\hspace{2em}\=Seconds\hspace{1in}\=(scroll immediately)\\
+			1/8\>Seconds\\
+			1/4\>Seconds\\
+			1/3\>Seconds\>\hspace{1.5in}\=\smash{\includegraphics[width=2in]{fractions.pdf}}\\
+			1/2\>Seconds\\
+			1\>Second\>(default)\\
+			2\>Seconds\\
+			3\>Seconds\\
+			4\>Seconds\\
+			8\>Seconds\\
+			\(\infty\)\>Seconds\>(never scroll)\>\smash{\includegraphics[width=0.48in]{infinity}}\\
+			\end{tabbing}
+		\end{description}
 
 
-%	\item{\bf Voltage} (or {\bf No Voltage)}\\
-%		Toggles whether Gizmo will send voltage information out via the optional DACs in response to notes played or to Controller potentiometers being turned.  
+	\item{\bf \textit{Mega Only:}\quad Voltage} (or {\bf No Voltage})\\
+		Toggles whether Gizmo will send voltage information out via the optional DACs in response to notes played or to Controller potentiometers being turned.  Note that Voltage is sent in response to an I2C signal, and this may cause a very slight MIDI delay.
+		
 	\item{\bf The About Screen}\\
 		Presently says:\quad GIZMO V1 (C) 2016 BY SEAN LUKE
 	\end{description}
