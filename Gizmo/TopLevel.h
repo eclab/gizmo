@@ -181,12 +181,8 @@
 #define STATE_OPTIONS_MIDI_CLOCK 55
 #define STATE_OPTIONS_CLICK 56
 #define STATE_OPTIONS_SCREEN_BRIGHTNESS 57
-#ifdef USE_DACS
 #define STATE_OPTIONS_VOLTAGE 58
 #define STATE_OPTIONS_ABOUT 59
-#else
-#define STATE_OPTIONS_ABOUT 58
-#endif // USE_DACS
 #endif // defined(__AVR_ATmega2560__)
 
 
@@ -220,7 +216,7 @@ extern const char* cc_p;// = PSTR("CC");
 extern const char* v_p;// = PSTR("IS");
 extern const char* up_p;// = PSTR("UP");
 extern const char* down_p;// = PSTR("DOWN");
-#ifdef USE_DACS
+#if defined(__AVR_ATmega2560__)
 extern const char* voltage_p;// = PSTR("VOLTAGE");
 #endif
 extern const char* length_p;

@@ -1,10 +1,11 @@
 #include <Wire.h>
+#include "All.h"
 
 // Sets the value of a DAC.  Legal DAC values range from 0...4095
 // Values outside this range will silently fail.
 void setValue(uint8_t dacI2C, uint16_t val)
     {
-#ifdef USE_DACS
+#if defined(__AVR_ATmega2560__)
     if (val >= 4096) return;
     if (options.voltage)
         {

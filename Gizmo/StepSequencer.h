@@ -130,7 +130,7 @@
 #define STEP_SEQUENCER_NO_OVERRIDE_VELOCITY 128
 
 // local.stepSequencer.noteLength[track] is set to this if it's not overriding the default play length in options.noteLength
-#define PLAY_LENGTH_USE_DEFAULT 128
+#define PLAY_LENGTH_USE_DEFAULT 101
 
 // local.outMidi[track] is set to this if it's not overriding the default MIDI out in options.channelOut
 #define MIDI_OUT_DEFAULT 17

@@ -91,20 +91,18 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint8_t 
             TOGGLE_OUT_LED(); 
             }
         break;
+#if defined(__AVR_ATmega2560__)
         case CONTROL_TYPE_VOLTAGE_A:
             {
-#ifdef USE_DACS
             setPot(DAC_A, value);
-#endif
             }
         break;
         case CONTROL_TYPE_VOLTAGE_B:
             {
-#ifdef USE_DACS
             setPot(DAC_B, value);
-#endif
             }
         break;
+#endif
         }
     }
 
@@ -122,7 +120,7 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
         {
         backupOptions = options; 
         }
-#ifdef USE_DACS
+#if defined(__AVR_ATmega2560__)
     const char* menuItems[7] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC"), PSTR("A VOLTAGE"), PSTR("B VOLTAGE")};
     result = doMenuDisplay(menuItems, 7, STATE_NONE,  STATE_NONE, 1);
 #else

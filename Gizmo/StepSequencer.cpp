@@ -106,17 +106,21 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
         
     // Next draw the track number
     drawRange(led2, 0, 1, 12, local.stepSequencer.currentTrack);
-    
+
     // Next the MIDI channel
     drawMIDIChannel(
         local.stepSequencer.outMIDI[local.stepSequencer.currentTrack] == CHANNEL_DEFAULT ?
         options.channelOut : local.stepSequencer.outMIDI[local.stepSequencer.currentTrack]);
 
-    // Next draw auxillary information
-    if (local.stepSequencer.muted)
-        setPoint(led, 3, 1);
-    if (local.stepSequencer.currentEditPosition < 0)
-        setPoint(led, 5, 1);
+	// Do we have a fader value < 127?
+    if (local.stepSequencer.fader[local.stepSequencer.currentTrack] != 127)
+    	setPoint(led, 5, 1);
+    
+    // Are we overriding velocity?
+    if (local.stepSequencer.velocity[local.stepSequencer.currentTrack] != STEP_SEQUENCER_NO_OVERRIDE_VELOCITY)
+        setPoint(led, 6, 1);
+
+	// Are we stopped?
     if (local.stepSequencer.playState != PLAY_STATE_PLAYING)
         setPoint(led, 7, 1);
     }
@@ -528,7 +532,6 @@ void playStepSequencer()
                     vel = local.stepSequencer.velocity[track];
                 if (!local.stepSequencer.muted[track])
                     {
-                    // div100 is for 32-bit bit's slightly shorter than div10(div10(...))
                     sendNoteOnTrack(note, (uint8_t)((vel * (uint16_t)(local.stepSequencer.fader[track] + 1)) >> 7), track);         // >> 7 is / 128
                     }
                 local.stepSequencer.offTime[track] = currentTime + (div100(notePulseRate * microsecsPerPulse * options.noteLength));

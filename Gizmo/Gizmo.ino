@@ -56,7 +56,7 @@ void setup()
    v_p = PSTR("IS");
    up_p = PSTR("^");
    down_p = PSTR("&");
-#ifdef USE_DACS
+#if defined(__AVR_ATmega2560__)
    voltage_p = PSTR("VOLTAGE");
 #endif
    length_p = PSTR("LENGTH");

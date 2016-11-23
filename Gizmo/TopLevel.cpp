@@ -1338,7 +1338,6 @@ void go()
 //#endif
 
 #if defined(__AVR_ATmega2560__)
-#ifdef USE_DACS
             const char* menuItems[15] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
                                           PSTR("VOLUME"), PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), 
                                           ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
@@ -1347,15 +1346,6 @@ void go()
                                           (options.voltage ? voltage_p : PSTR("NO VOLTAGE")),
                                           PSTR("GIZMO V1 (C) 2016 SEAN LUKE") };
             doMenuDisplay(menuItems, 15, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
-#else
-            const char* menuItems[14] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
-                                          PSTR("VOLUME"), PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), 
-                                          ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
-                                          PSTR("BRIGHTNESS"), 
-                                          PSTR("MENU DELAY"), 
-                                          PSTR("GIZMO V1 (C) 2016 SEAN LUKE") };
-            doMenuDisplay(menuItems, 14, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
-#endif // USE_DACS
 #else
             const char* menuItems[13] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
                                           PSTR("VOLUME"), PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), 
@@ -1541,7 +1531,7 @@ void go()
         
                 if (potUpdated[LEFT_POT] && options.leftKnobControlType != CONTROL_TYPE_OFF)
                     {
-#ifdef USE_DACS
+#if defined(__AVR_ATmega2560__)
                     if (options.leftKnobControlType == CONTROL_TYPE_VOLTAGE_A || options.leftKnobControlType == CONTROL_TYPE_VOLTAGE_B)
                         displayValue = pot[LEFT_POT];
                     else 
@@ -1553,7 +1543,7 @@ void go()
           
                 if (potUpdated[RIGHT_POT] && options.rightKnobControlType != CONTROL_TYPE_OFF)
                     {
-#ifdef USE_DACS
+#if defined(__AVR_ATmega2560__)
                     if (options.leftKnobControlType == CONTROL_TYPE_VOLTAGE_A || options.leftKnobControlType == CONTROL_TYPE_VOLTAGE_B)
                         displayValue = pot[RIGHT_POT];
                     else 
@@ -1969,9 +1959,7 @@ void go()
             playApplication();     
             }
         break;
-#endif
 
-#ifdef USE_DACS
         case STATE_OPTIONS_VOLTAGE:
             {
             options.voltage = !options.voltage;
@@ -1988,7 +1976,7 @@ void go()
             }
         break;
 
-#if defined(__AVR_ATmega2560__)// We don't have space for this on the Uno :-(
+#if defined(__AVR_ATmega2560__) // We don't have space for this on the Uno :-(
 
 		  case STATE_SPLIT_CHANNEL:
 			  {
@@ -2145,9 +2133,7 @@ void handleNoteOff(byte channel, byte note, byte velocity)
         // We don't have space for this on the Uno :-(
           else if (application == STATE_SPLIT && !bypass)
           sendNoteOff(note, velocity, note < options.splitNote ? options.splitChannel : options.channelOut);
-#endif
 
-#ifdef USE_DACS
         if (lastNotePlayed == note)
             {
             if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_A &&
@@ -2180,9 +2166,7 @@ void handleNoteOn(byte channel, byte note, byte velocity)
           {
           sendNoteOn(note, velocity, note < options.splitNote ?  options.splitChannel : options.channelOut);
           }
-#endif
 
-#ifdef USE_DACS
         if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_A &&
             options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_A)
             { setNote(DAC_A, note); lastNotePlayed = note; }

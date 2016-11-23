@@ -207,10 +207,15 @@ const char PROGMEM font_3x5[42][3] = {
     A00110A,
     A11111A
     },
-    { //N               // Tough to Read
+//    { //N               // Tough to Read
+//    A11110A,
+//    A00100A,
+//    A01111A
+//    },
+    { //N               // A bit easier to Read
     A11110A,
-    A00100A,
-    A01111A
+    A00001A,
+    A11110A
     },
     { //O
     A01110A,

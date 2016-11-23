@@ -262,9 +262,6 @@ void arpeggiatorRemoveNote(uint8_t note)
 // Add a note to chordNotes.
 void arpeggiatorAddNote(uint8_t note)
     {
-    if (local.arp.numChordNotes == MAX_ARP_CHORD_NOTES)
-        return;
-
     // remove latched notes if ALL of them are marked
     uint8_t marked = 0;
     for(uint8_t i = 0; i < local.arp.numChordNotes; i++)
@@ -272,8 +269,11 @@ void arpeggiatorAddNote(uint8_t note)
         if (local.arp.chordNotes[i] & 128)
             marked++;
         }
-    if (marked == local.arp.numChordNotes)
+    if (marked == local.arp.numChordNotes)  // they're all marked, time to reset
         local.arp.numChordNotes = 0;
+
+    if (local.arp.numChordNotes == MAX_ARP_CHORD_NOTES)  // at this stage, of we're still full, someone's holding down a lot of notes!
+        return;
 
     // Find the note.  If it's there, return (we're not inserting it)
     for(uint8_t i = 0; i < local.arp.numChordNotes; i++)
@@ -443,7 +443,7 @@ void stateArpeggiatorPlay()
             {
             options.arpeggiatorLatch = !options.arpeggiatorLatch;
             saveOptions();
-            local.arp.numChordNotes = 0;  // reset
+            //local.arp.numChordNotes = 0;  // reset
             }
         }
 

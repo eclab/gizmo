@@ -47,12 +47,10 @@ struct _options
      
 #if defined(__AVR_ATmega2560__)
   uint8_t menuDelay ;                         // Corresponds to DEFAULT_MENU_DELAY
+  uint8_t voltage;
   uint8_t splitControls;
   uint8_t splitChannel;
   uint8_t splitNote;
-#ifdef USE_DACS 
-  uint8_t voltage;
-#endif	// USE_DACS
 #endif	// defined(__AVR_ATmega2560__)
 
     };
