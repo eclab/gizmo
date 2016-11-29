@@ -128,6 +128,12 @@ void setupPots()
     }
 
 
+void clearReleased()
+	{
+	for(uint8_t i = BACK_BUTTON; i <= SELECT_BUTTON; i++)
+		for(uint8_t j = RELEASED; j <= RELEASED_LONG; j++)
+			isUpdated(i, j);
+	} 
 
 // Returns 1 if the given button is in the given value state (PRESSED, RELEASED, PRESSED_AND_RELEASED, RELEASED_LONG)
 // If the button is PRESSED_AND_RELEASED then if the user queries EITHER PRESSED or RELEASED, then 1 is returned.
@@ -641,7 +647,13 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
             // write "--"
             write3x5Glyphs(GLYPH_NONE);
             }
-        else if (includeOther == OTHER_OMNI && (currentDisplay == maxValue))
+        else if ((includeOther >= OTHER_OMNI) && 
+        		 (includeOther <= OTHER_FREE) &&
+        		 (currentDisplay == maxValue))
+        	{
+        	write3x5Glyphs(includeOther - GLYPH_OMNI + GLYPH_OMNI);
+        	}
+/*        else if (includeOther == OTHER_OMNI && (currentDisplay == maxValue))
             {
             write3x5Glyphs(GLYPH_OMNI);
             }
@@ -657,6 +669,11 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
             {
             write3x5Glyphs(GLYPH_DECREMENT);
             }
+        else if (includeOther == OTHER_FREE && (currentDisplay == maxValue))
+            {
+            write3x5Glyphs(GLYPH_FREE);
+            }
+*/
         else
             {
             writeNumber(led, led2, currentDisplay);
@@ -686,9 +703,10 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
 // This function performs the basic functions for a state whose entire purpose is to compute a numerical value
 // and set *value* to that value.  If updateOptions is true, then stateNumerical will recover from a cancel by
 // overwriting the options with the backup options. Otherwise it will recover by overwriting value with backupValue.  
-void stateNumerical(uint8_t start, uint8_t end, uint8_t &value, uint8_t &backupValue,
+uint8_t stateNumerical(uint8_t start, uint8_t end, uint8_t &value, uint8_t &backupValue,
     uint8_t updateOptions, uint8_t includeOff, uint8_t other, uint8_t backState)
     {
+    uint8_t oldValue = value;
     if (entry)
         { 
         if (updateOptions) backupOptions = options; 
@@ -724,6 +742,9 @@ void stateNumerical(uint8_t start, uint8_t end, uint8_t &value, uint8_t &backupV
             }
         break;
         }
+    if (value != oldValue) 
+    	return oldValue;
+    else return 255;
     }
 
 
@@ -878,7 +899,7 @@ GLOBAL uint8_t  newItem;                        // newItem can be 0, 1, or WAIT_
 GLOBAL uint8_t itemType;
 GLOBAL uint16_t itemNumber;             // Note on/off/poly aftertouch use this for NOTE PITCH
 GLOBAL uint16_t itemValue;                      // Note on/off/poly aftertouch use this for NOTE VELOCITY / AFTERTOUCH
-
+GLOBAL uint8_t itemChannel;
 
 // Used solely for outputting via I2C, which is monophonic and needs to know if a noteOff
 // corresponds to the the note it's playing and it should turn it off
@@ -892,10 +913,7 @@ GLOBAL const char* nrpn_p;// = PSTR("NRPN");
 GLOBAL const char* rpn_p;// = PSTR("RPN");
 GLOBAL const char* cc_p;// = PSTR("CC");
 GLOBAL const char* v_p;// = PSTR("IS");
-GLOBAL const char* up_p;// = PSTR("^");
-GLOBAL const char* down_p;// = PSTR("%");
 GLOBAL const char* voltage_p;// = PSTR("VOLTAGE");
-GLOBAL const char* length_p; // = PSTR("LENGTH");
 GLOBAL const char* options_p;  // = PSTR("OPTIONS");
 
 
@@ -945,7 +963,7 @@ void go()
             // we may start to swing.  Figure extra swing hold time
             if (swingToggle && options.swing > 0)
                 {
-                swingTime = currentTime + div100(notePulseRate * microsecsPerPulse * options.swing);
+                swingTime = currentTime + div100(notePulseRate * getMicrosecsPerPulse() * options.swing);
                 }
             else
                 {
@@ -973,11 +991,13 @@ void go()
             }
         }
   
-  	if (notePulse && options.clock == USE_MIDI_CLOCK)
+#if defined(__AVR_ATmega2560__)
+  	if (notePulse && options.clock == DIVIDE_MIDI_CLOCK)
   		{
   		MIDI.sendRealTime(MIDIClock); TOGGLE_OUT_LED(); 
   		}
-  
+#endif
+ 
     // update the screen, read from the sensors, or update the board LEDs
     updateDisplay = update();
     
@@ -1011,8 +1031,6 @@ void go()
         break;
         case STATE_STEP_SEQUENCER:
             {
-            if (entry)
-                stopStepSequencer();
             stateLoad(STATE_STEP_SEQUENCER_PLAY, STATE_STEP_SEQUENCER_FORMAT, STATE_ROOT, STATE_STEP_SEQUENCER);
             }
         break;
@@ -1034,6 +1052,7 @@ void go()
                 backupOptions = options;
                 clearScreen();
                 clearBuffer();
+//				drawMIDIChannel(CHANNEL_OFF);
                 memset(local.gauge.fastMidi, 0, 3);
                 entry = false; 
                 }
@@ -1108,6 +1127,31 @@ void go()
                             writeShortNumber(led, (uint8_t) itemNumber, false);
                             }
                         break;
+                        case MIDI_CC_7_BIT:
+                            // FALL THRU
+                        case MIDI_CC_14_BIT:
+                            {
+                            str = cc_p;
+                            }
+                        break;
+                        case MIDI_NRPN_14_BIT:
+                            // FALL THRU
+                        case MIDI_NRPN_INCREMENT:
+                            // FALL THRU
+                        case MIDI_NRPN_DECREMENT:
+                            {
+                            str = nrpn_p;
+                            }
+                        break;
+                        case MIDI_RPN_14_BIT:
+                            // FALL THRU
+                        case MIDI_RPN_INCREMENT:
+                            // FALL THRU
+                        case MIDI_RPN_DECREMENT:
+                            {
+                            str = rpn_p;
+                            }
+                        break;
                         case MIDI_PITCH_BEND:
                             {
                             writeNumber(led, led2, ((int16_t) itemValue) - 8192);           // pitch bend is actually signed
@@ -1153,31 +1197,6 @@ void go()
                             write3x5Glyphs(GLYPH_SYSTEM_RESET);
                             }
                         break;
-                        case MIDI_CC_7_BIT:
-                            // FALL THRU
-                        case MIDI_CC_14_BIT:
-                            {
-                            str = cc_p;
-                            }
-                        break;
-                        case MIDI_NRPN_14_BIT:
-                            // FALL THRU
-                        case MIDI_NRPN_INCREMENT:
-                            // FALL THRU
-                        case MIDI_NRPN_DECREMENT:
-                            {
-                            str = nrpn_p;
-                            }
-                        break;
-                        case MIDI_RPN_14_BIT:
-                            // FALL THRU
-                        case MIDI_RPN_INCREMENT:
-                            // FALL THRU
-                        case MIDI_RPN_DECREMENT:
-                            {
-                            str = rpn_p;
-                            }
-                        break;
                         }
                                 
                     if (str != NULL)
@@ -1192,14 +1211,14 @@ void go()
                             (itemType == MIDI_RPN_INCREMENT))
                             {
                             addToBuffer("   ");             // push down to right side of screen
-                            strcpy_P(b, up_p);
+                            strcpy_P(b, PSTR("+"));
                             addToBuffer(b);
                             }
                         else if ((itemType == MIDI_NRPN_DECREMENT) ||
                             (itemType == MIDI_RPN_DECREMENT))
                             {
                             addToBuffer("   ");             // push down to right side of screen
-                            strcpy_P(b, down_p);
+                            strcpy_P(b, PSTR("-"));
                             addToBuffer(b);
                             }
                                 
@@ -1270,10 +1289,10 @@ void go()
                     }
                 }
 
-            if (options.channelIn == CHANNEL_OFF)
-                drawMIDIChannel(CHANNEL_OFF);
-            else
-                drawMIDIChannel(options.channelIn);                
+			if ((itemType >= MIDI_NOTE_ON) && (itemType <= MIDI_RPN_DECREMENT))  // we have a channel
+				drawMIDIChannel(itemChannel);
+			else
+				drawMIDIChannel(CHANNEL_OMNI);
             }
         break;
         
@@ -1320,7 +1339,6 @@ void go()
 
         case STATE_OPTIONS:
             {
-
 //#if defined(__AVR_ATmega2560__)
            // We don't have space for this on the Uno.  :-(
             if (isUpdated(MIDDLE_BUTTON, RELEASED))
@@ -1355,7 +1373,7 @@ void go()
             doMenuDisplay(menuItems, 13, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
 #endif // defined(__AVR_ATmega2560__)
 
-            playApplication();     
+            playApplication(); 
             }
         break;
         
@@ -1428,13 +1446,16 @@ void go()
             {
             if (entry)
                 clearNotesOnTracks(true);
-            stateNumerical(1, 17, local.stepSequencer.outMIDI[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, OTHER_DEFAULT, STATE_STEP_SEQUENCER_MENU);
+            uint8_t val = stateNumerical(0, 17, local.stepSequencer.outMIDI[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, true, OTHER_DEFAULT, STATE_STEP_SEQUENCER_MENU);
+            if (val != 255)
+            	sendAllNotesOff();
+            playStepSequencer();
             }
         break;
         case STATE_STEP_SEQUENCER_VELOCITY:
             {
             // yes, it's *128*, not 127, because 128 represents the default velocity
-            stateNumerical(0, 128, local.stepSequencer.velocity[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, OTHER_DEFAULT, STATE_STEP_SEQUENCER_MENU);
+            stateNumerical(0, 128, local.stepSequencer.velocity[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, OTHER_FREE, STATE_STEP_SEQUENCER_MENU);
             playStepSequencer();
             }
         break;
@@ -1482,10 +1503,10 @@ void go()
             stateSure(STATE_RECORDER_PLAY, STATE_RECORDER);
             }
         break;
-        case STATE_RECORDER_MENU:
-            {
-            stateRecorderMenu();
-            }
+        //case STATE_RECORDER_MENU:
+        //    {
+        //    stateRecorderMenu();
+        //    }
         break;
         case STATE_CONTROLLER_PLAY:
             {
@@ -1710,7 +1731,6 @@ void go()
                     goUpStateWithBackup(STATE_OPTIONS);
                     break;
                 }
-
             playApplication();     
             }
         break;
@@ -1781,7 +1801,7 @@ void go()
         case STATE_OPTIONS_PLAY_LENGTH:
             {
             stateNumerical(0, 100, options.noteLength, backupOptions.noteLength, true, false, OTHER_NONE, STATE_OPTIONS);
-            playArpeggio();
+            playApplication();
             }
         break;
         case STATE_OPTIONS_MIDI_CHANNEL_IN:
@@ -1809,13 +1829,22 @@ void go()
             if (entry) 
                 {
                 backupOptions = options; 
+				defaultState = options.clock;  // so we display the right thing
                 }
+#if defined(__AVR_ATmega2560__)
             const char* menuItems[6] = { PSTR("USE"), PSTR("DIVIDE"), PSTR("CONSUME"), PSTR("IGNORE"), PSTR("GENERATE"), PSTR("BLOCK") };
             result = doMenuDisplay(menuItems, 6, STATE_NONE, STATE_NONE, 1);
+#else
+            const char* menuItems[5] = { PSTR("USE"), PSTR("CONSUME"), PSTR("IGNORE"), PSTR("GENERATE"), PSTR("BLOCK") };
+            result = doMenuDisplay(menuItems, 5, STATE_NONE, STATE_NONE, 1);
+#endif
             switch (result)
                 {
                 case NO_MENU_SELECTED:
                     {
+                    // this hopefully clears up notes that sometimes get stuck when we change the clock mode
+                    if (options.clock != currentDisplay)
+						sendAllNotesOff();
                     options.clock = currentDisplay;
                     }
                 break;
@@ -1834,7 +1863,6 @@ void go()
                             stopClock(true);
                             startClock(true);
                             }
-                
                         saveOptions();
                         }
                     }
@@ -1878,6 +1906,8 @@ void go()
                     goUpState(STATE_OPTIONS);
                     }
                 }
+            // At present if I call playApplication() here it adds over 130 bytes!  Stupid compiler.  So I can't do it right now
+            // playApplication();
             }
         break;
         case STATE_OPTIONS_SCREEN_BRIGHTNESS:
@@ -2050,7 +2080,7 @@ uint8_t updateMIDI(byte channel, uint8_t _itemType, uint16_t _itemNumber, uint16
         itemType = _itemType;
         itemNumber = _itemNumber;
         itemValue = _itemValue;
-        //itemChannel = channel;
+        itemChannel = channel;
         return 1;
         }
     else 

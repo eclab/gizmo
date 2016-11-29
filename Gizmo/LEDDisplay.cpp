@@ -73,34 +73,66 @@
 #define A11111A  (31 << 3)
 
 
-
-const char PROGMEM font_2x5[3][2] = {
+/*
+const char PROGMEM font_2x5[1][2] = {
     { //1
     A00010A,
     A11111A
     },
+};
+*/
+
+
+const char PROGMEM font_3x5[46][3] = {
     { // (
     A01110A,
-    A10001A
+    A10001A,
+    A00000A,
     },
     { // )
+    A00000A,
     A10001A,
-    A01110A
-    }   
-};
-
-
-
-const char PROGMEM font_3x5[42][3] = {
+    A01110A,
+    },
+    { // 	UP
+    A00010A,
+    A11111A,
+    A00010A,
+    },  
+    { // +   PLUS
+    A00100A,
+    A01110A,
+    A00100A
+    },
+    { // 	DOWN 
+    A01000A,
+    A11111A,
+    A01000A,
+    },
+    { // - 	MINUS 
+    A00100A,
+    A00100A,
+    A00100A,
+    },
+    { //  .   PERIOD
+    A00000A,
+    A10000A,
+    A00000A
+    },
+    { // / 		UP-DOWN
+    A01010A,
+    A11111A,
+    A01010A,
+    },
     { //0
     A01110A,
     A10001A,
     A01110A
     },
     { //1
-    A00000A,
-    A00010A,
-    A11111A
+    A10010A,
+    A11111A,
+    A10000A,
     },
     { //2
     A11001A,
@@ -207,12 +239,7 @@ const char PROGMEM font_3x5[42][3] = {
     A00110A,
     A11111A
     },
-//    { //N               // Tough to Read
-//    A11110A,
-//    A00100A,
-//    A01111A
-//    },
-    { //N               // A bit easier to Read
+    { //N
     A11110A,
     A00001A,
     A11110A
@@ -277,30 +304,10 @@ const char PROGMEM font_3x5[42][3] = {
     A10101A,
     A10011A
     },
-    { // - normal 
-    A00100A,
-    A00100A,
-    A00100A,
-    },
     { // b (flat)
     A11111A,
     A10100A,
     A01100A
-    },
-    { // UP  // ends in 0 so it can prepend with 10, 11, 12 (which are 5 wide)
-    A00010A,
-    A11111A,
-    A00010A,
-    },  
-    { // DOWN  // ends in 0 so it can prepend with 10, 11, 12 (which are 5 wide)
-    A01000A,
-    A11111A,
-    A01000A,
-    },
-    { // UP-DOWN  // ends in 0 so it can prepend with 10, 11, 12 (which are 5 wide)
-    A01010A,
-    A11111A,
-    A01010A,
     },
     { // BLANK
     A00000A,
@@ -429,7 +436,7 @@ const char PROGMEM font_4x5[19][4] = {
     };
     
 
-const char PROGMEM font_5x5[5][5] {
+const char PROGMEM font_5x5[2][5] {
     { //M
     A11111A,
     A00010A,
@@ -437,6 +444,7 @@ const char PROGMEM font_5x5[5][5] {
     A00010A,
     A11111A
     },
+    /*
     { //N
     A11111A,
     A00010A,
@@ -458,6 +466,7 @@ const char PROGMEM font_5x5[5][5] {
     A01100A,
     A00011A
     },
+    */
     { //W
     A01111A,
     A10000A,
@@ -1129,11 +1138,11 @@ unsigned char* clearPoint(unsigned char* mat, uint8_t x, uint8_t y)
     }
 
 // Writes a 2x5 glyph of the given WIDTH, starting at column X (which may be a value 0...6)
-void write2x5Glyph(unsigned char* mat, uint8_t glyph, uint8_t x)
-    {
-    if (x < 0 || x > 6) return;
-    memcpy_P(mat + x, font_2x5[glyph], 2);
-    }
+//void write2x5Glyph(unsigned char* mat, uint8_t glyph, uint8_t x)
+//    {
+//    if (x < 0 || x > 6) return;
+//    memcpy_P(mat + x, font_2x5[glyph], 2);
+//    }
 
 // Writes a 3x5 glyph of the given WIDTH, starting at column X (which may be a value 0...5)
 void write3x5Glyph(unsigned char* mat, uint8_t glyph, uint8_t x)
@@ -1362,7 +1371,10 @@ void writeHex(unsigned char* mat, unsigned char val)
     memcpy_P(mat + 5, font_3x5[GLYPH_3x5_0 + l], 3);
     }
 
-
+void writeFlat(unsigned char* mat)
+	{
+	memcpy_P(mat + 4, font_3x5[GLYPH_3x5_FLAT], 3);
+	}
 
 // Prints a note to the matrix.  If the note is
 // not in the range NOTE_C ... NOTE_B  (0 ... 11), nothing
@@ -1381,7 +1393,7 @@ void writeNote(unsigned char* mat, unsigned char note)
         break;
         case NOTE_Db:
             {
-            memcpy_P(mat + 4, font_3x5[GLYPH_3x5_FLAT], 3);
+			writeFlat(mat);
             }
         // fall thru
         case NOTE_D:
@@ -1391,7 +1403,7 @@ void writeNote(unsigned char* mat, unsigned char note)
         break;
         case NOTE_Eb:
             {
-            memcpy_P(mat + 4, font_3x5[GLYPH_3x5_FLAT], 3);
+			writeFlat(mat);
             }
         // fall thru
         case NOTE_E:
@@ -1406,7 +1418,7 @@ void writeNote(unsigned char* mat, unsigned char note)
         break;
         case NOTE_Gb:
             {
-            memcpy_P(mat + 4, font_3x5[GLYPH_3x5_FLAT], 3);
+			writeFlat(mat);
             }
         // fall thru
         case NOTE_G:
@@ -1416,7 +1428,7 @@ void writeNote(unsigned char* mat, unsigned char note)
         break;
         case NOTE_Ab:
             {
-            memcpy_P(mat + 4, font_3x5[GLYPH_3x5_FLAT], 3);
+			writeFlat(mat);
             }
         // fall thru
         case NOTE_A:
@@ -1426,7 +1438,7 @@ void writeNote(unsigned char* mat, unsigned char note)
         break;
         case NOTE_Bb:
             {
-            memcpy_P(mat + 4, font_3x5[GLYPH_3x5_FLAT], 3);
+			writeFlat(mat);
             }
         // fall thru
         case NOTE_B:
@@ -1439,8 +1451,8 @@ void writeNote(unsigned char* mat, unsigned char note)
 
 
 /// Draws a series of points horizontally corresponding to a value from 0...(total-1)
-/// This series draws to the right, then undraws to the right, and starts at X position
-/// START, in row Y.  Generally, total should be an even number.
+/// This series draws to the right, then undraws to the right, and starts at column X
+/// in row Y.  Generally, total should be an even number.
 ///
 /// An example.  Let us say that TOTAL is 8.  Then we will draw up to 4 points like this:
 /// (an X is a point, a . is an unlit LED)
@@ -1453,20 +1465,20 @@ void writeNote(unsigned char* mat, unsigned char note)
 /// 5:  ..XX
 /// 6:  ...X
 /// 7:  ....
-void drawRange(uint8_t *mat, uint8_t start, uint8_t y, uint8_t total, uint8_t val)
+void drawRange(uint8_t *mat, uint8_t x, uint8_t y, uint8_t total, uint8_t val)
     {
     uint8_t halftotal = (total >> 1);
     if (val < halftotal)
         {
         for(uint8_t i = 0; i < val + 1; i++)
             {
-            setPoint(mat, i + start, y);
+            setPoint(mat, i + x, y);
             }
         }
     else
         {
         for(uint8_t i = val - halftotal; i < halftotal; i++)
-            setPoint(mat, i + start, y);
+            setPoint(mat, i + x, y);
         } 
     }
 
@@ -1684,19 +1696,21 @@ void addToBuffer(const char* val, uint8_t extra = 0)
                 }
             else 
                 {
-                if (c == 'M' || c == 'N' || c == 'Q' || c == 'V' || c == 'W') // wide letters
+                if (c == 'M' || c == 'W') // || c == 'N'  || c == 'Q' || c == 'V' ) // 5-pixel wide letters
                     {
                     if (len + 5 <= maxLen)
                         len += 6;
                     else break;
                     }
-                else if (c == '1' || c == '(' || c == ')')
+                /*
+                else if (c == '1') // || c == '(' || c == ')')		// 2-pixel thin letters
                     {
                     if (len + 2 <= maxLen)
                         len += 3;
                     else break;
                     }
-                else
+                */
+                else											// everything else is 3 pixels
                     {
                     if (len + 3 <= maxLen)
                         len += 4;
@@ -1735,20 +1749,21 @@ void addToBuffer(const char* val, uint8_t extra = 0)
         if (c <= 'z' && c >= 'a')
             c = c - 'a' + 'A';
 
-        if (c == 'M' || c == 'N' || c == 'Q' || c == 'V' || c == 'W')   // wide letters
+        if (c == 'M' || c == 'W') // c == 'N' ) // || c == 'Q' || c == 'V' )   // wide letters
             {
-            uint8_t idx = 0;  // M
-            if (c == 'N') idx = 1;
-            else if (c == 'Q') idx = 2;
-            else if (c == 'V') idx = 3;
-            else if (c == 'W') idx = 4;  
-            memcpy_P(buffer + bufferLength, font_5x5[idx], 5);
+            //uint8_t idx = 0;  // M
+            //if (c == 'N') idx = 1;
+            //else if (c == 'Q') idx = 2;
+            //else if (c == 'V') idx = 3;
+            //else 
+            //if (c == 'W') idx = 4;  
+            memcpy_P(buffer + bufferLength, font_5x5[(c == 'W') ? 1 : 0], 5);
             bufferLength += 5;
             }
         else if (c >= 'A' && c <= 'Z')  // letter, add it plus a thin space
             {
             //uint8_t len = strnlen_P(font_alphabet5x5[c - 'A'], 5);
-            memcpy_P(buffer + bufferLength, font_3x5[GLYPH_3x5_A + c - 'A'], 3);
+            memcpy_P(buffer + bufferLength, font_3x5[c - 'A' + GLYPH_3x5_A], 3);
             bufferLength += 3;
             }
         else if (c == ' ')  // spacebar
@@ -1756,6 +1771,7 @@ void addToBuffer(const char* val, uint8_t extra = 0)
             buffer[bufferLength] = 0;
             bufferLength += 1;
             }
+		/*
         else if (c == '1')  // number
             {
             memcpy_P(buffer + bufferLength, font_2x5[GLYPH_2x5_1], 2);
@@ -1766,8 +1782,12 @@ void addToBuffer(const char* val, uint8_t extra = 0)
             memcpy_P(buffer + bufferLength, font_2x5[GLYPH_2x5_LEFT_PAREN + c - '('], 2);
             bufferLength += 2;
             }
+        */
         else 
             {
+            if (c >= '(' && c <= '9')   // one of ( ) UP PLUS DOWN MINUS PERIOD UP_DOWN 0 1 2 3 4 5 6 7 8 9
+            	memcpy_P(buffer + bufferLength, font_3x5[c - '(' + GLYPH_2x5_LEFT_PAREN], 3);
+            /*
             if (c >= '0' && c <= '9')  // number
                 {
                 memcpy_P(buffer + bufferLength, font_3x5[c - '0' + GLYPH_3x5_0], 3);
@@ -1776,6 +1796,10 @@ void addToBuffer(const char* val, uint8_t extra = 0)
                 {
                 memcpy_P(buffer + bufferLength, font_3x5[GLYPH_3x5_MINUS], 3);
                 }
+            else if (c >= CHAR_UP && c <= CHAR_UPDOWN)
+            	{
+            	memcpy_P(buffer + bufferLength, font_3x5[c - CHAR_UP + GLYPH_3x5_UP], 3);
+            	}
             // This is the character for UP
             else if (c == CHAR_UP)
                 {
@@ -1791,6 +1815,7 @@ void addToBuffer(const char* val, uint8_t extra = 0)
                 {
                 memcpy_P(buffer + bufferLength, font_3x5[GLYPH_3x5_UP_DOWN], 3);
                 }
+            */
             bufferLength += 3;
             }
         } 

@@ -86,6 +86,9 @@ extern  uint32_t targetNextPulseTime;
 
 // Number of microseconds between PULSES.  20833 is a tempo of 120 BPM (our default)
 extern uint32_t microsecsPerPulse;  // 120 BPM by default
+extern uint32_t externalMicrosecsPerPulse;
+
+uint32_t getMicrosecsPerPulse();
 
 // The number of PULSES so far.
 extern  uint32_t pulseCount;

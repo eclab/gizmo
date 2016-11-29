@@ -54,12 +54,9 @@ void setup()
    rpn_p = PSTR("RPN");
    cc_p = PSTR("CC");
    v_p = PSTR("IS");
-   up_p = PSTR("^");
-   down_p = PSTR("&");
 #if defined(__AVR_ATmega2560__)
    voltage_p = PSTR("VOLTAGE");
 #endif
-   length_p = PSTR("LENGTH");
    options_p = PSTR("OPTIONS");
 
 	// seed random number generator

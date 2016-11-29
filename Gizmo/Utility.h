@@ -19,13 +19,13 @@
 ///// LED matrix.  These functions will do this.
 
 /// Print an integer (-9999 to 19999) to the LED, and pause for 1/4 sec 
-void debug(int val);
+uint8_t debug(int val);
 
 /// Print a maximum TWO-character string to the LED, along with an integer from -99...127, and pause for 1/4 sec 
-void debug(const char* str, int val);
+uint8_t debug(const char* str, int val);
 
 /// Print two integers, each from -99...127, and pause for 1/4 sec 
-void debug(uint8_t val1, uint8_t val2);
+uint8_t debug(uint8_t val1, uint8_t val2);
 
 
 
@@ -49,18 +49,19 @@ void drawMIDIChannel(uint8_t channel);
 #define GLYPH_NONE 0                                    // ----
 #define GLYPH_OMNI 1                                    // ALLC
 #define GLYPH_DEFAULT 2                                 // DFLT
-#define GLYPH_NOTE 3                                    // NOTE
-#define GLYPH_SYSEX 4                                   // SYSX
-#define GLYPH_SONG_POSITION 5                   // SPOS
-#define GLYPH_SONG_SELECT 6                             // SSEL
-#define GLYPH_TUNE_REQUEST 7                    // TREQ
-#define GLYPH_START 8                                   // STRT
-#define GLYPH_CONTINUE 9                                // CONT
-#define GLYPH_STOP 10                                   // STOP
-#define GLYPH_SYSTEM_RESET 11                   // RSET
-#define GLYPH_ROOT 12                                   // ROOT
-#define GLYPH_DECREMENT 13                              // DECR
-#define GLYPH_INCREMENT 14                              // INCR
+#define GLYPH_DECREMENT 3                              	// DECR
+#define GLYPH_INCREMENT 4                              	// INCR
+#define GLYPH_FREE 5                              		// FREE
+#define GLYPH_NOTE 6                                    // NOTE
+#define GLYPH_SYSEX 7                                   // SYSX
+#define GLYPH_SONG_POSITION 8                   		// SPOS
+#define GLYPH_SONG_SELECT 9                             // SSEL
+#define GLYPH_TUNE_REQUEST 10                    		// TREQ
+#define GLYPH_START 11                                  // STRT
+#define GLYPH_CONTINUE 12                               // CONT
+#define GLYPH_STOP 13                                   // STOP
+#define GLYPH_SYSTEM_RESET 14                   		// RSET
+#define GLYPH_ROOT 15                                   // ROOT
 
 // Writes any of the above glyph sets to the screen
 void write3x5Glyphs(uint8_t index);

@@ -72,9 +72,8 @@ void playArpeggiatorNote(uint16_t note)
     sendNoteOn(local.arp.noteOff = (uint8_t) note, local.arp.velocity, options.channelOut);
                 
     // this will be costly but maybe it's better than / for 32-bit?
-    local.arp.offTime = currentTime + div100(notePulseRate * microsecsPerPulse * options.noteLength);
+    local.arp.offTime = currentTime + div100(notePulseRate * getMicrosecsPerPulse() * options.noteLength);
     } 
-
 
 
 // Continue to play the arpeggio
@@ -328,7 +327,7 @@ void stateArpeggiator()
         local.arp.playing = 0;  // don't want to add and remove notes right now
         sendAllNotesOff();
         }
-    const char* menuItems[17] = { up_p, down_p, PSTR("%"), PSTR("RANDOM"), PSTR("ASSIGN"), PSTR("CHORD"), PSTR("0"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("CREATE")};
+    const char* menuItems[17] = { PSTR(STR_UP), PSTR(STR_DOWN), PSTR(STR_UP_DOWN), PSTR("RANDOM"), PSTR("ASSIGN"), PSTR("CHORD"), PSTR("0"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("CREATE")};
     result = doMenuDisplay(menuItems, 17, STATE_NONE,  STATE_ROOT, 1);
 
     entry = true;

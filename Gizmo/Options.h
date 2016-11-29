@@ -24,7 +24,7 @@ struct _options
     uint8_t clock ;                     // Chosen option for handling the MIDI clock
     uint8_t noteSpeedType ;             // Type of note speed the user has chosen (see LEDDisplay.h for a list of them)
     uint8_t swing;
-    uint8_t channelIn ;                          // MIDI Channel I'm listening on.  0 means no channel in.  16 means ALL CHANNELS (OMNI).
+    uint8_t channelIn ;                          // MIDI Channel I'm listening on.  0 means no channel in.  17 means ALL CHANNELS (OMNI).
     uint8_t channelOut ;                         // MIDI Channel I'm sending to by default.    0 means no default channel out.
     uint8_t channelControl ;                     // MIDI Channel to control the device via NRPN messages etc.  0 means no control channel.  16 means Channel In
     int8_t transpose;
@@ -40,8 +40,8 @@ struct _options
     uint8_t noteLength;
     uint8_t arpeggiatorPlayOctaves;
     uint8_t arpeggiatorLatch;
-    uint8_t stepSequencerNoEcho;
-    uint8_t recorderRepeat;
+    //uint8_t stepSequencerNoEcho;
+    //uint8_t recorderRepeat;
     uint8_t click;
     uint8_t clickVelocity;
      

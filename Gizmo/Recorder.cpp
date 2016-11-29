@@ -51,6 +51,12 @@ void resetRecorder()
 #define ENDED_REPEATING 2
 
 
+// This is a dummy function which does nothing at all, because we can't presently
+// play in the background.  But it's included because if we DON'T have it, then
+// Utility.playApplication() increases by 100 bytes.  :-(
+void playRecorder() { } 
+
+
 // Plays OR Records the song
 void stateRecorderPlay()
     {
@@ -58,6 +64,10 @@ void stateRecorderPlay()
        
     if (entry)
         {
+        // we're having problems coming back to Play from the Options menu and going somewhere
+        // else.  I'm gonna see if this fixed things
+		clearReleased();
+		        
         resetRecorder();
         local.recorder.status = RECORDER_STOPPED;
         local.recorder.tickoff = 0;
@@ -113,7 +123,10 @@ void stateRecorderPlay()
     else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
         {
         optionsReturnState = STATE_RECORDER_PLAY;  
-        goDownState(STATE_RECORDER_MENU);
+        //goDownState(STATE_RECORDER_MENU);
+        goDownState(STATE_OPTIONS);
+        // we don't allow playing in the menu in recorder -- if you choose the menu, you stop.
+        ended = ENDED;
         }
 
     // Formats:
@@ -128,7 +141,7 @@ void stateRecorderPlay()
         if ((local.recorder.bufferPos >= data.slot.data.recorder.length && local.recorder.tick % 96 == 0) ||  // out of notes and at a measure boundary, ugh, divide by 96
             (local.recorder.tick > MAXIMUM_RECORDER_TICK))  // out of time
             {
-            ended = options.recorderRepeat + 1;                     // if recorderRepeat is false, this is ENDED.  Else it is ENDED_REPEAT
+            ended = ENDED_REPEATING;  //options.recorderRepeat + 1;                     // if recorderRepeat is false, this is ENDED.  Else it is ENDED_REPEAT
             }
         else
             {
@@ -194,7 +207,7 @@ void stateRecorderPlay()
                 uint16_t time = (local.recorder.tick <= 0 ? 0 : local.recorder.tick);
                                 
                 if ((!local.recorder.tickoff) &&
-                    (2 * (targetNextPulseTime - currentTime) <= microsecsPerPulse))  // if we're closer to the NEXT pulse than we are to the CURRENT one
+                    (2 * (targetNextPulseTime - currentTime) <= getMicrosecsPerPulse()))  // if we're closer to the NEXT pulse than we are to the CURRENT one
                     {
                     // round up to next
                     time++;
@@ -316,8 +329,8 @@ void stateRecorderPlay()
             setPoint(led2, local.recorder.status, 0);
             }
                 
-        if (options.recorderRepeat)
-            setPoint(led2, 6, 0);
+        //if (options.recorderRepeat)
+        //    setPoint(led2, 6, 0);
         }
     }
         
@@ -325,7 +338,7 @@ void stateRecorderPlay()
         
         
         
-        
+/*
 #define RECORDER_MENU_REPEAT 0
 #define RECORDER_MENU_OPTIONS 1
 
@@ -379,3 +392,4 @@ void stateRecorderMenu()
         break;
         }
     }
+*/

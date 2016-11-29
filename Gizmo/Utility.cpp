@@ -75,16 +75,17 @@ uint16_t medianOfFive(uint16_t array[])
 ////// DEBUGGING CODE
 
 
-void debug(int val)
+uint8_t debug(int val)
     {
     clearMatrix(led);
     clearMatrix(led2);
     writeNumber(led, led2, val);
     sendMatrix(led, led2);
     delay(500);
+    return 1;
     }
 
-void debug(const char* str, int val)
+uint8_t debug(const char* str, int val)
     {
     char s[3];
     strncpy_P(s, str, 2);
@@ -96,9 +97,10 @@ void debug(const char* str, int val)
     writeShortNumber(led, val, false);
     sendMatrix(led, led2);
     delay(500);
+    return 1;
     }
         
-void debug(int8_t val1, int8_t val2)
+uint8_t debug(int8_t val1, int8_t val2)
     {
     clearMatrix(led);
     clearMatrix(led2);
@@ -106,6 +108,7 @@ void debug(int8_t val1, int8_t val2)
     writeShortNumber(led, val2, false);
     sendMatrix(led, led2);
     delay(500);
+    return 1;
     }
 
 
@@ -318,7 +321,11 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                             local.stepSequencer.fader[i] = (gatherByte(pos + 21) >> 1);  // top 7 bits moved down 1
                             }
                                 
-                        stripHighBits();                        
+    					local.stepSequencer.solo = 0;
+    					local.stepSequencer.currentTrack = 0;
+    					local.stepSequencer.currentEditPosition = 0;
+                        stripHighBits();
+                        stopStepSequencer();
                         }
                     }
                 }
@@ -419,7 +426,6 @@ uint8_t stateEnterNote(uint8_t glyphs, uint8_t backState)
 
 
 
-
 void playApplication()
     {
     switch(optionsReturnState)
@@ -431,7 +437,9 @@ void playApplication()
             playStepSequencer();
             break;
         case STATE_RECORDER_PLAY:
-            stateRecorderPlay();
+        	// This is a dummy function, which we include to keep the switch statement from growing by 100 bytes (!)
+        	// Because we do NOT want to play the recorder in the background ever.
+            playRecorder();
             break; 
         }
     }
@@ -454,11 +462,14 @@ void clearScreen()
 
 
 
-GLOBAL static uint8_t glyphTable[15][4] = 
+GLOBAL static uint8_t glyphTable[16][4] = 
     {
-    {GLYPH_3x5_MINUS, GLYPH_3x5_MINUS, GLYPH_3x5_MINUS, GLYPH_3x5_MINUS},   // ----
+    	{GLYPH_3x5_MINUS, GLYPH_3x5_MINUS, GLYPH_3x5_MINUS, GLYPH_3x5_MINUS},   // ----
         {GLYPH_3x5_A, GLYPH_3x5_L, GLYPH_3x5_L, GLYPH_3x5_C},   // ALLC
         {GLYPH_3x5_D, GLYPH_3x5_F, GLYPH_3x5_L, GLYPH_3x5_T},   // DFLT
+        {GLYPH_3x5_D, GLYPH_3x5_E, GLYPH_3x5_C, GLYPH_3x5_R},   // DECR
+        {GLYPH_3x5_I, GLYPH_3x5_N, GLYPH_3x5_C, GLYPH_3x5_R},   // INCR
+        {GLYPH_3x5_F, GLYPH_3x5_R, GLYPH_3x5_E, GLYPH_3x5_E},   // FREE
         {GLYPH_3x5_N, GLYPH_3x5_O, GLYPH_3x5_T, GLYPH_3x5_E},   // NOTE
         {GLYPH_3x5_S, GLYPH_3x5_Y, GLYPH_3x5_S, GLYPH_3x5_X},   // SYSX
         {GLYPH_3x5_S, GLYPH_3x5_P, GLYPH_3x5_O, GLYPH_3x5_S},   // SPOS
@@ -469,8 +480,6 @@ GLOBAL static uint8_t glyphTable[15][4] =
         {GLYPH_3x5_S, GLYPH_3x5_T, GLYPH_3x5_O, GLYPH_3x5_P},   // STOP
         {GLYPH_3x5_R, GLYPH_3x5_S, GLYPH_3x5_E, GLYPH_3x5_T},   // RSET
         {GLYPH_3x5_R, GLYPH_3x5_O, GLYPH_3x5_O, GLYPH_3x5_T},   // ROOT
-        {GLYPH_3x5_D, GLYPH_3x5_E, GLYPH_3x5_C, GLYPH_3x5_R},   // DECR
-        {GLYPH_3x5_I, GLYPH_3x5_N, GLYPH_3x5_C, GLYPH_3x5_R}    // INCR
     };
 
 
@@ -497,14 +506,14 @@ void drawMIDIChannel(uint8_t channel)
         }
     else if (channel == CHANNEL_OFF)
         {
-        setPoint(led2, 1, 0);
+        setPoint(led2, 0, 0);
         setPoint(led2, 2, 0);
-        setPoint(led2, 6, 0);
+        setPoint(led2, 5, 0);
         setPoint(led2, 7, 0);
         }
     else
         {
-        drawRange(led2, 0, 0, 16, channel);
+        drawRange(led2, 0, 0, 16, (uint8_t)(channel - 1));
         }
     }
 

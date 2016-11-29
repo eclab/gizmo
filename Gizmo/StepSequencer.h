@@ -174,14 +174,15 @@ struct _stepSequencerLocal
     uint32_t offTime[MAX_STEP_SEQUENCER_TRACKS];    // When do we turn off?  Note it's uint16, not uint32.  It's a delta from the lastTime
     uint8_t noteOff[MAX_STEP_SEQUENCER_TRACKS];
         
-        
+    uint8_t solo;
     uint8_t currentTrack;                                                   // which track are we editing?
     uint8_t backup;                                                                 // used to back up various values when the user cancels
-    uint8_t editedState;                                                    // What edited state is the file in?
     int16_t currentRightPot;
     };
 
 
+
+#define FADER_IDENDITY_VALUE 32
 
 /// DATA
 
@@ -231,6 +232,8 @@ void stateStepSequencerMenu();
 void stopStepSequencer();
 
 void resetStepSequencer();
+
+void clearTrack(uint8_t track);
 
 #endif
 

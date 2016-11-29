@@ -99,19 +99,59 @@ void updateTicksAndWait()
     ++tickCount;
     }
 
+uint8_t shouldSendRealTime()
+	{
+	return (options.clock <= GENERATE_MIDI_CLOCK) && !bypass;
+	}
 
 
+uint32_t lastExternalPulseTime = 0;
+uint32_t externalMicrosecsPerPulse = 0;
 uint8_t clockState = CLOCK_STOPPED;
+
+/// Estimates the microseconds per pulse if we're being driven by a remote external clock.
+/// If we have just STARTed, then lastExternalPulseTime is set to 0, so this is our FIRST pulse.
+/// We need at two pulses to get an estimate.  Prior to the second pulse, our estimate is 0.
+/// At the first pulse (and every pulse thereafter), we record the time of the pulse in 
+/// lastExternalPulseTime. At the second pulse (and every pulse thereafter), the estimate
+//  is (of course) the difference between the current time and the last pulse.
+//
+//  The issue here is that when a note is played on the VERY FIRST PULSE, application such
+//  as the step sequencer need to know when to turn the note off.  If there's swing, then they
+//  have to use the clock microseconds estimate to figure this out.  But we don't have it yet.
+//  So we'll probably use the previous (non-external) microseconds estimate.  This is yucky
+//  and could make bad sounds until we're into the second note.  However it's probably not
+//  an issue because swing doesn't happen until the SECOND note typically, and that's going to
+//  be well after the first pulse, at which point the estimate will be realistic.  I HOPE!
+void updateExternalClock()
+	{
+    if (lastExternalPulseTime > 0)	// we've seen one pulse already
+    	{
+    	// note that we're overwriting the microsecsPerPulse variable.  This will get
+    	// reset when the user changes the clock setting back to something that's not
+    	// external (see the case for STATE_OPTIONS_MIDI_CLOCK in TopLevel.cpp)
+    	externalMicrosecsPerPulse = currentTime - lastExternalPulseTime;
+    	}
+     lastExternalPulseTime = currentTime;
+	}
 
 void pulseClock()
     {
     if (clockState == CLOCK_STOPPED)
         return;
 
+	// update our external clock pulse estimate
+	if (options.clock <= CONSUME_MIDI_CLOCK)  // we're using an external clock
+		updateExternalClock(); 
+
     pulse = 1;
     pulseCount++;
 
-    if (options.clock == GENERATE_MIDI_CLOCK || options.clock == USE_MIDI_CLOCK && !bypass)
+#if defined(__AVR_ATmega2560__)
+    if ((options.clock == GENERATE_MIDI_CLOCK || options.clock == USE_MIDI_CLOCK) && !bypass)  // different from shouldSendRealTime() in that we don't do divide
+#else
+    if (shouldSendRealTime())
+#endif
         { MIDI.sendRealTime(MIDIClock); TOGGLE_OUT_LED(); }
     }
 
@@ -123,9 +163,12 @@ uint8_t stopClock(uint8_t fromButton)
     if (clockState != CLOCK_RUNNING)
     	return 0;
 
+	lastExternalPulseTime = 0;
+	externalMicrosecsPerPulse = 0;
+	
     clockState = CLOCK_STOPPED;
 
-    if (options.clock == GENERATE_MIDI_CLOCK || options.clock == USE_MIDI_CLOCK && !bypass)
+    if (shouldSendRealTime())
         { MIDI.sendRealTime(MIDIStop); TOGGLE_OUT_LED(); }
 
     // if we stop the clock some notes may be playing.  We reset them here.
@@ -144,7 +187,7 @@ uint8_t startClock(uint8_t fromButton)
         
 	if (clockState != CLOCK_STOPPED)
 		return 0;
-		
+
     notePulseCountdown = 1;
     beatCountdown = 1;
     drawBeatToggle = 0;
@@ -153,8 +196,8 @@ uint8_t startClock(uint8_t fromButton)
     clockState = CLOCK_RUNNING;
     swingToggle = 0;
 
-    if (options.clock == GENERATE_MIDI_CLOCK || options.clock == USE_MIDI_CLOCK && !bypass)
-        { MIDI.sendRealTime(MIDIStart); TOGGLE_OUT_LED(); }
+    if (shouldSendRealTime())
+        { MIDI.sendRealTime(MIDIStart); }
 
     // When we start the clock we want to have applications starting at their initial points.
     // NOTE: It may be that instead actually want to START them playing.  But I don't think so.
@@ -185,7 +228,7 @@ uint8_t continueClock(uint8_t fromButton)
 
     clockState = CLOCK_RUNNING;
 
-    if (options.clock == GENERATE_MIDI_CLOCK || options.clock == USE_MIDI_CLOCK && !bypass)
+    if (shouldSendRealTime())
         { MIDI.sendRealTime(MIDIContinue); TOGGLE_OUT_LED(); }
     return 1;
     }     
@@ -232,6 +275,13 @@ void setNotePulseRate(uint8_t noteSpeedType)
     drawNotePulseToggle = 0;
     drawBeatToggle = 0;
     }
+
+uint32_t getMicrosecsPerPulse()
+	{
+	if (externalMicrosecsPerPulse)
+		return externalMicrosecsPerPulse;
+	else return microsecsPerPulse;
+	}
 
 
 

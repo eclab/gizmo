@@ -8,20 +8,26 @@
 //// MIDI CHANNELS
 #define CHANNEL_OFF 0
 #define CHANNEL_OMNI 17                         // For INPUT
-#define CHANNEL_DEFAULT 16                      // For OUTPUT, such as when the Step Sequencer wants to say that per-track should follow the default
-
 
 
 //// MIDI CLOCK OPTIONS SETTINGS
 // We have five options for handling the MIDI clock (or producing our own)
 // These are the possible settings for options.clock
+
+#if defined(__AVR_ATmega2560__)
 #define USE_MIDI_CLOCK 0         // Use external MIDI clock, and pass it through
 #define DIVIDE_MIDI_CLOCK 1      // Use external MIDI clock, and pass it through, but slowed down to the given NOTE VALUE
 #define CONSUME_MIDI_CLOCK 2     // Use external MIDI clock, but don't pass it through
 #define IGNORE_MIDI_CLOCK 3      // Use our own internal clock, but pass any MIDI clock through
 #define GENERATE_MIDI_CLOCK 4    // Use our own internal clock and produce an outgoing MIDI clock from it, rather than passing through any MIDI clock
 #define BLOCK_MIDI_CLOCK 5       // Use our own internal clock.  Don't pass through or generate any MIDI clock.
-
+#else
+#define USE_MIDI_CLOCK 0         // Use external MIDI clock, and pass it through
+#define CONSUME_MIDI_CLOCK 1     // Use external MIDI clock, but don't pass it through
+#define IGNORE_MIDI_CLOCK 2      // Use our own internal clock, but pass any MIDI clock through
+#define GENERATE_MIDI_CLOCK 3    // Use our own internal clock and produce an outgoing MIDI clock from it, rather than passing through any MIDI clock
+#define BLOCK_MIDI_CLOCK 4       // Use our own internal clock.  Don't pass through or generate any MIDI clock.
+#endif
 
 // I don't want to do MIDI Namespace stuff.  
 // So I have defined the following #defines, copies
@@ -89,37 +95,37 @@
 #define STATE_RECORDER_PLAY 29
 #define STATE_RECORDER_SAVE 30
 #define STATE_RECORDER_SURE 31
-#define STATE_RECORDER_MENU 32
-#define STATE_CONTROLLER_PLAY 33
-#define STATE_CONTROLLER_SET_LEFT_KNOB_TYPE 34
-#define STATE_CONTROLLER_SET_RIGHT_KNOB_TYPE 35
-#define STATE_CONTROLLER_SET_MIDDLE_BUTTON_TYPE 36
-#define STATE_CONTROLLER_SET_SELECT_BUTTON_TYPE 37
-#define STATE_CONTROLLER_SET_LEFT_KNOB_NUMBER 38
-#define STATE_CONTROLLER_SET_RIGHT_KNOB_NUMBER 39
-#define STATE_CONTROLLER_SET_MIDDLE_BUTTON_NUMBER 40
-#define STATE_CONTROLLER_SET_SELECT_BUTTON_NUMBER 41
-#define STATE_CONTROLLER_SET_MIDDLE_BUTTON_VALUE_ON 42
-#define STATE_CONTROLLER_SET_SELECT_BUTTON_VALUE_ON 43
-#define STATE_CONTROLLER_SET_MIDDLE_BUTTON_VALUE_OFF 44
-#define STATE_CONTROLLER_SET_SELECT_BUTTON_VALUE_OFF 45
-#define STATE_OPTIONS_TEMPO 46
-#define STATE_OPTIONS_NOTE_SPEED 47
-#define STATE_OPTIONS_SWING 48
-#define STATE_OPTIONS_TRANSPOSE 49
-#define STATE_OPTIONS_VOLUME 50
-#define STATE_OPTIONS_PLAY_LENGTH 51
-#define STATE_OPTIONS_MIDI_CHANNEL_IN 52
-#define STATE_OPTIONS_MIDI_CHANNEL_OUT 53
-#define STATE_OPTIONS_MIDI_CHANNEL_CONTROL 54
-#define STATE_OPTIONS_MIDI_CLOCK 55
-#define STATE_OPTIONS_CLICK 56
-#define STATE_OPTIONS_SCREEN_BRIGHTNESS 57
-#define STATE_OPTIONS_MENU_DELAY 58
-#define STATE_OPTIONS_VOLTAGE 59
-#define STATE_OPTIONS_ABOUT 60
-#define STATE_SPLIT_CHANNEL 61
-#define STATE_SPLIT_NOTE 62
+//#define STATE_RECORDER_MENU 32
+#define STATE_CONTROLLER_PLAY 32
+#define STATE_CONTROLLER_SET_LEFT_KNOB_TYPE 33
+#define STATE_CONTROLLER_SET_RIGHT_KNOB_TYPE 34
+#define STATE_CONTROLLER_SET_MIDDLE_BUTTON_TYPE 35
+#define STATE_CONTROLLER_SET_SELECT_BUTTON_TYPE 36
+#define STATE_CONTROLLER_SET_LEFT_KNOB_NUMBER 37
+#define STATE_CONTROLLER_SET_RIGHT_KNOB_NUMBER 38
+#define STATE_CONTROLLER_SET_MIDDLE_BUTTON_NUMBER 39
+#define STATE_CONTROLLER_SET_SELECT_BUTTON_NUMBER 40
+#define STATE_CONTROLLER_SET_MIDDLE_BUTTON_VALUE_ON 41
+#define STATE_CONTROLLER_SET_SELECT_BUTTON_VALUE_ON 42
+#define STATE_CONTROLLER_SET_MIDDLE_BUTTON_VALUE_OFF 43
+#define STATE_CONTROLLER_SET_SELECT_BUTTON_VALUE_OFF 44
+#define STATE_OPTIONS_TEMPO 45
+#define STATE_OPTIONS_NOTE_SPEED 46
+#define STATE_OPTIONS_SWING 47
+#define STATE_OPTIONS_TRANSPOSE 48
+#define STATE_OPTIONS_VOLUME 49
+#define STATE_OPTIONS_PLAY_LENGTH 50
+#define STATE_OPTIONS_MIDI_CHANNEL_IN 51
+#define STATE_OPTIONS_MIDI_CHANNEL_OUT 52
+#define STATE_OPTIONS_MIDI_CHANNEL_CONTROL 53
+#define STATE_OPTIONS_MIDI_CLOCK 54
+#define STATE_OPTIONS_CLICK 55
+#define STATE_OPTIONS_SCREEN_BRIGHTNESS 56
+#define STATE_OPTIONS_MENU_DELAY 57
+#define STATE_OPTIONS_VOLTAGE 58
+#define STATE_OPTIONS_ABOUT 59
+#define STATE_SPLIT_CHANNEL 60
+#define STATE_SPLIT_NOTE 61
 
 #else 
 #define STATE_NONE 255
@@ -155,43 +161,43 @@
 #define STATE_RECORDER_PLAY 29
 #define STATE_RECORDER_SAVE 30
 #define STATE_RECORDER_SURE 31
-#define STATE_RECORDER_MENU 32
-#define STATE_CONTROLLER_PLAY 33
-#define STATE_CONTROLLER_SET_LEFT_KNOB_TYPE 34
-#define STATE_CONTROLLER_SET_RIGHT_KNOB_TYPE 35
-#define STATE_CONTROLLER_SET_MIDDLE_BUTTON_TYPE 36
-#define STATE_CONTROLLER_SET_SELECT_BUTTON_TYPE 37
-#define STATE_CONTROLLER_SET_LEFT_KNOB_NUMBER 38
-#define STATE_CONTROLLER_SET_RIGHT_KNOB_NUMBER 39
-#define STATE_CONTROLLER_SET_MIDDLE_BUTTON_NUMBER 40
-#define STATE_CONTROLLER_SET_SELECT_BUTTON_NUMBER 41
-#define STATE_CONTROLLER_SET_MIDDLE_BUTTON_VALUE_ON 42
-#define STATE_CONTROLLER_SET_SELECT_BUTTON_VALUE_ON 43
-#define STATE_CONTROLLER_SET_MIDDLE_BUTTON_VALUE_OFF 44
-#define STATE_CONTROLLER_SET_SELECT_BUTTON_VALUE_OFF 45
-#define STATE_OPTIONS_TEMPO 46
-#define STATE_OPTIONS_NOTE_SPEED 47
-#define STATE_OPTIONS_SWING 48
-#define STATE_OPTIONS_TRANSPOSE 49
-#define STATE_OPTIONS_VOLUME 50
-#define STATE_OPTIONS_PLAY_LENGTH 51
-#define STATE_OPTIONS_MIDI_CHANNEL_IN 52
-#define STATE_OPTIONS_MIDI_CHANNEL_OUT 53
-#define STATE_OPTIONS_MIDI_CHANNEL_CONTROL 54
-#define STATE_OPTIONS_MIDI_CLOCK 55
-#define STATE_OPTIONS_CLICK 56
-#define STATE_OPTIONS_SCREEN_BRIGHTNESS 57
-#define STATE_OPTIONS_VOLTAGE 58
-#define STATE_OPTIONS_ABOUT 59
+//#define STATE_RECORDER_MENU 32
+#define STATE_CONTROLLER_PLAY 32
+#define STATE_CONTROLLER_SET_LEFT_KNOB_TYPE 33
+#define STATE_CONTROLLER_SET_RIGHT_KNOB_TYPE 34
+#define STATE_CONTROLLER_SET_MIDDLE_BUTTON_TYPE 35
+#define STATE_CONTROLLER_SET_SELECT_BUTTON_TYPE 36
+#define STATE_CONTROLLER_SET_LEFT_KNOB_NUMBER 37
+#define STATE_CONTROLLER_SET_RIGHT_KNOB_NUMBER 38
+#define STATE_CONTROLLER_SET_MIDDLE_BUTTON_NUMBER 39
+#define STATE_CONTROLLER_SET_SELECT_BUTTON_NUMBER 40
+#define STATE_CONTROLLER_SET_MIDDLE_BUTTON_VALUE_ON 41
+#define STATE_CONTROLLER_SET_SELECT_BUTTON_VALUE_ON 42
+#define STATE_CONTROLLER_SET_MIDDLE_BUTTON_VALUE_OFF 43
+#define STATE_CONTROLLER_SET_SELECT_BUTTON_VALUE_OFF 44
+#define STATE_OPTIONS_TEMPO 45
+#define STATE_OPTIONS_NOTE_SPEED 46
+#define STATE_OPTIONS_SWING 47
+#define STATE_OPTIONS_TRANSPOSE 48
+#define STATE_OPTIONS_VOLUME 49
+#define STATE_OPTIONS_PLAY_LENGTH 50
+#define STATE_OPTIONS_MIDI_CHANNEL_IN 51
+#define STATE_OPTIONS_MIDI_CHANNEL_OUT 52
+#define STATE_OPTIONS_MIDI_CHANNEL_CONTROL 53
+#define STATE_OPTIONS_MIDI_CLOCK 54
+#define STATE_OPTIONS_CLICK 55
+#define STATE_OPTIONS_SCREEN_BRIGHTNESS 56
+#define STATE_OPTIONS_VOLTAGE 57
+#define STATE_OPTIONS_ABOUT 58
 #endif // defined(__AVR_ATmega2560__)
 
 
 
 
 /// THE STATE MACHINE
-#define MAX_APPLICATIONS        12                // How many applications do we have slots for?
-extern uint8_t state;                 // The current state
-extern uint8_t application;           // The top-level non-root state (the application, so to speak)
+#define MAX_APPLICATIONS        12        // How many applications do we have slots for?
+extern uint8_t state;                 	  // The current state
+extern uint8_t application;               // The top-level non-root state (the application, so to speak)
 extern uint8_t entry;                     // Are we just entering a state?
 extern uint8_t optionsReturnState;        // If we're in STATE_OPTIONS and the user presses BACK, where should we go?
 extern uint8_t defaultState;              // If we have just BACKed up into a menu state, what state should be the first one displayed?  This can be STATE_NONE
@@ -219,7 +225,6 @@ extern const char* down_p;// = PSTR("DOWN");
 #if defined(__AVR_ATmega2560__)
 extern const char* voltage_p;// = PSTR("VOLTAGE");
 #endif
-extern const char* length_p;
 extern const char* options_p;
 
 
@@ -274,44 +279,50 @@ extern uint8_t lockoutPots;                     // Set to TRUE when we we want t
 // initializes the pots
 void setupPots();
 
+void clearReleased();
+
 // Returns if the given button is in the given value state (PRESSED, RELEASED, PRESSED_AND_RELEASED, RELEASED_LONG)
 // ALSO: 
 uint8_t isUpdated(uint8_t button, uint8_t val);
 
 
 
-/// ALL POSSIBLE itemTypes that we might receive
+/// ALL ITEM TYPES
+/// itemType can be any of the following
+
+// These are grouped first -- they're the "fast MIDI" messages and have some FALL THRUs, see STATE_GAUGE
 #define MIDI_CLOCK                      0
 #define MIDI_TIME_CODE          1
 #define MIDI_ACTIVE_SENSING     2
+
+// These are the channel messages and must be grouped together, see the >= and <= in STATE_GAUGE
 #define MIDI_NOTE_ON   3
 #define MIDI_NOTE_OFF    4
 #define MIDI_AFTERTOUCH 5
 #define MIDI_AFTERTOUCH_POLY 6
 #define MIDI_PROGRAM_CHANGE     7
 #define MIDI_PITCH_BEND 8
-#define MIDI_SYSTEM_EXCLUSIVE   9
-#define MIDI_SONG_POSITION      10
-#define MIDI_SONG_SELECT        11
-#define MIDI_TUNE_REQUEST       12
-#define MIDI_START      13
-#define MIDI_CONTINUE   14
-#define MIDI_STOP       15
-#define MIDI_SYSTEM_RESET       16
-#define MIDI_CC_7_BIT    17                // simple CC messages
-#define MIDI_CC_14_BIT    18               // all other CC messages other than NRPN, RPN
-#define MIDI_NRPN_14_BIT    19                                 // NRPN DATA messages
-#define MIDI_NRPN_INCREMENT    20
-#define MIDI_NRPN_DECREMENT    21
-#define MIDI_RPN_14_BIT    22                               // RPN DATA messages
-#define MIDI_RPN_INCREMENT    23
-#define MIDI_RPN_DECREMENT    24
+#define MIDI_CC_7_BIT    9                // simple CC messages
+#define MIDI_CC_14_BIT    10               // all other CC messages other than NRPN, RPN
+#define MIDI_NRPN_14_BIT    11                                 // NRPN DATA messages
+#define MIDI_NRPN_INCREMENT    12
+#define MIDI_NRPN_DECREMENT    13
+#define MIDI_RPN_14_BIT    14                               // RPN DATA messages
+#define MIDI_RPN_INCREMENT    15
+#define MIDI_RPN_DECREMENT    16
+// End Group
+
+// Other messages
+#define MIDI_SYSTEM_EXCLUSIVE   17
+#define MIDI_SONG_POSITION      18
+#define MIDI_SONG_SELECT        19
+#define MIDI_TUNE_REQUEST       20
+#define MIDI_START      21
+#define MIDI_CONTINUE   22
+#define MIDI_STOP       23
+#define MIDI_SYSTEM_RESET       24
 
 
-// Bits to raise for newRapidMidiItem
-#define MIDI_CLOCK_BIT 0
-#define MIDI_TIME_CODE_BIT 1
-#define ACTIVE_SENSING_BIT 2
 
 // newItem can be any of the following
 #define NO_NEW_ITEM 0
@@ -321,10 +332,9 @@ uint8_t isUpdated(uint8_t button, uint8_t val);
 
 // NEW INCOMING MIDI DATA TRIGGERS
 extern uint8_t  newItem;                // newItem can be 0, 1, or WAIT_FOR_A_SEC
-extern uint8_t  newRapidMidiItem;       // Bit 0 is MIDI_CLOCK_BIT, Bit 1 is MIDI_TIME_CODE_BIT, Bit 2 is ACTIVE_SENSING_BIT.  This could be merged with newItem
-extern uint8_t itemType;
-extern uint16_t itemNumber;             // Note on/off/poly aftertouch use this for NOTE PITCH
-extern uint16_t itemValue;                      // Note on/off/poly aftertouch use this for NOTE VELOCITY / AFTERTOUCH
+extern uint8_t 	itemType;
+extern uint16_t itemNumber;             // Note on/off/poly aftertouch use this for NOTE PITCH, otherwise it's the parameter for PC/CC/NRPN/RPN
+extern uint16_t itemValue;              // Note on/off/poly aftertouch use this for NOTE VELOCITY / AFTERTOUCH, otherwise it's the value for PC/CC/NRPN/RPN, and PITCH BEND
 
 
 // FULLRESET()  
@@ -455,9 +465,10 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
 #define OTHER_NONE 0
 #define OTHER_OMNI 1
 #define OTHER_DEFAULT 2
-#define OTHER_INCREMENT 3
-#define OTHER_DECREMENT 4
-#define OTHER_GLYPH 5
+#define OTHER_DECREMENT 3
+#define OTHER_INCREMENT 4
+#define OTHER_FREE 5
+#define OTHER_GLYPH 255
 
 #define MAX_GLYPHS 11
 extern uint8_t glyphs[MAX_GLYPHS];
@@ -538,11 +549,8 @@ void sendAllNotesOff();
 
 // The following NRPN parameters will control Gizmo.
 // Buttons (including BYPASS and UNLOCK) are 1 when pressed, 0 when unpressed.
-// Pots should be sent 14-bit, but only range from 0...1023.
+// Pots should be sent 14-bit, but only range from 0...1023 inclusive
 
-#define NRPN_BACK_BUTTON_PARAMETER              0
-#define NRPN_MIDDLE_BUTTON_PARAMETER            1
-#define NRPN_SELECT_BUTTON_PARAMETER            2
 #define NRPN_BACK_BUTTON_PARAMETER              0
 #define NRPN_MIDDLE_BUTTON_PARAMETER            1
 #define NRPN_SELECT_BUTTON_PARAMETER            2

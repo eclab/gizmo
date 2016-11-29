@@ -111,52 +111,54 @@
 /// GLYPH NAMES
 /// This doesn't include the alphabet in font_alphabet5x5 
 
-#define GLYPH_2x5_1             0
-#define GLYPH_2x5_LEFT_PAREN            1
-#define GLYPH_2x5_RIGHT_PAREN   2
+//#define GLYPH_2x5_1             0
 
-#define GLYPH_3x5_0             0
-#define GLYPH_3x5_1             1
-#define GLYPH_3x5_2             2
-#define GLYPH_3x5_3             3
-#define GLYPH_3x5_4             4
-#define GLYPH_3x5_5             5
-#define GLYPH_3x5_6             6
-#define GLYPH_3x5_7             7
-#define GLYPH_3x5_8             8
-#define GLYPH_3x5_9             9
-#define GLYPH_3x5_A             10
-#define GLYPH_3x5_B             11
-#define GLYPH_3x5_C             12
-#define GLYPH_3x5_D             13
-#define GLYPH_3x5_E             14
-#define GLYPH_3x5_F             15
-#define GLYPH_3x5_G             16
-#define GLYPH_3x5_H             17
-#define GLYPH_3x5_I             18
-#define GLYPH_3x5_J             19
-#define GLYPH_3x5_K             20
-#define GLYPH_3x5_L             21
-#define GLYPH_3x5_M             22
-#define GLYPH_3x5_N             23
-#define GLYPH_3x5_O             24
-#define GLYPH_3x5_P             25
-#define GLYPH_3x5_Q             26
-#define GLYPH_3x5_R             27
-#define GLYPH_3x5_S             28
-#define GLYPH_3x5_T             29
-#define GLYPH_3x5_U             30
-#define GLYPH_3x5_V             31
-#define GLYPH_3x5_W             32
-#define GLYPH_3x5_X             33
-#define GLYPH_3x5_Y             34
-#define GLYPH_3x5_Z             35
-#define GLYPH_3x5_MINUS         36
-#define GLYPH_3x5_FLAT          37
-#define GLYPH_3x5_UP            38
-#define GLYPH_3x5_DOWN  39
-#define GLYPH_3x5_UP_DOWN       40
-#define GLYPH_3x5_BLANK      41
+#define GLYPH_2x5_LEFT_PAREN    0
+#define GLYPH_2x5_RIGHT_PAREN   1
+#define GLYPH_3x5_UP            2		// associated with character '*'
+#define GLYPH_3x5_PLUS        	3
+#define GLYPH_3x5_DOWN  		4		// associated with character ','
+#define GLYPH_3x5_MINUS       	5
+#define GLYPH_3x5_PERIOD       	6
+#define GLYPH_3x5_UP_DOWN       7		// associated with character '/'
+#define GLYPH_3x5_0             8
+#define GLYPH_3x5_1             9
+#define GLYPH_3x5_2             10
+#define GLYPH_3x5_3             11
+#define GLYPH_3x5_4             12
+#define GLYPH_3x5_5             13
+#define GLYPH_3x5_6             14
+#define GLYPH_3x5_7             15
+#define GLYPH_3x5_8             16
+#define GLYPH_3x5_9             17
+#define GLYPH_3x5_A             18
+#define GLYPH_3x5_B             19
+#define GLYPH_3x5_C             20
+#define GLYPH_3x5_D             21
+#define GLYPH_3x5_E             22
+#define GLYPH_3x5_F             23
+#define GLYPH_3x5_G             24
+#define GLYPH_3x5_H             25
+#define GLYPH_3x5_I             26
+#define GLYPH_3x5_J             27
+#define GLYPH_3x5_K             28
+#define GLYPH_3x5_L             29
+#define GLYPH_3x5_M             30
+#define GLYPH_3x5_N             31
+#define GLYPH_3x5_O             32
+#define GLYPH_3x5_P             33
+#define GLYPH_3x5_Q             34
+#define GLYPH_3x5_R             35
+#define GLYPH_3x5_S             36
+#define GLYPH_3x5_T             37
+#define GLYPH_3x5_U             38
+#define GLYPH_3x5_V             39
+#define GLYPH_3x5_W             40
+#define GLYPH_3x5_X             41
+#define GLYPH_3x5_Y             42
+#define GLYPH_3x5_Z             43
+#define GLYPH_3x5_FLAT          44
+#define GLYPH_3x5_BLANK      	45
 
 
 #define GLYPH_4x5_10    0
@@ -213,18 +215,18 @@
 ///// These are used in strings 
 
 
-#define CHAR_UP '^'
-#define CHAR_DOWN '&'
-#define CHAR_UPDOWN '%'
+#define STR_UP "*"
+#define STR_DOWN ","
+#define STR_UP_DOWN "/"
 
 
 //// OUR FONTS
 
 //extern const char PROGMEM font_1x5[3][1];
-extern const char PROGMEM font_2x5[3][2];
-extern const char PROGMEM font_3x5[42][3];
+//extern const char PROGMEM font_2x5[1][2];
+extern const char PROGMEM font_3x5[46][3];
 extern const char PROGMEM font_4x5[19][4];
-extern const char PROGMEM font_5x5[5][5];
+extern const char PROGMEM font_5x5[2][5];
 //extern const char PROGMEM font_alphabet5x5[26][5];
 extern const char PROGMEM font_8x5[26][8];
 
@@ -290,7 +292,7 @@ void clearVerticalLine(unsigned char* mat, uint8_t x, unsigned char line);
 void blinkVerticalLine(unsigned char* mat, uint8_t x, unsigned char line);
 
 // Writes a 2x5 glyph of the given WIDTH, starting at column X (which may be a value 0...6)
-void write2x5Glyph(unsigned char* mat, uint8_t glyph, uint8_t x);
+//void write2x5Glyph(unsigned char* mat, uint8_t glyph, uint8_t x);
 
 // Writes a 3x5 glyph of the given WIDTH, starting at column X (which may be a value 0...5)
 void write3x5Glyph(unsigned char* mat, uint8_t glyph, uint8_t x);
@@ -435,8 +437,8 @@ void addGlyphToBuffer(const char* glyph, uint8_t width, uint8_t forScrolling, ui
 void setScreenBrightness(uint8_t brightness);
 
 /// Draws a series of points horizontally corresponding to a value from 0...(total-1)
-/// This series draws to the right, then undraws to the right, and starts at X position
-/// START, in row Y.  Generally, total should be an even number.
+/// This series draws to the right, then undraws to the right, and starts at column X
+/// in row Y.  Generally, total should be an even number.
 ///
 /// An example.  Let us say that TOTAL is 8.  Then we will draw up to 4 points like this:
 /// (an X is a point, a . is an unlit LED)
@@ -449,7 +451,7 @@ void setScreenBrightness(uint8_t brightness);
 /// 5:  ..XX
 /// 6:  ...X
 /// 7:  ....
-void drawRange(uint8_t *mat, uint8_t start, uint8_t y, uint8_t total, uint8_t val);
+void drawRange(uint8_t *mat, uint8_t x, uint8_t y, uint8_t total, uint8_t val);
 
 
 #endif
