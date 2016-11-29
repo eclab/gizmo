@@ -35358,6 +35358,18 @@
 			<string>Circle</string>
 			<key>Style</key>
 			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<string>0.179203</string>
+						<key>g</key>
+						<string>0.0763747</string>
+						<key>r</key>
+						<string>1</string>
+					</dict>
+				</dict>
 				<key>shadow</key>
 				<dict>
 					<key>Draws</key>
@@ -35709,6 +35721,18 @@
 			<string>Circle</string>
 			<key>Style</key>
 			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<string>0.179203</string>
+						<key>g</key>
+						<string>0.0763747</string>
+						<key>r</key>
+						<string>1</string>
+					</dict>
+				</dict>
 				<key>shadow</key>
 				<dict>
 					<key>Draws</key>
@@ -35978,6 +36002,18 @@
 			<string>Circle</string>
 			<key>Style</key>
 			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<string>0.179203</string>
+						<key>g</key>
+						<string>0.0763747</string>
+						<key>r</key>
+						<string>1</string>
+					</dict>
+				</dict>
 				<key>shadow</key>
 				<dict>
 					<key>Draws</key>
@@ -36048,6 +36084,18 @@
 			<string>Circle</string>
 			<key>Style</key>
 			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<string>0.214124</string>
+						<key>g</key>
+						<string>0.137189</string>
+						<key>r</key>
+						<string>1</string>
+					</dict>
+				</dict>
 				<key>shadow</key>
 				<dict>
 					<key>Draws</key>
@@ -36294,6 +36342,18 @@
 			<string>Circle</string>
 			<key>Style</key>
 			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<string>0.179203</string>
+						<key>g</key>
+						<string>0.0763747</string>
+						<key>r</key>
+						<string>1</string>
+					</dict>
+				</dict>
 				<key>shadow</key>
 				<dict>
 					<key>Draws</key>
@@ -36364,6 +36424,18 @@
 			<string>Circle</string>
 			<key>Style</key>
 			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<string>0.179203</string>
+						<key>g</key>
+						<string>0.0763747</string>
+						<key>r</key>
+						<string>1</string>
+					</dict>
+				</dict>
 				<key>shadow</key>
 				<dict>
 					<key>Draws</key>
@@ -36609,6 +36681,18 @@
 			<string>Circle</string>
 			<key>Style</key>
 			<dict>
+				<key>fill</key>
+				<dict>
+					<key>Color</key>
+					<dict>
+						<key>b</key>
+						<string>0.179203</string>
+						<key>g</key>
+						<string>0.0763747</string>
+						<key>r</key>
+						<string>1</string>
+					</dict>
+				</dict>
 				<key>shadow</key>
 				<dict>
 					<key>Draws</key>
@@ -52924,7 +53008,7 @@
 	<key>MasterSheets</key>
 	<array/>
 	<key>ModificationDate</key>
-	<string>2016-11-23 03:57:24 +0000</string>
+	<string>2016-11-27 21:06:46 +0000</string>
 	<key>Modifier</key>
 	<string>Sean Luke</string>
 	<key>NotesVisible</key>
@@ -53005,7 +53089,7 @@
 			</dict>
 		</array>
 		<key>Frame</key>
-		<string>{{144, 0}, {1260, 878}}</string>
+		<string>{{-184, 0}, {1260, 878}}</string>
 		<key>ListView</key>
 		<true/>
 		<key>OutlineWidth</key>
@@ -53019,15 +53103,15 @@
 		<key>SidebarWidth</key>
 		<integer>120</integer>
 		<key>VisibleRegion</key>
-		<string>{{-812, -12}, {4500, 2956}}</string>
+		<string>{{1347, 883.75}, {555.5, 362}}</string>
 		<key>Zoom</key>
-		<real>0.25</real>
+		<real>2</real>
 		<key>ZoomValues</key>
 		<array>
 			<array>
 				<string>Canvas 1</string>
+				<real>2</real>
 				<real>0.25</real>
-				<real>1</real>
 			</array>
 		</array>
 	</dict>

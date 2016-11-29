@@ -5,6 +5,8 @@
 \usepackage{graphicx}
 \usepackage{wrapfig}
 \usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{array}
 
 \newcommand\myfrac[2]{#1/#2}
 \begin{document}
@@ -50,7 +52,7 @@ Gizmo applications can also be set with a {\it note value} (or {\it note speed})
 
 \item {\bf Bypass.}  You can quickly put Gizmo in Bypass mode, to pass through all MIDI signals and generate no new ones.  Putting Gizmo in Bypass mode will also send an All Notes Off message, so toggling Bypass is also a useful way to hush your synthesizer.
 
-\item {\bf Screen Brightness and Menu Delay}  You can change the screen brightness.  
+\item {\bf Screen Brightness}  You can change the screen brightness.  
 
 \item {\bf \textit{Mega Only}\quad Menu Delay}  Many of Gizmo's menus display the first few letters of a menu item, then pause for some interval of time before they start scrolling the full item.  You can change this interval.
 
@@ -341,7 +343,7 @@ Each track has a blinking {\it edit cursor} which determines, normally, where no
 
 Each track takes up one or two rows in the Tracks area: 16-note tracks take a single row, and 24-note and 32-note tracks take two rows.    There can be up to twelve tracks, yet the tracks display region is only six LEDs high.  This of course means that  the Tracks region scrolls as you turn the left knob.
 
-You enter notes by moving the edit cursor to the a location, then pressing keys.  You can also press the Middle Button to enter a rest, or Long Press the Middle Button to enter a {\it continuation}.  A continuation just means ``keep playing the previous note'': it essentially lengthens the previous note.  You can enter multiple continuations in series to make a note as long as you like.
+You enter notes by moving the edit cursor to the a location, then pressing keys.  You can also press the Middle Button to enter a rest, or Long Press the Middle Button to enter a {\it continuation} (basically the equivalent of a {\it tie} in music).  A continuation just means ``keep playing the previous note'': it essentially lengthens the previous note.  You can enter multiple continuations in series to make a note as long as you like.
 
 Pressing the Select button will toggle whether the Step Sequencer is playing.  When you start playing the Step Sequencer, it waits for the clock to reach a measure boundary before beginning.  Furthermore, even if you start playing the Step Sequencer, if the clock isn't running it won't play at all.
 
@@ -450,19 +452,21 @@ Of particular use to you will be Tempo and Click.  Click gives you an audible cl
 
 \paragraph{Recording and Quantization}
 
-The Recorder records nothing but MIDI NOTE ON and NOTE OFF messages.  It presently quantizes these messages, rounding them up or down to the nearest MIDI Clock pulse, that is, 1/24 of a quarter note.
+The Recorder records nothing but MIDI NOTE ON and NOTE OFF messages.  It presently quantizes these messages, rounding them up or down to the nearest MIDI Clock pulse, that is, 1/24 of a quarter note.\footnote{This is pretty low-resolution, but there you have it.}
 
 \section {The MIDI Gauge}
 
 \begin{wrapfigure}{r}{3in}
 \vspace{-1.5em}\includegraphics[width=3in]{GeneralGauge.pdf}
-\vspace{-2em}\caption{\small General Gauge Display and Frequent MIDI Display}\vspace{-2em}
+\vspace{-2em}\caption{\small General Gauge Display and Frequent MIDI Display}\vspace{-1em}
 \label{generalgauge}
 \end{wrapfigure}
 
 The MIDI gauge listens to incoming MIDI messages and displays them on-screen.  This only occurs if the MIDI IN channel is something other than NO CHANNEL (See {\bf Options\(\boldsymbol\rightarrow\) In MIDI}, in Section \ref{options}).
 
 There are three kinds of MIDI messages for purposes of display.  {\it General} messages take up the whole screen with a single message.  {\it Note} messages split the screen between pitch and velocity of the given note (on, off, polyphonic aftertouch).  Finally {\it Frequent} messages are simply displayed by lighting a specific LED to indicate their presence. 
+
+Messages that are associated with a MIDI channel will have their channel number displayed at bottom left (see Figure \ref{generalgauge}).  Note that if the MIDI IN channel is something other than OMNI (ALL Channels), then only messages associated with the MIDI IN channel will be displayed.
 
 
 
@@ -775,5 +779,42 @@ Double Whole Note				&192\\
 		You can also start/stop/continue the clock via an NRPN message (see {\bf Control MIDI} earlier).
 		
 		Note that starting and stopping the clock doesn't mean that an application starts or stops playing.  However, the Start message {\it will} cause applications to reset themselves to the beginning when appropriate.   This means that if you want to start/stop/pause/continue the Step Sequencer (for example), you can do it as follows: first stop the clock, then start the sequencer playing.  Note that it won't play because there's no clock pulses.  But now you can start, stop, and pause/continue the sequencer by controlling the Start/Stop/Continue clock messages directly.
+
+\clearpage
+
+\section{Development Status}
+
+\begin{center}
+{
+\setlength\extrarowheight{0.3em}
+\begin{tabular}{@{}llllp{2.9in}@{}}
+&\multicolumn{3}{c}{\it Testing}&\\[0.1em]
+\cline{2-4}\\[-0.9em]
+{\it Item} & {\it Coded} & {\it Cursory} & {\it Significant} & {\it Known Bugs}\\[0.1em]
+		\hline\\[-1.5em]
+Arpeggiator& $\checkmark$ & $\checkmark$ & $\checkmark$  & Fencepost error in GUI.  Scrolling through edited arpeggios will cause each note to play one too early, causing confusion.  Need to look at arpeggiation editing GUI again.\\ 
+Step Sequencer& $\checkmark$ & $\checkmark$ & & Very occasionally the beat doesn't match up with the play cursor.  Possibly track velocity doesn't do much?\\ 
+Recorder& $\checkmark$ & $\checkmark$ & $\checkmark$ & Rarely a note will get stuck after recording: appears that a NOTE OFF message isn't getting matched with the ID of the corresponding NOTE ON message when entered into memory.  
+I also think there may be a bug causing chords near the start of the song to be rushed a bit.  Perhaps timing is being delayed for some reason?\\
+Gauge& $\checkmark$ & $\checkmark$ &\\ 
+Controller& $\checkmark$ & $\checkmark$ & & Controller isn't generating proper NRPN messages, I'm pretty sure. CC works fine.\\ 
+NRPN Control  &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
+Transposition / Volume  &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
+Brightness / Delay  &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
+Tempo / Note Speed &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
+MIDI In/Out Channels &  $\checkmark$ & $\checkmark$ &  & No test of OMNI yet\\
+Bypass &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
+Display Subsystem  &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
+Timing  Subsystem &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
+Interface Utilities &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
+Storage Facility &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
+MIDI Clock Control& $\checkmark$ & $\checkmark$ & &\\
+Keyboard Splitting& $\checkmark$ & & & Entirely untested\\
+Control Voltage& $\checkmark$ & & & Entirely untested\\
+\end{tabular}
+}
+\end{center}
+
+
 
 \end{document}
