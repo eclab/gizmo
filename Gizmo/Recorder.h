@@ -14,11 +14,9 @@
 //    and our timestamp is 11 bytes (2048).  Why AT LEAST 64?  Becasue it's possible some NOTE ON messages won't have corresponding
 //    NOTE OFF messages if they don't occur until after measure 21.  But it'll be no more than 64 + 16 = 80.
 //
-// 2. Replay the 64 notes.  
+// 2. Replay the 64 notes looping. 
 // 
-// 3. Toggle repeating (looping play) at the end of the most recent measure.   
-// 
-// 4. Toggle a click track (specify a note pitch and velocity to be played for 1/24 a beat, or cancel the same).
+// 3. Toggle a click track (specify a note pitch and velocity to be played for 1/24 a beat, or cancel the same).
 //
 //
 // STORAGE

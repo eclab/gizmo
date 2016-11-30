@@ -373,7 +373,7 @@ void writeFooterAndSend()
         {
         blinkPoint(led, 7, 0);
         }
-    else 
+    else if (getClockState() == CLOCK_RUNNING)
         {
         if (drawBeatToggle)
             {
@@ -1339,22 +1339,19 @@ void go()
 
         case STATE_OPTIONS:
             {
-//#if defined(__AVR_ATmega2560__)
            // We don't have space for this on the Uno.  :-(
-            if (isUpdated(MIDDLE_BUTTON, RELEASED))
-                {
-                if (getClockState() == CLOCK_RUNNING)
-                    stopClock(true);
-                else
-                    startClock(true);
-                }
-                        
             if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
                 {
-                continueClock(true);
+                if (getClockState() == CLOCK_RUNNING)
+                    {
+                    stopClock(true);
+                    }
+                else
+                	{
+                    startClock(true);
+                    }
                 }
-//#endif
-
+                        
 #if defined(__AVR_ATmega2560__)
             const char* menuItems[15] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
                                           PSTR("VOLUME"), PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), 
@@ -1819,8 +1816,13 @@ void go()
         break;
         case STATE_OPTIONS_MIDI_CHANNEL_CONTROL:
             {
+#ifdef HEADLESS
+            // Do not permit CHANNEL_OFF
+            stateNumerical(1, 16, options.channelControl, backupOptions.channelControl, false, true, OTHER_NONE, STATE_OPTIONS);
+#else
             // 0 is CHANNEL_OFF
             stateNumerical(0, 16, options.channelControl, backupOptions.channelControl, true, true, OTHER_NONE, STATE_OPTIONS);
+#endif // HEADLESS
             }
         break;
         case STATE_OPTIONS_MIDI_CLOCK:
@@ -2608,7 +2610,8 @@ void handleGeneralControlChange(byte channel, byte number, byte value)
 		MIDI.sendControlChange(number, options.channelOut, value);
 	TOGGLE_OUT_LED();
             
-    // we're only interested in parsing CHANNEL IN and CHANNEL CONTROL    
+    // we're only interested in parsing CHANNEL IN and CHANNEL CONTROL   
+    // We MUST do CHANNEL CONTROL first so to make sure that we don't lock ourselves out if we're doing headless 
     _controlParser* parser;
     if (channel == options.channelControl)
         {

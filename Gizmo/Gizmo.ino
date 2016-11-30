@@ -19,6 +19,33 @@ void setPinsAndMasks(uint8_t pin, uint8_t mode, uint8_t &mask)
 	// For some reason, we can't set the port, due to fragileness in Arduino's portOutputRegister macro.  :-(
 	}
 
+#ifdef HEADLESS_RESET
+
+void setup()
+    {
+	fullReset();
+
+	// Show the welcome message
+	write8x5Glyph(led2, GLYPH_8x5_GIZMO_PT1);
+	write8x5Glyph(led, GLYPH_8x5_GIZMO_PT2);
+	rotateMatrix(led2, DIR_180);
+	rotateMatrix(led, DIR_180);
+	sendMatrix(led, led2);
+	delay(2000);
+	
+	write3x5Glyphs(GLYPH_SYSTEM_RESET);
+	rotateMatrix(led2, DIR_180);
+	rotateMatrix(led, DIR_180);
+	sendMatrix(led, led2);
+	}
+
+void loop()
+	{
+	// do nothing
+	}
+	
+#else
+
 void setup()
     {
 	// set up the pin mode, masks, and ports for the buttons and LEDs on the board
@@ -141,5 +168,8 @@ void loop()
     go();
     }
   
+#endif // HEADLESS_RESET
+
+
 
 

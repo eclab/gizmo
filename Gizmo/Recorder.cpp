@@ -1,23 +1,39 @@
 #include "All.h"
 
 
-void drawPoint(uint8_t item, uint8_t yoffset)
+
+/// PLAY STATES
+/// These are situations the recorder may find itself in.
+/// Don't confuse these with the STATUS VALUES in Recorder.h
+
+#define NOT_ENDED 0				// Song playing/recording isn't over yet
+#define ENDED 1					// Playing/recording is over
+#define ENDED_REPEATING 2		// Playing is now over but we're going to repeat the song
+
+
+
+
+/// Resets the recorder entirely.  Called on MIDI Start etc.
+void resetRecorder()
     {
-    uint8_t y = 7 - yoffset - (item >> 4);  // integer div by 16
-    uint8_t x = (item - (item >> 4) * 16);  // remainder
-
-    if (x < 8)
-        setPoint(led2, x, y);
-    else
-        setPoint(led, x-8, y);
+    local.recorder.tick = -1;
+    local.recorder.currentPos = 0;
+    local.recorder.bufferPos = 0;
     }
+        
 
 
+// Possible values for the 'load' parameter in recorderLoadNote.
+// These are carefully chosen so as to make them usable in setting the high bit.
 #define LOAD_NOTE_OFF 128
 #define LOAD_NOTE_ON 0
 
-
-void loadNote(uint8_t load, uint8_t id, uint16_t time)
+// Private helper method for stateRecorderPlay() for packing notes for storage.
+// Packs a NOTE ON or NOTE OFF into the buffer.  If the note is a NOTE OFF, also
+// sends a NoteOFF message to MIDI, and clears the NoteOFF ID, making it available.
+// Increases the recorder.length, currentPos, and recorder.notes
+// appropriately.  
+void recorderLoadNote(uint8_t load, uint8_t id, uint16_t time)
     {
     // take the high three bits of time and put them in the low 3 bits, plus 1 in the top bit, and the ID in bits 3, 4, 5, 6
     data.slot.data.recorder.buffer[data.slot.data.recorder.length] = 
@@ -39,22 +55,32 @@ void loadNote(uint8_t load, uint8_t id, uint16_t time)
         }
     }
 
-void resetRecorder()
-    {
-    local.recorder.tick = -1;
-    local.recorder.currentPos = 0;
-    local.recorder.bufferPos = 0;
-    }
-        
-#define NOT_ENDED 0
-#define ENDED 1
-#define ENDED_REPEATING 2
-
 
 // This is a dummy function which does nothing at all, because we can't presently
 // play in the background.  But it's included because if we DON'T have it, then
 // Utility.playApplication() increases by 100 bytes.  :-(
 void playRecorder() { } 
+
+
+
+// Private helper method for stateRecorderPlay() for drawing the measure and note positions.
+// Draws a single point at position (item % 16, yoffset + item / 16), where
+// yoffset = 0 is the top left hand corner, and larger yoffset increases as you go down.
+// This is basically plotting a point in a 16 x N rectangle starting at yoffset.
+void recorderDrawPoint(uint8_t item, uint8_t yoffset)
+    {
+    uint8_t y = 7 - yoffset - (item >> 4);  // integer div by 16
+    uint8_t x = (item - (item >> 4) * 16);  // remainder
+
+    if (x < 8)
+        setPoint(led2, x, y);
+    else
+        setPoint(led, x-8, y);
+    }
+
+
+
+
 
 
 // Plays OR Records the song
@@ -229,7 +255,7 @@ void stateRecorderPlay()
                     if (id == MAX_RECORDER_NOTES_PLAYING + 1)  // uh oh, no slot.  Get rid of id 0
                         {
                         // load a NOTE_OFF at id 0
-                        loadNote(LOAD_NOTE_OFF, 0, time);
+                        recorderLoadNote(LOAD_NOTE_OFF, 0, time);
                         id = 0;
                         }
                                                                                                                                                                         
@@ -237,10 +263,10 @@ void stateRecorderPlay()
                     local.recorder.notes[id] = itemNumber;  // the note proper
                                                                                         
                     // load a NOTE_ON at the id
-                    loadNote(LOAD_NOTE_ON, id, time);
+                    recorderLoadNote(LOAD_NOTE_ON, id, time);
 
                     // load the note pitch
-                    data.slot.data.recorder.buffer[data.slot.data.recorder.length+2 - 4] = itemNumber;  // the note.  We subtract 4 because loadNote has already added it
+                    data.slot.data.recorder.buffer[data.slot.data.recorder.length+2 - 4] = itemNumber;  // the note.  We subtract 4 because recorderLoadNote has already added it
                     // load the velocity
                     data.slot.data.recorder.buffer[data.slot.data.recorder.length+3 - 4] = itemValue;  // the velocity
                     sendNoteOn(itemNumber, itemValue, options.channelOut);
@@ -263,7 +289,7 @@ void stateRecorderPlay()
                     else
                         {
                         // load a NOTE_OFF at id
-                        loadNote(LOAD_NOTE_OFF, id, time);
+                        recorderLoadNote(LOAD_NOTE_OFF, id, time);
                         }
                     }
                 }
@@ -312,9 +338,9 @@ void stateRecorderPlay()
         
         // draw the recorder
         // this is the slow way to do it.  Too slow?
-        drawPoint(data.slot.data.recorder.notes, 0);
-        drawPoint(local.recorder.currentPos, 0);
-        drawPoint(local.recorder.tick / 96, 5);                 // 96 = 24 pulses per quarter note * 4 quarter notes per measure
+        recorderDrawPoint(data.slot.data.recorder.notes, 0);
+        recorderDrawPoint(local.recorder.currentPos, 0);
+        recorderDrawPoint(local.recorder.tick / 96, 5);                 // 96 = 24 pulses per quarter note * 4 quarter notes per measure
         setPoint(led2, 6, 1);  // boundary
           
         if (local.recorder.status == RECORDER_TICKING_OFF)

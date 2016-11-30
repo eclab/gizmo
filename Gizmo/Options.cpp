@@ -59,6 +59,10 @@ void resetOptions()
     options.splitChannel = 1;
 	options.splitNote = 60;  // Middle C
 #endif
+
+#if defined(HEADLESS_RESET)
+	options.channelControl = 16;
+#endif 
     }
 
 
