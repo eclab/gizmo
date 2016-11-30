@@ -49,8 +49,8 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint8_t 
         case CONTROL_TYPE_NRPN:
             {
             // Send 99 for NRPN, or 101 for RPN
-            MIDI.sendControlChange(99, commandNumber, options.channelOut);
-            MIDI.sendControlChange(98, 0, options.channelOut);  // LSB
+            MIDI.sendControlChange(99, commandNumber >> 7, options.channelOut);
+            MIDI.sendControlChange(98, commandNumber & 127, options.channelOut);  // LSB
             if (value >= CONTROL_VALUE_INCREMENT)
                 {
                 MIDI.sendControlChange(96, 1, options.channelOut);  // MSB
@@ -68,8 +68,8 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint8_t 
         // note merging these actually loses bytes.  I tried.
         case CONTROL_TYPE_RPN:
             {
-            MIDI.sendControlChange(101, commandNumber, options.channelOut);
-            MIDI.sendControlChange(100, 0, options.channelOut);  // LSB
+            MIDI.sendControlChange(101, commandNumber >> 7, options.channelOut);
+            MIDI.sendControlChange(100, commandNumber & 127, options.channelOut);  // LSB
             if (value >= CONTROL_VALUE_INCREMENT)
                 {
                 MIDI.sendControlChange(96, 1, options.channelOut);  // MSB
