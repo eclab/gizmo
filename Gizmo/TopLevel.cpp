@@ -236,18 +236,29 @@ GLOBAL uint8_t scheduleScreenBrightnessUpdate = 0;
 
 uint8_t updatePot(uint16_t &pot, uint16_t* potCurrent, uint16_t &potLast, uint16_t& oldPotLast, uint8_t analog)
     {
-    // potLast = 1/8 analogRead + 7/8 previous potLast
-    // BEWARE: if you make this big (like 1/16, 15/16) it will always average
-    // to potCurrent and you can't make jump because 16 is larger than 8, which
-    // is the MINIMUM_POT_DEVIATION, creating weird effects.
+    
+    // we clean up the pots as follows:
+    // 1. Run it through a median of three filter
+    // 2. potLast <- 1/2 potLast + 1/2 result from #1
+    // 3. If potLast differs from its old value by at least MINIMUM_POT_DEVIATION (4), then we have a new pot value.
+    
+    // This implies that the pots have a realistic resolution of 1024 / 4 = 256.
+    // The biggest range that we need to dial in is 2^14 = 16384.
+    // This means that the RIGHT POT must have a resolution of at least 64, since 64 * 256 = 16384.
+ 
     potCurrent[0] = potCurrent[1];
     potCurrent[1] = potCurrent[2];
     potCurrent[2] = analogRead(analog);
     uint16_t middle = MEDIAN_OF_THREE(potCurrent[0], potCurrent[1], potCurrent[2]);
-    potLast = (potLast + middle) / 2;
+    if (middle == 1023)		// we handle this exceptional condition because otherwise potLast would never be >= 1022, due to the division.
+    	potLast = middle;
+    else potLast = (potLast + middle) / 2;
     // test to see if we're really turning the knob
-    if (oldPotLast > potLast && oldPotLast - potLast >= MINIMUM_POT_DEVIATION ||
-        potLast > oldPotLast && potLast - oldPotLast >= MINIMUM_POT_DEVIATION)
+    if (oldPotLast != potLast && 
+    		(oldPotLast > potLast && oldPotLast - potLast >= MINIMUM_POT_DEVIATION ||
+        	 potLast > oldPotLast && potLast - oldPotLast >= MINIMUM_POT_DEVIATION ||
+        	 potLast >= 1023 - MINIMUM_POT_DEVIATION ||		// handle boundary condition
+        	 potLast <= MINIMUM_POT_DEVIATION))		// handle boundary condition
         { oldPotLast = potLast; pot = potLast; return CHANGED; }
     else return NO_CHANGE;
     }
@@ -640,7 +651,7 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
         // this is gonna have funky effects at the boundaries
         
         currentDisplay -= potFineTune;  // old one
-        potFineTune = (pot[RIGHT_POT] >> 3) - 64;  // right pot always maps to a delta of -64 ... 64.  I want -128 ... 128 but it's just too small an angle for a step size of 1  
+        potFineTune = (pot[RIGHT_POT] >> 4) - 32;  // right pot always maps to a delta of -32 ... 32.
         currentDisplay += potFineTune;
 
         currentDisplay = boundValue(currentDisplay, minValue, maxValue);
@@ -661,27 +672,6 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
         	{
         	write3x5Glyphs(includeOther - GLYPH_OMNI + GLYPH_OMNI);
         	}
-/*        else if (includeOther == OTHER_OMNI && (currentDisplay == maxValue))
-            {
-            write3x5Glyphs(GLYPH_OMNI);
-            }
-        else if (includeOther == OTHER_DEFAULT && (currentDisplay == maxValue))
-            {
-            write3x5Glyphs(GLYPH_DEFAULT);
-            }
-        else if (includeOther == OTHER_INCREMENT && (currentDisplay == maxValue))
-            {
-            write3x5Glyphs(GLYPH_INCREMENT);
-            }
-        else if (includeOther == OTHER_DECREMENT && (currentDisplay == maxValue))
-            {
-            write3x5Glyphs(GLYPH_DECREMENT);
-            }
-        else if (includeOther == OTHER_FREE && (currentDisplay == maxValue))
-            {
-            write3x5Glyphs(GLYPH_FREE);
-            }
-*/
         else
             {
             writeNumber(led, led2, currentDisplay);
