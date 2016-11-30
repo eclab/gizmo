@@ -1,5 +1,10 @@
 #include "All.h"
 
+#ifdef HEADLESS
+GLOBAL uint8_t throwaway;
+
+#else
+
 // Masks for the red and green LEDs and the three buttons
 GLOBAL uint8_t LED_RED_mask;
 GLOBAL uint8_t LED_GREEN_mask;
@@ -15,4 +20,6 @@ GLOBAL volatile uint8_t *port_MIDDLE_BUTTON;
 GLOBAL volatile uint8_t *port_SELECT_BUTTON;
 
 GLOBAL uint8_t potPin[2] = { A0, A1 };
+
+#endif  // HEADLESS
 

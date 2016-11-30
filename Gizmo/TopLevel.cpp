@@ -54,8 +54,10 @@ void toggleBypass()
         {
         sendAllNotesOff();
         // clear the LEDs
+#ifndef HEADLESS
         *port_LED_GREEN |= LED_GREEN_mask;
         *port_LED_RED |= LED_RED_mask;
+#endif
         }
     bypass = !bypass;
     if (bypass) MIDI.turnThruOn();
@@ -263,6 +265,7 @@ uint8_t update()
         {
         case 0:
             {
+#ifndef HEADLESS
             uint8_t buttonPressed[3];
             
             // Note that when we're pressed, the value is ZERO, so we do !pressed
@@ -271,20 +274,25 @@ uint8_t update()
             buttonPressed[SELECT_BUTTON] = !(*port_SELECT_BUTTON & SELECT_BUTTON_mask) ;
             
             updateButtons(buttonPressed);
+#endif // HEADLESS
             return 0;  // don't update the display
             }
         break;
         case 1:
             {
+#ifndef HEADLESS
             if (!lockoutPots)
                 potUpdated[LEFT_POT] = updatePot(pot[LEFT_POT], potCurrent[LEFT_POT], potCurrentFinal[LEFT_POT], potLast[LEFT_POT], A0);
+#endif // HEADLESS
             return 0;  // don't update the display
             }
         break;
         case 2:
             {
+#ifndef HEADLESS
             if (!lockoutPots)
                 potUpdated[RIGHT_POT] = updatePot(pot[RIGHT_POT], potCurrent[RIGHT_POT], potCurrentFinal[RIGHT_POT], potLast[RIGHT_POT], A1);
+#endif // HEADLESS
             return 0;  // don't update the display
             }
         break;  

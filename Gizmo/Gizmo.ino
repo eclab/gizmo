@@ -48,6 +48,7 @@ void loop()
 
 void setup()
     {
+#ifndef HEADLESS
 	// set up the pin mode, masks, and ports for the buttons and LEDs on the board
 	
 	setPinsAndMasks(PIN_LED_RED, OUTPUT, LED_RED_mask);
@@ -75,7 +76,8 @@ void setup()
 	// Turn the board LEDs off
 	digitalWrite(PIN_LED_RED, 1);
 	digitalWrite(PIN_LED_GREEN, 1);
-	
+#endif	// HEADLESS
+
 	// Define a few PSTRs that will be used several times
    nrpn_p = PSTR("NRPN");
    rpn_p = PSTR("RPN");
