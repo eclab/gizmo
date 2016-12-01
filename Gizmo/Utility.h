@@ -62,6 +62,9 @@ void drawMIDIChannel(uint8_t channel);
 #define GLYPH_STOP 13                                   // STOP
 #define GLYPH_SYSTEM_RESET 14                   		// RSET
 #define GLYPH_ROOT 15                                   // ROOT
+#if defined(__AVR_ATmega2560__)
+#define GLYPH_FADE 16									// FADE
+#endif // defined(__AVR_ATmega2560__)
 
 // Writes any of the above glyph sets to the screen
 void write3x5Glyphs(uint8_t index);

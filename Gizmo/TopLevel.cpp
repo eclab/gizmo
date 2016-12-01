@@ -1298,47 +1298,8 @@ void go()
         
           case STATE_SPLIT:
           	{
-          	  entry = false;
-        
-			  // despite the select button release ignoring, we occasionally get button
-			  // bounces on the select button so I'm moving the main stuff to the middle button
-			  // and only having long releases on the select button
-				
-			  if (isUpdated(SELECT_BUTTON, RELEASED))
-				  {
-				  goDownState(STATE_SPLIT_NOTE);
-				  }
-			  else if (isUpdated(MIDDLE_BUTTON, RELEASED))
-				  {
-				  goDownState(STATE_SPLIT_LAYER_NOTE);
-				  }
-			  else if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
-				  {
-				  goDownState(STATE_SPLIT_CHANNEL);
-				  }
-			  else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
-				  {
-				  options.splitControls = !options.splitControls;
-				  saveOptions();
-				  }
-			  else if (isUpdated(BACK_BUTTON, RELEASED))
-				  {
-				  goUpState(STATE_ROOT);
-				  }
-			  else if (updateDisplay)
-				  {
-				  clearScreen();
-				  writeNotePitch(led2, options.splitNote);
-				  if (options.splitLayerNote != NO_NOTE)
-				  	{
-				  	writeNotePitch(led, options.splitLayerNote);
-					}
-				  if (options.splitControls == SPLIT_RIGHT)
-				  	setPoint(led2, 7, 0);
-				  else
-				  	setPoint(led2, 0, 0);
-				  }
-			  }
+			stateSplit();
+			}
           break;
 
 #endif
@@ -2024,42 +1985,13 @@ void go()
 
 		  case STATE_SPLIT_NOTE:
 			  {
-			  if (stateEnterNote(GLYPH_NOTE, STATE_SPLIT) != NO_NOTE)
-				  {
-				  options.splitNote = itemNumber;
-				  saveOptions();
-				  goUpState(STATE_SPLIT);
-				  }
+			  stateSplitNote();
 			  }
 		  break;
 		  
 		  case STATE_SPLIT_LAYER_NOTE:
 			  {
-			  if (options.splitLayerNote != NO_NOTE)
-			  	{
-			  	clearScreen();
-			  	write3x5Glyphs(GLYPH_NONE);
-			  	if (isUpdated(SELECT_BUTTON, PRESSED))
-			  		{
-			  		isUpdated(SELECT_BUTTON, RELEASED);  // clear this just in case
-				  	options.splitLayerNote = NO_NOTE;
-				  	saveOptions();
-				  	goUpState(STATE_SPLIT);
-			  		}
-			  	else if (isUpdated(BACK_BUTTON, RELEASED))
-			  		{
-			  		goUpState(STATE_SPLIT);
-			  		}
-			  	}
-			  else 
-			  	{
-				  if (stateEnterNote(GLYPH_NOTE, STATE_SPLIT) != NO_NOTE)
-					  {
-					  options.splitLayerNote = itemNumber;
-					  saveOptions();
-					  goUpState(STATE_SPLIT);
-					  }
-				}
+			  stateSplitLayerNote();
 			  }
 		  break;
 #endif
@@ -2197,11 +2129,19 @@ void handleNoteOff(byte channel, byte note, byte velocity)
 #if defined(__AVR_ATmega2560__)
           else if ((application == STATE_SPLIT) && !bypass)
           	{
-          	if (note >= options.splitNote)
-          		 sendNoteOff(note, velocity, options.channelOut);
-          	if (((options.splitLayerNote != NO_NOTE) && (note <= options.splitLayerNote)) ||
-          		note < options.splitNote)
-          		 sendNoteOff(note, velocity, options.splitChannel);
+          	if (options.splitControls == SPLIT_MIX)
+          		{
+          		sendNoteOff(note, velocity, options.channelOut);
+          		sendNoteOff(note, 127 - velocity, options.splitChannel);
+          		}
+          	else
+          		{
+          		if (note >= options.splitNote)
+          			 sendNoteOff(note, velocity, options.channelOut);
+          		if (((options.splitLayerNote != NO_NOTE) && (note <= options.splitLayerNote)) ||
+          			note < options.splitNote)
+          			 sendNoteOff(note, velocity, options.splitChannel);
+          		}
           	}
 
         if (lastNotePlayed == note)
@@ -2234,11 +2174,19 @@ void handleNoteOn(byte channel, byte note, byte velocity)
         // We don't have space for this on the Uno // 
           else if ((application == STATE_SPLIT) && !bypass)
           	{
-          	if (note >= options.splitNote)
-          		 sendNoteOn(note, velocity, options.channelOut);
-          	if (((options.splitLayerNote != NO_NOTE) && (note <= options.splitLayerNote)) ||
-          		note < options.splitNote)
-          		 sendNoteOn(note, velocity, options.splitChannel);
+          	if (options.splitControls == SPLIT_MIX)
+          		{
+          		sendNoteOn(note, velocity, options.channelOut);
+          		sendNoteOn(note, 127 - velocity, options.splitChannel);
+          		}
+          	else
+          		{
+          		if (note >= options.splitNote)
+          			 sendNoteOn(note, velocity, options.channelOut);
+          		if (((options.splitLayerNote != NO_NOTE) && (note <= options.splitLayerNote)) ||
+          			note < options.splitNote)
+          			 sendNoteOn(note, velocity, options.splitChannel);
+          		}
           	}
 
         if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_A &&
@@ -2265,12 +2213,20 @@ void handleAfterTouchPoly(byte channel, byte note, byte pressure)
 		    int16_t n = note + (uint16_t)options.transpose;
 		    n = bound(n, 0, 127);
 
-          	if (note >= options.splitNote)
-			  MIDI.sendPolyPressure((uint8_t) n, pressure,options.channelOut);
-          	if (((options.splitLayerNote != NO_NOTE) && (note <= options.splitLayerNote)) ||
-          		note < options.splitNote)
-			  MIDI.sendPolyPressure((uint8_t) n, pressure,options.splitChannel);
-          	}
+			if (options.splitControls == SPLIT_MIX)
+				{
+				 MIDI.sendPolyPressure((uint8_t) n, pressure,options.channelOut);
+				 MIDI.sendPolyPressure((uint8_t) n, pressure,options.splitChannel);
+				}
+			else
+				{
+	          	if (note >= options.splitNote)
+				  MIDI.sendPolyPressure((uint8_t) n, pressure,options.channelOut);
+	          	if (((options.splitLayerNote != NO_NOTE) && (note <= options.splitLayerNote)) ||
+	          		note < options.splitNote)
+				  MIDI.sendPolyPressure((uint8_t) n, pressure,options.splitChannel);
+	          	}
+	          }
 		  }
 #endif
     updateMIDI(channel, MIDI_AFTERTOUCH_POLY, note, pressure);
@@ -2661,7 +2617,7 @@ void handleGeneralControlChange(byte channel, byte number, byte value)
     	// One exception: if we're doing keyboard splitting, we want to route control changes to the right place
     	if (application == STATE_SPLIT)
     		{
-    		if (options.splitControls == SPLIT_RIGHT)
+    		if ((options.splitControls == SPLIT_CONTROLS_RIGHT) || (options.splitControls == SPLIT_MIX))
 				MIDI.sendControlChange(number, value, options.channelOut);
 			else
 				{
@@ -2859,7 +2815,7 @@ void handleProgramChange(byte channel, byte number)
     	// One exception: if we're doing keyboard splitting, we want to route control changes to the right place
     	if (application == STATE_SPLIT)
     		{
-    		if (options.splitControls == SPLIT_RIGHT)
+    		if ((options.splitControls == SPLIT_CONTROLS_RIGHT) || (options.splitControls == SPLIT_MIX))
 				MIDI.sendProgramChange(number, options.channelOut);
 			else
 				MIDI.sendProgramChange(number, options.splitChannel);
@@ -2882,7 +2838,7 @@ void handleAfterTouchChannel(byte channel, byte pressure)
     	// One exception: if we're doing keyboard splitting, we want to route control changes to the right place
     	if (application == STATE_SPLIT)
     		{
-    		if (options.splitControls == SPLIT_RIGHT)
+    		if ((options.splitControls == SPLIT_CONTROLS_RIGHT) || (options.splitControls == SPLIT_MIX))
       			MIDI.sendAfterTouch(pressure, options.channelOut);
 			else
 		        MIDI.sendAfterTouch(pressure, options.splitChannel);
@@ -2905,9 +2861,9 @@ void handlePitchBend(byte channel, int bend)
     	// One exception: if we're doing keyboard splitting, we want to route control changes to the right place
     	if (application == STATE_SPLIT)
     		{
-    		if (options.splitLayerNote == NO_NOTE)
+    		if ((options.splitLayerNote == NO_NOTE) && (options.splitControls != SPLIT_MIX))
     			{
-	    		if (options.splitControls == SPLIT_RIGHT)
+	    		if (options.splitControls == SPLIT_CONTROLS_RIGHT)
 	    			MIDI.sendPitchBend(bend, options.channelOut);
 				else
 	    			MIDI.sendPitchBend(bend, options.splitChannel);

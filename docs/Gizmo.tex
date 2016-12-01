@@ -32,7 +32,7 @@ Gizmo comes built-in with the following applications and other capabilities:
 \item {\bf MIDI Gauge.}  The gauge will display all incoming MIDI information on one or all channels.  Note on, note off, and polyphonic aftertouch are shown with pitch and velocity (or pressure).  Channel aftertouch is shown with the appropriate pitch.  Program changes indicate the number.  Pitch bends indicate the value in full 14-bit.  Channel control, NRPN, and RPN messages display the number, value, and whether the value is being set, incremented, or decremented.  Sysex, song position, song select, tune request, start, continue, stop, and system reset are simply noted.  Rapid-fire MIDI signals such as MIDI clock, active sensing, and time code just turn on individual LEDs.
 \item {\bf MIDI Control Surface}.  Gizmo has two potentiometers and two buttons.  Each can be configured to send a unique Program Change, Control Change, NRPN, or RPN commands, or (on the Mega) control voltage values via either of two DACs.  The potentiometers can only send MSB values.
 
-\item {\bf \textit{Mega Only:}\quad Keyboard Splitting}  You can split incoming MIDI notes by pitch and route them to different MIDI out channels.
+\item {\bf \textit{Mega Only:}\quad Keyboard Splitting}  You can split incoming MIDI notes by pitch and route them to different MIDI out channels.  You can also fade notes between two channels depending on note velocity.
 \end{itemize}
 
 \paragraph{Other Cool Stuff}
@@ -631,14 +631,15 @@ The Controller interacts with Bypass mode differently than other applications.  
 \section {The Keyboard Splitter}
 \label{splitter}
 
-{\it [Mega Only]}\qquad The Splitter allows lets you split and layer your keyboard into three zones, each controlling different combinations of synthesizers.  To do this, you will specify up to two notes, {\bf Split Note A} and {\bf Split Note B}.  Split Note B is optional.  You will also specify an {\bf Alternative MIDI Out Channel}, and whether control messages should be sent to the {\bf right} (top) or {\bf left} (bottom) of the keyboard split.
-
 \begin{wrapfigure}{r}{3in}
 \vspace{-2em}\includegraphics[width=3in]{split}
 \vspace{-2em}\caption{\small Splitter Layout}
 \label{splitter}
 \end{wrapfigure}
 
+\textit{[Mega Only]}\qquad The Splitter allows lets you (1) split your keyboard into two zones, each controlling a different MIDI channel; or (2) split your keyboard into {\it three} zones, two controlling different MIDI channels and the third (middle) zone playing both MIDI channels simultaneously\footnote{This is commonly known as {\it layering.}}; or (3) fade or balance your entire keyboard such that when you play a note loudly, it is played loudly out the first channel but softly out the second, and likewise when the note is played softly, it is played softly out the first channel but {\it loudly} out the second.\footnote{This is s kind of velocity-based two-channel fader}.
+
+The two MIDI channels in question are the Default MIDI Out Channel (defined in the Options, see Section \ref{options}), and an Alternative MIDI Out Channel which you specify in the Splitter.  If you're splitting your keyboard, you'll also specify up to two notes, {\bf Split Note A} and {\bf Split Note B}  (Split Note B is optional), and whether Control Change, Aftertouch, and the like go to the left split region or the right split region.
 
 \begin{itemize}
 \item  If you want to just split your keyboard, specify only Split Note A at the split point.  Notes in the left (lower) region will go our the Alternative MIDI Channel, and notes in the right (upper) region will go out the Default MIDI Channel.
@@ -648,6 +649,8 @@ The Controller interacts with Bypass mode differently than other applications.  
 \item If you want your keyboard to have {\bf three regions}, a left-only region, a right-only region and a middle region where both are played, make Split Note A be the lower note in the middle region and Split Note B be the higher note.   Notes in the left (lower) region will go our the Alternative MIDI Channel, notes in the right (upper) region will go out the Default MIDI Channel, and notes in the middle region will go out both channels.
 
 \item Note that it is possible to also give you keyboard three regions where in the middle region {\bf neither} channel is played.  This is probably not very useful.  But it happens when you define Split Note A to be {\it above} (to the right of) Split Note B.
+
+\item Finally, if you want to fade or balance your keyboard so that notes on the two channels are played with opposite velocities, you simply choose this option (see below).  You don't need to specify either Split Note A or B, but you will need to define the alternative MIDI Channel.
 \end{itemize}
 
 \paragraph{Defining Notes and Channels}
@@ -655,8 +658,8 @@ The Controller interacts with Bypass mode differently than other applications.  
 If you press the Select Button, you'll be asked to enter a note.  This note will be Split Note A.  By default this note is Middle C.  You can back out if you don't want to enter the note.
 
 \begin{wrapfigure}{r}{1in}
-\includegraphics[width=1in]{none}
-\vspace{-3em}
+\vspace{-1em}\includegraphics[width=1in]{none}
+\vspace{-2em}
 \end{wrapfigure}
 
 If you press the Middle Button you'll be asked to enter a note.  This note will be Split Note B.  By default this note is off.  You can back out if you don't want to enter the note.  You can also turn Split Note B off again by once again pressing the Middle Button, at which point you'll be presented with ``- - - -''.  You can also back out if you don't want remove Split Note B.
@@ -665,13 +668,14 @@ You define the Alternative MIDI Out channel by Long-Pressing the Select Button. 
 
 The Splitter will display your two Split Notes, as shown in Figure \ref{splitter}.
 
-\paragraph{Where Do Control Change, NRPN/RPN, Program Change, Channel Aftertouch, and Pitch Bend Go?}
+\paragraph{Routing and Fading}
 
-Long-pressing the Middle Button toggles between routing them to the left of the keyboard or to the right of the keyboard.  Two LEDs will light indicating which is the current state (see Figure \ref{splitter}.
-
-If you specified both Split Note A and Split Note B, and thus have an overlapping region, then Pitch Bend will be routed to {\it both} channels.
-
-Note that unlike Channel Aftertouch, Polyphonic Aftertouch is routed to the channel handling the note in question.
+Long-pressing the Middle Button cycles through three options:
+\begin{itemize}
+\item Split/Layer the Keyboard, and route all CC, PC, Channel Aftertouch, and NRPN/RPN to the {\it right} (upper) split channel, that is, to the Default MIDI Out channel.  Pitch Bend is also routed to the right channel if you're doing a simple split, but if you're layering, it's routed to both channels.  Polyphonic Aftertouch is always routed to the channel handling the note in question, as are all Note On and Note Off messages.  The screen will show the Split A note, and will light the ``left'' LED (see Figure \ref{splitter})..
+\item Split/Layer the Keyboard, and route all CC, PC, Channel Aftertouch, and NRPN/RPN to the {\it left} (upper) split channel, that is, to the alternative MIDI Out Channel.  Pitch Bend is also routed to the left channel if you're doing a simple split, but if you're layering, it's routed to both channels.  Polyphonic Aftertouch is always routed to the channel handling the note in question, as are all Note On and Note Off messages.  The screen will show the Split A note at left and the Split B note at right, and will light the ``left'' LED (see Figure \ref{splitter}).
+\item Fade/Balance the Keyboard.  All CC, PC, Channel Aftertouch, and NRPN/RPN if routed to the alternative MIDI Out Channel.  Pitch Bend is routed to both channels, as is Polyphonic Aftertouch and all Note On and Note Off messages (though with inverted velocities as discussed earlier).  The screen will display ``FADE''.
+\end{itemize}
 
 \section {Options}
 \label{options}

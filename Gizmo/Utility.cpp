@@ -462,7 +462,13 @@ void clearScreen()
 
 
 
-GLOBAL static uint8_t glyphTable[16][4] = 
+GLOBAL static uint8_t glyphTable[
+#if defined(__AVR_ATmega2560__)
+17
+#else
+16
+#endif // defined(__AVR_ATmega2560__)
+][4] = 
     {
     	{GLYPH_3x5_MINUS, GLYPH_3x5_MINUS, GLYPH_3x5_MINUS, GLYPH_3x5_MINUS},   // ----
         {GLYPH_3x5_A, GLYPH_3x5_L, GLYPH_3x5_L, GLYPH_3x5_C},   // ALLC
@@ -480,6 +486,10 @@ GLOBAL static uint8_t glyphTable[16][4] =
         {GLYPH_3x5_S, GLYPH_3x5_T, GLYPH_3x5_O, GLYPH_3x5_P},   // STOP
         {GLYPH_3x5_R, GLYPH_3x5_S, GLYPH_3x5_E, GLYPH_3x5_T},   // RSET
         {GLYPH_3x5_R, GLYPH_3x5_O, GLYPH_3x5_O, GLYPH_3x5_T},   // ROOT
+#if defined(__AVR_ATmega2560__)
+        {GLYPH_3x5_F, GLYPH_3x5_A, GLYPH_3x5_D, GLYPH_3x5_E},   // FADE
+#endif // defined(__AVR_ATmega2560__)
+
     };
 
 
