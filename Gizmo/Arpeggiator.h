@@ -212,9 +212,6 @@ void playArpeggio();
 // Is the arpeggio slot empty?  To do this we read the length to see if it's nonzero.  Length is the first byte in _arp
 #define ARPEGGIO_IS_NONEMPTY(index) (EEPROM.read((ARPEGGIATOR_OFFSET) +  (index) * sizeof(struct _arp)))
 
-// Save an arpeggio
-void saveArpeggio(int index);
-
 // Remove a note from chordNotes, or mark it if latch mode is on.  O(n) :-(
 void arpeggiatorRemoveNote(uint8_t note);
 
@@ -235,11 +232,6 @@ void stateArpeggiatorCreateEdit();
 
 // Handle the screen for saving an arpeggio.  
 void stateArpeggiatorCreateSave();
-
-
-
-
-
 
 
 #endif

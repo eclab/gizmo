@@ -48,9 +48,10 @@ struct _options
 #if defined(__AVR_ATmega2560__)
   uint8_t menuDelay ;                         // Corresponds to DEFAULT_MENU_DELAY
   uint8_t voltage;
-  uint8_t splitControls;
+  uint8_t splitControls;					  // = 0 by default, SPLIT_RIGHT
   uint8_t splitChannel;
   uint8_t splitNote;
+  uint8_t splitLayerNote;
 #endif	// defined(__AVR_ATmega2560__)
 
     };

@@ -99,9 +99,18 @@ void updateTicksAndWait()
     ++tickCount;
     }
 
-uint8_t shouldSendRealTime()
+// Returns whether we are using a clock command that either PASSES THROUGH or EMITS clock messages, 
+// other than IGNORE_MIDI_CLOCK, which has already been handled specially at this point (in
+// handleClockCommand())
+uint8_t shouldEmitClockMessages()
 	{
-	return (options.clock <= GENERATE_MIDI_CLOCK) && !bypass;
+	return (options.clock == USE_MIDI_CLOCK ||
+		   options.clock == GENERATE_MIDI_CLOCK
+#if defined(__AVR_ATmega2560__)
+	|| options.clock == DIVIDE_MIDI_CLOCK
+#endif // defined(__AVR_ATmega2560__)
+			)
+		   && !bypass;
 	}
 
 
@@ -141,23 +150,23 @@ void pulseClock()
         return;
 
 	// update our external clock pulse estimate
-	if (options.clock <= CONSUME_MIDI_CLOCK)  // we're using an external clock
+	if (USING_EXTERNAL_CLOCK())  // we're using an external clock
 		updateExternalClock(); 
 
     pulse = 1;
     pulseCount++;
 
 #if defined(__AVR_ATmega2560__)
-    if ((options.clock == GENERATE_MIDI_CLOCK || options.clock == USE_MIDI_CLOCK) && !bypass)  // different from shouldSendRealTime() in that we don't do divide
+    if (options.clock != DIVIDE_MIDI_CLOCK && shouldEmitClockMessages())
 #else
-    if (shouldSendRealTime())
+    if (shouldEmitClockMessages())
 #endif
         { MIDI.sendRealTime(MIDIClock); TOGGLE_OUT_LED(); }
     }
 
-uint8_t stopClock(uint8_t fromButton)
+uint8_t stopClock(uint8_t fromButton = false)
     {
-    if (fromButton && (options.clock <= CONSUME_MIDI_CLOCK))
+    if (fromButton && USING_EXTERNAL_CLOCK())
         return 0;
         
     if (clockState != CLOCK_RUNNING)
@@ -168,7 +177,7 @@ uint8_t stopClock(uint8_t fromButton)
 	
     clockState = CLOCK_STOPPED;
 
-    if (shouldSendRealTime())
+    if (shouldEmitClockMessages())
         { MIDI.sendRealTime(MIDIStop); TOGGLE_OUT_LED(); }
 
     // if we stop the clock some notes may be playing.  We reset them here.
@@ -180,9 +189,9 @@ uint8_t stopClock(uint8_t fromButton)
 extern uint8_t drawBeatToggle;
 extern uint8_t drawNotePulseToggle;
 
-uint8_t startClock(uint8_t fromButton)
+uint8_t startClock(uint8_t fromButton = false)
     {
-    if (fromButton && (options.clock <= CONSUME_MIDI_CLOCK))
+    if (fromButton && USING_EXTERNAL_CLOCK())
         return 0;
         
 	if (clockState != CLOCK_STOPPED)
@@ -196,7 +205,7 @@ uint8_t startClock(uint8_t fromButton)
     clockState = CLOCK_RUNNING;
     swingToggle = 0;
 
-    if (shouldSendRealTime())
+    if (shouldEmitClockMessages())
         { MIDI.sendRealTime(MIDIStart); }
 
     // When we start the clock we want to have applications starting at their initial points.
@@ -218,17 +227,17 @@ uint8_t startClock(uint8_t fromButton)
     return 1;
     }
         
-uint8_t continueClock(uint8_t fromButton)
+uint8_t continueClock(uint8_t fromButton = false)
     {
     if (clockState != CLOCK_STOPPED)
     	return 0;
     	
-    if (fromButton && (options.clock <= CONSUME_MIDI_CLOCK))
+    if (fromButton && USING_EXTERNAL_CLOCK())
         return 0;
 
     clockState = CLOCK_RUNNING;
 
-    if (shouldSendRealTime())
+    if (shouldEmitClockMessages())
         { MIDI.sendRealTime(MIDIContinue); TOGGLE_OUT_LED(); }
     return 1;
     }     

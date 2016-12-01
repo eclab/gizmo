@@ -54,10 +54,12 @@ void resetOptions()
     options.noteLength = 100;
     options.volume = 3;  // corresponds to no volume modification
     options.click = NO_NOTE;
+    options.clock = IGNORE_MIDI_CLOCK;
 #if defined(__AVR_ATmega2560__)
     options.menuDelay = 6;  // corresponds to DEFAULT_MENU_DELAY
     options.splitChannel = 1;
 	options.splitNote = 60;  // Middle C
+	options.splitLayerNote = NO_NOTE;
 #endif
 
 #if defined(HEADLESS_RESET)

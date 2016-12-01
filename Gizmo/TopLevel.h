@@ -29,6 +29,9 @@
 #define BLOCK_MIDI_CLOCK 4       // Use our own internal clock.  Don't pass through or generate any MIDI clock.
 #endif
 
+#define USING_EXTERNAL_CLOCK() (options.clock <= CONSUME_MIDI_CLOCK)
+#define USING_INTERNAL_CLOCK() (options.clock > CONSUME_MIDI_CLOCK)
+
 // I don't want to do MIDI Namespace stuff.  
 // So I have defined the following #defines, copies
 // of enumerations in midi_defs.h
@@ -126,6 +129,7 @@
 #define STATE_OPTIONS_ABOUT 59
 #define STATE_SPLIT_CHANNEL 60
 #define STATE_SPLIT_NOTE 61
+#define STATE_SPLIT_LAYER_NOTE 62
 
 #else 
 #define STATE_NONE 255

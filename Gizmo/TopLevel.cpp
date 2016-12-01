@@ -1039,7 +1039,7 @@ void go()
         break;
         case STATE_CONTROLLER:
             {            
-            const char* menuItems[5] = { PSTR("GO"), PSTR("LEFT KNOB"), PSTR("RIGHT KNOB"), PSTR("MIDDLE BUTTON"), PSTR("RIGHT BUTTON") };
+            const char* menuItems[5] = { PSTR("GO"), PSTR("L KNOB"), PSTR("R KNOB"), PSTR("MIDDLE BUTTON"), PSTR("RIGHT BUTTON") };
             doMenuDisplay(menuItems, 5, STATE_CONTROLLER_PLAY, STATE_ROOT, 1);
             }
         break;
@@ -1298,18 +1298,19 @@ void go()
         
           case STATE_SPLIT:
           	{
-          	if (entry)      
-          		{
-          		entry = false;
-          		}
+          	  entry = false;
         
 			  // despite the select button release ignoring, we occasionally get button
 			  // bounces on the select button so I'm moving the main stuff to the middle button
 			  // and only having long releases on the select button
 				
-			  if (isUpdated(MIDDLE_BUTTON, RELEASED))
+			  if (isUpdated(SELECT_BUTTON, RELEASED))
 				  {
 				  goDownState(STATE_SPLIT_NOTE);
+				  }
+			  else if (isUpdated(MIDDLE_BUTTON, RELEASED))
+				  {
+				  goDownState(STATE_SPLIT_LAYER_NOTE);
 				  }
 			  else if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
 				  {
@@ -1328,7 +1329,14 @@ void go()
 				  {
 				  clearScreen();
 				  writeNotePitch(led2, options.splitNote);
-				  write3x5Glyph(led, options.splitControls == 0 ? GLYPH_3x5_R : GLYPH_3x5_L, 5);
+				  if (options.splitLayerNote != NO_NOTE)
+				  	{
+				  	writeNotePitch(led, options.splitLayerNote);
+					}
+				  if (options.splitControls == SPLIT_RIGHT)
+				  	setPoint(led2, 7, 0);
+				  else
+				  	setPoint(led2, 0, 0);
 				  }
 			  }
           break;
@@ -2010,7 +2018,7 @@ void go()
 
 		  case STATE_SPLIT_CHANNEL:
 			  {
-			  stateNumerical(0, 16, options.splitChannel, backupOptions.splitChannel, true, true, OTHER_NONE, STATE_SPLIT);
+			  stateNumerical(1, 16, options.splitChannel, backupOptions.splitChannel, false, true, OTHER_NONE, STATE_SPLIT);
 			  }
 		  break;
 
@@ -2022,10 +2030,36 @@ void go()
 				  saveOptions();
 				  goUpState(STATE_SPLIT);
 				  }
-			  else if (isUpdated(BACK_BUTTON, RELEASED))
-				  {
-				  goUpState(STATE_SPLIT);
-				  }
+			  }
+		  break;
+		  
+		  case STATE_SPLIT_LAYER_NOTE:
+			  {
+			  if (options.splitLayerNote != NO_NOTE)
+			  	{
+			  	clearScreen();
+			  	write3x5Glyphs(GLYPH_NONE);
+			  	if (isUpdated(SELECT_BUTTON, PRESSED))
+			  		{
+			  		isUpdated(SELECT_BUTTON, RELEASED);  // clear this just in case
+				  	options.splitLayerNote = NO_NOTE;
+				  	saveOptions();
+				  	goUpState(STATE_SPLIT);
+			  		}
+			  	else if (isUpdated(BACK_BUTTON, RELEASED))
+			  		{
+			  		goUpState(STATE_SPLIT);
+			  		}
+			  	}
+			  else 
+			  	{
+				  if (stateEnterNote(GLYPH_NOTE, STATE_SPLIT) != NO_NOTE)
+					  {
+					  options.splitLayerNote = itemNumber;
+					  saveOptions();
+					  goUpState(STATE_SPLIT);
+					  }
+				}
 			  }
 		  break;
 #endif
@@ -2104,7 +2138,7 @@ void handleClockCommand(void (*clockFunction)(), midi::MidiType clockMIDI)
         TOGGLE_OUT_LED();
         }
     // note NOT else, so that bypass will pass through the clock even if we "CONSUME" it
-    if (options.clock <= CONSUME_MIDI_CLOCK)
+    if (USING_EXTERNAL_CLOCK())
         {
         clockFunction();
         }
@@ -2143,7 +2177,7 @@ void handleClock()
 // We don't have space for this on the Uno :-(
   uint8_t applicationSplit()
 	{
-	if (application == STATE_SPLIT && !bypass)
+	if ((application == STATE_SPLIT) && !bypass)
 		{
 		TOGGLE_OUT_LED();
 		return 1;
@@ -2151,6 +2185,7 @@ void handleClock()
 	return 0;
 	}
 #endif
+
 
 void handleNoteOff(byte channel, byte note, byte velocity)
     {
@@ -2160,9 +2195,14 @@ void handleNoteOff(byte channel, byte note, byte velocity)
             arpeggiatorRemoveNote(note);
 
 #if defined(__AVR_ATmega2560__)
-        // We don't have space for this on the Uno :-(
-          else if (application == STATE_SPLIT && !bypass)
-          sendNoteOff(note, velocity, note < options.splitNote ? options.splitChannel : options.channelOut);
+          else if ((application == STATE_SPLIT) && !bypass)
+          	{
+          	if (note >= options.splitNote)
+          		 sendNoteOff(note, velocity, options.channelOut);
+          	if (((options.splitLayerNote != NO_NOTE) && (note <= options.splitLayerNote)) ||
+          		note < options.splitNote)
+          		 sendNoteOff(note, velocity, options.splitChannel);
+          	}
 
         if (lastNotePlayed == note)
             {
@@ -2192,10 +2232,14 @@ void handleNoteOn(byte channel, byte note, byte velocity)
 
 #if defined(__AVR_ATmega2560__)
         // We don't have space for this on the Uno // 
-          else if (application == STATE_SPLIT && !bypass)
-          {
-          sendNoteOn(note, velocity, note < options.splitNote ?  options.splitChannel : options.channelOut);
-          }
+          else if ((application == STATE_SPLIT) && !bypass)
+          	{
+          	if (note >= options.splitNote)
+          		 sendNoteOn(note, velocity, options.channelOut);
+          	if (((options.splitLayerNote != NO_NOTE) && (note <= options.splitLayerNote)) ||
+          		note < options.splitNote)
+          		 sendNoteOn(note, velocity, options.splitChannel);
+          	}
 
         if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_A &&
             options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_A)
@@ -2216,12 +2260,17 @@ void handleAfterTouchPoly(byte channel, byte note, byte pressure)
     // We don't have space for this on the Uno :-(
       if (updateMIDI(channel, MIDI_AFTERTOUCH_POLY, note, pressure))
 		  {
-		  if (applicationSplit())
-			  { 
-			  int16_t n = note + (uint16_t)options.transpose;
-			  n = bound(n, 0, 127);
-			  MIDI.sendPolyPressure((uint8_t) n, pressure, note < options.splitNote ?  options.splitChannel : options.channelOut);
-			  }
+          if ((application == STATE_SPLIT) && !bypass)
+          	{
+		    int16_t n = note + (uint16_t)options.transpose;
+		    n = bound(n, 0, 127);
+
+          	if (note >= options.splitNote)
+			  MIDI.sendPolyPressure((uint8_t) n, pressure,options.channelOut);
+          	if (((options.splitLayerNote != NO_NOTE) && (note <= options.splitLayerNote)) ||
+          		note < options.splitNote)
+			  MIDI.sendPolyPressure((uint8_t) n, pressure,options.splitChannel);
+          	}
 		  }
 #endif
     updateMIDI(channel, MIDI_AFTERTOUCH_POLY, note, pressure);
@@ -2604,8 +2653,27 @@ GLOBAL struct _controlParser midiControlParser;
 
 void handleGeneralControlChange(byte channel, byte number, byte value)
     {
-    if (!bypass) 
-		MIDI.sendControlChange(number, options.channelOut, value);
+    // generally we want to pass control changes through, EXCEPT if they're controlling us,
+    // so we block the MIDI Control Channel if any.
+    if (!bypass && (channel != options.channelControl))
+    	{
+#if defined(__AVR_ATmega2560__)
+    	// One exception: if we're doing keyboard splitting, we want to route control changes to the right place
+    	if (application == STATE_SPLIT)
+    		{
+    		if (options.splitControls == SPLIT_RIGHT)
+				MIDI.sendControlChange(number, value, options.channelOut);
+			else
+				{
+				MIDI.sendControlChange(number, value, options.splitChannel);
+				}
+    		}
+    	else
+#endif  // defined(__AVR_ATmega2560__)
+    		{
+			MIDI.sendControlChange(number, value, options.channelOut);
+			}
+		}
 	TOGGLE_OUT_LED();
             
     // we're only interested in parsing CHANNEL IN and CHANNEL CONTROL   
@@ -2782,12 +2850,26 @@ void toggleLEDsAndSetNewItem(byte _itemType)
 	TOGGLE_OUT_LED();
 	}
 
-
 void handleProgramChange(byte channel, byte number)
     {
     updateMIDI(channel, MIDI_PROGRAM_CHANGE, number, 1);
     if (!bypass) 
-		MIDI.sendProgramChange(number, options.channelOut);
+    	{
+#if defined(__AVR_ATmega2560__)
+    	// One exception: if we're doing keyboard splitting, we want to route control changes to the right place
+    	if (application == STATE_SPLIT)
+    		{
+    		if (options.splitControls == SPLIT_RIGHT)
+				MIDI.sendProgramChange(number, options.channelOut);
+			else
+				MIDI.sendProgramChange(number, options.splitChannel);
+    		}
+    	else
+#endif  // defined(__AVR_ATmega2560__)
+			{
+			MIDI.sendProgramChange(number, options.channelOut);
+			}
+		}
     TOGGLE_OUT_LED();
     }
   
@@ -2795,7 +2877,22 @@ void handleAfterTouchChannel(byte channel, byte pressure)
     {
     updateMIDI(channel, MIDI_AFTERTOUCH, 1, pressure);
     if (!bypass) 
-      MIDI.sendAfterTouch(pressure, options.channelOut);
+    	{
+#if defined(__AVR_ATmega2560__)
+    	// One exception: if we're doing keyboard splitting, we want to route control changes to the right place
+    	if (application == STATE_SPLIT)
+    		{
+    		if (options.splitControls == SPLIT_RIGHT)
+      			MIDI.sendAfterTouch(pressure, options.channelOut);
+			else
+		        MIDI.sendAfterTouch(pressure, options.splitChannel);
+    		}
+    	else
+#endif  // defined(__AVR_ATmega2560__)
+      	{
+      	MIDI.sendAfterTouch(pressure, options.channelOut);
+      	}
+      }
     TOGGLE_OUT_LED();
     }
   
@@ -2803,7 +2900,30 @@ void handlePitchBend(byte channel, int bend)
     {
     updateMIDI(channel, MIDI_PITCH_BEND, 1, (uint16_t) bend + 8192);
     if (!bypass) 
-    	MIDI.sendPitchBend(bend, options.channelOut);
+    	{
+#if defined(__AVR_ATmega2560__)
+    	// One exception: if we're doing keyboard splitting, we want to route control changes to the right place
+    	if (application == STATE_SPLIT)
+    		{
+    		if (options.splitLayerNote == NO_NOTE)
+    			{
+	    		if (options.splitControls == SPLIT_RIGHT)
+	    			MIDI.sendPitchBend(bend, options.channelOut);
+				else
+	    			MIDI.sendPitchBend(bend, options.splitChannel);
+	    		}
+	    	else	// send to both
+	    		{
+	    		MIDI.sendPitchBend(bend, options.channelOut);
+	    		MIDI.sendPitchBend(bend, options.splitChannel);
+	    		}
+    		}
+    	else
+#endif  // defined(__AVR_ATmega2560__)
+    		{
+    		MIDI.sendPitchBend(bend, options.channelOut);
+    		}
+    	}
 	TOGGLE_OUT_LED();
     }
   
@@ -2901,7 +3021,11 @@ void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel)
 void sendAllNotesOff()
     {
     if (bypass) return;
-    MIDI.sendControlChange(123, 0, options.channelOut);
+    
+    for(uint8_t i = 1; i < 16; i++)
+    	{
+    	MIDI.sendControlChange(123, 0, options.channelOut);
+    	}
     }
 
 
