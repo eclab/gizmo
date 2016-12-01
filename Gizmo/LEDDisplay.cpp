@@ -436,7 +436,7 @@ const char PROGMEM font_4x5[19][4] = {
     };
     
 
-const char PROGMEM font_5x5[2][5] {
+const char PROGMEM font_5x5[5][5] {
     { //M
     A11111A,
     A00010A,
@@ -444,7 +444,6 @@ const char PROGMEM font_5x5[2][5] {
     A00010A,
     A11111A
     },
-    /*
     { //N
     A11111A,
     A00010A,
@@ -466,7 +465,6 @@ const char PROGMEM font_5x5[2][5] {
     A01100A,
     A00011A
     },
-    */
     { //W
     A01111A,
     A10000A,
@@ -1696,7 +1694,7 @@ void addToBuffer(const char* val, uint8_t extra = 0)
                 }
             else 
                 {
-                if (c == 'M' || c == 'W') // || c == 'N'  || c == 'Q' || c == 'V' ) // 5-pixel wide letters
+                if (c == 'M' || c == 'W' || c == 'N') // || c == 'Q' || c == 'V' ) // 5-pixel wide letters
                     {
                     if (len + 5 <= maxLen)
                         len += 6;
@@ -1749,7 +1747,7 @@ void addToBuffer(const char* val, uint8_t extra = 0)
         if (c <= 'z' && c >= 'a')
             c = c - 'a' + 'A';
 
-        if (c == 'M' || c == 'W') // c == 'N' ) // || c == 'Q' || c == 'V' )   // wide letters
+        if (c == 'M' || c == 'W' ||  c == 'N') //  || c == 'Q' || c == 'V' )   // wide letters
             {
             //uint8_t idx = 0;  // M
             //if (c == 'N') idx = 1;

@@ -226,7 +226,7 @@
 //extern const char PROGMEM font_2x5[1][2];
 extern const char PROGMEM font_3x5[46][3];
 extern const char PROGMEM font_4x5[19][4];
-extern const char PROGMEM font_5x5[2][5];
+extern const char PROGMEM font_5x5[5][5];
 //extern const char PROGMEM font_alphabet5x5[26][5];
 extern const char PROGMEM font_8x5[26][8];
 
