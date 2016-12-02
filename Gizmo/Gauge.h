@@ -97,7 +97,7 @@ struct _gaugeLocal
     };
         
 
-/// All of Gauge's functions are embedded (inlined) in the TopLevel.cpp state machine. 
+/// Most of Gauge's functions are embedded (inlined) in the TopLevel.cpp state machine. 
 
 
 #endif __GAUGE_H__

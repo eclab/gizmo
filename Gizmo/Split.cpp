@@ -24,7 +24,7 @@ void stateSplit()
 		  }
 	  else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
 		  {
-		  options.splitControls += options.splitControls;
+		  options.splitControls++;
 		  if (options.splitControls > SPLIT_MIX)
 			options.splitControls = SPLIT_CONTROLS_RIGHT;
 		  saveOptions();

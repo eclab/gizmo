@@ -10,40 +10,32 @@
 MIDI_CREATE_DEFAULT_INSTANCE();
 
 
-#if defined(__AVR_ATmega2560__)
-///// SCROLL DELAY
-///// 
 
 
-////// We only redraw once every 4 ticks.
-////// Thus a delay of X means 4 * X ticks
-////// A tick is 1/3125 sec, so a delay of 78 means is about 1/10 sec
-////// I find that faster than 1/20 sec the screen becomes hard to watch.
-////// So I'm going with 40
 
-GLOBAL static uint8_t menuDelays[11] = { NO_MENU_DELAY, EIGHTH_MENU_DELAY, QUARTER_MENU_DELAY, THIRD_MENU_DELAY, HALF_MENU_DELAY, DEFAULT_MENU_DELAY, DOUBLE_MENU_DELAY, TREBLE_MENU_DELAY, QUADRUPLE_MENU_DELAY, EIGHT_TIMES_MENU_DELAY, HIGH_MENU_DELAY };
+///// COMMON PROGMEM STRINGS
 
-// SET MENU DELAY
-// Changes the menu delay to a desired value (between 0: no menu delay, and 11: infinite menu delay).  The default is 5
-void setMenuDelay(uint8_t index)
-    {
-    if (index > 10) index = 5;
-    setScrollDelays(menuDelays[index], DEFAULT_SHORT_DELAY);
-    }
-#endif
+// some shorthand so we can save a bit of program space.  Of course
+// this uses up some of our working memory.  These are PSTR strings
+// used in more than one location in the program.  They're set in the Gizmo.ino file
+GLOBAL const char* nrpn_p;// = PSTR("NRPN");
+GLOBAL const char* rpn_p;// = PSTR("RPN");
+GLOBAL const char* cc_p;// = PSTR("CC");
+GLOBAL const char* v_p;// = PSTR("IS");
+GLOBAL const char* voltage_p;// = PSTR("VOLTAGE");
+GLOBAL const char* options_p;  // = PSTR("OPTIONS");
 
-GLOBAL uint8_t state = STATE_ROOT;                     // The current state
-GLOBAL uint8_t application = STATE_ARPEGGIATOR;           // The top state (the application, so to speak): we display a dot indicating this.
-GLOBAL uint8_t entry = 1;  
-GLOBAL uint8_t optionsReturnState;
-GLOBAL uint8_t defaultState = STATE_NONE;
+
+
+
 
 
 /// BYPASSING
 
-/// 2. If 'bypass' is set to 1, then all signals are sent through no matter what, and
+///    If 'bypass' is 1, then all signals are currently being sent through no matter what, and
 ///    furthermore, the system cannot emit any signals.  The user can turn on bypass
 ///    either by choosing it in the options, or by long-pressing BACK+SELECT.
+///    Don't set bypass -- instead call toggleBypass
 
 GLOBAL uint8_t bypass = 0;                                        // Do we bypass the system entirely and just let MIDI flow through the box?
 
@@ -63,6 +55,10 @@ void toggleBypass()
     if (bypass) MIDI.turnThruOn();
     else MIDI.turnThruOff();
     }
+
+
+
+
 
 
 ///// READING SENSORS
@@ -129,7 +125,7 @@ void setupPots()
     memset(potLast, 0, 2);
     }
 
-
+//// Clears the 'released' and 'released long' flag on all buttons.
 void clearReleased()
 	{
 	for(uint8_t i = BACK_BUTTON; i <= SELECT_BUTTON; i++)
@@ -158,25 +154,6 @@ uint8_t isUpdated(uint8_t button, uint8_t type)
         }
     else return 0;
     }
-
-
-
-///// THE DISPLAY
-
-// We're going to try to handle both 8-column and 16-column displays.  The 8-column
-// display buffer is stored in led.  The "second" display (if using 16 columns) is
-// stored in led2.  Note that the second display is to the LEFT of the first display.
-//
-// We don't update the display every tick because it is costly.  Instead we update
-// it every 4 ticks.
-//
-// The MIDI board also has two small LEDs.  
-
-GLOBAL uint8_t updateDisplay = 0;
-GLOBAL unsigned char led[LED_WIDTH];
-GLOBAL unsigned char led2[LED_WIDTH];
-
-
 
 
 /// BUTTON COUNTDOWNS
@@ -218,6 +195,82 @@ void updateButtons(uint8_t buttonPressed[])
     }
 
 
+/// Gets the new value of a pot and sets it into pot.  Returns CHANGED or NO_CHANGE.
+/// potCurrent is an array of the most recent three calls to analogRead for the pot.  It's
+/// used to do a median filter.
+//  VARIABLES:
+//  pot					Where to store the resulting value
+//  potCurrent			An array of three numbers which will store the most recent three calls to analogRead()
+//  potCurrentFinal		A value which will store the most recent smoothed estimate produced by potCurrent
+//  potLast				A value which will hold the PREVIOUS smoothed estimate produced by potCurrent
+//  analog				The analog pin to read via analogRead(analog)
+//
+//  RETURNED: CHANGED or NO CHANGED, depending if potCurrentFinal and potLast are sufficiently different from
+//            one another to assume that the pot is being changed by the user
+
+uint8_t updatePot(uint16_t &pot, uint16_t* potCurrent, uint16_t &potCurrentFinal, uint16_t& potLast, uint8_t analog)
+    {
+    
+    // we clean up the pots as follows:
+    // 1. Run it through a median of three filter
+    // 2. potCurrentFinal <- 1/2 potCurrentFinal + 1/2 result from #1
+    // 3. If potCurrentFinal differs from its old value by at least MINIMUM_POT_DEVIATION (4), then we have a new pot value.
+    
+    // This implies that the pots have a realistic resolution of 1024 / 4 = 256.
+    // The biggest range that we need to dial in is 2^14 = 16384.
+    // This means that the RIGHT POT must have a resolution of at least 64, since 64 * 256 = 16384.
+ 
+    potCurrent[0] = potCurrent[1];
+    potCurrent[1] = potCurrent[2];
+    potCurrent[2] = analogRead(analog);
+    uint16_t middle = MEDIAN_OF_THREE(potCurrent[0], potCurrent[1], potCurrent[2]);
+    if (middle == 1023)		// we handle this exceptional condition because otherwise potCurrentFinal would never be >= 1022, due to the division.
+    	potCurrentFinal = middle;
+    else potCurrentFinal = (potCurrentFinal + middle) / 2;
+    // test to see if we're really turning the knob
+    if (potLast != potCurrentFinal && 
+    		(potLast > potCurrentFinal && potLast - potCurrentFinal >= MINIMUM_POT_DEVIATION ||
+        	 potCurrentFinal > potLast && potCurrentFinal - potLast >= MINIMUM_POT_DEVIATION ||
+        	 potCurrentFinal >= 1023 - MINIMUM_POT_DEVIATION ||		// handle boundary condition
+        	 potCurrentFinal <= MINIMUM_POT_DEVIATION))		// handle boundary condition
+        { potLast = potCurrentFinal; pot = potCurrentFinal; return CHANGED; }
+    else return NO_CHANGE;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+///// THE DISPLAY
+
+// We're going to try to handle both 8-column and 16-column displays.  The 8-column
+// display buffer is stored in led.  The "second" display (if using 16 columns) is
+// stored in led2.  Note that the second display is to the LEFT of the first display.
+//
+// We don't update the display every tick because it is costly.  Instead we update
+// it every 4 ticks.
+//
+// The MIDI board also has two small LEDs.  
+
+GLOBAL uint8_t updateDisplay = 0;
+GLOBAL unsigned char led[LED_WIDTH];
+GLOBAL unsigned char led2[LED_WIDTH];
+
+
+
+
+
+
+
+
+
 
 
 // UPDATE()
@@ -233,42 +286,6 @@ void updateButtons(uint8_t buttonPressed[])
 /// Pressing a button unlocks the pots.
 GLOBAL uint8_t lockoutPots = 0;
 GLOBAL uint8_t scheduleScreenBrightnessUpdate = 0;
-
-uint8_t updatePot(uint16_t &pot, uint16_t* potCurrent, uint16_t &potLast, uint16_t& oldPotLast, uint8_t analog)
-    {
-    
-    // we clean up the pots as follows:
-    // 1. Run it through a median of three filter
-    // 2. potLast <- 1/2 potLast + 1/2 result from #1
-    // 3. If potLast differs from its old value by at least MINIMUM_POT_DEVIATION (4), then we have a new pot value.
-    
-    // This implies that the pots have a realistic resolution of 1024 / 4 = 256.
-    // The biggest range that we need to dial in is 2^14 = 16384.
-    // This means that the RIGHT POT must have a resolution of at least 64, since 64 * 256 = 16384.
- 
-    potCurrent[0] = potCurrent[1];
-    potCurrent[1] = potCurrent[2];
-    potCurrent[2] = analogRead(analog);
-    uint16_t middle = MEDIAN_OF_THREE(potCurrent[0], potCurrent[1], potCurrent[2]);
-    if (middle == 1023)		// we handle this exceptional condition because otherwise potLast would never be >= 1022, due to the division.
-    	potLast = middle;
-    else potLast = (potLast + middle) / 2;
-    // test to see if we're really turning the knob
-    if (oldPotLast != potLast && 
-    		(oldPotLast > potLast && oldPotLast - potLast >= MINIMUM_POT_DEVIATION ||
-        	 potLast > oldPotLast && potLast - oldPotLast >= MINIMUM_POT_DEVIATION ||
-        	 potLast >= 1023 - MINIMUM_POT_DEVIATION ||		// handle boundary condition
-        	 potLast <= MINIMUM_POT_DEVIATION))		// handle boundary condition
-        { oldPotLast = potLast; pot = potLast; return CHANGED; }
-    else return NO_CHANGE;
-    }
-
-
-
-//// Called by go() to do costly items only every once in a while, namely
-//// (1) checking buttons
-//// (2) checking pots
-//// (3) updating the screen
 
 uint8_t update()
     {
@@ -330,13 +347,6 @@ uint8_t update()
         }
     }
   
-
-
-
-/// hehe, global local
-GLOBAL _local local;
-        
-
 
 
 // FULLRESET()  
@@ -859,6 +869,20 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
     }
 
 
+
+
+
+
+
+/// GAUGE HELPER FUNCTIONS
+/// Most of the Gauge app is inlined in the state machine below.
+/// These three helper functions reduce the memory footprint.
+/// However we can't move these to a file like Gauge.cpp because
+/// the linker wastes memory in doing so.  So they're staying here.
+
+/// Adds a number to the buffer.  The number may be buffered with spaces
+/// at its beginning: these are not removed.  This is used to write the FIRST
+/// number in a scrolling message for CC, RPN, or NRPN.
 void addGaugeNumberNoTrim(uint16_t val)
     {
     char b[6];
@@ -866,6 +890,8 @@ void addGaugeNumberNoTrim(uint16_t val)
     addToBuffer(b);
     }
 
+/// Adds a number to the buffer, removing initial spaces.  This is used to write
+/// subsequent numbers in a scrolling message for CC, RPN, or NRPN.
 void addGaugeNumber(uint16_t val)
     {
     char b[6];
@@ -876,26 +902,30 @@ void addGaugeNumber(uint16_t val)
     addToBuffer(a);
     }
 
+/// Writes a note pitch and velocity (or pressure value) to the screen.
 void writeGaugeNote()
     {
-    writeNotePitch(led2, (uint8_t) itemNumber);       // Note
-    writeShortNumber(led, (uint8_t) itemValue, false);            // Velocity
+    writeNotePitch(led2, (uint8_t) itemNumber);       			  // Note
+    writeShortNumber(led, (uint8_t) itemValue, false);            // Velocity or Pressure
     }
 
 
 
-//// OCCASIONAL MIDI SIGNALS
+
+
+
+
+//// MIDI SIGNALS
 ////
 //// These are occasional (not constant) MIDI signals
 //// that we can reasonably display on our gauge.  This is used for STATE_GAUGE_ANY
 //// Omitted are: MIDI CLock, Active Sensing, both AfterTouch forms, Time Code Quarter Frame
-///
 
 
 
 GLOBAL uint8_t  newItem;                        // newItem can be 0, 1, or WAIT_FOR_A_SEC
-GLOBAL uint8_t itemType;
-GLOBAL uint16_t itemNumber;             // Note on/off/poly aftertouch use this for NOTE PITCH
+GLOBAL uint8_t itemType;						// See Item types in TopLevel.cpp
+GLOBAL uint16_t itemNumber;             		// Note on/off/poly aftertouch use this for NOTE PITCH
 GLOBAL uint16_t itemValue;                      // Note on/off/poly aftertouch use this for NOTE VELOCITY / AFTERTOUCH
 GLOBAL uint8_t itemChannel;
 
@@ -904,15 +934,29 @@ GLOBAL uint8_t itemChannel;
 GLOBAL uint8_t lastNotePlayed = NO_NOTE;
 
 
-// some shorthand so we can save a bit of program space.  Of course
-// this uses up some of our working memory.  These are PSTR strings
-// used in more than one location in the program.  They're set in the .ino file
-GLOBAL const char* nrpn_p;// = PSTR("NRPN");
-GLOBAL const char* rpn_p;// = PSTR("RPN");
-GLOBAL const char* cc_p;// = PSTR("CC");
-GLOBAL const char* v_p;// = PSTR("IS");
-GLOBAL const char* voltage_p;// = PSTR("VOLTAGE");
-GLOBAL const char* options_p;  // = PSTR("OPTIONS");
+
+
+
+
+
+
+//// LOCAL APPLICATION DATA
+///  [hehe, global local]
+GLOBAL _local local;
+        
+
+
+
+
+
+
+//// TOP LEVEL STATE VARIABLES
+
+GLOBAL uint8_t state = STATE_ROOT;                     // The current state
+GLOBAL uint8_t application = STATE_ARPEGGIATOR;           // The top state (the application, so to speak): we display a dot indicating this.
+GLOBAL uint8_t entry = 1;  
+GLOBAL uint8_t optionsReturnState;
+GLOBAL uint8_t defaultState = STATE_NONE;
 
 
 ////// GO()
@@ -2119,6 +2163,7 @@ void handleClock()
 #endif
 
 
+
 void handleNoteOff(byte channel, byte note, byte velocity)
     {
     if (updateMIDI(channel, MIDI_NOTE_OFF, note, velocity))
@@ -2132,7 +2177,7 @@ void handleNoteOff(byte channel, byte note, byte velocity)
           	if (options.splitControls == SPLIT_MIX)
           		{
           		sendNoteOff(note, velocity, options.channelOut);
-          		sendNoteOff(note, 127 - velocity, options.splitChannel);
+          		sendNoteOff(note, velocity, options.splitChannel);
           		}
           	else
           		{
@@ -2176,8 +2221,10 @@ void handleNoteOn(byte channel, byte note, byte velocity)
           	{
           	if (options.splitControls == SPLIT_MIX)
           		{
+				// This is our current velocity function
+          		uint8_t convertedVel =  (uint8_t)(((velocity) * (uint16_t)(velocity + 1))>> 7);
           		sendNoteOn(note, velocity, options.channelOut);
-          		sendNoteOn(note, 127 - velocity, options.splitChannel);
+          		sendNoteOn(note, velocity - convertedVel, options.splitChannel);
           		}
           	else
           		{

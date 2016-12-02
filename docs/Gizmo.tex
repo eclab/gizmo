@@ -7,6 +7,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{array}
+\usepackage{color}
 
 \newcommand\myfrac[2]{#1/#2}
 \begin{document}
@@ -637,7 +638,14 @@ The Controller interacts with Bypass mode differently than other applications.  
 \label{splitter}
 \end{wrapfigure}
 
-\textit{[Mega Only]}\qquad The Splitter allows lets you (1) split your keyboard into two zones, each controlling a different MIDI channel; or (2) split your keyboard into {\it three} zones, two controlling different MIDI channels and the third (middle) zone playing both MIDI channels simultaneously\footnote{This is commonly known as {\it layering.}}; or (3) fade or balance your entire keyboard such that when you play a note loudly, it is played loudly out the first channel but softly out the second, and likewise when the note is played softly, it is played softly out the first channel but {\it loudly} out the second.\footnote{This is s kind of velocity-based two-channel fader}.
+\textit{[Mega Only]}\qquad The Splitter allows lets you (1) split your keyboard into two zones, each controlling a different MIDI channel; or (2) split your keyboard into {\it three} zones, two controlling different MIDI channels and the third (middle) zone playing both MIDI channels simultaneously\footnote{This is commonly known as {\it layering.}}; or (3) fade or balance your entire keyboard such that if you play a note quietly, one channel will predominate, but if you play loudly, the other channel will predominate.
+
+\begin{wrapfigure}{r}{1.5in}
+\includegraphics[width=1.5in]{Fade}
+\vspace{-2em}\caption{\small Cumulative Velocity the MIDI Out Channels when fading.  Default is {\color{red}red}, and Alternative is {\color{blue} blue}.}
+\vspace{-2em}
+\label{splitter}
+\end{wrapfigure}
 
 The two MIDI channels in question are the Default MIDI Out Channel (defined in the Options, see Section \ref{options}), and an Alternative MIDI Out Channel which you specify in the Splitter.  If you're splitting your keyboard, you'll also specify up to two notes, {\bf Split Note A} and {\bf Split Note B}  (Split Note B is optional), and whether Control Change, Aftertouch, and the like go to the left split region or the right split region.
 
@@ -652,6 +660,16 @@ The two MIDI channels in question are the Default MIDI Out Channel (defined in t
 
 \item Finally, if you want to fade or balance your keyboard so that notes on the two channels are played with opposite velocities, you simply choose this option (see below).  You don't need to specify either Split Note A or B, but you will need to define the alternative MIDI Channel.
 \end{itemize}
+
+\paragraph{Fade Behavior}  The current fade behavior function is:
+\[
+\begin{split}
+\text{\it Default MIDI Velocity} &= Velocity - \text{\it Velocity} \times \left( \text{\it Velocity} + 1 \right) / 128\\
+\text{\it Alternative MIDI Velocity} &= \text{\it Velocity} \times \left( \text{\it Velocity} + 1 \right) / 128
+\end{split}
+\]
+
+This is a fancy way of saying that the total velocity of both channels is the same as the input velocity, and that the ratio of the Alternative velocity versus the Default velocity increases linearly as you get closer to 127.  I don't know if this is the right approach, and certainly different keyboards synthesizers have different and often nonlinear velocity mappings.  But there you have it.  If you'd like to play with it, it's in the function \texttt{handleNoteOn(...)} in \texttt{TopLevel.cpp}.
 
 \paragraph{Defining Notes and Channels}
 

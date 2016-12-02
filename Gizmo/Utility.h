@@ -40,6 +40,7 @@ void doClick();
 
 
 
+
 ///// DRAWING SUPPORT
 
 //// Draws a MIDI channel value of the bottom row of the left LED, using drawRange(...)
@@ -71,6 +72,38 @@ void write3x5Glyphs(uint8_t index);
 
 // Clears the screen buffers.
 void clearScreen();
+
+
+
+
+#if defined(__AVR_ATmega2560__)
+
+// SET MENU DELAY
+// Changes the menu delay to a desired value (between 0: no menu delay, and 11: infinite menu delay).  The default is 5
+void setMenuDelay(uint8_t index);
+
+// The index values passed into setMenuDelay correspond to the following delays (but these
+// constants may NOT be passed into setMenuDelay).
+
+#endif
+
+#define DEFAULT_SHORT_DELAY (60 >> 3)
+#define NO_MENU_DELAY  (DEFAULT_SHORT_DELAY)
+#define EIGHTH_MENU_DELAY (109 >> 3)
+#define QUARTER_MENU_DELAY (205 >> 3)
+#define THIRD_MENU_DELAY (269 >> 3)
+#define HALF_MENU_DELAY (397 >> 3)
+#define DEFAULT_MENU_DELAY (781 >> 3)
+#define DOUBLE_MENU_DELAY (1549 >> 3)
+#define TREBLE_MENU_DELAY (2317 >> 3)
+#define QUADRUPLE_MENU_DELAY (3085 >> 3)
+#define EIGHT_TIMES_MENU_DELAY (6157 >> 3)
+#define HIGH_MENU_DELAY  (NO_SCROLLING)
+
+
+
+
+
 
 
 ///// STATE UTILITIES
@@ -147,6 +180,7 @@ uint8_t incrementAndWrap(uint8_t n, uint8_t max);
 
 /// Computes the median of five values.  [Presently unused]
 uint16_t medianOfFive(uint16_t array[]);
+
 
 
 
