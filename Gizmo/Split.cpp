@@ -78,7 +78,7 @@ void stateSplitLayerNote()
 		write3x5Glyphs(GLYPH_NONE);
 		if (isUpdated(SELECT_BUTTON, PRESSED))
 			{
-			isUpdated(SELECT_BUTTON, RELEASED);  // clear this just in case
+			//isUpdated(SELECT_BUTTON, RELEASED);  // clear this just in case
 			options.splitLayerNote = NO_NOTE;
 			saveOptions();
 			goUpState(STATE_SPLIT);

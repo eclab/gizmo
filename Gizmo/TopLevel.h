@@ -253,8 +253,9 @@ extern _local local;
 
 //// BUTTONS AND POTS
 
-#define BUTTON_PRESSED_COUNTDOWN_MAX 1612                       // 1/2 second before a button is considered RELEASED LONG
-#define MINIMUM_POT_DEVIATION 4                                         // A pot just be turned more than this value before we consider it changed
+#define BUTTON_PRESSED_COUNTDOWN_DEBOUNCE 313     // about 1/10 of a second must have transpired before we consider another button press  (313 / 3125 == 1/10)
+#define BUTTON_PRESSED_COUNTDOWN_MAX 1612         // 1/2 second before a button is considered RELEASED LONG  (1612 / 3125
+#define MINIMUM_POT_DEVIATION 4                   // A pot just be turned more than this value before we consider it changed
 
 /// Button and Pot numbers
 #define BACK_BUTTON 0

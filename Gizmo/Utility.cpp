@@ -122,9 +122,12 @@ uint8_t debug(int8_t val1, int8_t val2)
 
 void goDownState(uint8_t nextState)
     {
-    defaultState = STATE_NONE;
-    state = nextState;
-    entry = true;
+//    defaultState = STATE_NONE;
+//    state = nextState;
+//    entry = true;
+//    clearReleased();
+	goUpState(nextState);
+	defaultState = STATE_NONE;
     }
 
 void goUpState(uint8_t nextState)
@@ -132,6 +135,7 @@ void goUpState(uint8_t nextState)
     defaultState = state; 
     state = nextState;
     entry = true;
+    clearReleased();
     }
 
 

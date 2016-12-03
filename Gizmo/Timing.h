@@ -174,6 +174,7 @@ uint8_t continueClock(uint8_t fromButton);
 
 uint8_t getClockState();
 
+void updateTimers();
 
 #endif
 

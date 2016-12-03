@@ -92,7 +92,7 @@ void stateRecorderPlay()
         {
         // we're having problems coming back to Play from the Options menu and going somewhere
         // else.  I'm gonna see if this fixed things
-		clearReleased();
+		//clearReleased();
 		        
         resetRecorder();
         local.recorder.status = RECORDER_STOPPED;

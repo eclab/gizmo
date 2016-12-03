@@ -294,3 +294,65 @@ uint32_t getMicrosecsPerPulse()
 
 
 
+void updateTimers()
+	{
+    // update our internal clock if we're making one
+    if (options.clock >= IGNORE_MIDI_CLOCK)
+        {
+        if (currentTime > targetNextPulseTime)
+            {
+            targetNextPulseTime += microsecsPerPulse;
+            pulseClock();
+            }
+        }
+
+    if (swingTime != 0 && currentTime >= swingTime)
+        {
+        // play!
+        notePulse = 1;
+        swingTime = 0;
+        }       
+    
+    if (pulse)
+        {
+        if (--notePulseCountdown == 0)
+            {
+            // we may start to swing.  Figure extra swing hold time
+            if (swingToggle && options.swing > 0)
+                {
+                swingTime = currentTime + div100(notePulseRate * getMicrosecsPerPulse() * options.swing);
+                }
+            else
+                {
+                // redundant with above, but if I move this to a function, the code bytes go up
+                notePulse = 1;
+                swingTime = 0;
+                }                       
+
+            notePulseCountdown = notePulseRate;
+                        
+            if (options.noteSpeedType == NOTE_SPEED_THIRTY_SECOND || 
+                options.noteSpeedType == NOTE_SPEED_SIXTEENTH ||
+                options.noteSpeedType == NOTE_SPEED_EIGHTH ||
+                options.noteSpeedType == NOTE_SPEED_QUARTER ||
+                options.noteSpeedType == NOTE_SPEED_HALF)
+                swingToggle = !swingToggle;
+            else
+                swingToggle = 0;
+            }
+                
+        if (--beatCountdown == 0)
+            {
+            beat = 1;
+            beatCountdown = PULSES_PER_BEAT;
+            }
+        }
+  
+#if defined(__AVR_ATmega2560__)
+  	if (notePulse && options.clock == DIVIDE_MIDI_CLOCK)
+  		{
+  		MIDI.sendRealTime(MIDIClock); TOGGLE_OUT_LED(); 
+  		}
+#endif
+ 	}
+

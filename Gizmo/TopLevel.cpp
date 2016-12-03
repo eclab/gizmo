@@ -129,7 +129,7 @@ void setupPots()
 void clearReleased()
 	{
 	for(uint8_t i = BACK_BUTTON; i <= SELECT_BUTTON; i++)
-		for(uint8_t j = RELEASED; j <= RELEASED_LONG; j++)
+		for(uint8_t j = PRESSED; j <= RELEASED_LONG; j++)
 			isUpdated(i, j);
 	} 
 
@@ -157,40 +157,43 @@ uint8_t isUpdated(uint8_t button, uint8_t type)
 
 
 /// BUTTON COUNTDOWNS
-/// The updateButtons command updates buttons (either real or virtual).  Each of these buttons
-/// can have a countdown to determine if when it's released it's RELEASED or RELEASED LONG.
-/// If BUTTON_PRESSED_COUNTDOWN_INVALID, then a button is never considered to be released long.
+//  I use the button countdown in two ways:
+//  1. If the button is presently RELEASED, then I ignore presses until the button countdown counts through BUTTON_PRESSED_COUNTDOWN_DEBOUNCE ticks
+//  2. If the button is presently PRESSED, and continues to be pressed for up to BUTTON_PRESSED_COUNTDOWN_MAX, then it's considered a LONG PRESS
 
-#define BUTTON_PRESSED_COUNTDOWN_DEBOUNCE 100
 GLOBAL int16_t buttonPressedCountdown[3] = { BUTTON_PRESSED_COUNTDOWN_DEBOUNCE, BUTTON_PRESSED_COUNTDOWN_DEBOUNCE, BUTTON_PRESSED_COUNTDOWN_DEBOUNCE };
 
 void updateButtons(uint8_t buttonPressed[])
     {
-    uint8_t oldButton[3];
-    memcpy(oldButton, button, 3);
-    memcpy(button, buttonPressed, 3);
-
-    for(uint8_t i = 0; i < 3; i++)
+	for(uint8_t i = 0; i < 3; i++)
         {
-        if (!oldButton[i] && buttonPressed[i] && buttonPressedCountdown[i] == 0)                 // button was pressed
-            {
-            buttonUpdated[i] = PRESSED;
-            buttonPressedCountdown[i] = BUTTON_PRESSED_COUNTDOWN_MAX;
+        if (!button[i])		// button used to be released
+        	{
+        	if (buttonPressed[i] && buttonPressedCountdown[i] == 0)        // button was pressed and there's been enough time
+            	{
+            	buttonUpdated[i] = PRESSED;
+            	buttonPressedCountdown[i] = BUTTON_PRESSED_COUNTDOWN_MAX;
+            	button[i] = buttonPressed[i];
+            	}
             }
-        else if (oldButton[i] && !buttonPressed[i])     // button was released or released long
-            {
-            if (ignoreNextButtonRelease[i])
-                {
-                ignoreNextButtonRelease[i] = 0;  // ignore it this time around, but not later releases
-                }
-            else if (buttonPressedCountdown[i] == 0)
-                buttonUpdated[i] = RELEASED_LONG;
-            else if (buttonUpdated[i] == PRESSED)  // looks like it wasn't checked for
-                buttonUpdated[i] = PRESSED_AND_RELEASED;
-            else
-                buttonUpdated[i] = RELEASED;
-            buttonPressedCountdown[i] = BUTTON_PRESSED_COUNTDOWN_DEBOUNCE;
-            }
+        else 				// button used to be pressed
+        	{
+        	if (!buttonPressed[i])     		// button was released or released long
+				{
+				if (ignoreNextButtonRelease[i])
+					{
+					ignoreNextButtonRelease[i] = 0;  // ignore it this time around, but not later releases
+					}
+				else if (buttonPressedCountdown[i] == 0)
+					buttonUpdated[i] = RELEASED_LONG;
+				else if (buttonUpdated[i] == PRESSED)  // looks like it wasn't checked for
+					buttonUpdated[i] = PRESSED_AND_RELEASED;
+				else
+					buttonUpdated[i] = RELEASED;
+				buttonPressedCountdown[i] = BUTTON_PRESSED_COUNTDOWN_DEBOUNCE;
+            	button[i] = buttonPressed[i];
+				}
+			}
         }
     }
 
@@ -980,66 +983,8 @@ void go()
         if (buttonPressedCountdown[i] > 0) 
             buttonPressedCountdown[i]--;
 
+	updateTimers();
 
-    // update our internal clock if we're making one
-    if (options.clock >= IGNORE_MIDI_CLOCK)
-        {
-        if (currentTime > targetNextPulseTime)
-            {
-            targetNextPulseTime += microsecsPerPulse;
-            pulseClock();
-            }
-        }
-
-    if (swingTime != 0 && currentTime >= swingTime)
-        {
-        // play!
-        notePulse = 1;
-        swingTime = 0;
-        }       
-    
-    if (pulse)
-        {
-        if (--notePulseCountdown == 0)
-            {
-            // we may start to swing.  Figure extra swing hold time
-            if (swingToggle && options.swing > 0)
-                {
-                swingTime = currentTime + div100(notePulseRate * getMicrosecsPerPulse() * options.swing);
-                }
-            else
-                {
-                // redundant with above, but if I move this to a function, the code bytes go up
-                notePulse = 1;
-                swingTime = 0;
-                }                       
-
-            notePulseCountdown = notePulseRate;
-                        
-            if (options.noteSpeedType == NOTE_SPEED_THIRTY_SECOND || 
-                options.noteSpeedType == NOTE_SPEED_SIXTEENTH ||
-                options.noteSpeedType == NOTE_SPEED_EIGHTH ||
-                options.noteSpeedType == NOTE_SPEED_QUARTER ||
-                options.noteSpeedType == NOTE_SPEED_HALF)
-                swingToggle = !swingToggle;
-            else
-                swingToggle = 0;
-            }
-                
-        if (--beatCountdown == 0)
-            {
-            beat = 1;
-            beatCountdown = PULSES_PER_BEAT;
-            }
-        }
-  
-#if defined(__AVR_ATmega2560__)
-  	if (notePulse && options.clock == DIVIDE_MIDI_CLOCK)
-  		{
-  		MIDI.sendRealTime(MIDIClock); TOGGLE_OUT_LED(); 
-  		}
-#endif
- 
     // update the screen, read from the sensors, or update the board LEDs
     updateDisplay = update();
     
@@ -1753,19 +1698,25 @@ void go()
             switch (result)
                 {
                 case NO_MENU_SELECTED:
+                	{
                     if (options.transpose != currentDisplay)
                         {
                         options.transpose = currentDisplay; 
                         sendAllNotesOff();  // we must have this because if we've changed things we may never get a note off
                         }
+                    }
                     break;
                 case MENU_SELECTED:
+                	{
                     if (backupOptions.transpose != options.transpose)
                         saveOptions();
+                    }
                     // FALL THRU
                 case MENU_CANCELLED:
+                    {
                     goUpStateWithBackup(STATE_OPTIONS);
                     sendAllNotesOff();  // we must have this because if we've changed things we may never get a note off
+                    }
                     break;
                 }
             playApplication();       

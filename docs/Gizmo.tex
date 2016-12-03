@@ -33,7 +33,7 @@ Gizmo comes built-in with the following applications and other capabilities:
 \item {\bf MIDI Gauge.}  The gauge will display all incoming MIDI information on one or all channels.  Note on, note off, and polyphonic aftertouch are shown with pitch and velocity (or pressure).  Channel aftertouch is shown with the appropriate pitch.  Program changes indicate the number.  Pitch bends indicate the value in full 14-bit.  Channel control, NRPN, and RPN messages display the number, value, and whether the value is being set, incremented, or decremented.  Sysex, song position, song select, tune request, start, continue, stop, and system reset are simply noted.  Rapid-fire MIDI signals such as MIDI clock, active sensing, and time code just turn on individual LEDs.
 \item {\bf MIDI Control Surface}.  Gizmo has two potentiometers and two buttons.  Each can be configured to send a unique Program Change, Control Change, NRPN, or RPN commands, or (on the Mega) control voltage values via either of two DACs.  The potentiometers can only send MSB values.
 
-\item {\bf \textit{Mega Only:}\quad Keyboard Splitting}  You can split incoming MIDI notes by pitch and route them to different MIDI out channels.  You can also fade notes between two channels depending on note velocity.
+\item {\bf \textit{Mega Only:}\quad Keyboard Splitter}  You can split incoming MIDI notes by pitch and route them to different MIDI out channels.  You can also fade notes between two channels depending on note velocity.
 \end{itemize}
 
 \paragraph{Other Cool Stuff}
@@ -894,7 +894,7 @@ Double Whole Note				&192\\
 		Presently says:\quad GIZMO V1 (C) 2016 BY SEAN LUKE
 	\end{description}
 
-	\subsection{Starting, Stopping, and Continuing the Clock}
+	\section{Starting, Stopping, and Continuing the Clock}
 	\label{startingclock}
 
 		You can start, stop, and continue the clock via NRPN as discussed earlier (see {\bf Control MIDI} in Section \ref{options}).   But there's another ``secret'' way to do it using Gizmo's buttons.  If you are in the Options menu, long-press the Middle Button: this toggles {\bf starting} or {\bf stopping} the clock (you can't continue the clock this way).  Remember that you can also get to the Options menu from inside the Arpeggiator, Step Sequencer, or Recorder.
@@ -902,6 +902,13 @@ Double Whole Note				&192\\
 		Neither long-pressing the Middle Button, nor using NRPN to start/stop/continue, will do anything if the MIDI Clock is set to {\bf Use, Divide,} or {\bf Consume} (in which case the MIDI Clock is out of your control).  See {\bf MIDI Clock} in Section \ref{options}.
 				
 		Note that starting and stopping the clock doesn't mean that an application starts or stops playing.  However, the Start message {\it will} cause applications to reset themselves to the beginning when appropriate.   This means that if you want to start/stop/pause/continue the Step Sequencer (for example), you can do it as follows: first stop the clock, then start the sequencer playing.  Note that it won't play because there's no clock pulses.  But now you can start, stop, and pause/continue the sequencer by controlling the Start/Stop/Continue clock messages directly.
+		
+\section{Buttons and Debouncing}
+
+The SparkFun MIDI Shield uses poor quality buttons.  I can push down on the button and wiggle it and it'll think it's been pressed multiple times.  As a result occasionally pressing a button will send two or more button-presses to Gizmo.
+
+Gizmo has a debounce mechanism built-in: it ignores secondary apparent button-presses if they occurred within \(N\) milliseconds of an earlier button release.  At present \(N\) is set to 100ms.  If you need to press buttons faster than ten times a second (and it's possible) set the \texttt{BUTTON\_PRESSED\_COUNTDOWN\_DEBOUNCE} constant (in \texttt{TopLevel.h}) to something smaller.
+
 
 \clearpage
 
@@ -913,7 +920,7 @@ Double Whole Note				&192\\
 \begin{tabular}{@{}llllp{2.9in}@{}}
 &&\multicolumn{2}{c}{\it Testing}&\\[0.1em]
 \cline{3-4}\\[-0.9em]
-{\it Item} & {\it Coded} & {\it Cursory} & {\it Significant} & {\it Known Bugs}\\[0.1em]
+{\it Item} & {\it Coded} & {\it Cursory} & {\it Significant} & {\it Known Bugs and Issues}\\[0.1em]
 		\hline\\[-1.5em]
 Arpeggiator& $\checkmark$ & $\checkmark$ & $\checkmark$  & \\
 Step Sequencer& $\checkmark$ & $\checkmark$ & $\checkmark$ & Occasionally the beat doesn't match up with the play cursor; this particularly happens under Swing.  I've not been able to track it down.\\
@@ -929,15 +936,14 @@ MIDI In/Out Channels &  $\checkmark$ & $\checkmark$ &  & No test of OMNI yet\\
 Bypass &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
 Display Subsystem  &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
 Timing  Subsystem &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
-Interface Utilities &  $\checkmark$ & $\checkmark$ &  $\checkmark$ & Buttons still need work: long-presses occur prematurely, and we still have some switch bouncing.\\
+Interface Utilities &  $\checkmark$ & $\checkmark$ &  $\checkmark$ & \\
 Storage Facility &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
 MIDI Clock Control& $\checkmark$ & $\checkmark$ & &\\
-Keyboard Splitting& $\checkmark$ & $\checkmark$  & &\\
+Keyboard Splitting& $\checkmark$ & $\checkmark$  & & Works well but the fade option is perhaps a bit unnecessary and weird.\\
 Control Voltage& $\checkmark$ & & & Untested\\
 \end{tabular}
 }
 \end{center}
-
 
 
 \end{document}
