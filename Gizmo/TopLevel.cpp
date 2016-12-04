@@ -1023,7 +1023,11 @@ void go()
         break;
         case STATE_RECORDER:
             {
+#ifdef NO_RECORDER
+			goUpState(STATE_ROOT);
+#else
             stateLoad(STATE_RECORDER_PLAY, STATE_RECORDER_PLAY, STATE_ROOT, STATE_RECORDER);
+#endif // NO_RECORDER
             }
         break;
         case STATE_CONTROLLER:
@@ -1438,28 +1442,31 @@ void go()
         break;
         case STATE_RECORDER_FORMAT:
             {
+#ifndef NO_RECORDER
             data.slot.data.recorder.length = 0;
+#endif
             }
         // Fall Thru!
         case STATE_RECORDER_PLAY:
             {
+#ifndef NO_RECORDER
             stateRecorderPlay();
+#endif
             }
         break;
         case STATE_RECORDER_SAVE:
             {
+#ifndef NO_RECORDER
             stateSave(STATE_RECORDER_PLAY);
+#endif
             }
         break;
         case STATE_RECORDER_SURE:
             {
+#ifndef NO_RECORDER
             stateSure(STATE_RECORDER_PLAY, STATE_RECORDER);
+#endif
             }
-        break;
-        //case STATE_RECORDER_MENU:
-        //    {
-        //    stateRecorderMenu();
-        //    }
         break;
         case STATE_CONTROLLER_PLAY:
             {

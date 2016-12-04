@@ -218,11 +218,13 @@ uint8_t startClock(uint8_t fromButton = false)
     	// reset the step sequencer
     	resetStepSequencer();
 		}    	
+#ifndef NO_RECORDER
     else if (application == STATE_RECORDER)
     	{
     	// reset the recorder
     	resetRecorder();
     	}
+#endif
 
     return 1;
     }

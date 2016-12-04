@@ -909,6 +909,8 @@ The SparkFun MIDI Shield uses poor quality buttons.  I can push down on the butt
 
 Gizmo has a debounce mechanism built-in: it ignores secondary apparent button-presses if they occurred within \(N\) milliseconds of an earlier button release.  At present \(N\) is set to 100ms.  If you need to press buttons faster than ten times a second (and it's possible) set the \texttt{BUTTON\_PRESSED\_COUNTDOWN\_DEBOUNCE} constant (in \texttt{TopLevel.h}) to something smaller.
 
+\section{Space on the Arduino Uno}
+Gimzo uses nearly all available space on the Arduino Uno.  If you want to do any serious development, you should get an Arduino Mega instead, which has lots of available space.  But if you'd like extend Gizmo with a little tiny application on the Uno, you can remove the Note Recorder.  In \texttt{All.h} just uncomment the line that says \texttt{NO\_RECORDER} and you'll get about 1.5K of code space.  It's not a lot but should be enough to write a small app. Note that ``Recorder'' will still appear in the Menu: it just won't do anything.  To get rid of that you need to modify the state machine a bit.  I'd not bother.
 
 \clearpage
 

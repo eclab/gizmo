@@ -258,7 +258,9 @@ void stateSave(uint8_t backState)
                 break;
                 case STATE_RECORDER:
                     {
+#ifndef NO_RECORDER
                     saveSlot(currentDisplay);
+#endif
                     }
                 break;
                 }

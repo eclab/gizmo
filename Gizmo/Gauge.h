@@ -26,41 +26,16 @@
 // 4. Toggle a click track (specify a note pitch and velocity to be played for 1/24 a beat, or cancel the same).
 //
 //
-// STORAGE
-//
-// A slot first holds a 2-byte LENGTH (in bytes) for the buffer, then a 1-byte NUMBER OF NOTE ON MESSAGES stored in the buffer,
-// then finally the buffer, of size 384.
-//
-// Note on and Note Off events are packed in order they occur.  A Note On message is 4 bytes, conisting of:
-//
-// 0 [indicates a Note ON], then 4 bits ID, then 11 bits timestamp, then 8 bits for pitch (1 bit unused of course), then 8 bits for velocity (1 bit unused)
-//
-// A Note Off message is 2 bytes, consisting of:
-//
-// 1 [indicates a Note OFF], then 4 bits ID, then 11 bits timestamp
-//
-// It's 64 notes because if we have a note off for each note on.  For each such pair we have 6 bytes, and 384 / 6 = 64.
-//
-//
 // GLOBALS (TEMPORARY DATA)
 //
-// Temporary data is stored in local.recorder.
+// Temporary data is stored in local.gauge.
 //
 //
 // OPTIONS
 //
-// Permanent options special to the Arpeggiator are:
-//
-// options.recorderRepeat                               Toggle for Repeat
-// options.recorderClick                                Note to play for click track (or NO_NOTE)
-// options.recorderClickVelocity                Velocity to play for click track
-//
-// Other permanent options affecting the Arpeggiator include:
+// Affecting the Gauge include:
 //
 // options.channelIn
-// options.channelOut
-// options.transpose
-// options.volume
 //
 //
 // DISPLAY
@@ -98,6 +73,7 @@ struct _gaugeLocal
         
 
 /// Most of Gauge's functions are embedded (inlined) in the TopLevel.cpp state machine. 
+
 
 
 #endif __GAUGE_H__

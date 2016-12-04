@@ -25,6 +25,13 @@
 // without ever touching the knobs or buttons (which you might not have).
 //#define HEADLESS
 
+// If you want to do some development on the Arduino Uno (which has some space), you can remove
+// the Note Recorder.  Here's a quick hack that will do the job.  You'll see "RECORDER" in the
+// top level menu but it won't do anything and the Recorder code will have been removed, freeing up
+// about 1.5K.  Not much but certainly enough to do something small.
+// Don't do this on the Mega (plus its not particularly useful there)
+//#define NO_RECORDER
+
 
 #include <Arduino.h>
 #include <EEPROM.h>
