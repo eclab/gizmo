@@ -30,7 +30,7 @@ Gizmo comes built-in with the following applications and other capabilities:
 \item {\bf Arpeggiator.}  Gizmo's arpeggiator has built-in up, down, up/down, repeated chord, note-assign, and random arpeggios spanning one to three octaves.  Additionally, you can define up to ten additional arpeggiator patterns, each up to 32 notes long, involving up to 15 different chord notes, plus rests.  Arpeggios can be {\it latched} (or not), meaning that they may continue to play even after you have released the keys.  You can specify  the note value relative to the tempo (ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), the output MIDI channel, and the degree of swing (syncopation).  Gizmo will show the arpeggio on-screen.
 \item {\bf Step Sequencer.}  Gizmo's step sequencer can be organized as 12 16-note tracks, 8 24-note tracks, or 6 32-note tracks.  Each note in a track can have its own unique pitch and velocity, or be a rest, or continue (lengthen, tie) the previous note.  You can also fix the velocity for an entire track, mute tracks, fade their volume, specify their independent output MIDI channels, specify the note value relative to the tempo (again ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), and the degree of swing (syncopation).    The step sequencer lets you edit in two modes: either by triggering independent steps like a classic drum sequencer, or by playing a sequence of notes.  The Arduino Uno can store up to two sequences in its slots (shared with the Recorder, discussed next).  The Mega can store up to nine sequences.  Gizmo will show and edit sequences on-screen.
 \item {\bf Recorder.}  The Arduino doesn't have a lot of memory, but we provide a note recorder which records and plays back up to 64 notes (pitch and velocity) played over 21 measures. The recorder has 16-voice polyphony.   It's enough to record a very short ditty.  You can also set the recorder to loop the recording while playing, and to provide a click track.  The Arduino Uno can store up to two recordings in its slots (shared with the Step Sequencer).  The Mega can store up to nine recordings.
-\item {\bf MIDI Gauge.}  The gauge will display all incoming MIDI information on one or all channels.  Note on, note off, and polyphonic aftertouch are shown with pitch and velocity (or pressure).  Channel aftertouch is shown with the appropriate pitch.  Program changes indicate the number.  Pitch bends indicate the value in full 14-bit.  Channel control, NRPN, and RPN messages display the number, value, and whether the value is being set, incremented, or decremented.  Sysex, song position, song select, tune request, start, continue, stop, and system reset are simply noted.  Rapid-fire MIDI signals such as MIDI clock, active sensing, and time code just turn on individual LEDs.
+\item {\bf MIDI Gauge.}  The gauge will display all incoming MIDI information on one or all channels.  Note on, note off, and polyphonic aftertouch are shown with pitch and velocity (or pressure).  Channel aftertouch is shown with the appropriate pitch.  Program changes indicate the number.  Pitch bends indicate the value in full 14-bit.  Control Change, NRPN, and RPN messages display the number, value, and whether the value is being set, incremented, or decremented.  Sysex, song position, song select, tune request, start, continue, stop, and system reset are simply noted.  Rapid-fire MIDI signals such as MIDI clock, active sensing, and time code just turn on individual LEDs.
 \item {\bf MIDI Control Surface}.  Gizmo has two potentiometers and two buttons.  Each can be configured to send a unique Program Change, Control Change, NRPN, or RPN commands, or (on the Mega) control voltage values via either of two DACs.  The potentiometers can only send MSB values.
 
 \item {\bf \textit{Mega Only:}\quad Keyboard Splitter}  You can split incoming MIDI notes by pitch and route them to different MIDI out channels.  You can also fade notes between two channels depending on note velocity.
@@ -530,7 +530,7 @@ Messages that are associated with a MIDI channel will have their channel number 
 
 \begin{wrapfigure}{r}{2in}
 \vspace{-2em}\includegraphics[width=2in]{midichannel.pdf}
-\vspace{-2em}\caption{\small MIDI Channel Values}\vspace{-2em}
+\vspace{-2em}\caption{\small MIDI Channel Values}\vspace{-5em}
 \label{midichannelvalues}
 \end{wrapfigure}
 
@@ -541,9 +541,25 @@ Messages that are associated with a MIDI channel will have their channel number 
 \item {\bf Pitch Bend}\quad The 14-bit value is displayed
 \item {\bf Channel Aftertouch}.  ``AT'' is displayed, followed by the value.
 \item {\bf Program Change}\quad ``PC'' is displayed, followed by the value.
-\item {\bf Channel Control (CC)}\quad The value is shown first, then text is scrolled with the value, then ``CC'', then the parameter.
+\item {\bf Control Change (CC)}\quad If the CC parameter is for 7-bit values, then the value is shown first, then text is scrolled with the value, then ``CC'', then the parameter.  If the CC parameter is for 14-bit values, the MSB of the value is shown first, then text is scrolled with the value, then ``CC'', then the parameter, then in parentheses the 14-bit (MSB+LSB) value.
 \item {\bf Registered Parameter Number (RPN)}\quad The value (7-bit MSB only) is shown first, then text is scrolled with the value (MSB), then ``RPN'', then the parameter (14-bit), then in parentheses the 14-bit (MSB+LSB) value.
 \item {\bf Non-Registered Parameter Number (NRPN)}\quad The value (7-bit MSB only) is shown first, then text is scrolled with the value (MSB), then ``NRPN'', then the parameter (14-bit), then in parentheses the 14-bit (MSB+LSB) value.
+\end{itemize}
+
+\begin{itemize}
+\item {\bf Channel Mode}\quad The value is shown first, then text is scrolled with the value, then ``CHANNEL MODE'', then the parameter.  Channel Mode parameters are:\footnote{Why no text to describe these things?  Because the Arduino Uno is out of space.  And they're not that common.}
+\begin{center}\begin{tabular}{@{}rll@{}}
+{\it Parameter}&{\it Value}&{\it Meaning}\\[0.1em]
+\hline\\[-0.9em]
+120&Normally 0&All Sound Off\\
+121&Normally 0&Reset All Controllers\\
+122&0=Off, 1=On&Local Control (On/Off)\\
+123&Normally 0&All Notes Off\\
+124&Normally 0&Omni Mode Off\\
+125&Normally 0&Omni Mode On\\
+126&\(C\)&Mono Mode On, with \(C\) channels total\\
+127&Normally 0&Poly Mode On\\
+\end{tabular}\end{center}
 \item {\bf System Exclusive}\quad ``SYSX'' is displayed.\footnote{Note that the version of the MIDI library on which Gizmo relies presently doesn't handle large System Exclusive messages well.}
 \item {\bf Song Position}\quad ``SPOS'' is displayed.
 \item {\bf Song Select}\quad ``SSEL'' is displayed.
@@ -557,7 +573,7 @@ Messages that are associated with a MIDI channel will have their channel number 
 
 
 \begin{wrapfigure}{r}{3in}
-\vspace{-16em}\includegraphics[width=3in]{NoteGauge.pdf}
+\vspace{-5em}\includegraphics[width=3in]{NoteGauge.pdf}
 \vspace{-2em}\caption{\small Note Gauge Layout}\vspace{-1em}
 \label{notegauge}
 \end{wrapfigure}
@@ -578,12 +594,6 @@ How do you distinguish between a Note On, Note Off, or Polyphonic Aftertouch mes
 Note pitches are displayed by showing the note (such as B$\flat$), with the octave number directly below it.  MIDI has eleven different octaves (0--10): Middle C is the bottom note of octave 5.  The octave number is displayed as shown in Figure~\ref{octave}.  As usual, the MIDI In Channel is shown below that.
 
 
-\begin{wrapfigure}{r}{1.8in}
-\includegraphics[width=1.8in]{octave.pdf}
-\vspace{-2em}\caption{\small Octave Values}\vspace{-5em}
-\label{octave}
-\end{wrapfigure}
-
 \paragraph{Frequent MIDI Display}  These are messages which are too fast to display usefully in most cases.  In each case, a specific LED will be toggled (see Figure~\ref{generalgauge}).
 
 \paragraph{}\vspace{-2em}\begin{itemize}
@@ -596,6 +606,13 @@ Note pitches are displayed by showing the note (such as B$\flat$), with the octa
 
 \section {The Controller}
 \label{controller}
+
+\begin{wrapfigure}{r}{1.8in}
+\vspace{-11em}\includegraphics[width=1.8in]{octave.pdf}
+\vspace{-2em}\caption{\small Octave Values}\vspace{-1em}
+\label{octave}
+\end{wrapfigure}
+
 The Controller allows you to assign to each of two buttons and two potentiometers any NRPN, RPN, Control Change (CC), or Program Change (PC) value.  These assignments are stored in Flash memory and survive reboots and power cycling.
 
 The Controller interacts with Bypass mode differently than other applications.  In bypass mode, the Controller passes all the incoming MIDI data to MIDI out as usual.  But it will still emit values when you press the buttons or more the knobs.  This is because it's typical that you'd want to use Controller to (for example) manipulate the VCF on an analog synthesizer while playing it via a remote keyboard.  To do this, you'd plug the keyboard into Gizmo, plug Gizmo into the synthesizer, and turn on bypass mode.

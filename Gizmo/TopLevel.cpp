@@ -1119,6 +1119,14 @@ void go()
                             }
                         break;
                         case MIDI_CC_7_BIT:
+                        	{
+                        	if (itemNumber >= 120)
+                        		{
+								str = PSTR("CHANNEL MODE");
+                        		break;
+                        		}
+                        	// else we fall thru
+                        	}
                             // FALL THRU
                         case MIDI_CC_14_BIT:
                             {
@@ -1149,43 +1157,15 @@ void go()
                             }
                         break;
                         case MIDI_SYSTEM_EXCLUSIVE: 
-                            {
-                            write3x5Glyphs(GLYPH_SYSEX);
-                            }
-                        break;
                         case MIDI_SONG_POSITION:
-                            {
-                            write3x5Glyphs(GLYPH_SONG_POSITION);
-                            }
-                        break;
                         case MIDI_SONG_SELECT: 
-                            {
-                            write3x5Glyphs(GLYPH_SONG_SELECT);
-                            }
-                        break;
                         case MIDI_TUNE_REQUEST:
-                            {
-                            write3x5Glyphs(GLYPH_TUNE_REQUEST);
-                            }
-                        break;
                         case MIDI_START: 
-                            {
-                            write3x5Glyphs(GLYPH_START);
-                            }
-                        break;
                         case MIDI_CONTINUE:
-                            {
-                            write3x5Glyphs(GLYPH_CONTINUE);
-                            }
-                        break;
                         case MIDI_STOP:
-                            {
-                            write3x5Glyphs(GLYPH_STOP);
-                            }
-                        break;
                         case MIDI_SYSTEM_RESET: 
                             {
-                            write3x5Glyphs(GLYPH_SYSTEM_RESET);
+                            write3x5Glyphs(itemType - MIDI_SYSTEM_EXCLUSIVE + GLYPH_SYSTEM_RESET);
                             }
                         break;
                         }

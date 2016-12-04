@@ -85,11 +85,6 @@
 // playing at any one time.
 #define MAX_RECORDER_NOTES_PLAYING 16
 
-// This is a dummy function which does nothing at all, because we can't presently
-// play in the background.  But it's included because if we DON'T have it, then
-// Utility.playApplication() increases by 100 bytes.  :-(
-void playRecorder();
-
 // status values
 #define RECORDER_STOPPED 0
 #define RECORDER_PLAYING 1
@@ -139,9 +134,19 @@ struct _recorder
 // Plays OR Records the song
 void stateRecorderPlay();
 
-void stateRecorderMenu();
+// Removed for space, since we're not allowing repeating as an *option* any more.
+//void stateRecorderMenu();
 
+/// Resets the recorder entirely.  Called on MIDI Start etc.
 void resetRecorder();
+
+
+// This is a dummy function which does nothing at all, because we can't presently
+// play in the background.  But it's included because if we DON'T have it, then
+// Utility.playApplication() increases by 100 bytes.  :-(
+void playRecorder();
+
+
 
 #endif
 

@@ -1,29 +1,26 @@
 #ifndef __GAUGE_H__
 #define __GAUGE_H__
 
+
+
 /////// THE MIDI GAUGE
 //
 // The gauge can do the following:
 //
-// 1. Display Note on and Note Off Messages, showing pitch and velocity.
-//
-// 2. Optionally display Polyphonic Aftertouch Messages showing pitch and velocity.
-//
-// 3. Display Pitch bend values by drawing the entire 14-bit bend value.
-//
-// 4. Display Program Change messages as "PC" plus the 7-bit value.
-//
-// 5. Optionally display Channel Aftertouch Messages as "AT" plus the 7-bit value.
+// 1. Display Note on, Note Off, and Poly Aftertouch Messages, showing pitch and velocity.
 // 
-// 6. Display all Polyphonic and Channel Aftertouch messages, as well as  by blinking a little LED.
-// 
-// 3. Display MIDI Clock, MIDI Time Code, and Active Sensing by 
+// 2. Display Pitch bend values by drawing the entire 14-bit bend value.
 //
-// 2. Replay the 64 notes.  
+// 3. Display Program Change messages as "PC" plus the 7-bit value.
+//
+// 4. Display Channel Aftertouch Messages as "AT" plus the 7-bit value.
 // 
-// 3. Toggle repeating (looping play) at the end of the most recent measure.   
-// 
-// 4. Toggle a click track (specify a note pitch and velocity to be played for 1/24 a beat, or cancel the same).
+// 5. Display MIDI Clock, MIDI Time Code, and Active Sensing with small LEDs
+//
+// 6. Display Channel Control, Channel Mode, NRPN, or RPN messages with scrolled text
+//
+// 7. Display Sysex, Song Position, Song Select, Tune Request, Start, Continue, Stop, or System Reset with
+//    four letters of text (see below).
 //
 //
 // GLOBALS (TEMPORARY DATA)
@@ -40,26 +37,26 @@
 //
 // DISPLAY
 // 
-// As you play or record notes, a cursor moves across the screen to register NOTE ON messages.  With 64 messages, the
-// cursor pass through the top four rows.  The next two rows are reserved for another cursor indicating the current
-// measure.
+// If you receive NOTE ON, NOTE OFF, or POLYPHONIC AFTERTOUCH, the screen will display both the note pitch and volume/pressure.
+// If you receive PITCH BEND the screen will show the full bend value.
+// If you receive CHANNEL AFTERTOUCH, "AT" will be displayed followed by the value.
+// If you receive PROGRAM CHANGE, "PC" will be displayed, followed by the value.
+// If you receive CHANNEL CONTROL, CHANNEL MODE, NRPN, or RPN, text will be scrolled: first the MSB will be shown, then 
+//     					"CC", "CHANNEL MODE", "NRPN", or "RPN", then the parameter number, then (if 14-bit) the MSB+LSB 
+//						will be shown in parentheses
+// If you receive SysEx, Song Position, Song Select, Tune Request, Start, Continue, Stop, or System Reset, then
+// 						SYSX, SPOS, SSEL, TREQ, STRT, CONT, STOP, or RSET will be shown.
+// If you receive MIDI Clock, then LED(2,5) on the right Matrix will light
+// If you receive MIDI Time Code, then LED(2,6) on the right Matrix will light
+// If you receive Active Sensing, then LED(2,7) on the right Matrix will light
 //
 //
 // INTERFACE
 //
 // Root
-//      Recorder                                STATE_RECORDER: choose a slot to load or empty.  If slot is not a recorder slot, format:
-//              Format                          STATE_RECORDER_FORMAT, then play
-//              [Then Play]                     STATE_RECORDER_PLAY
-//                      Back Button: STATE_RECORDER_SURE, then STATE_RECORDER
-//                      Middle Button:  play/stop
-//                      Middle Button Long Press: start a 4-note count-off, then start recording
-//                      Select Button:  save    STATE_RECORDER_SAVE
-//                      Select Button Long Press: bring up menu         STATE_RECORDER_MENU
-//                              MENU:
-//                                      Repeat:                         Toggle repeat
-//                                      Click:                          Provide a click note, or cancel the click
-//                                      Options:                        STATE_OPTIONS (display options menu)
+//      Gauge                   STATE_GAUGE
+//              Back Button: 	STATE_ROOT 
+
 
 
 
