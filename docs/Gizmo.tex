@@ -17,7 +17,7 @@
 By Sean Luke\quad sean@cs.gmu.edu}\\
 \\
 
-\noindent Gizmo is a small MIDI device intended to be inserted between the MIDI OUT of one device and the MIDI IN of one or more other devices.  There are a number of tools like this, such as the esteemed MIDIPal \footnote{MIDIPal is quite similar to Gizmo in functionality and goals, but I wasn't even aware of the existence of MIDIPal when I started building Gizmo.  And besides, re-inventing the wheel is fun!  MIDIPal's page is http:/\!/mutable-instruments.net/midipal\ \ This device has been discontinued, but its open source software lives on in other hardware clones, such as the MIDIGal (https:/\!/midisizer.com/midigal/) or MIDIBro (http:/\!/www.audiothingies.com/product/midibro/)} or the variety of tools from MIDISolutions\footnote{http:/\!/www.midisolutions.com/}
+\noindent Gizmo is a small MIDI device intended to be inserted between the MIDI OUT of one device and the MIDI IN of one or more other devices.  There are a number of tools like this, such as the esteemed MIDIPal \footnote{Though they share nothing in common, MIDIPal is quite similar to Gizmo in functionality and goals.  But I wasn't even aware of the existence of MIDIPal when I started building Gizmo.  And besides, re-inventing the wheel is fun!  MIDIPal's page is http:/\!/mutable-instruments.net/midipal\ \ This device has been discontinued, but its open source software lives on in other hardware clones, such as the MIDIGal (https:/\!/midisizer.com/midigal/) or MIDIBro (http:/\!/www.audiothingies.com/product/midibro/)} or the variety of tools from MIDISolutions\footnote{http:/\!/www.midisolutions.com/}
 
 Gizmo is the unholy union of an Arduino Uno or Arduino Mega 2560,\footnote{http:/\!/arduino.cc} an Adafruit 16x8 I2C LED matrix\footnote{https:/\!/www.adafruit.com/categories/326\quad I use the 1.2-inch 16x8 matrix with red round LEDs, which works well.  This particular model can be found at https:/\!/www.adafruit.com/products/2037}, and a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898} to perform a variety of helpful MIDI tasks.  Gizmo has several built-in applications, and assuming there's space\footnote{As of this writing, Gizmo on the Arduino Uno uses 32,252 bytes out of 32,256 available.  So if you're like to extend Gizmo on the Uno, you'll need to make sure your extension fits within 4 bytes :-)  Instead: get a Mega.} you can develop additional applications for it.
 
@@ -34,6 +34,9 @@ Gizmo comes built-in with the following applications and other capabilities:
 \item {\bf MIDI Control Surface}.  Gizmo has two potentiometers and two buttons.  Each can be configured to send a unique Program Change, Control Change, NRPN, or RPN commands, or (on the Mega) control voltage values via either of two DACs.  The potentiometers can only send MSB values.
 
 \item {\bf \textit{Mega Only:}\quad Keyboard Splitter}  You can split incoming MIDI notes by pitch and route them to different MIDI out channels.  You can also fade notes between two channels depending on note velocity.
+
+\item {\bf \textit{Mega Only}\quad Midi Thru Filter: Distributing and Layering Notes}  Gizmo can {\it distribute} notes to different MIDI channels as you play: this lets you play multiple mono synths as if they were polyphonic, for example.  Gizmo can also {\it layer} notes: when you play a note, Gizmo will send some \(N>1\) note-on messages instead of one.  This lets you use a polyphonic synthesizer to play a note with more than one voice, making it fatter, but not necessarily going all the way to unison.  And yes, you can do both at the same time.
+
 \end{itemize}
 
 \paragraph{Other Cool Stuff}
@@ -249,7 +252,6 @@ Gizmo must be initialized before it can be used.  You can also do a factory rese
 
 Gizmo will reset all of its flash RAM and reboot.  This means that all options will be set to their default state, and all file storage (including arpeggios) will be emptied.
 
-\clearpage
 \section{Starting Gizmo}
 
 \begin{wrapfigure}{r}{2in}
@@ -276,6 +278,8 @@ An arpeggio is a pattern for repeatedly playing the notes in a chord.  When you 
 
 Alternatively if you toggle the {\bf latch}, then the playing will continue after you have released the keys, and will only shift to a new chord when you release all notes and then hold down an entirely new chord.  Latch mode is toggled by pressing the Middle button while playing an arpeggio.  When Latch mode is engaged, an LED will light as shown in Figure~\ref{arpeggiator}.
 
+Also, normally you toggle {\bf bypass mode} by Long-Pressing the back button.  But that's not fast enough to turn arpeggiation on and off in performance.  So the arpeggiator also lets you toggle bypass by pressing the {\bf select} button.  (Of course you can also toggle bypass via NRPN if you like). 
+
 \begin{wrapfigure}{r}{2.7in}
 \begin{center}
 \vspace{-4em}\includegraphics[width=1in]{updown}
@@ -300,7 +304,9 @@ There are six preset arpeggios: {\it up}, {\it down}, {\it up-down}, {\it random
 \item {\bf Assign}. Each note in your chord is played in turn, in the order in which you had pressed the keys when you formed the chord.  When all notes are exhausted, the pattern is repeated.
 \end{itemize}
 
-While playing a preset arpeggio, you can select the number of octaves by scrolling the left knob to {\bf Octaves} and pressing the Select button.  If you have an octaves value \(\geq 0\), then when the arpeggiator exhausts its notes, it will repeat them again one octave higher, then another octave higher, and so on, up to the number of octaves chosen. You an select any value from 0--6 octaves.\footnote{Note that this means that if your chord is larger than one octave, you may not get what you expected.  For example, if you are playing UP with C5 E5 G5 D6, and with octaves\(=\)1, then the arpeggiator will play C5 E5 G5 D6 C6 E6 G6 D7.  Note that C6 is played after D6 is played.  That's the current behavior right now anyway.}
+As you play a preset arpeggio, the notes played by the arpeggio will appear at right.  The symbol representing the preset will appear at left.
+
+While playing a preset arpeggio, you can select the number of octaves by choosing calling up the menu by Long-Pressing the Select button, then choosing {\bf Octaves}.  If you have an octaves value \(\geq 0\), then when the arpeggiator exhausts its notes, it will repeat them again one octave higher, then another octave higher, and so on, up to the number of octaves chosen. You an select any value from 0--6 octaves.\footnote{Note that this means that if your chord is larger than one octave, you may not get what you expected.  For example, if you are playing UP with C5 E5 G5 D6, and with octaves\(=\)1, then the arpeggiator will play C5 E5 G5 D6 C6 E6 G6 D7.  Note that C6 is played after D6 is played.  That's the current behavior right now anyway.}
 
 \begin{wrapfigure}{r}{1.6in}
 \vspace{-1em}
@@ -321,7 +327,7 @@ Ascending Notes\\in Dense Mode\\
 
 The last menu option in the top-level Arpeggiator menu is {\bf Create}.  If you choose this, you can create an Arpeggio.  To do this you enter notes one by one.  These won't be the {\it actual} notes that are played when you hold down a chord.  Rather, after you save the result, the Arpeggiator will compact these notes into a sequence of consecutive numbers.  For example, if you play C3 E3 G3 E3 G2, then the Arpeggiator will compact these into 2 3 4 3 1.  Then when you play this as an arpeggio, the Arpeggiator will assign each of these numbers, in order, to the notes in your chord. 
 
-The first question you will be asked is {\bf ROOT}: the Arpeggiator is asking you to specify the note in your arpeggio pattern which will correspond to the root (lowest) note in a played chord.  This allows you to make a pattern which plays notes both above and below the played chord.  For example, if the Root is C3, then the above pattern will instruct the Arpeggiator to play its final note {\it below} the chord root.
+The first question you will be asked is {\bf NOTE}: the Arpeggiator is asking you to specify the note in your arpeggio pattern which will correspond to the root (lowest) note in a played chord.  This allows you to make a pattern which plays notes both above and below the played chord.  For example, if the Root is C3, then the above pattern will instruct the Arpeggiator to play its final note {\it below} the chord root.
 
 After you have entered the root, the Arpeggiator will wait for you to start playing notes.  You can enter a sequence of up to 32 notes, including 15 unique notes.  You can also enter rests by pressing the Middle button.  If you enter more than 15 unique notes, or more than 32 notes in total, the Arpeggiator will simply refuse to accept the next note.
 
@@ -335,7 +341,8 @@ Anyway, when you are satisfied with your arpeggio, Long-Press the Select button 
 
 \paragraph{Playing a User-Created Arpeggio}
 
-To play a user-created arpeggio, from the main Arpeggiator menu, choose one of the numbers 0--9, each of which represents the arpeggiator slot you had saved your arpeggio in (these options appear after the preset options).  Then hold down a chord!
+To play a user-created arpeggio, from the main Arpeggiator menu, choose one of the numbers 0--9, each of which represents the arpeggiator slot you had saved your arpeggio in (these options appear after the preset options).  Then hold down a chord!  As you play a user-created arpeggio, the notes played by the arpeggio will appear at right.  The arpeggio pattern will scroll by at left.
+
 
 The preset arpeggio patterns (such as Up-Down) vary with the number of notes in your chord: if you hold down five notes for example, and octaves=0, then five notes will be played in the arpeggio pattern.  This isn't the case for user-created arpeggios, which have a fixed user-specified number of notes.
 
@@ -347,9 +354,7 @@ Also, because they are fixed in size, user-created arpeggios do not respond to t
 
 \paragraph{More Arpeggiator Options}
 
-Beyond Octaves, the arpeggiator responds to a number of options in the Options Menu, and indeed you can call up the Options Menu from within the arpeggiator play screen\,---\,just turn the left knob to scroll pass the Octaves menu option, and you'll see Options.  Select that and you're in the Option menu.\footnote{Recall that the Options Menu is for options shared among several applications: that's why it's a separate menu.  That and code space issues.}
-
-See Section \ref{options} for detailed information on each of the options.  The Arpeggiator responds to the following options:
+In addition to Octaves, the arpeggiator menu (Long-Press the select button) also includes the Options Menu as a submenu.\footnote{Recall that the Options Menu is for options shared among several applications: that's why it's a separate menu.  That and code space issues.}  See Section \ref{options} for detailed information on each of the options.  The Arpeggiator responds to the following options:
 
 \vspace{1em}
 \begin{tabular}{llll}
@@ -373,7 +378,7 @@ The Step Sequencer makes it easy to create 16-note, 24-note, or 32-note multitra
 
 \begin{wrapfigure}{r}{1in}
 \vspace{-1.5em}\includegraphics[width=1in]{none.pdf}
-\vspace{-2em}\caption{\small None}\vspace{-1em}
+\vspace{-2em}\caption{\small None}\vspace{-2em}
 \label{none}
 \end{wrapfigure}
 
@@ -383,7 +388,6 @@ If you have chosen {\it none}, or have chosen an empty slot or one presently fil
 
 Figure~\ref{stepsequencer} shows the general step sequencer display structure.  The {\it Tracks} region is where sequencer tracks are displayed and edited.  The {\it Track Number} area tells you the number of the currently-edited track.  Figure~\ref{tracknumber} explains how to interpret this.  The {\it Stopped} LED tells you if the step sequencer is currently stopped (or playing).  The {\it Track Uses a Default Velocity} LED tell you if all notes in the current track are fixed to the same velocity, or permitted to use different velocities.  The {\it Track Uses a Fader} LED is lit when the pre-track fader (volume) is set to something other than maximum volume for the current track.  Finally, the {\it MIDI Out Channel for Track} tells you what channel the current track is playing.  The patterns for the MIDI Out Channel for Track are the same as those in Figure~\ref{midichannelvalues}, except that MIDI Out does not support ALL (OMNI).
 
-\clearpage
 
 \begin{wrapfigure}{r}{1.8in}
 \includegraphics[width=1.8in]{track.pdf}
@@ -461,7 +465,7 @@ The Note Recorder lets you record and play back approximately 64 notes\footnote{
 The Note Recorder screen has two major parts.  The {\it Note Display} section indicates the current note number being played (and hints at the remaining notes available).  The {\it Measure Display} section indicates the current measure being played (and again hints at the remaining measures available).  When recording a song, each of these sections will contain a single lit LED indicating the current note or measure position.  When playing a song, the Note Display and Measure Display will each also contain an additional lit LED indicating the position of the end of the song.
 
 \begin{wrapfigure}{r}{1in}
-\vspace{-1.5em}\includegraphics[width=1in]{none.pdf}
+\includegraphics[width=1in]{none.pdf}
 \vspace{-2em}\caption{\small None}\vspace{-1em}
 \label{none}
 \end{wrapfigure}
@@ -469,8 +473,6 @@ The Note Recorder screen has two major parts.  The {\it Note Display} section in
 When you choose the Note Recorder from the root menu, you will be asked to load a recording from a slot.  You can do this, or you can create a new empty recording by choosing ``-~-~-~-'' (meaning {\it none}).  Slots are displayed by number, plus an ``R'' (for Recorder) or ``S'' (for Step Sequencer) if the slot is filled with a file by one of the two applications.  This letter blinks if the file isn't the type of your current application.
 
 After this you will enter the Note Recorder.
-
-\clearpage
 
 \begin{wrapfigure}{r}{1.5in}
 \includegraphics[width=1.5in]{recorderstatus.pdf}
@@ -513,8 +515,8 @@ The Recorder records nothing but MIDI NOTE ON and NOTE OFF messages.  It present
 \section {The MIDI Gauge}
 
 \begin{wrapfigure}{r}{3in}
-\vspace{-1.5em}\includegraphics[width=3in]{GeneralGauge.pdf}
-\vspace{-2em}\caption{\small General Gauge Display and Frequent MIDI Display}\vspace{-1em}
+\vspace{-6em}\includegraphics[width=3in]{GeneralGauge.pdf}
+\vspace{-2em}\caption{\small General Gauge and Frequent MIDI Display}\vspace{-2em}
 \label{generalgauge}
 \end{wrapfigure}
 
@@ -711,6 +713,37 @@ Long-pressing the Middle Button cycles through three options:
 \item Split/Layer the Keyboard, and route all CC, PC, Channel Aftertouch, and NRPN/RPN to the {\it left} (upper) split channel, that is, to the alternative MIDI Out Channel.  Pitch Bend is also routed to the left channel if you're doing a simple split, but if you're layering, it's routed to both channels.  Polyphonic Aftertouch is always routed to the channel handling the note in question, as are all Note On and Note Off messages.  The screen will show the Split A note at left and the Split B note at right, and will light the ``left'' LED (see Figure \ref{splitter}).
 \item Fade/Balance the Keyboard.  All CC, PC, Channel Aftertouch, and NRPN/RPN if routed to the alternative MIDI Out Channel.  Pitch Bend is routed to both channels, as is Polyphonic Aftertouch and all Note On and Note Off messages (though with inverted velocities as discussed earlier).  The screen will display ``FADE''.
 \end{itemize}
+
+\section{Thru}
+\label{thru}
+
+\textit{[Mega Only]}\qquad The {\bf Thru Facility} passes MIDI through the box, but if MIDI data comes in via the MIDI In channel, it applies some interesting filters and then routes it out specially.  There are two filters at present.  First, you can {\it distribute} incoming notes, one by one, to separate MIDI channels.  Second, you can have Gizmo add {\it extra notes}, that is, when the note G comes in for example, Gizmo might send four G notes out (essentially at the same time).  You can also do both of these at the same time.
+
+Where would you use such things?  The {\it distribute} facility is useful if you have multiple copies of the same monosynth, you could distribute notes to the various synths and basically treat them as if they were a polysynth\footnote{This is an idea directly stolen from MIDIPal.}  The {\it extra} facility is useful for fattening up a synth but not making it unison (mono).  For example, I have an Oberheim Matrix 1000 with six voices.  If I instruct Gizmo to provide two extra notes, then every time I press a note, Gizmo sends {\it three} copies of that note to the Oberheim, causing three voices to play together.  This basically turns the Matrix into a fatter two-voice polysynth.
+
+I might add more unusual filters later.
+
+	\begin{description}
+	
+	\item{\bf Go}\\
+		When you have set up your extra notes and note distribution (see below), if you choose {\bf Go}, the Thru filter starts and you can start playing.  You'll see the word ``PLAY'' on the LED.
+
+	\item{\bf Extra Notes}\\
+		This lets you select how many {\it additional} simultaneous note-on (and note-off) messages Gizmo should send down a given channel in response to you playing a note.
+		\begin{description}
+		\item{\bf \textit{Choose}}: No Extra Notes, or 1...31 \hspace{3in}\smash{\includegraphics[width=1in]{none.pdf}} 
+		\end{description}
+
+	\item{\bf Distribute Notes}\\
+		This lets you select the number of MIDI channels, beyond the Default MIDI Out channel, over which to distribute notes.  Let's say you selected 2, and the Default MIDI Out channel was \(M\).  This means that three MIDI channels will be used: \(M\), \(M+1\), and \(M+2\).  This wraps around: if, say, \(M = 15\), then it wraps around: the channels used would be 15, 16, and 1).
+		
+		If you played the five notes A, B, C, D, E, Gizmo would send A down channel \(M\), then send B down channel \(M + 1\), then send C down channel \(M + 2\), then send D down channel \(M\) again (wrapping around), then E down channel \(M+1\) again, and so on.  This would let you essentially use Mono devices listening in on the three MIDI Channels as a 3-voice polyphonic device.
+		
+		\begin{description}
+		\item{\bf \textit{Choose}}: No Extra Channels, or 1...15 \hspace{2.8in}\smash{\includegraphics[width=1in]{none.pdf}} 
+		\end{description}
+		
+	\end{description}
 
 \section {Options}
 \label{options}
@@ -929,19 +962,17 @@ Gizmo has a debounce mechanism built-in: it ignores secondary apparent button-pr
 \section{Space on the Arduino Uno}
 Gimzo uses nearly all available space on the Arduino Uno.  If you want to do any serious development, you should get an Arduino Mega instead, which has lots of available space.  But if you'd like extend Gizmo with a little tiny application on the Uno, you can remove the Note Recorder.  In \texttt{All.h} just uncomment the line that says \texttt{NO\_RECORDER} and you'll get about 1.5K of code space.  It's not a lot but should be enough to write a small app. Note that ``Recorder'' will still appear in the Menu: it just won't do anything.  To get rid of that you need to modify the state machine a bit.  I'd not bother.
 
-\clearpage
-
 \section{Development Status}
 
 \begin{center}
 {
 \setlength\extrarowheight{0.3em}
-\begin{tabular}{@{}llllp{2.9in}@{}}
+\begin{tabular}{@{}llllp{2.8in}@{}}
 &&\multicolumn{2}{c}{\it Testing}&\\[0.1em]
 \cline{3-4}\\[-0.9em]
 {\it Item} & {\it Coded} & {\it Cursory} & {\it Significant} & {\it Known Bugs and Issues}\\[0.1em]
 		\hline\\[-1.5em]
-Arpeggiator& $\checkmark$ & $\checkmark$ & $\checkmark$  & \\
+Arpeggiator& $\checkmark$ & $\checkmark$ & $\checkmark$  & Recent changes in Arpeggiator need to be tested. \\
 Step Sequencer& $\checkmark$ & $\checkmark$ & $\checkmark$ & Occasionally the beat doesn't match up with the play cursor; this particularly happens under Swing.  I've not been able to track it down.\\
 Recorder& $\checkmark$ & $\checkmark$ & $\checkmark$ & Rarely a note will get stuck after recording: appears that a NOTE OFF message isn't getting matched with the ID of the corresponding NOTE ON message when entered into memory.  
 I also think there may be a bug causing chords near the start of the song to be rushed a bit.  Perhaps timing is being delayed for some reason?\\
@@ -960,6 +991,7 @@ Storage Facility &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
 MIDI Clock Control& $\checkmark$ & $\checkmark$ & &\\
 Keyboard Splitting& $\checkmark$ & $\checkmark$  & & Works well but the fade option is perhaps a bit unnecessary and weird.\\
 Control Voltage& $\checkmark$ & & & Untested\\
+Thru Facility & $\checkmark$ & $\checkmark$ & & \\
 \end{tabular}
 }
 \end{center}
