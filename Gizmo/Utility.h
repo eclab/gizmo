@@ -50,29 +50,20 @@ void drawMIDIChannel(uint8_t channel);
 #define GLYPH_NONE 0                                    // ----
 #define GLYPH_OMNI 1                                    // ALLC
 #define GLYPH_DEFAULT 2                                 // DFLT
-#define GLYPH_DECREMENT 3                              	// DECR
-#define GLYPH_INCREMENT 4                              	// INCR
-#define GLYPH_FREE 5                              		// FREE
-#define GLYPH_NOTE 6                                    // NOTE
-#define GLYPH_SYSEX 7                                   // SYSX
-#define GLYPH_SONG_POSITION 8                   		// SPOS
-#define GLYPH_SONG_SELECT 9                             // SSEL
-#define GLYPH_TUNE_REQUEST 10                    		// TREQ
-#define GLYPH_START 11                                  // STRT
-#define GLYPH_CONTINUE 12                               // CONT
-#define GLYPH_STOP 13                                   // STOP
-#define GLYPH_SYSTEM_RESET 14                   		// RSET
-#define GLYPH_ROOT 15                                   // ROOT
-#define GLYPH_ALL_SOUND_OFF 16                          // SOFF
-#define GLYPH_RESET_CONTROLLERS 17                      // RCNT
-#define GLYPH_LOCAL_CONTROL 18                          // LCNT
-#define GLYPH_ALL_NOTES_OFF 19                          // NOFF
-#define GLYPH_OMNI_OFF 20                          		// -ALL
-#define GLYPH_OMNI_ON 21                          		// +ALL
-#define GLYPH_MONO_ON 22                          		// -PLY
-#define GLYPH_POLY_ON 23                          		// +PLY
+#define GLYPH_FREE 3                              		// FREE
+#define GLYPH_NOTE 4                                    // NOTE
+#define GLYPH_SYSEX 5                                   // SYSX
+#define GLYPH_SONG_POSITION 6                   		// SPOS
+#define GLYPH_SONG_SELECT 7                             // SSEL
+#define GLYPH_TUNE_REQUEST 8                    		// TREQ
+#define GLYPH_START 9                                  // STRT
+#define GLYPH_CONTINUE 10                               // CONT
+#define GLYPH_STOP 11                                   // STOP
+#define GLYPH_SYSTEM_RESET 12                   		// RSET
+//#define GLYPH_ROOT 13                                   // ROOT
 #if defined(__AVR_ATmega2560__)
-#define GLYPH_FADE 24									// FADE
+#define GLYPH_FADE 13									// FADE
+#define GLYPH_PLAY 14									// PLAY
 #endif // defined(__AVR_ATmega2560__)
 
 // Writes any of the above glyph sets to the screen
@@ -148,7 +139,7 @@ void stateSure(uint8_t selectedState, uint8_t backState);
 ///// glyphs                    glyph set to display.
 ///// backState                 where we should go after the user has cancelled                         
 extern uint8_t stateEnterNoteVelocity;
-uint8_t stateEnterNote(uint8_t glyphs, uint8_t backState);
+uint8_t stateEnterNote(uint8_t backState);
 
 
 ///// Increments playing notes from an application (such as a step sequencer or arpeggiator).
@@ -172,8 +163,6 @@ void goUpState(uint8_t nextState);
 //// Goes to the given state, setting entry to true and the default state to the current state,
 //// and ALSO backs up options.
 void goUpStateWithBackup(uint8_t _nextState);
-
-
 
 ///// GENERAL UTILITIES
 

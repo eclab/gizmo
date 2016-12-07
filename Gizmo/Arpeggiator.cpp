@@ -70,11 +70,12 @@ void playArpeggiatorNote(uint16_t note)
     if (note < 0 || note >= 127)
         return;
 
-    sendNoteOn(local.arp.noteOff = (uint8_t) note, local.arp.velocity, options.channelOut);
+    sendNoteOn(local.arp.steadyNoteOff = local.arp.noteOff = (uint8_t) note, local.arp.velocity, options.channelOut);
                 
     // this will be costly but maybe it's better than / for 32-bit?
     local.arp.offTime = currentTime + div100(notePulseRate * getMicrosecsPerPulse() * options.noteLength);
     } 
+
 
 
 // Continue to play the arpeggio
@@ -224,13 +225,14 @@ void playArpeggio()
             }
         else local.arp.currentPosition = ARP_POSITION_START;
         }
-    
+
     if (updateDisplay)
         {
         // draw latch
         if (options.arpeggiatorLatch)
             setPoint(led, 7, 1);
         }
+
     }
 
 
@@ -326,6 +328,7 @@ void stateArpeggiator()
         local.arp.offTime = 0;  // same reason
         local.arp.goingDown = 0;  // same reason
         local.arp.playing = 0;  // don't want to add and remove notes right now
+		local.arp.steadyNoteOff = local.arp.noteOff = NO_NOTE;
         sendAllNotesOff();
         }
     const char* menuItems[17] = { PSTR(STR_UP), PSTR(STR_DOWN), PSTR(STR_UP_DOWN), PSTR("RANDOM"), PSTR("ASSIGN"), PSTR("CHORD"), PSTR("0"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("CREATE")};
@@ -368,7 +371,6 @@ void stateArpeggiatorPlay()
     // Select button: selects pot functions
     // Middle button: changes latch
             
-    uint8_t result;
     if (entry)
         {
         local.arp.playing = 1;
@@ -378,11 +380,10 @@ void stateArpeggiatorPlay()
             LOAD_ARPEGGIO(local.arp.number - ARPEGGIATOR_NUMBER_CHORD_REPEAT - 1);
             }
         }
-    const char* menuItems[2] = { PSTR("OCTAVES"), options_p };
-    result = doMenuDisplay(menuItems, 2, STATE_NONE, 0, 1, 8);
-        
+    
     if (updateDisplay)
         {    
+        clearScreen();
         if (local.arp.number > ARPEGGIATOR_NUMBER_CHORD_REPEAT)
             {
             uint8_t pos = 0;
@@ -392,17 +393,47 @@ void stateArpeggiatorPlay()
             }
         else 
             {
-            clearMatrix(led2);
-            write3x5Glyph(led2 , arpeggiatorGlyphs[local.arp.number], 0);
+            write3x5Glyph(led2, arpeggiatorGlyphs[local.arp.number], 0);
             }
+            
+        if (local.arp.steadyNoteOff != NO_NOTE)
+        	writeNotePitch(led, local.arp.steadyNoteOff);
         }
- 
-    entry = true;
+
+	if (isUpdated(BACK_BUTTON, RELEASED))
+		{
+    	sendAllNotesOff();
+		goUpState(STATE_ARPEGGIATOR);
+		}
+    else if (isUpdated(SELECT_BUTTON, RELEASED))
+    	{
+    	sendAllNotesOff();
+    	toggleBypass();
+    	}
+    else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
+    	{
+    	goDownState(STATE_ARPEGGIATOR_MENU);
+    	}
+    else if (isUpdated(MIDDLE_BUTTON, PRESSED))
+		{
+		options.arpeggiatorLatch = !options.arpeggiatorLatch;
+		saveOptions();
+		//local.arp.numChordNotes = 0;  // reset
+		}
+
+    playArpeggio();          
+    }
+
+
+void stateArpeggiatorMenu()
+	{
+    const char* menuItems[2] = { PSTR("OCTAVES"), options_p };
+    uint8_t result = doMenuDisplay(menuItems, 2, STATE_NONE, 0, 1, 8);
+        
     switch (result)
         {
         case NO_MENU_SELECTED:
             {
-            entry = false;
             }
         break;
         case MENU_SELECTED:
@@ -415,16 +446,12 @@ void stateArpeggiatorPlay()
                 case ARPEGGIATOR_PLAY_OCTAVES:
                     {
                     goDownState(STATE_ARPEGGIATOR_PLAY_OCTAVES);
-                    //state = STATE_ARPEGGIATOR_PLAY_OCTAVES;
                     }
                 break;
                 case ARPEGGIATOR_PLAY_OPTIONS:
                     {
-                    //suggestedDefaultState = NO_SUGGESTED_DEFAULT_STATE;
-                    optionsReturnState = STATE_ARPEGGIATOR_PLAY;
+                    optionsReturnState = STATE_ARPEGGIATOR_MENU;
                     goDownState(STATE_OPTIONS);
-                    //state = STATE_OPTIONS;
-                    //entry = true;
                     }
                 break;                    
                 }
@@ -432,24 +459,12 @@ void stateArpeggiatorPlay()
         break;
         case MENU_CANCELLED:
             {
-            goUpState(STATE_ARPEGGIATOR);
+            goUpState(STATE_ARPEGGIATOR_PLAY);
             }
         break;
         }
-
-    if (result == NO_MENU_SELECTED)
-        {
-        if (isUpdated(MIDDLE_BUTTON, PRESSED))
-            {
-            options.arpeggiatorLatch = !options.arpeggiatorLatch;
-            saveOptions();
-            //local.arp.numChordNotes = 0;  // reset
-            }
-        }
-
     playArpeggio();          
-    }
-        
+	}
         
 void garbageCollectNotes()
     {
@@ -488,7 +503,7 @@ void garbageCollectNotes()
 // Handle the screen for creating an arpeggio.  This first chooses the root.
 void stateArpeggiatorCreate()
     {
-    uint8_t note = stateEnterNote(GLYPH_ROOT, STATE_ARPEGGIATOR);
+    uint8_t note = stateEnterNote(STATE_ARPEGGIATOR);
     if (note != NO_NOTE)  // it's a real note
         {
         data.arp.root = note;
@@ -720,13 +735,15 @@ void stateArpeggiatorCreateSave()
                 }
             data.arp.root = r;
             SAVE_ARPEGGIO(currentDisplay);
-            state = STATE_ARPEGGIATOR;
-            entry = true;
+            goDownState(STATE_ARPEGGIATOR);
+            //state = STATE_ARPEGGIATOR;
+            //entry = true;
             }
         break;
         case MENU_CANCELLED:
             {
-            state = STATE_ARPEGGIATOR_CREATE_EDIT;
+            goDownState(STATE_ARPEGGIATOR_CREATE_EDIT);
+            //state = STATE_ARPEGGIATOR_CREATE_EDIT;
             }
         break;
         }

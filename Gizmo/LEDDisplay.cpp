@@ -1694,7 +1694,7 @@ void addToBuffer(const char* val, uint8_t extra = 0)
                 }
             else 
                 {
-                if (c == 'M' || c == 'W' || c == 'N') // || c == 'Q' || c == 'V' ) // 5-pixel wide letters
+                if (c == 'M' || c == 'W' || c == 'N' || c == 'Q' || c == 'V' ) // 5-pixel wide letters
                     {
                     if (len + 5 <= maxLen)
                         len += 6;
@@ -1747,15 +1747,14 @@ void addToBuffer(const char* val, uint8_t extra = 0)
         if (c <= 'z' && c >= 'a')
             c = c - 'a' + 'A';
 
-        if (c == 'M' || c == 'W' ||  c == 'N') //  || c == 'Q' || c == 'V' )   // wide letters
+        if (c == 'M' || c == 'W' || c == 'N' || c == 'Q' || c == 'V' )   // wide letters
             {
-            //uint8_t idx = 0;  // M
-            //if (c == 'N') idx = 1;
-            //else if (c == 'Q') idx = 2;
-            //else if (c == 'V') idx = 3;
-            //else 
-            //if (c == 'W') idx = 4;  
-            memcpy_P(buffer + bufferLength, font_5x5[(c == 'W') ? 1 : 0], 5);
+            memcpy_P(buffer + bufferLength, font_5x5[
+            	(c == 'M') ? 0 :
+            	((c == 'N') ? 1 :
+            	((c == 'Q') ? 2 :
+            	((c == 'V') ? 3 : 4)))
+            	], 5);
             bufferLength += 5;
             }
         else if (c >= 'A' && c <= 'Z')  // letter, add it plus a thin space

@@ -42,9 +42,9 @@ GLOBAL uint8_t bypass = 0;                                        // Do we bypas
 
 void toggleBypass()
     {
+	sendAllNotesOffDisregardBypass();
     if (!bypass) 
         {
-        sendAllNotesOff();
         // clear the LEDs
 #ifndef HEADLESS
         *port_LED_GREEN |= LED_GREEN_mask;
@@ -460,8 +460,7 @@ void writeFooterAndSend()
 
 
 
-#define MAX_MENU_ITEMS 17
-#define MAX_MENU_ITEM_LENGTH 30
+
 #define NO_MENU_SELECTED 100
 #define MENU_SELECTED 101
 #define MENU_CANCELLED 102
@@ -915,9 +914,6 @@ void writeGaugeNote()
 
 
 
-
-
-
 //// MIDI SIGNALS
 ////
 //// These are occasional (not constant) MIDI signals
@@ -948,10 +944,16 @@ GLOBAL uint8_t lastNotePlayed = NO_NOTE;
 GLOBAL _local local;
         
 
+#if defined(__AVR_ATmega2560__)
+GLOBAL uint32_t lastTempoTapTime;
+#endif
 
 
-
-
+void write3x5GlyphPair(uint8_t glyph1, uint8_t glyph2)
+	{
+	write3x5Glyph(led2, glyph1, 0);
+	write3x5Glyph(led2, glyph2, 4);
+	}
 
 //// TOP LEVEL STATE VARIABLES
 
@@ -1003,8 +1005,8 @@ void go()
                 optionsReturnState = STATE_ROOT;
                 }
 #if defined(__AVR_ATmega2560__)
-            const char* menuItems[7] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), options_p };
-            doMenuDisplay(menuItems, 7, STATE_ARPEGGIATOR, STATE_ROOT, 1);
+            const char* menuItems[8] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), options_p };
+            doMenuDisplay(menuItems, 8, STATE_ARPEGGIATOR, STATE_ROOT, 1);
 #else
             const char* menuItems[6] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), options_p };
             doMenuDisplay(menuItems, 6, STATE_ARPEGGIATOR, STATE_ROOT, 1);
@@ -1099,8 +1101,9 @@ void go()
                         break;
                         case MIDI_AFTERTOUCH:
                             {
-                            write3x5Glyph(led2, GLYPH_3x5_A, 0);
-                            write3x5Glyph(led2, GLYPH_3x5_T, 4);
+                            //write3x5Glyph(led2, GLYPH_3x5_A, 0);
+                            //write3x5Glyph(led2, GLYPH_3x5_T, 4);
+                            write3x5GlyphPair(GLYPH_3x5_A, GLYPH_3x5_T);
                             writeShortNumber(led, (uint8_t) itemValue, false);
                             }
                         break;
@@ -1113,9 +1116,10 @@ void go()
                         break;
                         case MIDI_PROGRAM_CHANGE:
                             {
-                            write3x5Glyph(led2, GLYPH_3x5_P, 0);
-                            write3x5Glyph(led2, GLYPH_3x5_C, 4);
-                            writeShortNumber(led, (uint8_t) itemNumber, false);
+                            //write3x5Glyph(led2, GLYPH_3x5_P, 0);
+                        	//write3x5Glyph(led2, GLYPH_3x5_C, 4);
+                        	write3x5GlyphPair(GLYPH_3x5_P, GLYPH_3x5_C);
+		                    writeShortNumber(led, (uint8_t) itemNumber, false);
                             }
                         break;
                         case MIDI_CC_7_BIT:
@@ -1177,21 +1181,19 @@ void go()
                         clearBuffer();
                                 
                         // If we're incrementing/decrementing, add UP or DOWN
-                        // Sadly, compressing this code makes it 2 bytes bigger
-                        if ((itemType == MIDI_NRPN_INCREMENT) ||
-                            (itemType == MIDI_RPN_INCREMENT))
-                            {
-                            addToBuffer("   ");             // push down to right side of screen
-                            strcpy_P(b, PSTR("+"));
-                            addToBuffer(b);
-                            }
-                        else if ((itemType == MIDI_NRPN_DECREMENT) ||
-                            (itemType == MIDI_RPN_DECREMENT))
-                            {
-                            addToBuffer("   ");             // push down to right side of screen
-                            strcpy_P(b, PSTR("-"));
-                            addToBuffer(b);
-                            }
+                        if ((itemType >= MIDI_NRPN_INCREMENT))
+                        	{
+                        	addToBuffer("   ");
+                        	if (itemType >= MIDI_NRPN_DECREMENT)
+                        		{
+	                            strcpy_P(b, PSTR("-"));
+                        		}
+                        	else
+                        		{
+                            	strcpy_P(b, PSTR("+"));
+                        		}
+                        	addToBuffer(b);
+                        	}
                                 
                         // else if we're 7-bit CC, just add the value
                         else if (itemType == MIDI_CC_7_BIT)
@@ -1269,12 +1271,18 @@ void go()
         
 #if defined(__AVR_ATmega2560__)
         
+        case STATE_THRU:
+            {            
+            const char* menuItems[3] = { PSTR("GO"), PSTR("EXTRA NOTES"), PSTR("DISTRIBUTE NOTES") };
+            doMenuDisplay(menuItems, 3, STATE_THRU_PLAY, STATE_ROOT, 1);
+            }
+        break;
+
           case STATE_SPLIT:
           	{
 			stateSplit();
 			}
           break;
-
 #endif
 
         case STATE_OPTIONS:
@@ -1299,7 +1307,8 @@ void go()
                                           PSTR("BRIGHTNESS"), 
                                           PSTR("MENU DELAY"), 
                                           (options.voltage ? voltage_p : PSTR("NO VOLTAGE")),
-                                          PSTR("GIZMO V1 (C) 2016 SEAN LUKE") };
+                                          PSTR("GIZMO V1 (C) 2016 SEAN LUKE") 
+                                          };
             doMenuDisplay(menuItems, 15, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
 #else
             const char* menuItems[13] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
@@ -1313,15 +1322,14 @@ void go()
             playApplication(); 
             }
         break;
-        
+
         
 #if !defined(__AVR_ATmega2560__)
 	case STATE_UNDEFINED_1:
 		// FALL THRU
-#endif
-
         case STATE_UNDEFINED_2:
             // FALL THRU
+#endif
         case STATE_UNDEFINED_3:
             // FALL THRU
         case STATE_UNDEFINED_4:
@@ -1342,6 +1350,11 @@ void go()
             {
             stateNumerical(0, ARPEGGIATOR_MAX_OCTAVES, options.arpeggiatorPlayOctaves, backupOptions.arpeggiatorPlayOctaves, true, false, OTHER_NONE,  STATE_ARPEGGIATOR_PLAY);
             playArpeggio();
+            }
+        break;
+        case STATE_ARPEGGIATOR_MENU:
+            {
+            stateArpeggiatorMenu();
             }
         break;
         case STATE_ARPEGGIATOR_CREATE:
@@ -1588,7 +1601,27 @@ void go()
             if (entry)
                 {
                 backupOptions = options; 
+#if defined(__AVR_ATmega2560__)
+                lastTempoTapTime = 0;
+#endif
                 }
+                
+#if defined(__AVR_ATmega2560__)
+            if (isUpdated(MIDDLE_BUTTON, PRESSED))
+            	{
+            	if (lastTempoTapTime != 0)
+            		{
+            		// BPM = 1/(min/beat).  min/beat = micros/beat *  sec / 1000000 micros * min / 60 sec
+            		// So BPM = 60000000 / micros 
+            		options.tempo = (uint16_t)(60000000L / (currentTime - lastTempoTapTime));
+            		if (options.tempo < 1) options.tempo = 1;
+            		if (options.tempo > 999) options.tempo = 999;
+            		entry = true;
+            		}
+          	 	lastTempoTapTime = currentTime;
+            	}
+#endif
+            
             uint8_t result = doNumericalDisplay(1, MAXIMUM_BPM, options.tempo, 0, OTHER_NONE);
             switch (result)
                 {
@@ -1767,7 +1800,7 @@ void go()
             {
 #ifdef HEADLESS
             // Do not permit CHANNEL_OFF
-            stateNumerical(1, 16, options.channelControl, backupOptions.channelControl, false, true, OTHER_NONE, STATE_OPTIONS);
+            stateNumerical(1, 16, options.channelControl, backupOptions.channelControl, true, false, OTHER_NONE, STATE_OPTIONS);
 #else
             // 0 is CHANNEL_OFF
             stateNumerical(0, 16, options.channelControl, backupOptions.channelControl, true, true, OTHER_NONE, STATE_OPTIONS);
@@ -1848,7 +1881,7 @@ void go()
                                 
             if (!done)
                 {
-                uint8_t note = stateEnterNote(GLYPH_NOTE, STATE_OPTIONS);
+                uint8_t note = stateEnterNote(STATE_OPTIONS);
                 if (note != NO_NOTE)  // it's a real note
                     {
                     options.click = note;
@@ -1949,6 +1982,7 @@ void go()
             playApplication();
             }
         break;
+
 #endif
         case STATE_OPTIONS_ABOUT:
             {
@@ -1961,7 +1995,7 @@ void go()
 
 		  case STATE_SPLIT_CHANNEL:
 			  {
-			  stateNumerical(1, 16, options.splitChannel, backupOptions.splitChannel, false, true, OTHER_NONE, STATE_SPLIT);
+			  stateNumerical(1, 16, options.splitChannel, backupOptions.splitChannel, true, false, OTHER_NONE, STATE_SPLIT);
 			  }
 		  break;
 
@@ -1975,6 +2009,24 @@ void go()
 			  {
 			  stateSplitLayerNote();
 			  }
+		  break;
+
+		case STATE_THRU_PLAY:
+			{
+			stateThruPlay();
+			}
+		break;
+		
+		  case STATE_THRU_EXTRA_NOTES:
+		  	{
+			stateNumerical(0, 31, options.thruExtraNotes, backupOptions.thruExtraNotes, true, true, OTHER_NONE, STATE_THRU);
+		  	}
+		  break;
+		  
+		  case STATE_THRU_DISTRIBUTE_NOTES:
+		  	{
+			stateNumerical(0, 15, options.thruNumDistributionChannels, backupOptions.thruNumDistributionChannels, true, true, OTHER_NONE, STATE_THRU);
+		  	}
 		  break;
 #endif
      
@@ -2046,7 +2098,11 @@ void handleClockCommand(void (*clockFunction)(), midi::MidiType clockMIDI)
     itemType = MIDI_CLOCK;
 
     TOGGLE_IN_LED();
-    if (bypass || options.clock == IGNORE_MIDI_CLOCK)  // pass it right through, don't process it
+    if (bypass || (options.clock == IGNORE_MIDI_CLOCK) 
+#if defined(__AVR_ATmega2560__)
+    || (state == STATE_THRU_PLAY)
+#endif
+    			)  // pass it right through, don't process it
         { 
         if (!bypass) MIDI.sendRealTime(clockMIDI);
         TOGGLE_OUT_LED();
@@ -2101,7 +2157,6 @@ void handleClock()
 #endif
 
 
-
 void handleNoteOff(byte channel, byte note, byte velocity)
     {
     if (updateMIDI(channel, MIDI_NOTE_OFF, note, velocity))
@@ -2126,7 +2181,7 @@ void handleNoteOff(byte channel, byte note, byte velocity)
           			 sendNoteOff(note, velocity, options.splitChannel);
           		}
           	}
-
+          	
         if (lastNotePlayed == note)
             {
             if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_A &&
@@ -2139,6 +2194,16 @@ void handleNoteOff(byte channel, byte note, byte velocity)
 #endif
         }
 
+#if defined(__AVR_ATmega2560__)
+	if (!bypass && (state == STATE_THRU_PLAY))
+		{
+		if (channel != options.channelIn)
+			{
+			MIDI.sendNoteOff(note, velocity, channel);
+			}
+		}
+#endif
+			
     if (bypass) TOGGLE_OUT_LED();
     }
   
@@ -2183,12 +2248,21 @@ void handleNoteOn(byte channel, byte note, byte velocity)
 #endif
         }
     
+#if defined(__AVR_ATmega2560__)
+	if (!bypass && (state == STATE_THRU_PLAY))
+		{
+		if (channel != options.channelIn)
+			{
+			MIDI.sendNoteOn(note, velocity, channel);
+			}
+		}
+#endif
+
     if (bypass) TOGGLE_OUT_LED();
     }
   
 void handleAfterTouchPoly(byte channel, byte note, byte pressure)
     {
-    
 #if defined(__AVR_ATmega2560__)
     // We don't have space for this on the Uno :-(
       if (updateMIDI(channel, MIDI_AFTERTOUCH_POLY, note, pressure))
@@ -2215,6 +2289,13 @@ void handleAfterTouchPoly(byte channel, byte note, byte pressure)
 		  }
 #endif
     updateMIDI(channel, MIDI_AFTERTOUCH_POLY, note, pressure);
+
+#if defined(__AVR_ATmega2560__)
+	if (!bypass && (state == STATE_THRU_PLAY))
+		{
+		MIDI.sendPolyPressure(note, pressure, channel);
+		}
+#endif
 
     if (bypass) TOGGLE_OUT_LED();
     }
@@ -2314,7 +2395,7 @@ void handleNRPN(byte channel, uint16_t parameter, uint16_t value, uint8_t valueT
                 }
             break;
             }
-        }
+    }
 
     if (channel == options.channelControl)  // options.channelControl can be zero remember
         {
@@ -2596,25 +2677,30 @@ void handleGeneralControlChange(byte channel, byte number, byte value)
     {
     // generally we want to pass control changes through, EXCEPT if they're controlling us,
     // so we block the MIDI Control Channel if any.
-    if (!bypass && (channel != options.channelControl))
+    if (!bypass)
     	{
+    	if (channel != options.channelControl)
+	    	{
 #if defined(__AVR_ATmega2560__)
-    	// One exception: if we're doing keyboard splitting, we want to route control changes to the right place
-    	if (application == STATE_SPLIT)
-    		{
-    		if ((options.splitControls == SPLIT_CONTROLS_RIGHT) || (options.splitControls == SPLIT_MIX))
-				MIDI.sendControlChange(number, value, options.channelOut);
-			else
-				{
-				MIDI.sendControlChange(number, value, options.splitChannel);
-				}
-    		}
-    	else
+   	 		// One exception: if we're doing keyboard splitting, we want to route control changes to the right place
+    		if (application == STATE_SPLIT && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
+    			{
+    			if ((options.splitControls == SPLIT_CONTROLS_RIGHT) || (options.splitControls == SPLIT_MIX))
+					MIDI.sendControlChange(number, value, options.channelOut);
+				else
+					{
+					MIDI.sendControlChange(number, value, options.splitChannel);
+					}
+    			}
+    		else  
 #endif  // defined(__AVR_ATmega2560__)
-    		{
-			MIDI.sendControlChange(number, value, options.channelOut);
+    			{
+				MIDI.sendControlChange(number, value, channel);  // generally pass through control changes
+				}
 			}
 		}
+
+
 	TOGGLE_OUT_LED();
             
     // we're only interested in parsing CHANNEL IN and CHANNEL CONTROL   
@@ -2798,7 +2884,7 @@ void handleProgramChange(byte channel, byte number)
     	{
 #if defined(__AVR_ATmega2560__)
     	// One exception: if we're doing keyboard splitting, we want to route control changes to the right place
-    	if (application == STATE_SPLIT)
+    	if (application == STATE_SPLIT && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
     		{
     		if ((options.splitControls == SPLIT_CONTROLS_RIGHT) || (options.splitControls == SPLIT_MIX))
 				MIDI.sendProgramChange(number, options.channelOut);
@@ -2808,7 +2894,7 @@ void handleProgramChange(byte channel, byte number)
     	else
 #endif  // defined(__AVR_ATmega2560__)
 			{
-			MIDI.sendProgramChange(number, options.channelOut);
+			MIDI.sendProgramChange(number, channel);
 			}
 		}
     TOGGLE_OUT_LED();
@@ -2821,7 +2907,7 @@ void handleAfterTouchChannel(byte channel, byte pressure)
     	{
 #if defined(__AVR_ATmega2560__)
     	// One exception: if we're doing keyboard splitting, we want to route control changes to the right place
-    	if (application == STATE_SPLIT)
+    	if (application == STATE_SPLIT && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
     		{
     		if ((options.splitControls == SPLIT_CONTROLS_RIGHT) || (options.splitControls == SPLIT_MIX))
       			MIDI.sendAfterTouch(pressure, options.channelOut);
@@ -2831,7 +2917,7 @@ void handleAfterTouchChannel(byte channel, byte pressure)
     	else
 #endif  // defined(__AVR_ATmega2560__)
       	{
-      	MIDI.sendAfterTouch(pressure, options.channelOut);
+      	MIDI.sendAfterTouch(pressure, channel);
       	}
       }
     TOGGLE_OUT_LED();
@@ -2844,7 +2930,7 @@ void handlePitchBend(byte channel, int bend)
     	{
 #if defined(__AVR_ATmega2560__)
     	// One exception: if we're doing keyboard splitting, we want to route control changes to the right place
-    	if (application == STATE_SPLIT)
+    	if (application == STATE_SPLIT && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
     		{
     		if ((options.splitLayerNote == NO_NOTE) && (options.splitControls != SPLIT_MIX))
     			{
@@ -2862,7 +2948,7 @@ void handlePitchBend(byte channel, int bend)
     	else
 #endif  // defined(__AVR_ATmega2560__)
     		{
-    		MIDI.sendPitchBend(bend, options.channelOut);
+    		MIDI.sendPitchBend(bend, channel);
     		}
     	}
 	TOGGLE_OUT_LED();
@@ -2937,36 +3023,42 @@ void handleSystemReset()
 void sendNoteOn(uint8_t note, uint8_t velocity, uint8_t channel)
     {
     if (bypass) return;
-    int16_t n = note + (uint16_t)options.transpose;
-    n = bound(n, 0, 127);
-    uint16_t v = velocity;
-    if (options.volume < 3)
-        v = v >> (3 - options.volume);
-    else if (options.volume > 3)
-        v = v << (options.volume - 3);
-    if (v > 127) v = 127;
-    MIDI.sendNoteOn((uint8_t) n, (uint8_t) v, channel);
-    TOGGLE_OUT_LED();
+  
+	    int16_t n = note + (uint16_t)options.transpose;
+	    n = bound(n, 0, 127);
+	    uint16_t v = velocity;
+	    if (options.volume < 3)
+	        v = v >> (3 - options.volume);
+	    else if (options.volume > 3)
+	        v = v << (options.volume - 3);
+	    if (v > 127) v = 127;
+	    MIDI.sendNoteOn((uint8_t) n, (uint8_t) v, channel);
+	    TOGGLE_OUT_LED();
     }
 
 void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel)
     {
     if (bypass) return;
-    int16_t n = note + (uint16_t)options.transpose;
-    n = bound(n, 0, 127);
-    MIDI.sendNoteOff((uint8_t) n, velocity, channel);
-    // dont' toggle the LED because if we're going really fast it toggles
-    // the LED ON and OFF for a noteoff/noteon pair and you can't see the LED
+
+	    int16_t n = note + (uint16_t)options.transpose;
+	    n = bound(n, 0, 127);
+	    MIDI.sendNoteOff((uint8_t) n, velocity, channel);
+	    // dont' toggle the LED because if we're going really fast it toggles
+	    // the LED ON and OFF for a noteoff/noteon pair and you can't see the LED
     }
-                
-void sendAllNotesOff()
-    {
-    if (bypass) return;
-    
+         
+void sendAllNotesOffDisregardBypass()
+	{
     for(uint8_t i = 1; i < 16; i++)
     	{
-    	MIDI.sendControlChange(123, 0, options.channelOut);
+    	MIDI.sendControlChange(123, 0, i);
     	}
+	}
+	
+void sendAllNotesOff()
+    {
+    if (!bypass) 
+    	sendAllNotesOffDisregardBypass();
     }
 
 

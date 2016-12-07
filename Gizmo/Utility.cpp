@@ -155,7 +155,6 @@ void goDownStateWithBackup(uint8_t _nextState)
 
 
 
-
         
 // Starting at position pos, distributes the bits of the given byte among the high bytes >= pos
 void distributeByte(uint16_t pos, uint8_t byte)
@@ -397,13 +396,13 @@ uint8_t incrementAndWrap(uint8_t n, uint8_t max)
 
 GLOBAL uint8_t stateEnterNoteVelocity;
 
-uint8_t stateEnterNote(uint8_t glyphs, uint8_t backState)
+uint8_t stateEnterNote(uint8_t backState)
     {
     if (entry)
         {
         newItem = 0;            // clear any current note
         clearScreen();
-        write3x5Glyphs(glyphs);
+        write3x5Glyphs(GLYPH_NOTE);
         entry = false;
         }
         
@@ -470,17 +469,15 @@ void clearScreen()
 
 GLOBAL static uint8_t glyphTable[
 #if defined(__AVR_ATmega2560__)
-17
+15
 #else
-16
+13
 #endif // defined(__AVR_ATmega2560__)
 ][4] = 
     {
     	{GLYPH_3x5_MINUS, GLYPH_3x5_MINUS, GLYPH_3x5_MINUS, GLYPH_3x5_MINUS},   // ----
         {GLYPH_3x5_A, GLYPH_3x5_L, GLYPH_3x5_L, GLYPH_3x5_C},   // ALLC
         {GLYPH_3x5_D, GLYPH_3x5_F, GLYPH_3x5_L, GLYPH_3x5_T},   // DFLT
-        {GLYPH_3x5_D, GLYPH_3x5_E, GLYPH_3x5_C, GLYPH_3x5_R},   // DECR
-        {GLYPH_3x5_I, GLYPH_3x5_N, GLYPH_3x5_C, GLYPH_3x5_R},   // INCR
         {GLYPH_3x5_F, GLYPH_3x5_R, GLYPH_3x5_E, GLYPH_3x5_E},   // FREE
         {GLYPH_3x5_N, GLYPH_3x5_O, GLYPH_3x5_T, GLYPH_3x5_E},   // NOTE
         {GLYPH_3x5_S, GLYPH_3x5_Y, GLYPH_3x5_S, GLYPH_3x5_X},   // SYSX
@@ -491,9 +488,9 @@ GLOBAL static uint8_t glyphTable[
         {GLYPH_3x5_C, GLYPH_3x5_O, GLYPH_3x5_N, GLYPH_3x5_T},   // CONT
         {GLYPH_3x5_S, GLYPH_3x5_T, GLYPH_3x5_O, GLYPH_3x5_P},   // STOP
         {GLYPH_3x5_R, GLYPH_3x5_S, GLYPH_3x5_E, GLYPH_3x5_T},   // RSET
-        {GLYPH_3x5_R, GLYPH_3x5_O, GLYPH_3x5_O, GLYPH_3x5_T},   // ROOT
 #if defined(__AVR_ATmega2560__)
         {GLYPH_3x5_F, GLYPH_3x5_A, GLYPH_3x5_D, GLYPH_3x5_E},   // FADE
+        {GLYPH_3x5_P, GLYPH_3x5_L, GLYPH_3x5_A, GLYPH_3x5_Y},   // PLAY
 #endif // defined(__AVR_ATmega2560__)
 
     };

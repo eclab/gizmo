@@ -52,6 +52,7 @@
 #include "StepSequencer.h"
 #include "Gauge.h"
 #include "Split.h"
+#include "Thru.h"
 
 
 // This lets everyone have access to the MIDI global, not just

@@ -62,7 +62,7 @@ void stateSplit()
 	
 void stateSplitNote()
 	{
-	  if (stateEnterNote(GLYPH_NOTE, STATE_SPLIT) != NO_NOTE)
+	  if (stateEnterNote(STATE_SPLIT) != NO_NOTE)
 		  {
 		  options.splitNote = itemNumber;
 		  saveOptions();
@@ -90,7 +90,7 @@ void stateSplitLayerNote()
 		}
 	  else 
 		{
-		  if (stateEnterNote(GLYPH_NOTE, STATE_SPLIT) != NO_NOTE)
+		  if (stateEnterNote(STATE_SPLIT) != NO_NOTE)
 			  {
 			  options.splitLayerNote = itemNumber;
 			  saveOptions();

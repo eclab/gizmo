@@ -52,6 +52,8 @@ struct _options
   uint8_t splitChannel;
   uint8_t splitNote;
   uint8_t splitLayerNote;
+  uint8_t thruExtraNotes;
+  uint8_t thruNumDistributionChannels;
 #endif	// defined(__AVR_ATmega2560__)
 
     };
