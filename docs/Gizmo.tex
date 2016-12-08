@@ -17,7 +17,7 @@
 By Sean Luke\quad sean@cs.gmu.edu}\\
 \\
 
-\noindent Gizmo is a small MIDI device intended to be inserted between the MIDI OUT of one device and the MIDI IN of one or more other devices.  There are a number of tools like this, such as the esteemed MIDIPal \footnote{Though they share nothing in common, MIDIPal is quite similar to Gizmo in functionality and goals.  But I wasn't even aware of the existence of MIDIPal when I started building Gizmo.  And besides, re-inventing the wheel is fun!  MIDIPal's page is http:/\!/mutable-instruments.net/midipal\ \ This device has been discontinued, but its open source software lives on in other hardware clones, such as the MIDIGal (https:/\!/midisizer.com/midigal/) or MIDIBro (http:/\!/www.audiothingies.com/product/midibro/)} or the variety of tools from MIDISolutions\footnote{http:/\!/www.midisolutions.com/}
+\noindent Gizmo is a small MIDI device intended to be inserted between the MIDI OUT of one device and the MIDI IN of one or more other devices.  There are a number of tools like this, such as the esteemed MIDIPal\footnote{Though they share nothing in common, MIDIPal is quite similar to Gizmo in functionality and goals.  But I wasn't even aware of the existence of MIDIPal when I started building Gizmo.  And besides, re-inventing the wheel is fun!  MIDIPal's page is http:/\!/mutable-instruments.net/midipal\ \ This device has been discontinued, but its open source software lives on in other hardware clones, such as the MIDIGal (https:/\!/midisizer.com/midigal/) or MIDIBro (http:/\!/www.audiothingies.com/product/midibro/)} or a variety of tools from MIDISolutions.\footnote{http:/\!/www.midisolutions.com/}
 
 Gizmo is the unholy union of an Arduino Uno or Arduino Mega 2560,\footnote{http:/\!/arduino.cc} an Adafruit 16x8 I2C LED matrix\footnote{https:/\!/www.adafruit.com/categories/326\quad I use the 1.2-inch 16x8 matrix with red round LEDs, which works well.  This particular model can be found at https:/\!/www.adafruit.com/products/2037}, and a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898} to perform a variety of helpful MIDI tasks.  Gizmo has several built-in applications, and assuming there's space\footnote{As of this writing, Gizmo on the Arduino Uno uses 32,252 bytes out of 32,256 available.  So if you're like to extend Gizmo on the Uno, you'll need to make sure your extension fits within 4 bytes :-)  Instead: get a Mega.} you can develop additional applications for it.
 
@@ -160,7 +160,7 @@ To do this you'll need to reset Gizmo's options without needing to press any but
 \begin{verbatim}
         #define HEADLESS_RESET
 \end{verbatim}
-\item Compile and download the code, and run it once.  Gizmo will show its opening screen, then display {\bf RSET} and not do anything else.
+\item Compile and download the code, and run it once.  Gizmo will show its opening screen, then display \texttt{RSET} and not do anything else.
 \item In the \texttt{All.h} file, change the line back, that is, to 
 \begin{verbatim}
         //#define HEADLESS_RESET
@@ -262,8 +262,7 @@ Gizmo will reset all of its flash RAM and reboot.  This means that all options w
 
 If you power up Gizmo, or press its reset button, it will display its {\bf boot screen}, which includes the version number (at right, the version number is ``1'').
 
-Gizmo will then show the {\bf root menu}.  Use the left potentiometer to scroll to any of the following applications, and use the select button to select an application.  Available applications are:\,\footnote{Later I'll be adding a {\bf Utility} application, where small MIDI utilities will be available.}
-
+Gizmo will then show the {\bf root menu}.  Use the left potentiometer to scroll to any of the following applications, and use the select button to select an application.  Available applications are:
 \section {The Arpeggiator}
 
 \begin{wrapfigure}{r}{3in}
@@ -327,7 +326,7 @@ Ascending Notes\\in Dense Mode\\
 
 The last menu option in the top-level Arpeggiator menu is {\bf Create}.  If you choose this, you can create an Arpeggio.  To do this you enter notes one by one.  These won't be the {\it actual} notes that are played when you hold down a chord.  Rather, after you save the result, the Arpeggiator will compact these notes into a sequence of consecutive numbers.  For example, if you play C3 E3 G3 E3 G2, then the Arpeggiator will compact these into 2 3 4 3 1.  Then when you play this as an arpeggio, the Arpeggiator will assign each of these numbers, in order, to the notes in your chord. 
 
-The first question you will be asked is {\bf NOTE}: the Arpeggiator is asking you to specify the note in your arpeggio pattern which will correspond to the root (lowest) note in a played chord.  This allows you to make a pattern which plays notes both above and below the played chord.  For example, if the Root is C3, then the above pattern will instruct the Arpeggiator to play its final note {\it below} the chord root.
+The first question you will be asked is \texttt{NOTE}: the Arpeggiator is asking you to specify the note in your arpeggio pattern which will correspond to the root (lowest) note in a played chord.  This allows you to make a pattern which plays notes both above and below the played chord.  For example, if the Root is C3, then the above pattern will instruct the Arpeggiator to play its final note {\it below} the chord root.
 
 After you have entered the root, the Arpeggiator will wait for you to start playing notes.  You can enter a sequence of up to 32 notes, including 15 unique notes.  You can also enter rests by pressing the Middle button.  If you enter more than 15 unique notes, or more than 32 notes in total, the Arpeggiator will simply refuse to accept the next note.
 
@@ -382,7 +381,7 @@ The Step Sequencer makes it easy to create 16-note, 24-note, or 32-note multitra
 \label{none}
 \end{wrapfigure}
 
-When you choose the Step Sequencer from the root menu, you will be asked to load a sequence from a slot.  You can do this, or you can create a new empty sequence by choosing ``-~-~-~-'' (meaning {\it none}).  Slots are displayed by number, plus an ``R'' (for Recorder) or ``S'' (for Step Sequencer) if the slot is filled with a file by one of the two applications.  This letter blinks if the file isn't the type of your current application.
+When you choose the Step Sequencer from the root menu, you will be asked to load a sequence from a slot.  You can do this, or you can create a new empty sequence by choosing \texttt{-~-~-~-} (meaning {\it none}).  Slots are displayed by number, plus an \texttt{R} (for Recorder) or \texttt{S} (for Step Sequencer) if the slot is filled with a file by one of the two applications.  This letter blinks if the file isn't the type of your current application.
 
 If you have chosen {\it none}, or have chosen an empty slot or one presently filled by the Recorder, you have to initialize the slot first: you'll be asked to choose between 16, 24, or 32 notes per track. After this you are taken to the main Step Sequencer display.  
 
@@ -426,14 +425,14 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 
 \begin{itemize}
 \item {\bf Reset Track}\quad This wipes out and resets the track.  Unlike Long-Pressing the Middle Button while in Play Position mode, this doesn't just clear the track of notes: it also resets all of its settings to their defaults.
-\item {\bf Length}\quad This specifies the note length of notes in the track, as a percentage (0 is fully staccato and 100 is fully legato).   You can choose numerical values, or choose ``DFLT'', which tells the Step Sequencer to use the default note length specified in the Options menu (see Section \ref{options}).
-\item {\bf Out MIDI (Track)}\quad This specifies the MIDI Out Channel for notes in the track,    You can choose a value 1...16, or choose ``DFLT'', which tells the Step Sequencer to use the default MIDI Out Channel specified in the Options menu (see Section \ref{options}).
-\item {\bf Velocity}\quad This lets you specify a velocity that {\it all} notes in the track will use (as a value 0...127).  If you would instead prefer that each note in the track use its own independent velocity as you had entered them, you can choose ``FREE''.
+\item {\bf Length}\quad This specifies the note length of notes in the track, as a percentage (0 is fully staccato and 100 is fully legato).   You can choose numerical values, or choose \texttt{DFLT}, which tells the Step Sequencer to use the default note length specified in the Options menu (see Section \ref{options}).
+\item {\bf Out MIDI (Track)}\quad This specifies the MIDI Out Channel for notes in the track,    You can choose a value 1...16, or choose \texttt{DFLT}, which tells the Step Sequencer to use the default MIDI Out Channel specified in the Options menu (see Section \ref{options}).
+\item {\bf Velocity}\quad This lets you specify a velocity that {\it all} notes in the track will use (as a value 0...127).  If you would instead prefer that each note in the track use its own independent velocity as you had entered them, you can choose \texttt{FREE}.
 \item {\bf Fader}\quad This lets you specify a volume modifier which is multiplied against the velocities of the notes in the track.  Possible values are 0...127, where 0 completely hushes the notes, and 127 lets them play at their specified velocities. 
 
 % At present NO ECHO MODE is turned off on the Uno -- we don't have enough space.
 %\item {\bf No Echo} or {\bf Echo} \quad This toggles {\it no-echo mode}.  Normally when you enter a note, it's automatically played so you get some feedback.  But in some circumstances (such as when you enter notes from a synthesizer's keyboard, but are having the sequencer play sequences out to that same synthesizer) this isn't desirable.  In no-echo mode, you can prevent the note from being automatically played.
-\item {\bf Save} \quad This saves the sequence. You then choose the slot to save in.  Slots are again displayed by number, plus an ``R'' (for Recorder) or ``S'' (for Step Sequencer).
+\item {\bf Save} \quad This saves the sequence. You then choose the slot to save in.  Slots are again displayed by number, plus an \texttt{R} (for Recorder) or \texttt{S} (for Step Sequencer).
 \item {\bf Options} \quad This brings up the Options menu.
 \end{itemize}
 
@@ -470,7 +469,7 @@ The Note Recorder screen has two major parts.  The {\it Note Display} section in
 \label{none}
 \end{wrapfigure}
 
-When you choose the Note Recorder from the root menu, you will be asked to load a recording from a slot.  You can do this, or you can create a new empty recording by choosing ``-~-~-~-'' (meaning {\it none}).  Slots are displayed by number, plus an ``R'' (for Recorder) or ``S'' (for Step Sequencer) if the slot is filled with a file by one of the two applications.  This letter blinks if the file isn't the type of your current application.
+When you choose the Note Recorder from the root menu, you will be asked to load a recording from a slot.  You can do this, or you can create a new empty recording by choosing \texttt{-~-~-~-} (meaning {\it none}).  Slots are displayed by number, plus an \texttt{R} (for Recorder) or \texttt{S} (for Step Sequencer) if the slot is filled with a file by one of the two applications.  This letter blinks if the file isn't the type of your current application.
 
 After this you will enter the Note Recorder.
 
@@ -493,7 +492,7 @@ When you enter the Note Recorder, the state is initially Stopped.  To start play
 
 You can choose {\bf Repeat Mode} from a menu by Long-Pressing the Select (right) Button.  When in repeat mode, the recorder repeats the song it is playing at the measure boundary after it has finished playing the song.  Repeat mode also toggles an LED (see Figure~\ref{recorder}).
 
-You can save your recorded song by pressing the Select Button.  Gizmo will ask you to select a slot to save in, then it will exit the Recorder.  Slots are again displayed by number, plus an ``R'' (for Recorder) or ``S'' (for Step Sequencer).
+You can save your recorded song by pressing the Select Button.  Gizmo will ask you to select a slot to save in, then it will exit the Recorder.  Slots are again displayed by number, plus an \texttt{R} (for Recorder) or \texttt{S} (for Step Sequencer).
 
 \paragraph{More Recorder Options}  
 You can also choose the Options Menu from inside the Note Recorder: it's part of the menu brought up by Long-Pressing the Select button.  The Recorder responds to a number of options:
@@ -541,15 +540,15 @@ Messages that are associated with a MIDI channel will have their channel number 
 
 \begin{itemize}
 \item {\bf Pitch Bend}\quad The 14-bit value is displayed
-\item {\bf Channel Aftertouch}.  ``AT'' is displayed, followed by the value.
-\item {\bf Program Change}\quad ``PC'' is displayed, followed by the value.
-\item {\bf Control Change (CC)}\quad If the CC parameter is for 7-bit values, then the value is shown first, then text is scrolled with the value, then ``CC'', then the parameter.  If the CC parameter is for 14-bit values, the MSB of the value is shown first, then text is scrolled with the value, then ``CC'', then the parameter, then in parentheses the 14-bit (MSB+LSB) value.
-\item {\bf Registered Parameter Number (RPN)}\quad The value (7-bit MSB only) is shown first, then text is scrolled with the value (MSB), then ``RPN'', then the parameter (14-bit), then in parentheses the 14-bit (MSB+LSB) value.
-\item {\bf Non-Registered Parameter Number (NRPN)}\quad The value (7-bit MSB only) is shown first, then text is scrolled with the value (MSB), then ``NRPN'', then the parameter (14-bit), then in parentheses the 14-bit (MSB+LSB) value.
+\item {\bf Channel Aftertouch}.  \texttt{AT} is displayed, followed by the value.
+\item {\bf Program Change}\quad \texttt{PC} is displayed, followed by the value.
+\item {\bf Control Change (CC)}\quad If the CC parameter is for 7-bit values, then the value is shown first, then text is scrolled with the value, then \texttt{CC}, then the parameter.  If the CC parameter is for 14-bit values, the MSB of the value is shown first, then text is scrolled with the value, then \texttt{CC}, then the parameter, then in parentheses the 14-bit (MSB+LSB) value.
+\item {\bf Registered Parameter Number (RPN)}\quad The value (7-bit MSB only) is shown first, then text is scrolled with the value (MSB), then \texttt{RPN}, then the parameter (14-bit), then in parentheses the 14-bit (MSB+LSB) value.
+\item {\bf Non-Registered Parameter Number (NRPN)}\quad The value (7-bit MSB only) is shown first, then text is scrolled with the value (MSB), then \texttt{NRPN}, then the parameter (14-bit), then in parentheses the 14-bit (MSB+LSB) value.
 \end{itemize}
 
 \begin{itemize}
-\item {\bf Channel Mode}\quad The value is shown first, then text is scrolled with the value, then ``CHANNEL MODE'', then the parameter.  Channel Mode parameters are:\footnote{Why no text to describe these things?  Because the Arduino Uno is out of space.  And they're not that common.}
+\item {\bf Channel Mode}\quad The value is shown first, then text is scrolled with the value, then \texttt{CHANNEL MODE}, then the parameter.  Channel Mode parameters are:\footnote{Why no text to describe these things?  Because the Arduino Uno is out of space.  And they're not that common.}
 \begin{center}\begin{tabular}{@{}rll@{}}
 {\it Parameter}&{\it Value}&{\it Meaning}\\[0.1em]
 \hline\\[-0.9em]
@@ -562,14 +561,14 @@ Messages that are associated with a MIDI channel will have their channel number 
 126&\(C\)&Mono Mode On, with \(C\) channels total\\
 127&Normally 0&Poly Mode On\\
 \end{tabular}\end{center}
-\item {\bf System Exclusive}\quad ``SYSX'' is displayed.\footnote{Note that the version of the MIDI library on which Gizmo relies presently doesn't handle large System Exclusive messages well.}
-\item {\bf Song Position}\quad ``SPOS'' is displayed.
-\item {\bf Song Select}\quad ``SSEL'' is displayed.
-\item {\bf Tune Request}\quad ``TREQ'' is displayed.
-\item {\bf Start}\quad ``STRT'' is displayed.
-\item {\bf Continue}\quad ``CONT'' is displayed.
-\item {\bf Stop}\quad ``STOP'' is displayed.
-\item {\bf System Reset}\quad ``RSET'' is displayed.
+\item {\bf System Exclusive}\quad \texttt{SYSX} is displayed.\footnote{Note that the version of the MIDI library on which Gizmo relies presently doesn't handle large System Exclusive messages well.}
+\item {\bf Song Position}\quad \texttt{SPOS} is displayed.
+\item {\bf Song Select}\quad \texttt{SSEL} is displayed.
+\item {\bf Tune Request}\quad \texttt{TREQ} is displayed.
+\item {\bf Start}\quad \texttt{STRT} is displayed.
+\item {\bf Continue}\quad \texttt{CONT} is displayed.
+\item {\bf Stop}\quad \texttt{STOP} is displayed.
+\item {\bf System Reset}\quad \texttt{RSET} is displayed.
 \end{itemize}
 
 
@@ -699,7 +698,7 @@ If you press the Select Button, you'll be asked to enter a note.  This note will
 \vspace{-2em}
 \end{wrapfigure}
 
-If you press the Middle Button you'll be asked to enter a note.  This note will be Split Note B.  By default this note is off.  You can back out if you don't want to enter the note.  You can also turn Split Note B off again by once again pressing the Middle Button, at which point you'll be presented with ``- - - -''.  You can also back out if you don't want remove Split Note B.
+If you press the Middle Button you'll be asked to enter a note.  This note will be Split Note B.  By default this note is off.  You can back out if you don't want to enter the note.  You can also turn Split Note B off again by once again pressing the Middle Button, at which point you'll be presented with \texttt{-~-~-~-}.  You can also back out if you don't want remove Split Note B.
 
 You define the Alternative MIDI Out channel by Long-Pressing the Select Button.  The Alternative MIDI Channel must be a value 1--16 (you can't choose Off).
 
@@ -711,7 +710,7 @@ Long-pressing the Middle Button cycles through three options:
 \begin{itemize}
 \item Split/Layer the Keyboard, and route all CC, PC, Channel Aftertouch, and NRPN/RPN to the {\it right} (upper) split channel, that is, to the Default MIDI Out channel.  Pitch Bend is also routed to the right channel if you're doing a simple split, but if you're layering, it's routed to both channels.  Polyphonic Aftertouch is always routed to the channel handling the note in question, as are all Note On and Note Off messages.  The screen will show the Split A note, and will light the ``left'' LED (see Figure \ref{splitter})..
 \item Split/Layer the Keyboard, and route all CC, PC, Channel Aftertouch, and NRPN/RPN to the {\it left} (upper) split channel, that is, to the alternative MIDI Out Channel.  Pitch Bend is also routed to the left channel if you're doing a simple split, but if you're layering, it's routed to both channels.  Polyphonic Aftertouch is always routed to the channel handling the note in question, as are all Note On and Note Off messages.  The screen will show the Split A note at left and the Split B note at right, and will light the ``left'' LED (see Figure \ref{splitter}).
-\item Fade/Balance the Keyboard.  All CC, PC, Channel Aftertouch, and NRPN/RPN if routed to the alternative MIDI Out Channel.  Pitch Bend is routed to both channels, as is Polyphonic Aftertouch and all Note On and Note Off messages (though with inverted velocities as discussed earlier).  The screen will display ``FADE''.
+\item Fade/Balance the Keyboard.  All CC, PC, Channel Aftertouch, and NRPN/RPN if routed to the alternative MIDI Out Channel.  Pitch Bend is routed to both channels, as is Polyphonic Aftertouch and all Note On and Note Off messages (though with inverted velocities as discussed earlier).  The screen will display \texttt{FADE}.
 \end{itemize}
 
 \section{The Thru Facility}
@@ -726,7 +725,7 @@ I might add more unusual filters later.
 	\begin{description}
 	
 	\item{\bf Go}\\
-		When you have set up your extra notes and note distribution (see below), if you choose {\bf Go}, the Thru filter starts and you can start playing.  You'll see the word ``PLAY'' on the LED.
+		When you have set up your extra notes and note distribution (see below), if you choose {\bf Go}, the Thru filter starts and you can start playing.  You'll see the word \texttt{PLAY} on the LED.
 
 	\item{\bf Extra Notes}\\
 		This lets you select how many {\it additional} simultaneous note-on (and note-off) messages Gizmo should send down a given channel in response to you playing a note.
@@ -819,7 +818,7 @@ I might add more unusual filters later.
 			1/8\\
 			1/4\\
 			1/2\hspace{3.65in}\smash{\includegraphics[width=1.7in]{fractions2.pdf}}\\
-			1(default)\\
+			1\qquad (default)\\
 			2\\
 			4\\
 			8\\
@@ -918,7 +917,7 @@ Double Whole Note				&192\\
 		
 		
 	\item{\bf \textit{Mega Only:}\quad Menu Delay}\\
-		Gizmo often will display text (such as ``SWING'') by filling the screen with the first few letters (in this case, ``SWI''), then {\it delaying} for a certain interval, then scrolling through the whole word horizontally. You can specify how long that delay is.
+		Gizmo often will display text (such as \texttt{SWING}) by filling the screen with the first few letters (in this case, \texttt{SWI}), then {\it delaying} for a certain interval, then scrolling through the whole word horizontally. You can specify how long that delay is.
 		\begin{description}
 			\item{\bf \textit{Choose}}:
 			\begin{tabbing}
@@ -941,7 +940,7 @@ Double Whole Note				&192\\
 		Toggles whether Gizmo will send control voltage information out via the optional DACs in response to notes played or to Controller potentiometers being turned.  Note that control voltage is sent in response to an I2C signal, and this may cause a very slight MIDI delay.
 		
 	\item{\bf The About Screen}\\
-		Presently says:\quad GIZMO V1 (C) 2016 BY SEAN LUKE
+		Presently says:\quad \texttt{GIZMO V1 (C) 2016 BY SEAN LUKE}
 	\end{description}
 
 	\section{Starting, Stopping, and Continuing the Clock}
