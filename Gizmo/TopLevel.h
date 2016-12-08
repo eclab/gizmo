@@ -8,7 +8,9 @@
 //// MIDI CHANNELS
 #define CHANNEL_OFF 0
 #define CHANNEL_OMNI 17                         // For INPUT
-
+#define NUM_MIDI_CHANNELS 16
+#define LOWEST_MIDI_CHANNEL 1
+#define HIGHEST_MIDI_CHANNEL 16
 
 //// MIDI CLOCK OPTIONS SETTINGS
 // We have five options for handling the MIDI clock (or producing our own)

@@ -1785,25 +1785,21 @@ void go()
         break;
         case STATE_OPTIONS_MIDI_CHANNEL_IN:
             {
-            // 0 is CHANNEL_OFF
-            // 17 is CHANNEL_OMNI
-            stateNumerical(0, 17, options.channelIn, backupOptions.channelIn, true, true, OTHER_OMNI, STATE_OPTIONS);
+            stateNumerical(CHANNEL_OFF, CHANNEL_OMNI, options.channelIn, backupOptions.channelIn, true, true, OTHER_OMNI, STATE_OPTIONS);
             }
         break;
         case STATE_OPTIONS_MIDI_CHANNEL_OUT:
             {
-            // 0 is CHANNEL_OFF
-            stateNumerical(0, 16, options.channelOut, backupOptions.channelOut, true, true, OTHER_NONE, STATE_OPTIONS);
+            stateNumerical(CHANNEL_OFF, HIGHEST_MIDI_CHANNEL, options.channelOut, backupOptions.channelOut, true, true, OTHER_NONE, STATE_OPTIONS);
             }
         break;
         case STATE_OPTIONS_MIDI_CHANNEL_CONTROL:
             {
 #ifdef HEADLESS
             // Do not permit CHANNEL_OFF
-            stateNumerical(1, 16, options.channelControl, backupOptions.channelControl, true, false, OTHER_NONE, STATE_OPTIONS);
+            stateNumerical(LOWEST_MIDI_CHANNEL, HIGHEST_MIDI_CHANNEL, options.channelControl, backupOptions.channelControl, true, false, OTHER_NONE, STATE_OPTIONS);
 #else
-            // 0 is CHANNEL_OFF
-            stateNumerical(0, 16, options.channelControl, backupOptions.channelControl, true, true, OTHER_NONE, STATE_OPTIONS);
+            stateNumerical(CHANNEL_OFF, HIGHEST_MIDI_CHANNEL, options.channelControl, backupOptions.channelControl, true, true, OTHER_NONE, STATE_OPTIONS);
 #endif // HEADLESS
             }
         break;
@@ -1995,7 +1991,7 @@ void go()
 
 		  case STATE_SPLIT_CHANNEL:
 			  {
-			  stateNumerical(1, 16, options.splitChannel, backupOptions.splitChannel, true, false, OTHER_NONE, STATE_SPLIT);
+			  stateNumerical(LOWEST_MIDI_CHANNEL, HIGHEST_MIDI_CHANNEL, options.splitChannel, backupOptions.splitChannel, true, false, OTHER_NONE, STATE_SPLIT);
 			  }
 		  break;
 
@@ -3049,7 +3045,7 @@ void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel)
          
 void sendAllNotesOffDisregardBypass()
 	{
-    for(uint8_t i = 1; i < 16; i++)
+    for(uint8_t i = LOWEST_MIDI_CHANNEL; i <= HIGHEST_MIDI_CHANNEL; i++)
     	{
     	MIDI.sendControlChange(123, 0, i);
     	}

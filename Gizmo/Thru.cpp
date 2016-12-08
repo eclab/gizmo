@@ -4,7 +4,7 @@
 
 void resetDistributionNotes() 
 	{ 
-	memset(local.thru.distributionNotes, NO_NOTE, 16);
+	memset(local.thru.distributionNotes, NO_NOTE, NUM_MIDI_CHANNELS);
 	local.thru.currentDistributionChannelIndex = 0; 
 	}
 
@@ -40,7 +40,7 @@ void stateThruPlay()
 			if (options.thruNumDistributionChannels > 0)
 				{
 				// revise the channel
-				channel = (options.channelOut + local.thru.currentDistributionChannelIndex - 1) % 16 + 1;
+				channel = (options.channelOut + local.thru.currentDistributionChannelIndex - 1) % NUM_MIDI_CHANNELS + 1;
 					
 				// do I need to turn off a note?
 				if (local.thru.distributionNotes[local.thru.currentDistributionChannelIndex] != NO_NOTE)
@@ -69,30 +69,27 @@ void stateThruPlay()
 			// NOTE DISTRIBUTION OVER MULTIPLE CHANNELS
 			if (options.thruNumDistributionChannels > 0)
 				{
-				uint8_t found = 0;
-				
-				// find the channel
-				for(uint8_t i = 0; i < options.thruNumDistributionChannels; i++)
+				// turn off ALL instances of this note on ALL channels
+				for(uint8_t i = 0; i <= options.thruNumDistributionChannels; i++)
 					{
-					uint8_t ii = (local.thru.currentDistributionChannelIndex + i);
-					if (ii >= options.thruNumDistributionChannels)
-						ii = 0;
-						
-					if (local.thru.distributionNotes[ii] == itemNumber)
+					if (local.thru.distributionNotes[i] == itemNumber)
 						{
-						found = 1;
-						channel = (options.channelOut + ii - 1) % 16 + 1;
+						channel = (options.channelOut + i - 1) % NUM_MIDI_CHANNELS + 1;
+						for(uint8_t i = 0; i <= options.thruExtraNotes; i++)		// do at least once
+							{
+							sendNoteOff(itemNumber, itemValue, channel);
+							}
+						local.thru.distributionNotes[i] = NO_NOTE;
 						}
 					}
-					
-				if (!found)  // uh oh, maybe turned off earlier?  Don't play off
-					return;
 				}
-
-			// NOTE REPLICATION
-			for(uint8_t i = 0; i <= options.thruExtraNotes; i++)		// do at least once
+			else
 				{
-				sendNoteOff(itemNumber, itemValue, channel);
+				// NOTE REPLICATION
+				for(uint8_t i = 0; i <= options.thruExtraNotes; i++)		// do at least once
+					{
+					sendNoteOff(itemNumber, itemValue, channel);
+					}
 				}
 			}
 		}

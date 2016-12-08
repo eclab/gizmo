@@ -42,9 +42,9 @@
 //      Thru			STATE_THRU
 //              [special controls:]
 //						Back Button: 	STATE_ROOT 
-//				Go					STATE_THRU_PLAY
-//				Extra Notes:		STATE_THRU_EXTRA_NOTES
-//				Distribute Notes:	STATE_THRU_DISTRIBUTE_NOTES
+//				Go						STATE_THRU_PLAY
+//				Extra Notes:			STATE_THRU_EXTRA_NOTES
+//				Distribute Notes:		STATE_THRU_DISTRIBUTE_NOTES
 
 
 struct _thruLocal

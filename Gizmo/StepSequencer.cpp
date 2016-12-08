@@ -600,7 +600,10 @@ void playStepSequencer()
                 if ((!local.stepSequencer.muted[track]) &&			// if we're not muted
                 	((!(local.stepSequencer.solo) || track == local.stepSequencer.currentTrack)))  // solo is turned off, or solo is turne don AND we're the current track
                     {
-                    sendNoteOnTrack(note, (uint8_t)((vel * (uint16_t)(local.stepSequencer.fader[track])) >> 5), track);         // >> 5 is / FADER_IDENDITY_VALUE, that is, / 32
+                    uint16_t newvel = (vel * (uint16_t)(local.stepSequencer.fader[track])) >> 5;
+                    if (newvel > 127) 
+                    	newvel = 127;
+                    sendNoteOnTrack(note, (uint8_t)newvel, track);         // >> 5 is / FADER_IDENTITY_VALUE, that is, / 32
                     }
                 local.stepSequencer.offTime[track] = currentTime + (div100(notePulseRate * getMicrosecsPerPulse() * noteLength));
                 local.stepSequencer.noteOff[track] = note;
