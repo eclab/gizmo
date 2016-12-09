@@ -1,0 +1,85 @@
+BUILDING
+
+You should be able to build this code by simply loading the GIZMO.INO file into your
+Arduino software and pressing COMPILE.  However you will need to modify some Arduino
+libraries to get it to compile properly.  Instructions about those libraries and their
+modification can be found (along with hardware build instructions) in the manual,
+which is located in ../docs/Gizmo.pdf
+
+
+
+A FEW CODE NOTES
+
+The code is largely written in C, with a few little C++ features, notably
+a few functions which pass by reference (arguments with "&" in front of them).  The
+code is presently written so as to cram as many features as possible into an
+ARDUINO UNO, which has only 32K of code space, 2K of working RAM, and 1K of Flash.  
+Thus there are a lot of little oddities here and there meant to conserve space and/or
+speed.  A few examples:
+
+- Division.  Division on the Uno is slow and costly.  Gizmo often uses custom "div"
+  functions which are smaller and faster than a general use of the "/" and "%"
+  operators.  See Divison.h  Also in some cases I've found that (perhaps due to a bug?)
+  gcc appears not to be converting division by a power of two into a simple right shift.
+  So Gizmo often uses right shifts rather than divisions to force this.  Perhaps this
+  is cargo cult programming, perhaps not.
+
+- Helper functions.  Gizmo has lots of helper functions meant to reduce code redundancy.
+  In several cases these helper functions have intentional side effects which you may
+  not realize: for example, the doMenuDisplay(...) function [as a random example] expects
+  to handle, and clear, the 'entry' flag.  These can be serious gotchas if you've not
+  looked them over carefully.
+
+- The state machine.  The state machine is a large case statement located in the go()
+  method in TopLevel.cpp.  To compile to a jump table, the cases have to be contiguous
+  integers; since the Mega and Uno have different sets of cases, this means different
+  integer #defines.  They are NOT presently enums!  Adding a new cases is always fun 
+  as you have to move all the #defines down or up by 1.  :-(  Also, in some cases I've 
+  inlined the certain functions in the case statement as it makes the code smaller 
+  than calling them separately.
+
+
+
+THE FILES
+
+The files are in certain categories:
+
+	HARDWARE
+	MidiShield.h/cpp	Macros and variables for the SparkFun MIDI Shield
+	LEDDisplay.h/cpp	Code to do drawing on the Adafruit 16x8 LED
+	DAC.h/cpp		Code to control the DACs
+
+
+	CORE CODE
+	Timing.h/cpp		Internal and external clocks, notes, pulses, beats
+	TopLevel.h/cpp		The core.  Contains various important functions, the
+				state machine, MIDI callbacks, some MIDI wrapper
+				functions.  This file should be broken out more.
+	Utility.h/cpp		Utility functions used by various applications
+	Storage.h/cpp		Slot (file) storage in Flash
+	Options.h/cpp		Storage of global and application-specific options
+	Division.h/cpp		The arduino doesn't have hardware divide.  This
+				file contains various functions for dividing by
+				specific common constants (10, 12, 100, etc.)
+	All.h			One header file to bring them all and in the
+				darkness bind them.
+	Gizmo.ino		The standard Arduino entry functions
+
+
+	APPLICATIONS		[Note that many parts of applications are embedded
+				in the state machine in TopLevel.cpp, and a few bits
+				are located in the MIDI callback functions in
+				TopLevel.cpp, though I try to avoid embedding
+				in the callback functions when possible.]
+	Arpeggiator.h/cpp	The arpeggiator
+	StepSequencer.h/cpp	The step sequencer
+	Control.h/cpp		The MIDI control surface
+	Gauge.h			The MIDI gauge.  There's no Gauge.cpp because it's
+				entirely contained within the state machine in
+				TopLevel.cpp
+	Recorder.h/cpp		The note recorder
+	Split.h/cpp		The keyboard splitter / layerer
+	Thru.h/cpp		The MIDI thru application
+	
+	
+

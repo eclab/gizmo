@@ -1,3 +1,8 @@
+////// Copyright 2016 by Sean Luke
+////// Licensed under the Apache 2.0 License
+
+
+
 #ifndef __OPTIONS_H__
 #define __OPTIONS_H__
 
@@ -27,8 +32,6 @@ struct _options
     uint8_t channelIn ;                          // MIDI Channel I'm listening on.  0 means no channel in.  17 means ALL CHANNELS (OMNI).
     uint8_t channelOut ;                         // MIDI Channel I'm sending to by default.    0 means no default channel out.
     uint8_t channelControl ;                     // MIDI Channel to control the device via NRPN messages etc.  0 means no control channel.  16 means Channel In
-    int8_t transpose;
-    uint8_t volume;
     uint8_t leftKnobControlType ;
     uint8_t rightKnobControlType  ;
     uint8_t middleButtonControlType ;
@@ -44,10 +47,12 @@ struct _options
     //uint8_t recorderRepeat;
     uint8_t click;
     uint8_t clickVelocity;
+  uint8_t voltage;
      
 #if defined(__AVR_ATmega2560__)
   uint8_t menuDelay ;                         // Corresponds to DEFAULT_MENU_DELAY
-  uint8_t voltage;
+    int8_t transpose;
+    uint8_t volume;
   uint8_t splitControls;					  // = 0 by default, SPLIT_RIGHT
   uint8_t splitChannel;
   uint8_t splitNote;

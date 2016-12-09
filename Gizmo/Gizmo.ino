@@ -83,9 +83,7 @@ void setup()
    rpn_p = PSTR("RPN");
    cc_p = PSTR("CC");
    v_p = PSTR("IS");
-#if defined(__AVR_ATmega2560__)
    voltage_p = PSTR("VOLTAGE");
-#endif
    options_p = PSTR("OPTIONS");
 
 	// seed random number generator
@@ -117,8 +115,7 @@ void setup()
     setMenuDelay(options.menuDelay);
 #else
     setScrollDelays(DEFAULT_MENU_DELAY, DEFAULT_SHORT_DELAY);
-#endif // defined(__AVR_ATmega2560__)
-
+#endif
     
     /// Set up MIDI
     MIDI.setHandleClock(handleClock);

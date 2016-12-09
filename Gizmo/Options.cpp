@@ -1,3 +1,7 @@
+////// Copyright 2016 by Sean Luke
+////// Licensed under the Apache 2.0 License
+
+
 //// IMPORTANT NOTE:
 //// All of the option states are hard-coded into the state machine switch
 //// statement in TopLevel.cpp as a memory-saving measure.
@@ -52,11 +56,11 @@ void resetOptions()
     options.channelIn = 1;
     options.channelOut = 1;
     options.noteLength = 100;
-    options.volume = 3;  // corresponds to no volume modification
     options.click = NO_NOTE;
     options.clock = IGNORE_MIDI_CLOCK;
 #if defined(__AVR_ATmega2560__)
     options.menuDelay = 6;  // corresponds to DEFAULT_MENU_DELAY
+    options.volume = 3;  // corresponds to no volume modification
     options.splitChannel = 1;
 	options.splitNote = 60;  // Middle C
 	options.splitLayerNote = NO_NOTE;

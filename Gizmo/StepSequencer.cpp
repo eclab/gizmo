@@ -1,3 +1,6 @@
+////// Copyright 2016 by Sean Luke
+////// Licensed under the Apache 2.0 License
+
 #include "All.h"
 
 
@@ -15,7 +18,7 @@ void resetTrack(uint8_t track)
     local.stepSequencer.noteLength[track] = PLAY_LENGTH_USE_DEFAULT;
     local.stepSequencer.muted[track] = 0;
     local.stepSequencer.velocity[track] = STEP_SEQUENCER_NO_OVERRIDE_VELOCITY;
-    local.stepSequencer.fader[track] = FADER_IDENDITY_VALUE;
+    local.stepSequencer.fader[track] = FADER_IDENTITY_VALUE;
     local.stepSequencer.offTime[track] = 0;
     local.stepSequencer.noteOff[track] = NO_NOTE;
     }
@@ -119,7 +122,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
         options.channelOut : local.stepSequencer.outMIDI[local.stepSequencer.currentTrack]);
 
 	// Do we have a fader value != FADER_IDENDITY_VALUE ?
-    if (local.stepSequencer.fader[local.stepSequencer.currentTrack] != FADER_IDENDITY_VALUE)
+    if (local.stepSequencer.fader[local.stepSequencer.currentTrack] != FADER_IDENTITY_VALUE)
     	setPoint(led, 5, 1);
     
     // Are we overriding velocity?

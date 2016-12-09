@@ -1,3 +1,6 @@
+////// Copyright 2016 by Sean Luke
+////// Licensed under the Apache 2.0 License
+
 #include "All.h"
 
 #if defined(__AVR_ATmega2560__)
@@ -89,6 +92,33 @@ void stateThruPlay()
 				for(uint8_t i = 0; i <= options.thruExtraNotes; i++)		// do at least once
 					{
 					sendNoteOff(itemNumber, itemValue, channel);
+					}
+				}
+			}
+		else if (itemType == MIDI_AFTERTOUCH_POLY)
+			{
+			// NOTE DISTRIBUTION OVER MULTIPLE CHANNELS
+			if (options.thruNumDistributionChannels > 0)
+				{
+				// change ALL instances of this note on ALL channels
+				for(uint8_t i = 0; i <= options.thruNumDistributionChannels; i++)
+					{
+					if (local.thru.distributionNotes[i] == itemNumber)
+						{
+						channel = (options.channelOut + i - 1) % NUM_MIDI_CHANNELS + 1;
+						for(uint8_t i = 0; i <= options.thruExtraNotes; i++)		// do at least once
+							{
+							sendPolyPressure(itemNumber, itemValue, channel);
+							}
+						}
+					}
+				}
+			else
+				{
+				// NOTE REPLICATION
+				for(uint8_t i = 0; i <= options.thruExtraNotes; i++)		// do at least once
+					{
+					sendPolyPressure(itemNumber, itemValue, channel);
 					}
 				}
 			}

@@ -1,3 +1,7 @@
+////// Copyright 2016 by Sean Luke
+////// Licensed under the Apache 2.0 License
+
+
 #ifndef __TOPLEVEL_H__
 #define __TOPLEVEL_H__
 
@@ -188,16 +192,15 @@
 #define STATE_OPTIONS_TEMPO 46
 #define STATE_OPTIONS_NOTE_SPEED 47
 #define STATE_OPTIONS_SWING 48
-#define STATE_OPTIONS_TRANSPOSE 49
-#define STATE_OPTIONS_VOLUME 50
-#define STATE_OPTIONS_PLAY_LENGTH 51
-#define STATE_OPTIONS_MIDI_CHANNEL_IN 52
-#define STATE_OPTIONS_MIDI_CHANNEL_OUT 53
-#define STATE_OPTIONS_MIDI_CHANNEL_CONTROL 54
-#define STATE_OPTIONS_MIDI_CLOCK 55
-#define STATE_OPTIONS_CLICK 56
-#define STATE_OPTIONS_SCREEN_BRIGHTNESS 57
-#define STATE_OPTIONS_ABOUT 58
+#define STATE_OPTIONS_PLAY_LENGTH 49
+#define STATE_OPTIONS_MIDI_CHANNEL_IN 50
+#define STATE_OPTIONS_MIDI_CHANNEL_OUT 51
+#define STATE_OPTIONS_MIDI_CHANNEL_CONTROL 52
+#define STATE_OPTIONS_MIDI_CLOCK 53
+#define STATE_OPTIONS_CLICK 54
+#define STATE_OPTIONS_SCREEN_BRIGHTNESS 55
+#define STATE_OPTIONS_VOLTAGE 56
+#define STATE_OPTIONS_ABOUT 57
 
 #endif // defined(__AVR_ATmega2560__)
 
@@ -232,9 +235,7 @@ extern const char* cc_p;// = PSTR("CC");
 extern const char* v_p;// = PSTR("IS");
 extern const char* up_p;// = PSTR("UP");
 extern const char* down_p;// = PSTR("DOWN");
-#if defined(__AVR_ATmega2560__)
 extern const char* voltage_p;// = PSTR("VOLTAGE");
-#endif
 extern const char* options_p;
 
 
@@ -539,6 +540,7 @@ void sendNoteOn(uint8_t note, uint8_t velocity, uint8_t channel);
 void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel);
 void sendAllNotesOff();	// sends all notes off on ALL CHANNELS, unless bypass is in effect
 void sendAllNotesOffDisregardBypass();
+void sendPolyPressure(uint8_t note, uint8_t pressure, uint8_t channel);
 
 
 //// REMOTE CONTROL VIA NRPN

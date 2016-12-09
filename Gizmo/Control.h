@@ -1,3 +1,8 @@
+////// Copyright 2016 by Sean Luke
+////// Licensed under the Apache 2.0 License
+
+
+
 #ifndef __CONTROL_H__
 #define __CONTROL_H__
 
@@ -10,7 +15,7 @@
 //
 // 1. Map the two pots and the select and middle buttons to Program Change, any Channel Control, any NRPN, any RPN, or OFF (do nothing).
 //
-// 2. If VOLTAGE is #defined on (it's off in the Uno), you can also map to one of two 5V DACs for voltage output.
+// 2. If VOLTAGE is #defined on, you can also map to one of two 5V DACs for voltage output.
 //
 // 3. Buttons can be mapped to provide a VALUE, to INCREMENT, or to NOT DO ANYTHING when they are pushed or released.
 //    Buttons at present cannot send DECREMENT messages. [INCREMENT is only available for NRPN or RPN].

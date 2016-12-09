@@ -1,3 +1,8 @@
+////// Copyright 2016 by Sean Luke
+////// Licensed under the Apache 2.0 License
+
+
+
 #ifndef __STEP_SEQUENCER_H__
 #define __STEP_SEQUENCER_H__
 
@@ -182,7 +187,7 @@ struct _stepSequencerLocal
 
 
 
-#define FADER_IDENDITY_VALUE 32
+#define FADER_IDENTITY_VALUE 32
 
 /// DATA
 

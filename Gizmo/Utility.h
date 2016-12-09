@@ -1,6 +1,7 @@
 ////// Copyright 2016 by Sean Luke
 ////// Licensed under the Apache 2.0 License
-//////
+
+
 ////// UTILITY
 //////
 ////// Utility.h/.cpp define various utility functions used by a variety of applications
@@ -50,20 +51,21 @@ void drawMIDIChannel(uint8_t channel);
 #define GLYPH_NONE 0                                    // ----
 #define GLYPH_OMNI 1                                    // ALLC
 #define GLYPH_DEFAULT 2                                 // DFLT
-#define GLYPH_FREE 3                              		// FREE
-#define GLYPH_NOTE 4                                    // NOTE
-#define GLYPH_SYSEX 5                                   // SYSX
-#define GLYPH_SONG_POSITION 6                   		// SPOS
-#define GLYPH_SONG_SELECT 7                             // SSEL
-#define GLYPH_TUNE_REQUEST 8                    		// TREQ
-#define GLYPH_START 9                                  // STRT
-#define GLYPH_CONTINUE 10                               // CONT
-#define GLYPH_STOP 11                                   // STOP
-#define GLYPH_SYSTEM_RESET 12                   		// RSET
-//#define GLYPH_ROOT 13                                   // ROOT
+#define GLYPH_INCREMENT 3								// INCR
+#define GLYPH_INCREMENT 4                               // DECR
+#define GLYPH_FREE 5                              		// FREE
+#define GLYPH_NOTE 6                                    // NOTE
+#define GLYPH_SYSEX 7                                   // SYSX
+#define GLYPH_SONG_POSITION 8                   		// SPOS
+#define GLYPH_SONG_SELECT 9                             // SSEL
+#define GLYPH_TUNE_REQUEST 10                    		// TREQ
+#define GLYPH_START 11                                  // STRT
+#define GLYPH_CONTINUE 12                               // CONT
+#define GLYPH_STOP 13                                   // STOP
+#define GLYPH_SYSTEM_RESET 14                   		// RSET
 #if defined(__AVR_ATmega2560__)
-#define GLYPH_FADE 13									// FADE
-#define GLYPH_PLAY 14									// PLAY
+#define GLYPH_FADE 15									// FADE
+#define GLYPH_PLAY 16									// PLAY
 #endif // defined(__AVR_ATmega2560__)
 
 // Writes any of the above glyph sets to the screen
@@ -81,10 +83,10 @@ void clearScreen();
 // Changes the menu delay to a desired value (between 0: no menu delay, and 11: infinite menu delay).  The default is 5
 void setMenuDelay(uint8_t index);
 
+#endif // defined(__AVR_ATmega2560__)
+
 // The index values passed into setMenuDelay correspond to the following delays (but these
 // constants may NOT be passed into setMenuDelay).
-
-#endif
 
 #define DEFAULT_SHORT_DELAY (60 >> 3)
 #define NO_MENU_DELAY  (DEFAULT_SHORT_DELAY)

@@ -1,9 +1,14 @@
+////// Copyright 2016 by Sean Luke
+////// Licensed under the Apache 2.0 License
+
+
+
 #ifndef __MIDI_SHIELD__
 #define __MIDI_SHIELD__
 
 
 #ifdef HEADLESS
-extern uint8_t throwaway;
+extern uint8_t throwaway;		// need this in order to have a blank macro, else gcc complains
 #define TOGGLE_IN_LED() (throwaway = 0)
 #define TOGGLE_OUT_LED() (throwaway = 0)
 

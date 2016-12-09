@@ -1,3 +1,6 @@
+////// Copyright 2016 by Sean Luke
+////// Licensed under the Apache 2.0 License
+
 #include "All.h"
 
 
@@ -52,7 +55,7 @@ void toggleBypass()
 #endif
         }
     bypass = !bypass;
-    if (bypass) MIDI.turnThruOn();
+    if (bypass) { MIDI.turnThruOn(); }
     else MIDI.turnThruOff();
     }
 
@@ -304,6 +307,9 @@ uint8_t update()
             buttonPressed[MIDDLE_BUTTON] = !(*port_MIDDLE_BUTTON & MIDDLE_BUTTON_mask) ;
             buttonPressed[SELECT_BUTTON] = !(*port_SELECT_BUTTON & SELECT_BUTTON_mask) ;
             
+            // continue to lock out pots only if no button is being pressed
+            lockoutPots = lockoutPots && (!buttonPressed[BACK_BUTTON]) && (!buttonPressed[MIDDLE_BUTTON]) && (!buttonPressed[SELECT_BUTTON]);
+                        
             updateButtons(buttonPressed);
 #endif // HEADLESS
             return 0;  // don't update the display
@@ -709,6 +715,10 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
     }
 
 
+
+
+#define NO_STATE_NUMERICAL_CHANGE 255
+
 // STATE NUMERICAL
 // This function performs the basic functions for a state whose entire purpose is to compute a numerical value
 // and set *value* to that value.  If updateOptions is true, then stateNumerical will recover from a cancel by
@@ -754,7 +764,7 @@ uint8_t stateNumerical(uint8_t start, uint8_t end, uint8_t &value, uint8_t &back
         }
     if (value != oldValue) 
     	return oldValue;
-    else return 255;
+    else return NO_STATE_NUMERICAL_CHANGE;
     }
 
 
@@ -1306,17 +1316,18 @@ void go()
                                           ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
                                           PSTR("BRIGHTNESS"), 
                                           PSTR("MENU DELAY"), 
-                                          (options.voltage ? voltage_p : PSTR("NO VOLTAGE")),
+                                          (options.voltage ? PSTR("NO VOLTAGE") : voltage_p),
                                           PSTR("GIZMO V1 (C) 2016 SEAN LUKE") 
                                           };
             doMenuDisplay(menuItems, 15, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
 #else
-            const char* menuItems[13] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
-                                          PSTR("VOLUME"), PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), 
+            const char* menuItems[12] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), 
+            							  PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), 
                                           ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
                                           PSTR("BRIGHTNESS"),
+                                          (options.voltage ? PSTR("NO VOLTAGE") : voltage_p),
                                           PSTR("GIZMO V1 (C) 2016 SEAN LUKE") };
-            doMenuDisplay(menuItems, 13, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
+            doMenuDisplay(menuItems, 12, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
 #endif // defined(__AVR_ATmega2560__)
 
             playApplication(); 
@@ -1397,7 +1408,7 @@ void go()
             if (entry)
                 clearNotesOnTracks(true);
             uint8_t val = stateNumerical(0, 17, local.stepSequencer.outMIDI[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, true, OTHER_DEFAULT, STATE_STEP_SEQUENCER_MENU);
-            if (val != 255)
+            if (val != NO_STATE_NUMERICAL_CHANGE)
             	sendAllNotesOff();
             playStepSequencer();
             }
@@ -1505,11 +1516,9 @@ void go()
         
                 if (potUpdated[LEFT_POT] && options.leftKnobControlType != CONTROL_TYPE_OFF)
                     {
-#if defined(__AVR_ATmega2560__)
                     if (options.leftKnobControlType == CONTROL_TYPE_VOLTAGE_A || options.leftKnobControlType == CONTROL_TYPE_VOLTAGE_B)
                         displayValue = pot[LEFT_POT];
                     else 
-#endif
                         displayValue = pot[LEFT_POT] >> 3;
             
                     sendControllerCommand( options.leftKnobControlType, options.leftKnobControlNumber, displayValue);
@@ -1517,11 +1526,9 @@ void go()
           
                 if (potUpdated[RIGHT_POT] && options.rightKnobControlType != CONTROL_TYPE_OFF)
                     {
-#if defined(__AVR_ATmega2560__)
                     if (options.leftKnobControlType == CONTROL_TYPE_VOLTAGE_A || options.leftKnobControlType == CONTROL_TYPE_VOLTAGE_B)
                         displayValue = pot[RIGHT_POT];
                     else 
-#endif
                         displayValue = pot[RIGHT_POT] >> 3;
             
                     sendControllerCommand( options.rightKnobControlType, options.rightKnobControlNumber, displayValue); 
@@ -1707,6 +1714,7 @@ void go()
             playApplication();     
             }
         break;
+#if defined(__AVR_ATmega2560__)
         case STATE_OPTIONS_TRANSPOSE:
             {
             if (entry)
@@ -1776,7 +1784,8 @@ void go()
                 }
             playApplication();       
             }     
-        break;   
+        break;
+#endif
         case STATE_OPTIONS_PLAY_LENGTH:
             {
             stateNumerical(0, 100, options.noteLength, backupOptions.noteLength, true, false, OTHER_NONE, STATE_OPTIONS);
@@ -1790,7 +1799,9 @@ void go()
         break;
         case STATE_OPTIONS_MIDI_CHANNEL_OUT:
             {
-            stateNumerical(CHANNEL_OFF, HIGHEST_MIDI_CHANNEL, options.channelOut, backupOptions.channelOut, true, true, OTHER_NONE, STATE_OPTIONS);
+            uint8_t val = stateNumerical(CHANNEL_OFF, HIGHEST_MIDI_CHANNEL, options.channelOut, backupOptions.channelOut, true, true, OTHER_NONE, STATE_OPTIONS);
+            if (val != NO_STATE_NUMERICAL_CHANGE)
+            	sendAllNotesOff();
             }
         break;
         case STATE_OPTIONS_MIDI_CHANNEL_CONTROL:
@@ -1969,6 +1980,8 @@ void go()
             playApplication();     
             }
         break;
+        
+#endif // defined(__AVR_ATmega2560__)
 
         case STATE_OPTIONS_VOLTAGE:
             {
@@ -1979,7 +1992,6 @@ void go()
             }
         break;
 
-#endif
         case STATE_OPTIONS_ABOUT:
             {
             goUpState(STATE_OPTIONS);
@@ -2177,16 +2189,6 @@ void handleNoteOff(byte channel, byte note, byte velocity)
           			 sendNoteOff(note, velocity, options.splitChannel);
           		}
           	}
-          	
-        if (lastNotePlayed == note)
-            {
-            if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_A &&
-                options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_A)
-                setNote(DAC_A, 0);
-            if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_B &&
-                options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_B)
-                setNote(DAC_B, 0);
-            }
 #endif
         }
 
@@ -2234,16 +2236,9 @@ void handleNoteOn(byte channel, byte note, byte velocity)
           			 sendNoteOn(note, velocity, options.splitChannel);
           		}
           	}
-
-        if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_A &&
-            options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_A)
-            { setNote(DAC_A, note); lastNotePlayed = note; }
-        if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_B &&
-            options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_B)
-            { setNote(DAC_B, velocity); lastNotePlayed = note; }
 #endif
-        }
-    
+          }
+
 #if defined(__AVR_ATmega2560__)
 	if (!bypass && (state == STATE_THRU_PLAY))
 		{
@@ -2254,7 +2249,8 @@ void handleNoteOn(byte channel, byte note, byte velocity)
 		}
 #endif
 
-    if (bypass) TOGGLE_OUT_LED();
+    if (bypass) 
+    	TOGGLE_OUT_LED();
     }
   
 void handleAfterTouchPoly(byte channel, byte note, byte pressure)
@@ -2265,21 +2261,18 @@ void handleAfterTouchPoly(byte channel, byte note, byte pressure)
 		  {
           if ((application == STATE_SPLIT) && !bypass)
           	{
-		    int16_t n = note + (uint16_t)options.transpose;
-		    n = bound(n, 0, 127);
-
 			if (options.splitControls == SPLIT_MIX)
 				{
-				 MIDI.sendPolyPressure((uint8_t) n, pressure,options.channelOut);
-				 MIDI.sendPolyPressure((uint8_t) n, pressure,options.splitChannel);
+				 sendPolyPressure(note, pressure,options.channelOut);
+				 sendPolyPressure(note, pressure,options.splitChannel);
 				}
 			else
 				{
 	          	if (note >= options.splitNote)
-				  MIDI.sendPolyPressure((uint8_t) n, pressure,options.channelOut);
+				  sendPolyPressure((uint8_t) note, pressure,options.channelOut);
 	          	if (((options.splitLayerNote != NO_NOTE) && (note <= options.splitLayerNote)) ||
 	          		note < options.splitNote)
-				  MIDI.sendPolyPressure((uint8_t) n, pressure,options.splitChannel);
+				  sendPolyPressure((uint8_t) note, pressure,options.splitChannel);
 	          	}
 	          }
 		  }
@@ -3016,10 +3009,37 @@ void handleSystemReset()
 
 /// MIDI OUT
 
+void sendPolyPressure(uint8_t note, uint8_t pressure, uint8_t channel)
+    {
+    if (bypass) return;
+  
+#if defined(__AVR_ATmega2560__)
+	    int16_t n = note + (uint16_t)options.transpose;
+	    n = bound(n, 0, 127);
+	    MIDI.sendPolyPressure((uint8_t) n, pressure, channel);
+#else
+	    MIDI.sendPolyPressure(note, pressure, channel);
+#endif
+	    TOGGLE_OUT_LED();
+    }
+
+/// MIDI OUT
+
+void turnOffVoltage()
+	{
+	if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_A &&
+		options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_A)
+		setNote(DAC_A, 0);
+	if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_B &&
+		options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_B)
+		setNote(DAC_B, 0);
+	}
+	
 void sendNoteOn(uint8_t note, uint8_t velocity, uint8_t channel)
     {
     if (bypass) return;
   
+#if defined(__AVR_ATmega2560__)
 	    int16_t n = note + (uint16_t)options.transpose;
 	    n = bound(n, 0, 127);
 	    uint16_t v = velocity;
@@ -3029,6 +3049,20 @@ void sendNoteOn(uint8_t note, uint8_t velocity, uint8_t channel)
 	        v = v << (options.volume - 3);
 	    if (v > 127) v = 127;
 	    MIDI.sendNoteOn((uint8_t) n, (uint8_t) v, channel);
+#else
+	    MIDI.sendNoteOn(note, velocity, channel);
+#endif
+
+	if (channel == options.channelOut && lastNotePlayed != note)
+		{
+        if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_A &&
+            options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_A)
+            { setNote(DAC_A, note); lastNotePlayed = note; }
+        if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_B &&
+            options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_B)
+            { setNote(DAC_B, velocity); lastNotePlayed = note; }  
+        }  
+
 	    TOGGLE_OUT_LED();
     }
 
@@ -3036,12 +3070,23 @@ void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel)
     {
     if (bypass) return;
 
+#if defined(__AVR_ATmega2560__)
 	    int16_t n = note + (uint16_t)options.transpose;
 	    n = bound(n, 0, 127);
 	    MIDI.sendNoteOff((uint8_t) n, velocity, channel);
+#else
+	    MIDI.sendNoteOff(note, velocity, channel);
+#endif
 	    // dont' toggle the LED because if we're going really fast it toggles
 	    // the LED ON and OFF for a noteoff/noteon pair and you can't see the LED
+
+	if (channel == options.channelOut && lastNotePlayed == note)
+		{
+		turnOffVoltage();
+		}
     }
+
+
          
 void sendAllNotesOffDisregardBypass()
 	{
@@ -3049,12 +3094,15 @@ void sendAllNotesOffDisregardBypass()
     	{
     	MIDI.sendControlChange(123, 0, i);
     	}
+    turnOffVoltage();
 	}
 	
 void sendAllNotesOff()
     {
     if (!bypass) 
     	sendAllNotesOffDisregardBypass();
+    else
+    	turnOffVoltage();
     }
 
 

@@ -1,3 +1,8 @@
+////// Copyright 2016 by Sean Luke
+////// Licensed under the Apache 2.0 License
+
+
+
 // This appears first so it can be accessed in recursive fashion by
 // Recorder.h, StepSequencer.h, and Arpeggiator.h
 #define SLOT_DATA_SIZE 387

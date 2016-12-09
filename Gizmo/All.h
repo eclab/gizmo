@@ -1,6 +1,9 @@
 ////// Copyright 2016 by Sean Luke
 ////// Licensed under the Apache 2.0 License
 
+
+
+
 ////// ALL.H
 //////
 ////// This is just distributing #include file.  Everyone #includes All.h
@@ -32,6 +35,9 @@
 // Don't do this on the Mega (plus its not particularly useful there)
 //#define NO_RECORDER
 
+
+// Comment this out to remove voltage facility.  But why would you?
+#define INCLUDE_VOLTAGE
 
 #include <Arduino.h>
 #include <EEPROM.h>

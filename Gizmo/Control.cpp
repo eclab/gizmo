@@ -1,3 +1,7 @@
+////// Copyright 2016 by Sean Luke
+////// Licensed under the Apache 2.0 License
+
+
 #include "All.h"
 
 
@@ -91,7 +95,6 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint8_t 
             TOGGLE_OUT_LED(); 
             }
         break;
-#if defined(__AVR_ATmega2560__)
         case CONTROL_TYPE_VOLTAGE_A:
             {
             setPot(DAC_A, value);
@@ -102,7 +105,6 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint8_t 
             setPot(DAC_B, value);
             }
         break;
-#endif
         }
     }
 
@@ -120,13 +122,10 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
         {
         backupOptions = options; 
         }
-#if defined(__AVR_ATmega2560__)
     const char* menuItems[7] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC"), PSTR("A VOLTAGE"), PSTR("B VOLTAGE")};
     result = doMenuDisplay(menuItems, 7, STATE_NONE,  STATE_NONE, 1);
-#else
-    const char* menuItems[5] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC")};
-    result = doMenuDisplay(menuItems, 5, STATE_NONE, STATE_NONE, 1);
-#endif
+//    const char* menuItems[5] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC")};
+//    result = doMenuDisplay(menuItems, 5, STATE_NONE, STATE_NONE, 1);
     switch (result)
         {
         case NO_MENU_SELECTED:
