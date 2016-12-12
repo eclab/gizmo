@@ -131,6 +131,7 @@
 #define STATE_OPTIONS_CLICK 56
 #define STATE_OPTIONS_SCREEN_BRIGHTNESS 57
 #define STATE_OPTIONS_MENU_DELAY 58
+#ifdef VOLTAGE
 #define STATE_OPTIONS_VOLTAGE 59
 #define STATE_OPTIONS_ABOUT 60
 #define STATE_SPLIT_CHANNEL 61
@@ -139,6 +140,15 @@
 #define STATE_THRU_PLAY 64
 #define STATE_THRU_EXTRA_NOTES 65
 #define STATE_THRU_DISTRIBUTE_NOTES 66
+#else
+#define STATE_OPTIONS_ABOUT 59
+#define STATE_SPLIT_CHANNEL 60
+#define STATE_SPLIT_NOTE 61
+#define STATE_SPLIT_LAYER_NOTE 62
+#define STATE_THRU_PLAY 63
+#define STATE_THRU_EXTRA_NOTES 64
+#define STATE_THRU_DISTRIBUTE_NOTES 65
+#endif // VOLTAGE
 
 
 #else					// STANDARD ARRANGEMENT FOR UNO
@@ -199,8 +209,12 @@
 #define STATE_OPTIONS_MIDI_CLOCK 53
 #define STATE_OPTIONS_CLICK 54
 #define STATE_OPTIONS_SCREEN_BRIGHTNESS 55
+#ifdef VOLTAGE
 #define STATE_OPTIONS_VOLTAGE 56
 #define STATE_OPTIONS_ABOUT 57
+#else
+#define STATE_OPTIONS_ABOUT 56
+#endif  // VOLTAGE
 
 #endif // defined(__AVR_ATmega2560__)
 
@@ -235,7 +249,9 @@ extern const char* cc_p;// = PSTR("CC");
 extern const char* v_p;// = PSTR("IS");
 extern const char* up_p;// = PSTR("UP");
 extern const char* down_p;// = PSTR("DOWN");
+#ifdef VOLTAGE
 extern const char* voltage_p;// = PSTR("VOLTAGE");
+#endif
 extern const char* options_p;
 
 
@@ -250,6 +266,7 @@ union _local
     struct _recorderLocal recorder;
     struct _gaugeLocal gauge;
     struct _thruLocal thru;
+    struct _controlLocal control;
     };
         
 extern _local local;

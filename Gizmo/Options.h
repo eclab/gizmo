@@ -35,8 +35,8 @@ struct _options
     uint8_t leftKnobControlType ;
     uint8_t rightKnobControlType  ;
     uint8_t middleButtonControlType ;
-    uint8_t middleButtonControlOn ;                            // 0 is off, n is value n+1, and 129 is "increment" (128)
-    uint8_t middleButtonControlOff  ;                            // 0 is off, n is value n+1, and 129 is "increment" (128)
+    uint8_t middleButtonControlOn ;                            // 0 is off, n is value n+1, and 129 is "decrement" (128)
+    uint8_t middleButtonControlOff  ;                            // 0 is off, n is value n+1, and 129 is "decrement" (128)
     uint8_t selectButtonControlType ;
     uint8_t selectButtonControlOn ;                            // 0 is off, n is value n+1, and 129 is "increment" (128)
     uint8_t selectButtonControlOff ;                            // 0 is off, n is value n+1, and 129 is "increment" (128)
@@ -47,7 +47,9 @@ struct _options
     //uint8_t recorderRepeat;
     uint8_t click;
     uint8_t clickVelocity;
+#ifdef VOLTAGE
   uint8_t voltage;
+#endif
      
 #if defined(__AVR_ATmega2560__)
   uint8_t menuDelay ;                         // Corresponds to DEFAULT_MENU_DELAY

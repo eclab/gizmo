@@ -51,8 +51,8 @@ void drawMIDIChannel(uint8_t channel);
 #define GLYPH_NONE 0                                    // ----
 #define GLYPH_OMNI 1                                    // ALLC
 #define GLYPH_DEFAULT 2                                 // DFLT
-#define GLYPH_INCREMENT 3								// INCR
-#define GLYPH_INCREMENT 4                               // DECR
+#define GLYPH_DECREMENT 3                               // DECR
+#define GLYPH_INCREMENT 4								// INCR
 #define GLYPH_FREE 5                              		// FREE
 #define GLYPH_NOTE 6                                    // NOTE
 #define GLYPH_SYSEX 7                                   // SYSX

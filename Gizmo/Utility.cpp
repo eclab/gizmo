@@ -475,13 +475,13 @@ GLOBAL static uint8_t glyphTable[
 #endif // defined(__AVR_ATmega2560__)
 ][4] = 
     {
-    // These first: ----, ALLC, DFLT, INCR, and DECR, must be the FIRST ones
+    // These first: ----, ALLC, DFLT, DECR, and INCR, must be the FIRST ones
     // because the correspond with the five glyph types in doNumericalDisplay
     	{GLYPH_3x5_MINUS, GLYPH_3x5_MINUS, GLYPH_3x5_MINUS, GLYPH_3x5_MINUS},   // ----
         {GLYPH_3x5_A, GLYPH_3x5_L, GLYPH_3x5_L, GLYPH_3x5_C},   // ALLC
         {GLYPH_3x5_D, GLYPH_3x5_F, GLYPH_3x5_L, GLYPH_3x5_T},   // DFLT
-        {GLYPH_3x5_I, GLYPH_3x5_N, GLYPH_3x5_C, GLYPH_3x5_R},   // INCR
         {GLYPH_3x5_D, GLYPH_3x5_E, GLYPH_3x5_C, GLYPH_3x5_R},   // DECR
+        {GLYPH_3x5_I, GLYPH_3x5_N, GLYPH_3x5_C, GLYPH_3x5_R},   // INCR
         {GLYPH_3x5_F, GLYPH_3x5_R, GLYPH_3x5_E, GLYPH_3x5_E},   // FREE
         {GLYPH_3x5_N, GLYPH_3x5_O, GLYPH_3x5_T, GLYPH_3x5_E},   // NOTE
         {GLYPH_3x5_S, GLYPH_3x5_Y, GLYPH_3x5_S, GLYPH_3x5_X},   // SYSX

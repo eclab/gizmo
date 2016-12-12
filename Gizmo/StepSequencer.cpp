@@ -399,8 +399,7 @@ void stateStepSequencerPlay()
             }
         else //if (!options.stepSequencerNoEcho)          // only play if we're echoing
             {
-            if (local.stepSequencer.currentEditPosition >= 0) // only play if we're in step-by-step edit mode; it's annoying with the double notes otherwise
-                sendNoteOnTrack(note, velocity, local.stepSequencer.currentTrack);
+            sendNoteOnTrack(note, velocity, local.stepSequencer.currentTrack);
             }
 
         local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);

@@ -36,8 +36,10 @@
 //#define NO_RECORDER
 
 
-// Comment this out to remove voltage facility.  But why would you?
-#define INCLUDE_VOLTAGE
+// Comment this out to remove voltage facility.  Normally it's part of the Mega
+#if defined(__AVR_ATmega2560__)
+#define VOLTAGE
+#endif
 
 #include <Arduino.h>
 #include <EEPROM.h>

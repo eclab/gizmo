@@ -8,33 +8,41 @@
 // stateControllerPlay() and stateController() have been inlined into the state machine to save space
 
 
-////// BUTTON TOGGLES
-//
-// The Control application emits different things depending on what the "toggle state" of the
-// buttons are when they are pushed.  
-
-GLOBAL uint8_t middleButtonToggle;
-GLOBAL uint8_t selectButtonToggle;  // perhaps these two could be compressed, they're just booleans
-
 
 // SEND CONTROLLER COMMAND
-// Sends a controller command when the user modifies a button or pot.  Command types can be any
-// of the CONTROL_TYPE_* constants above.  RPN and NRPN take 7-bit numbers but shift them by 7
-// into the MSB.  RPN and NRPN have 14-bit command numbers of course.
-// CC permits command numbers 0...119.  PC has no command number.  PC and CC have command values 
-// 0...127.   Also sending to VOLTAGE assumes you're providing a value 0...1023, and the command 
-// number is ignored.
-void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint8_t value)
+// Sends a controller command when the user modifies a button or pot.
+//
+// PERMITTED COMMAND TYPES
+// Command types can be any of the CONTROL_TYPE_* constants above. 
+// 
+// PERMITTED COMMAND NUMBERS (PARAMETERS)
+// CC permits command numbers 0...119, though obviously many of those should NOT be done.
+// NRPN/RPN permit command numbers from 0...16383
+// PC has no command number, nor does VOLTAGE_A or VOLTAGE_B.
+//
+// PERMITTED COMMAND VALUES
+// All values are shifted to MSB+LSB, that is, have a range 0...16383, but its interpretation varies
+// CC parameters 0...31 permit values from 0...16383
+// Other CC parameters permit values from 0...127		(Shifted << 7)
+// NRPN/RPN permit values from 0...16383.  Also, they may be "Increment" (CONTROL_VALUE_INCREMENT << 7) or "Decrement" (CONTROL_VALUE_DECREMENT << 7)
+// PC permits values from 0...127 (Shifted << 7)
+// VOLTAGE_A and VOLTAGE_B permit values from 0...16383 but shift them >> 2 to convert them to 0...4095, which is the DAC resolution
+
+void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t fullValue)
     {
+    uint8_t msb = fullValue >> 7;
+    uint8_t lsb = fullValue & 127;
+    
     if (commandType == CONTROL_TYPE_OFF)
         return;
     
     if (options.channelOut == 0)                // we do not output
         return;
     
-    clearScreen();
-    if (commandType != CONTROL_TYPE_OFF) 
-        writeShortNumber(led, value, false);           
+    // TopLevel.cpp STATE_CONTROLLER_PLAY erases this anyway
+    //clearScreen();
+    //if (commandType != CONTROL_TYPE_OFF) 
+     //   writeShortNumber(led, value, false);           
     
     switch(commandType)
         {
@@ -45,8 +53,11 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint8_t 
         break;
         case CONTROL_TYPE_CC:
             {
-            if (value < CONTROL_VALUE_INCREMENT)  // if it's 128, we ignore it, it's wrong
-                MIDI.sendControlChange(commandNumber, value, options.channelOut);
+            MIDI.sendControlChange(commandNumber, msb, options.channelOut);
+            if (commandNumber < 32)		// send optional lsb if appropriate
+            	{
+            	MIDI.sendControlChange(commandNumber + 32, lsb, options.channelOut);
+            	}
             TOGGLE_OUT_LED(); 
             }
         break;
@@ -55,14 +66,18 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint8_t 
             // Send 99 for NRPN, or 101 for RPN
             MIDI.sendControlChange(99, commandNumber >> 7, options.channelOut);
             MIDI.sendControlChange(98, commandNumber & 127, options.channelOut);  // LSB
-            if (value >= CONTROL_VALUE_INCREMENT)
+            if (msb == CONTROL_VALUE_INCREMENT)
                 {
-                MIDI.sendControlChange(96, 1, options.channelOut);  // MSB
+                MIDI.sendControlChange(96, 1, options.channelOut);
                 }
+            else if (msb == CONTROL_VALUE_DECREMENT)
+            	{
+                MIDI.sendControlChange(97, 1, options.channelOut);
+            	}
             else
                 {
-                MIDI.sendControlChange(6, value, options.channelOut);  // MSB
-                //MIDI.sendControlChange(38, ..., options.channelOut);  // We don't send the LSB
+                MIDI.sendControlChange(6, msb, options.channelOut);  // MSB
+                MIDI.sendControlChange(38, lsb, options.channelOut);  // LSB
                 }
             MIDI.sendControlChange(101, 127, options.channelOut);  // LSB of NULL command
             MIDI.sendControlChange(100, 127, options.channelOut);  // LSB of NULL command
@@ -74,14 +89,18 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint8_t 
             {
             MIDI.sendControlChange(101, commandNumber >> 7, options.channelOut);
             MIDI.sendControlChange(100, commandNumber & 127, options.channelOut);  // LSB
-            if (value >= CONTROL_VALUE_INCREMENT)
+            if (msb == CONTROL_VALUE_INCREMENT)
                 {
-                MIDI.sendControlChange(96, 1, options.channelOut);  // MSB
+                MIDI.sendControlChange(96, 1, options.channelOut);
+                }
+            else if (msb == CONTROL_VALUE_DECREMENT)
+                {
+                MIDI.sendControlChange(97, 1, options.channelOut);
                 }
             else
                 {
-                MIDI.sendControlChange(6, value, options.channelOut);  // MSB
-                //MIDI.sendControlChange(38, ..., options.channelOut);  // We don't send the LSB
+                MIDI.sendControlChange(6, msb, options.channelOut);  // MSB
+                MIDI.sendControlChange(38, lsb, options.channelOut);  // LSB
                 }
             MIDI.sendControlChange(101, 127, options.channelOut);  // LSB of NULL command
             MIDI.sendControlChange(100, 127, options.channelOut);  // LSB of NULL command
@@ -90,21 +109,25 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint8_t 
         break;
         case CONTROL_TYPE_PC:
             {
-            if (value < CONTROL_VALUE_INCREMENT)
-                MIDI.sendProgramChange(value, options.channelOut);
+            if (msb <= MAXIMUM_PC_VALUE)
+                MIDI.sendProgramChange(msb, options.channelOut);
             TOGGLE_OUT_LED(); 
             }
         break;
+#ifdef VOLTAGE        
         case CONTROL_TYPE_VOLTAGE_A:
             {
-            setPot(DAC_A, value);
+            setValue(DAC_A, fullValue >> 2);
+            //setPot(DAC_A, value);
             }
         break;
         case CONTROL_TYPE_VOLTAGE_B:
             {
-            setPot(DAC_B, value);
+            setValue(DAC_B, fullValue >> 2);
+            //setPot(DAC_B, value);
             }
         break;
+#endif
         }
     }
 
@@ -122,10 +145,13 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
         {
         backupOptions = options; 
         }
+#ifdef VOLTAGE
     const char* menuItems[7] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC"), PSTR("A VOLTAGE"), PSTR("B VOLTAGE")};
     result = doMenuDisplay(menuItems, 7, STATE_NONE,  STATE_NONE, 1);
-//    const char* menuItems[5] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC")};
-//    result = doMenuDisplay(menuItems, 5, STATE_NONE, STATE_NONE, 1);
+#else
+    const char* menuItems[5] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC")};
+    result = doMenuDisplay(menuItems, 5, STATE_NONE, STATE_NONE, 1);
+#endif
     switch (result)
         {
         case NO_MENU_SELECTED:
@@ -140,7 +166,11 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
                 saveOptions();
                 goUpState(STATE_CONTROLLER);
                 }
+#ifdef VOLTAGE
             else if ((type == CONTROL_TYPE_PC || type == CONTROL_TYPE_VOLTAGE_A || type == CONTROL_TYPE_VOLTAGE_B))
+#else
+            else if (type == CONTROL_TYPE_PC)
+#endif
                 {
                 if (buttonOnState != STATE_NONE)                // it's a button, we need to get button values
                     {

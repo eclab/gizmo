@@ -149,11 +149,22 @@
 #define CONTROL_TYPE_NRPN 2
 #define CONTROL_TYPE_RPN 3
 #define CONTROL_TYPE_PC 4
+#ifdef VOLTAGE
 #define CONTROL_TYPE_VOLTAGE_A 5
 #define CONTROL_TYPE_VOLTAGE_B 6
+#endif
 
 // numerical value that means a button isn't sending a value but is rather incrementing 
 #define CONTROL_VALUE_INCREMENT 128
+#define CONTROL_VALUE_DECREMENT 129
+#define MAXIMUM_PC_VALUE 127
+
+struct _controlLocal
+	{
+	int16_t displayValue;
+ 	uint8_t middleButtonToggle;
+	uint8_t selectButtonToggle;  // perhaps these two could be compressed, they're just booleans
+	};
 
 ////// BUTTON TOGGLES
 //
@@ -172,7 +183,7 @@ extern uint8_t selectButtonToggle;  // perhaps these two could be compressed, th
 // CC permits command numbers 0...119.  PC has no command number.  PC and CC have command values 
 // 0...127.   Also sending to VOLTAGE assumes you're providing a value 0...1023, and the command 
 // number is ignored.
-void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint8_t value);
+void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t fullValue);
 
 // SET CONTROLLER TYPE
 // Lets the user set a controller type.   This is stored in &type.  When the user is finished

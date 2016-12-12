@@ -25,7 +25,9 @@ GLOBAL const char* nrpn_p;// = PSTR("NRPN");
 GLOBAL const char* rpn_p;// = PSTR("RPN");
 GLOBAL const char* cc_p;// = PSTR("CC");
 GLOBAL const char* v_p;// = PSTR("IS");
+#ifdef VOLTAGE
 GLOBAL const char* voltage_p;// = PSTR("VOLTAGE");
+#endif
 GLOBAL const char* options_p;  // = PSTR("OPTIONS");
 
 
@@ -954,9 +956,9 @@ GLOBAL uint8_t lastNotePlayed = NO_NOTE;
 GLOBAL _local local;
         
 
-#if defined(__AVR_ATmega2560__)
+//#if defined(__AVR_ATmega2560__)
 GLOBAL uint32_t lastTempoTapTime;
-#endif
+//#endif
 
 
 void write3x5GlyphPair(uint8_t glyph1, uint8_t glyph2)
@@ -1321,13 +1323,12 @@ void go()
                                           };
             doMenuDisplay(menuItems, 15, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
 #else
-            const char* menuItems[12] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), 
+            const char* menuItems[11] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), 
             							  PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), 
                                           ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
                                           PSTR("BRIGHTNESS"),
-                                          (options.voltage ? PSTR("NO VOLTAGE") : voltage_p),
                                           PSTR("GIZMO V1 (C) 2016 SEAN LUKE") };
-            doMenuDisplay(menuItems, 12, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
+            doMenuDisplay(menuItems, 11, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
 #endif // defined(__AVR_ATmega2560__)
 
             playApplication(); 
@@ -1474,12 +1475,11 @@ void go()
         break;
         case STATE_CONTROLLER_PLAY:
             {
-            int16_t displayValue = -1;          // -1 signifies "off", else displayValue is the number we want to show
-            
             if (entry)
                 {
-                middleButtonToggle = 0;
-                selectButtonToggle = 0;
+                local.control.middleButtonToggle = 0;
+                local.control.selectButtonToggle = 0;
+				local.control.displayValue = -1;
                 entry = false;
                 }
         
@@ -1489,57 +1489,118 @@ void go()
                 }
             else
                 {
-                displayValue = -1;
                 // this region is redundant but simplifying to a common function call makes the code bigger 
         
                 if (isUpdated(MIDDLE_BUTTON, PRESSED))
                     {
-                    middleButtonToggle = !middleButtonToggle;
+                    local.control.middleButtonToggle = !local.control.middleButtonToggle;
                     if (options.middleButtonControlType != CONTROL_TYPE_OFF)
                         {
-                        displayValue = (middleButtonToggle ? options.middleButtonControlOn : options.middleButtonControlOff); 
-                        if (displayValue != 0)
-                            sendControllerCommand( options.middleButtonControlType, options.middleButtonControlNumber, displayValue - 1);
+                        local.control.displayValue = ((local.control.middleButtonToggle ? options.middleButtonControlOn : options.middleButtonControlOff));
+                        
+                        // at this point local.control.displayValue is 0...129, where 0 is off and 129 is "INCREMENT", and 1...128 is 0...127
+                        if (local.control.displayValue != 0) // if it's not "off"
+                        	{
+                        	local.control.displayValue--;  // map to 0...128, where 128 is "INCREMENT"
+
+							// now convert INCREMENT to DECREMENT
+                        	if (local.control.displayValue == CONTROL_VALUE_INCREMENT)
+                        		local.control.displayValue++;
+                        	
+                        	// Now move to MSB+LSB
+                        	local.control.displayValue = local.control.displayValue << 7;
+                        	
+                            sendControllerCommand( options.middleButtonControlType, options.middleButtonControlNumber, local.control.displayValue);
+                            }
+                        else
+                        	// convert 0 to -1 for proper "OFF"
+                        	local.control.displayValue = -1;
                         }
                     }
 
                 if (isUpdated(SELECT_BUTTON, PRESSED))
                     {
-                    selectButtonToggle = !selectButtonToggle;
+                    local.control.selectButtonToggle = !local.control.selectButtonToggle;
                     if (options.selectButtonControlType != CONTROL_TYPE_OFF)
                         {
-                        displayValue = (selectButtonToggle ?  options.selectButtonControlOn :  options.selectButtonControlOff);
-                        if (displayValue != 0)
-                            sendControllerCommand( options.selectButtonControlType, options.selectButtonControlNumber, displayValue - 1); 
-                        }
+	                    local.control.displayValue = ((local.control.selectButtonToggle ?  options.selectButtonControlOn :  options.selectButtonControlOff));
+	                    
+                        // at this point local.control.displayValue is 0...129, where 0 is off and 129 is "INCREMENT", and 1...128 is 0...127
+                        if (local.control.displayValue != 0)	// if we're not OFF
+                        	{
+                        	local.control.displayValue--;  // map to 0...128, where 128 is "INCREMENT"
+                        	
+                        	// Now move to MSB+LSB
+                        	local.control.displayValue = local.control.displayValue << 7;
+                        	
+                            sendControllerCommand( options.selectButtonControlType, options.selectButtonControlNumber, local.control.displayValue); 
+                            }
+                        else
+                        	// convert 0 to -1 for proper "OFF"
+                        	local.control.displayValue = -1;
+                     	}
                     }
         
-                if (potUpdated[LEFT_POT] && options.leftKnobControlType != CONTROL_TYPE_OFF)
+        	
+                if (potUpdated[LEFT_POT] && (options.leftKnobControlType != CONTROL_TYPE_OFF))
                     {
-                    if (options.leftKnobControlType == CONTROL_TYPE_VOLTAGE_A || options.leftKnobControlType == CONTROL_TYPE_VOLTAGE_B)
-                        displayValue = pot[LEFT_POT];
-                    else 
-                        displayValue = pot[LEFT_POT] >> 3;
+                    local.control.displayValue = pot[LEFT_POT];
+                    // at this point local.control.displayValue is 0...1023
             
-                    sendControllerCommand( options.leftKnobControlType, options.leftKnobControlNumber, displayValue);
+                    // Now move to MSB+LSB
+                    local.control.displayValue = local.control.displayValue << 4;
+                        	
+                    sendControllerCommand( options.leftKnobControlType, options.leftKnobControlNumber, local.control.displayValue);
                     }
           
-                if (potUpdated[RIGHT_POT] && options.rightKnobControlType != CONTROL_TYPE_OFF)
+                if (potUpdated[RIGHT_POT] && (options.rightKnobControlType != CONTROL_TYPE_OFF))
                     {
-                    if (options.leftKnobControlType == CONTROL_TYPE_VOLTAGE_A || options.leftKnobControlType == CONTROL_TYPE_VOLTAGE_B)
-                        displayValue = pot[RIGHT_POT];
-                    else 
-                        displayValue = pot[RIGHT_POT] >> 3;
-            
-                    sendControllerCommand( options.rightKnobControlType, options.rightKnobControlNumber, displayValue); 
+                    local.control.displayValue = pot[RIGHT_POT];            
+                    // at this point local.control.displayValue is 0...1023
+
+                    // Now move to MSB+LSB
+                    local.control.displayValue = local.control.displayValue << 4;
+                    
+                 	sendControllerCommand( options.rightKnobControlType, options.rightKnobControlNumber, local.control.displayValue); 
                     }
                 }
    
             if (updateDisplay)
                 {
                 clearScreen();
-                if (displayValue >= 0)  // isn't "off"
-                    writeNumber(led, led2, ((unsigned int)displayValue));
+                
+                // local.control.displayValue is now -1, meaning "OFF",
+                // or it is a value in the range of MSB + LSB
+                if (local.control.displayValue >= 0)  // isn't "off"
+                	{
+#ifdef VOLTAGE
+                	if (options.leftKnobControlType == CONTROL_TYPE_VOLTAGE_A || options.leftKnobControlType == CONTROL_TYPE_VOLTAGE_B)
+                    	{
+                    	writeNumber(led, led2, (uint16_t)(local.control.displayValue));
+                    	}
+                    else
+#endif
+						{
+						uint8_t msb = (uint8_t)(local.control.displayValue >> 7);
+						
+						// if we needed a little bit more space, we could change this to something like
+						// write3x5Glyphs(msb - CONTROL_VALUE_INCREMENT + GLYPH_INCREMENT);
+						// except that GLYPH_INCREMENT comes SECOND.  We'd need to fix all that to make it
+						// consistent.  It'd save us about 20 bytes maybe?
+						if (msb == CONTROL_VALUE_INCREMENT)
+							{
+							write3x5Glyphs(GLYPH_INCREMENT);
+							}
+						else if (msb == CONTROL_VALUE_DECREMENT)
+							{
+							write3x5Glyphs(GLYPH_DECREMENT);
+							}
+						else
+							{
+							writeShortNumber(led, msb, false);
+							}
+						}
+                    }
                 }
             }
         break;
@@ -1608,12 +1669,12 @@ void go()
             if (entry)
                 {
                 backupOptions = options; 
-#if defined(__AVR_ATmega2560__)
+//#if defined(__AVR_ATmega2560__)
                 lastTempoTapTime = 0;
-#endif
+//#endif
                 }
                 
-#if defined(__AVR_ATmega2560__)
+//#if defined(__AVR_ATmega2560__)
             if (isUpdated(MIDDLE_BUTTON, PRESSED))
             	{
             	if (lastTempoTapTime != 0)
@@ -1627,7 +1688,7 @@ void go()
             		}
           	 	lastTempoTapTime = currentTime;
             	}
-#endif
+//#endif
             
             uint8_t result = doNumericalDisplay(1, MAXIMUM_BPM, options.tempo, 0, OTHER_NONE);
             switch (result)
@@ -1982,6 +2043,7 @@ void go()
         break;
         
 #endif // defined(__AVR_ATmega2560__)
+#ifdef VOLTAGE
 
         case STATE_OPTIONS_VOLTAGE:
             {
@@ -1991,6 +2053,7 @@ void go()
             playApplication();
             }
         break;
+#endif
 
         case STATE_OPTIONS_ABOUT:
             {
@@ -3025,6 +3088,7 @@ void sendPolyPressure(uint8_t note, uint8_t pressure, uint8_t channel)
 
 /// MIDI OUT
 
+#ifdef VOLTAGE
 void turnOffVoltage()
 	{
 	if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_A &&
@@ -3034,6 +3098,7 @@ void turnOffVoltage()
 		options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_B)
 		setNote(DAC_B, 0);
 	}
+#endif
 	
 void sendNoteOn(uint8_t note, uint8_t velocity, uint8_t channel)
     {
@@ -3053,6 +3118,7 @@ void sendNoteOn(uint8_t note, uint8_t velocity, uint8_t channel)
 	    MIDI.sendNoteOn(note, velocity, channel);
 #endif
 
+#ifdef VOLTAGE
 	if (channel == options.channelOut && lastNotePlayed != note)
 		{
         if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_A &&
@@ -3062,7 +3128,7 @@ void sendNoteOn(uint8_t note, uint8_t velocity, uint8_t channel)
             options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_B)
             { setNote(DAC_B, velocity); lastNotePlayed = note; }  
         }  
-
+#endif
 	    TOGGLE_OUT_LED();
     }
 
@@ -3080,10 +3146,12 @@ void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel)
 	    // dont' toggle the LED because if we're going really fast it toggles
 	    // the LED ON and OFF for a noteoff/noteon pair and you can't see the LED
 
+#ifdef VOLTAGE
 	if (channel == options.channelOut && lastNotePlayed == note)
 		{
 		turnOffVoltage();
 		}
+#endif
     }
 
 
@@ -3094,7 +3162,9 @@ void sendAllNotesOffDisregardBypass()
     	{
     	MIDI.sendControlChange(123, 0, i);
     	}
+#ifdef VOLTAGE
     turnOffVoltage();
+#endif
 	}
 	
 void sendAllNotesOff()
@@ -3102,7 +3172,11 @@ void sendAllNotesOff()
     if (!bypass) 
     	sendAllNotesOffDisregardBypass();
     else
+    	{
+#ifdef VOLTAGE
     	turnOffVoltage();
+#endif
+    	}
     }
 
 

@@ -83,7 +83,9 @@ void setup()
    rpn_p = PSTR("RPN");
    cc_p = PSTR("CC");
    v_p = PSTR("IS");
+#ifdef VOLTAGE
    voltage_p = PSTR("VOLTAGE");
+#endif
    options_p = PSTR("OPTIONS");
 
 	// seed random number generator
