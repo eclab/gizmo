@@ -60,7 +60,7 @@ struct _options
 #endif
      
 #if defined(__AVR_ATmega2560__)
-  uint8_t menuDelay ;                         // Corresponds to DEFAULT_MENU_DELAY
+  uint8_t menuDelay ;
     int8_t transpose;
     uint8_t volume;
   uint8_t splitControls;					  // = 0 by default, SPLIT_RIGHT
