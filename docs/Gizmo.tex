@@ -85,9 +85,9 @@ Hopefully there'll be more than this.  Message filtering?  A MIDIPal-style CC LF
 
 \begin{enumerate}
 
-\item {\bf Assemble the Hardware}\quad Gizmo consists of an Arduino Uno or Arduino Mega, a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898}, and an Adafruit 16x8 LED Matrix\footnote{This matrix comes in various colors LED shapes (round, square), and matrix sizes (0.8 inch, 1.2 inch).  I personally use a 1.2 inch round red matrix.  The URL for my model is https:/\!/www.adafruit.com/products/2037} attached via four wires (I2C).  The SparkFun MIDI Shield does not come with headers to plug into the Arduino, and you'll need to get those too: it's assumed you'll either use plain headers, or use stackable headers.  I use stackable headers as it makes it easy for me to plug my four test wires into it.
+\item {\bf Assemble the Hardware}\quad Gizmo consists of an Arduino Uno or Arduino Mega, a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898}, and an Adafruit 16x8 LED Matrix\footnote{This matrix comes in various colors LED shapes (round, square), and matrix sizes (0.8 inch, 1.2 inch).  I personally use a 1.2 inch round red matrix.  The URL for my model is https:/\!/www.adafruit.com/products/2037} attached via four wires (I2C).  The SparkFun MIDI Shield does not come with headers to plug into the Arduino, and you'll need to get those too: it's assumed you'll either use plain headers, or use stackable headers.  I use stackable headers as it makes it easy for me to plug my four test wires into it.  See Section \ref{debouncing} for a warning about the low-quality buttons supplied with the MIDI Shield and what to do about it.
 
-Attach the four wires for SDA, SCL, 5V, and GND between the MIDI Shield and the LED Matrix.  
+Attach the four wires for SDA, SCL, 5V (VCC), and GND between the MIDI Shield and the LED Matrix.  
 
 \item {\bf Modify your Arduino Software}\quad You will need a pretty recent version of the Arduino software, as newer versions have better compilers which compile more compact code.  I developed Gizmo on Arduino 1.6.12 for MacOS X.  You will want to modify the source code files for the Arduino libraries in two spots:
 
@@ -327,7 +327,7 @@ Ascending Notes\\in Dense Mode\\
 \end{wrapfigure}
 
 
-By default the key velocity (volume) of an arpeggio is determined by the {\bf first note} you press when you hold down a chord.  This strategy usually works well, but if you can instead fix the velocity to a specific value by (once again) calling up the menu by Long-Pressing the Select button, then choosing {\bf Velocity}.  At the far highest end of the velocity options is \texttt{FREE}, which means that the velocity is determined by your fingers again (this is the default).
+By default the key velocity\footnote{By velocity we mean in the MIDI sense: how fast the key is struck; this basically translates to loudness.} that {\it all} notes in the track will use (as a value 0...127).  If you would instead prefer that each note in the track use its own indepof an arpeggio is determined by the {\bf first note} you press when you hold down a chord.  This strategy usually works well, but if you can instead fix the velocity to a specific value by (once again) calling up the menu by Long-Pressing the Select button, then choosing {\bf Velocity}.  At the far highest end of the velocity options is \texttt{FREE}, which means that the velocity is determined by your fingers again (this is the default).
 
 \paragraph{Creating an Arpeggio}
 
@@ -373,7 +373,7 @@ Swing& 			Control MIDI&	Length	&\\
 Of particular interest to you may be Length and Tempo.  And Swing!
 
 \begin{wrapfigure}{r}{3in}
-\vspace{-4em}\includegraphics[width=3in]{stepsequencer}
+\vspace{-5em}\includegraphics[width=3in]{stepsequencer}
 \vspace{-2em}\caption{\small Step Sequencer Display}\vspace{-1em}
 \label{stepsequencer}
 \end{wrapfigure}
@@ -434,7 +434,7 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 \item {\bf Reset Track}\quad This wipes out and resets the track.  Unlike Long-Pressing the Middle Button while in Play Position mode, this doesn't just clear the track of notes: it also resets all of its settings to their defaults.
 \item {\bf Length}\quad This specifies the note length of notes in the track, as a percentage (0 is fully staccato and 100 is fully legato).   You can choose numerical values, or choose \texttt{DFLT}, which tells the Step Sequencer to use the default note length specified in the Options menu (see Section \ref{options}).
 \item {\bf Out MIDI (Track)}\quad This specifies the MIDI Out Channel for notes in the track,    You can choose a value 1...16, or choose \texttt{DFLT}, which tells the Step Sequencer to use the default MIDI Out Channel specified in the Options menu (see Section \ref{options}).
-\item {\bf Velocity}\quad This lets you specify a velocity that {\it all} notes in the track will use (as a value 0...127).  If you would instead prefer that each note in the track use its own independent velocity as you had entered them, you can choose \texttt{FREE}.
+\item {\bf Velocity}\quad This lets you specify a key velocity\footnote{By velocity we mean in the MIDI sense: how fast the key is struck; this basically translates to loudness.} that {\it all} notes in the track will use (as a value 0...127).  If you would instead prefer that each note in the track use its own independent key velocity as you had entered them, you can choose \texttt{FREE}.
 \item {\bf Fader}\quad This lets you specify a volume modifier which is multiplied against the velocities of the notes in the track.  Possible values are 0...127, where 0 completely hushes the notes, and 127 lets them play at their specified velocities. 
 
 % At present NO ECHO MODE is turned off on the Uno -- we don't have enough space.
@@ -516,11 +516,13 @@ Of particular use to you will be Tempo and Click.  Click gives you an audible cl
 
 The Recorder records nothing but MIDI NOTE ON and NOTE OFF messages.  It presently quantizes these messages, rounding them up or down to the nearest MIDI Clock pulse, that is, 1/24 of a quarter note.\footnote{This is pretty low-resolution, but there you have it.}
 
+\clearpage
+
 \section {The MIDI Gauge}
 
 \begin{wrapfigure}{r}{3in}
-\vspace{-6em}\includegraphics[width=3in]{GeneralGauge.pdf}
-\vspace{-2em}\caption{\small General Gauge and Frequent MIDI Display}\vspace{-2em}
+\vspace{-4.5em}\includegraphics[width=3in]{GeneralGauge.pdf}
+\vspace{-2em}\caption{\small General Gauge and Frequent MIDI Display}\vspace{-1em}
 \label{generalgauge}
 \end{wrapfigure}
 
@@ -652,23 +654,18 @@ The Controller interacts with Bypass mode differently than other applications.  
 	When you have completed this, you will be then asked to enter the value sent when the button is {\bf pressed}.  This value must be 0...127 (the Controller does not send 14-bit values).  Afterwards, you will be similarly asked to enter the value sent when the button is {\bf pressed again} (the buttons act as toggles).  When you have completed this, you will be sent back to the top-level Controller menu.
 	\end{description}
 
+\clearpage
+
 \section {The Keyboard Splitter}
 \label{splitter}
 
 \begin{wrapfigure}{r}{3in}
-\vspace{-2em}\includegraphics[width=3in]{split}
+\vspace{-4em}\includegraphics[width=3in]{split}
 \vspace{-2em}\caption{\small Splitter Layout}
 \label{splitter}
 \end{wrapfigure}
 
 \textit{[Mega Only]}\qquad The Splitter allows lets you (1) split your keyboard into two zones, each controlling a different MIDI channel; or (2) split your keyboard into {\it three} zones, two controlling different MIDI channels and the third (middle) zone playing both MIDI channels simultaneously\footnote{This is commonly known as {\it layering.}}; or (3) fade or balance your entire keyboard such that if you play a note quietly, one channel will predominate, but if you play loudly, the other channel will predominate.
-
-\begin{wrapfigure}{r}{1.5in}
-\includegraphics[width=1.5in]{Fade}
-\vspace{-2em}\caption{\small Cumulative Velocity the MIDI Out Channels when fading.  Default is {\color{red}red}, and Alternative is {\color{blue} blue}.}
-\vspace{-2em}
-\label{splitter}
-\end{wrapfigure}
 
 The two MIDI channels in question are the Default MIDI Out Channel (defined in the Options, see Section \ref{options}), and an Alternative MIDI Out Channel which you specify in the Splitter.  If you're splitting your keyboard, you'll also specify up to two notes, {\bf Split Note A} and {\bf Split Note B}  (Split Note B is optional), and whether Control Change, Aftertouch, and the like go to the left split region or the right split region.
 
@@ -684,6 +681,13 @@ The two MIDI channels in question are the Default MIDI Out Channel (defined in t
 \item Finally, if you want to fade or balance your keyboard so that notes on the two channels are played with opposite velocities, you simply choose this option (see below).  You don't need to specify either Split Note A or B, but you will need to define the alternative MIDI Channel.
 \end{itemize}
 
+\begin{wrapfigure}{r}{1.5in}
+\vspace{-3.5em}\includegraphics[width=1.5in]{Fade}
+\vspace{-2em}\caption{\small Cumulative Velocity the MIDI Out Channels when fading.  Default is {\color{red}red}, and Alternative is {\color{blue} blue}.}
+\vspace{-3em}
+\label{splitter}
+\end{wrapfigure}
+
 \paragraph{Fade Behavior}  The current fade behavior function is:
 \[
 \begin{split}
@@ -693,6 +697,8 @@ The two MIDI channels in question are the Default MIDI Out Channel (defined in t
 \]
 
 This is a fancy way of saying that the total velocity of both channels is the same as the input velocity, and that the ratio of the Alternative velocity versus the Default velocity increases linearly as you get closer to 127.  I don't know if this is the right approach, and certainly different keyboards synthesizers have different and often nonlinear velocity mappings.  But there you have it.  If you'd like to play with it, it's in the function \texttt{handleNoteOn(...)} in \texttt{TopLevel.cpp}.
+
+\clearpage
 
 \paragraph{Defining Notes and Channels}
 
@@ -802,7 +808,7 @@ I might add more unusual filters later.
 		\end{description}
 
 	\item{\bf Swing}\\
-			Swing, or {\bf syncopation}, is the degree to which every other note is delayed.  0\% means no swing at all.  100\% means so much swing that the even note plays at the same time as the next even note.  That's a lot.
+			Swing, or {\bf syncopation}, is the degree to which every other note is delayed.  0\% means no swing at all.  100\% means so much swing that the odd note plays at the same time as the next even note.  That's a lot.
 		\begin{description}
 		\item{\bf \textit{Choose}}: 0\% ... 100\% (larger percentages are more swing, that is, longer delay every other note)
 		\end{description}
@@ -816,7 +822,7 @@ I might add more unusual filters later.
 		\end{description}
 
 	\item{\bf \textit{Mega Only:}\quad Volume}\\
-		Like Transpose, here you can state that any notes generated by Gizmo have their volume changed by multiplying their MIDI velocity by some value.  If a resulting note velocity exceeds the maximum (127), it is bounded to 127.
+		Like Transpose, here you can state that any notes generated by Gizmo have their volume changed by multiplying their MIDI note velocity by some value.  If a resulting MIDI note velocity exceeds the maximum (127), it is bounded to 127.
 			
 			\begin{description}
 			\item{\bf \textit{Choose}}:
@@ -827,14 +833,14 @@ I might add more unusual filters later.
 			1\qquad (default)\\
 			2\\
 			4\\
-			8\\
+			8
 			\end{tabbing}
 		\end{description}
 
 	\item{\bf In MIDI}\,\footnote{{\it Why aren't these called MIDI In and MIDI Out?}  Because then they'd be indistinguishable on the menu screen before the text started scrolling.}\\
 		Many applications expect notes and other controls to come in via a specific input MIDI channel.  You specify it here.
 		\begin{description}
-		\item{\bf \textit{Choose}}: No Channel, Channels 1...16, or ALL Channels\hspace{0.25in}\smash{\includegraphics[width=1in]{none.pdf}}\hspace{0.2in}\smash{\includegraphics[width=1in]{all.pdf}}\\
+		\item{\bf \textit{Choose}}: No Channel, Channels 1...16, or ALL Channels\hspace{0.25in}\smash{\includegraphics[width=1in]{none.pdf}}\hspace{0.2in}\smash{\includegraphics[width=1in]{all.pdf}}
 		\end{description}
 	\item{\bf Out MIDI}\\
 		Many applications emit notes etc. via a specific output MIDI channel.  You specify it here.  Other applications can emit notes on several different channels, in which case this value determines the default channel used.
@@ -937,7 +943,7 @@ Double Whole Note				&192\\
 			3\>Seconds\\
 			4\>Seconds\\
 			8\>Seconds\\
-			\(\infty\)\>Seconds\>(never scroll)\>\smash{\includegraphics[width=0.48in]{infinity}}\\
+			\(\infty\)\>Seconds\>(never scroll)\>\smash{\includegraphics[width=0.48in]{infinity}}
 			\end{tabbing}
 		\end{description}
 
@@ -959,12 +965,13 @@ Double Whole Note				&192\\
 		Note that starting and stopping the clock doesn't mean that an application starts or stops playing.  However, the Start message {\it will} cause applications to reset themselves to the beginning when appropriate.   This means that if you want to start/stop/pause/continue the Step Sequencer (for example), you can do it as follows: first stop the clock, then start the sequencer playing.  Note that it won't play because there's no clock pulses.  But now you can start, stop, and pause/continue the sequencer by controlling the Start/Stop/Continue clock messages directly.
 		
 \section{Buttons, Shield Quality, and Debouncing}
+\label{debouncing}
 
-The SparkFun MIDI Shield uses poor quality buttons.  I can push down on the button and wiggle it and it'll think it's been pressed multiple times.  As a result occasionally pressing a button will send two or more button-presses to Gizmo.
+The SparkFun MIDI Shield uses poor quality buttons.  You can push down on the button and wiggle it and it'll think it's been pressed multiple times.  As a result occasionally pressing a button may send two or more button-presses to Gizmo.
 
 Gizmo has a debounce mechanism built-in: it ignores secondary apparent button-presses if they occurred within \(N\) milliseconds of an earlier button release.  At present \(N\) is set to 100ms.  If you need to press buttons faster than ten times a second (and it's possible) set the \texttt{BUTTON\_PRESSED\_COUNTDOWN\_DEBOUNCE} constant (in \texttt{TopLevel.h}) to something smaller.
 
-Be prepared to have to replace buttons after a few months of heavy use.  My select button has begun to fail: if I press it the right way it won't indicate that it's been pressed.  Or perhaps you might get different buttons (they're 12mm pushbuttons\,---\,I redid my board with low-profile buttons which I think will be better).
+After about four months of extremely heavy use, my select and back buttons began to fail: if I pressed either the right way it wouldn't indicate that it's been pressed.  If you reach this state you may have to replace the buttons, though that's kind of hard to do: I just built a new board with different, better-quality low-profile buttons (just look on Adafruit for 12mm pushbutton switches).  Fingers crossed.
 
 \section{Space on the Arduino Uno}
 Gimzo uses nearly all available space on the Arduino Uno.  If you want to do any serious development, you should get an Arduino Mega instead, which has lots of available space.  But if you'd like extend Gizmo with a little tiny application on the Uno, you can remove the Note Recorder.  In \texttt{All.h} just uncomment the line that says \texttt{NO\_RECORDER} and you'll get about 1.5K of code space.  It's not a lot but should be enough to write a small app. Note that ``Recorder'' will still appear in the Menu: it just won't do anything.  To get rid of that you need to modify the state machine a bit.  I'd not bother.
