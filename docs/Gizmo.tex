@@ -173,7 +173,7 @@ To do this you'll need to reset Gizmo's options without needing to press any but
 
 \end{enumerate}
 
-Gizmo's options have been reset in a slightly different way than normal: the Control MIDI option (see ``Control MIDI'' in Section \ref{options}) has been set to Channel 16, rather than OFF.
+Gizmo's options have now been reset in a slightly different way than usual: specifically, the {\bf Control MIDI} option (see ``Control MIDI'' in Section \ref{options}) has been set to MIDI channel 16, rather than to OFF.
 
 Now you need to modify Gizmo's code to run headless, so it doesn't bother lighting up the on-board LEDs or reading the buttons and pots.   You can do this as follows:
 
@@ -187,7 +187,7 @@ Now you need to modify Gizmo's code to run headless, so it doesn't bother lighti
         #define HEADLESS
 \end{verbatim}
 \item Compile and download the code, and run it.
-\item You should now be able to control Gizmo via NRPN (see ``Control MIDI'' in Section \ref{options}).
+\item You should now be able to control Gizmo via NRPN (see ``Control MIDI'' in Section \ref{options}) on channel 16.
 \item In the \texttt{All.h} file, you might wish to change the line back, that is, to 
 \begin{verbatim}
         //#define HEADLESS
@@ -840,7 +840,7 @@ I might add more unusual filters later.
 	\item{\bf In MIDI}\,\footnote{{\it Why aren't these called MIDI In and MIDI Out?}  Because then they'd be indistinguishable on the menu screen before the text started scrolling.}\\
 		Many applications expect notes and other controls to come in via a specific input MIDI channel.  You specify it here.
 		\begin{description}
-		\item{\bf \textit{Choose}}: No Channel, Channels 1...16, or ALL Channels\hspace{0.25in}\smash{\includegraphics[width=1in]{none.pdf}}\hspace{0.2in}\smash{\includegraphics[width=1in]{all.pdf}}
+		\item{\bf \textit{Choose}}: No Channel, Channels 1...16, or ALL Channels (OMNI)\hspace{0.25in}\smash{\includegraphics[width=1in]{none.pdf}}~\smash{\includegraphics[width=1in]{all.pdf}}
 		\end{description}
 	\item{\bf Out MIDI}\\
 		Many applications emit notes etc. via a specific output MIDI channel.  You specify it here.  Other applications can emit notes on several different channels, in which case this value determines the default channel used.
