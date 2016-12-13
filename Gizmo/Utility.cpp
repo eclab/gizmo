@@ -435,13 +435,13 @@ void playApplication()
     {
     switch(optionsReturnState)
         {
-        case STATE_ARPEGGIATOR_PLAY:
+        case STATE_ARPEGGIATOR_MENU:
             playArpeggio();          
             break; 
         case STATE_STEP_SEQUENCER_MENU:
             playStepSequencer();
             break;
-        case STATE_RECORDER_PLAY:
+        case STATE_RECORDER_PLAY:  // note not MENU: we go directly to options from PLAY
         	// This is a dummy function, which we include to keep the switch statement from growing by 100 bytes (!)
         	// Because we do NOT want to play the recorder in the background ever.
             playRecorder();

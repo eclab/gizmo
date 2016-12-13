@@ -223,7 +223,7 @@ void playArpeggio();
 void arpeggiatorRemoveNote(uint8_t note);
 
 // Add a note to chordNotes
-void arpeggiatorAddNote(uint8_t note);
+void arpeggiatorAddNote(uint8_t note, uint8_t velocity);
 
 // Choose an arpeggiation, or to create one
 void stateArpeggiator();

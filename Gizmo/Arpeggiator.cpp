@@ -74,7 +74,11 @@ void playArpeggiatorNote(uint16_t note)
     if (note < 0 || note >= 127)
         return;
 
-    sendNoteOn(local.arp.steadyNoteOff = local.arp.noteOff = (uint8_t) note, local.arp.velocity, options.channelOut);
+	uint8_t vel = options.arpeggiatorPlayVelocity;
+	if (vel == 128)  // FREE
+		vel = local.arp.velocity;
+
+    sendNoteOn(local.arp.steadyNoteOff = local.arp.noteOff = (uint8_t) note, vel, options.channelOut);
                 
     // this will be costly but maybe it's better than / for 32-bit?
     local.arp.offTime = currentTime + div100(notePulseRate * getMicrosecsPerPulse() * options.noteLength);
@@ -214,7 +218,7 @@ void playArpeggio()
                         // this computes the interval between the largest and smallest notes, and rounds up to the nearest
                         // octave, in notes (12 notes to an octave).  We'll use that to determine how many "octaves" to jump
                         // when we need to jump one.
-                        int16_t octaveJump = (local.arp.chordNotes[local.arp.numChordNotes - 1] - local.arp.chordNotes[0] + 1) / 12 + 1; 
+                        int16_t octaveJump = ((local.arp.chordNotes[local.arp.numChordNotes - 1] & 127) - (local.arp.chordNotes[0] & 127) + 1) / 12 + 1; 
                         notei -= data.arp.root;  // shift relative to root
                         while (notei < 0) { notei += local.arp.numChordNotes; octave--; }
                         while (notei >= local.arp.numChordNotes) { notei -= local.arp.numChordNotes; octave++; }
@@ -266,7 +270,7 @@ void arpeggiatorRemoveNote(uint8_t note)
 
 
 // Add a note to chordNotes.
-void arpeggiatorAddNote(uint8_t note)
+void arpeggiatorAddNote(uint8_t note, uint8_t velocity)
     {
     // remove latched notes if ALL of them are marked
     uint8_t marked = 0;
@@ -292,9 +296,12 @@ void arpeggiatorAddNote(uint8_t note)
             }
         }
 
-    // reset up/down if necessary
+    // reset up/down if necessary, and set velocity if we're the first note
     if (local.arp.numChordNotes == 0)
+    	{
         local.arp.goingDown = 0;
+        local.arp.velocity = velocity;
+        }
 
     // add note                        
     if ((local.arp.numChordNotes == 0) || 
@@ -431,8 +438,8 @@ void stateArpeggiatorPlay()
 
 void stateArpeggiatorMenu()
 	{
-    const char* menuItems[2] = { PSTR("OCTAVES"), options_p };
-    uint8_t result = doMenuDisplay(menuItems, 2, STATE_NONE, 0, 1, 8);
+    const char* menuItems[3] = { PSTR("OCTAVES"), PSTR("VELOCITY"), options_p };
+    uint8_t result = doMenuDisplay(menuItems, 3, STATE_NONE, 0, 1, 8);
         
     switch (result)
         {
@@ -445,11 +452,17 @@ void stateArpeggiatorMenu()
             switch(currentDisplay)
                 {
 #define ARPEGGIATOR_PLAY_OCTAVES 0
-#define ARPEGGIATOR_PLAY_OPTIONS 1
+#define ARPEGGIATOR_PLAY_VELOCITY 1
+#define ARPEGGIATOR_PLAY_OPTIONS 2
 
                 case ARPEGGIATOR_PLAY_OCTAVES:
                     {
                     goDownState(STATE_ARPEGGIATOR_PLAY_OCTAVES);
+                    }
+                break;
+                case ARPEGGIATOR_PLAY_VELOCITY:
+                    {
+                    goDownState(STATE_ARPEGGIATOR_PLAY_VELOCITY);
                     }
                 break;
                 case ARPEGGIATOR_PLAY_OPTIONS:

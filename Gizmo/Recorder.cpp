@@ -148,7 +148,7 @@ void stateRecorderPlay()
         entry = true;
         }
         
-    // the long select button pops up the options menu
+    // the long select button pops up the options  
     else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
         {
         optionsReturnState = STATE_RECORDER_PLAY;  

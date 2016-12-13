@@ -18,8 +18,9 @@
 
 \noindent {\Huge\bf Gizmo}\\
 {\large \bf An Arduino MIDI Tool\\
-By Sean Luke\quad sean@cs.gmu.edu}\\
-\\
+By Sean Luke\quad sean@cs.gmu.edu}
+\hspace{\fill}{\it \textbf{For Aric}}\\
+
 
 \noindent Gizmo is a small MIDI device intended to be inserted between the MIDI OUT of one device and the MIDI IN of one or more other devices.  There are a number of tools like this, such as the esteemed MIDIPal\footnote{Though they share nothing in common, MIDIPal is quite similar to Gizmo in functionality and goals.  But I wasn't even aware of the existence of MIDIPal when I started building Gizmo.  And besides, re-inventing the wheel is fun!  MIDIPal's page is http:/\!/mutable-instruments.net/midipal\ \ This device has been discontinued, but its open source software lives on in other hardware clones, such as the MIDIGal (https:/\!/midisizer.com/midigal/) or MIDIBro (http:/\!/www.audiothingies.com/product/midibro/)} or a variety of tools from MIDISolutions.\footnote{http:/\!/www.midisolutions.com/}
 
@@ -31,7 +32,7 @@ Gizmo comes built-in with the following applications and other capabilities:
 
 \paragraph{Applications}
 \begin{itemize}
-\item {\bf Arpeggiator.}\quad Gizmo's arpeggiator has built-in up, down, up/down, repeated chord, note-assign, and random arpeggios spanning one to three octaves.  Additionally, you can define up to ten additional arpeggiator patterns, each up to 32 notes long, involving up to 15 different chord notes, plus rests.  Arpeggios can be {\it latched} (or not), meaning that they may continue to play even after you have released the keys.  You can specify  the note value relative to the tempo (ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), the output MIDI channel, and the degree of swing (syncopation).  Gizmo will show the arpeggio on-screen.
+\item {\bf Arpeggiator.}\quad Gizmo's arpeggiator has built-in up, down, up/down, repeated chord, note-assign, and random arpeggios spanning one to three octaves.  Additionally, you can define up to ten additional arpeggiator patterns, each up to 32 notes long, involving up to 15 different chord notes, plus rests.  Arpeggios can be {\it latched} (or not), meaning that they may continue to play even after you have released the keys.  You can specify  the note value relative to the tempo (ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), whether or not the velocity is fixed, the output MIDI channel, and the degree of swing (syncopation).  Gizmo will show the arpeggio on-screen.
 \item {\bf Step Sequencer.}\quad Gizmo's step sequencer can be organized as 12 16-note tracks, 8 24-note tracks, or 6 32-note tracks.  Each note in a track can have its own unique pitch and velocity, or be a rest, or continue (lengthen, tie) the previous note.  You can also fix the velocity for an entire track, mute tracks, fade their volume, specify their independent output MIDI channels, specify the note value relative to the tempo (again ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), and the degree of swing (syncopation).    The step sequencer lets you edit in two modes: either by triggering independent steps like a classic drum sequencer, or by playing a sequence of notes.  The Arduino Uno can store up to two sequences in its slots (shared with the Recorder, discussed next).  The Mega can store up to nine sequences.  Gizmo will show and edit sequences on-screen.
 \item {\bf Recorder.}\quad The Arduino doesn't have a lot of memory, but we provide a note recorder which records and plays back up to 64 notes (pitch and velocity) played over 21 measures. The recorder has 16-voice polyphony.   It's enough to record a very short ditty.  You can also set the recorder to loop the recording while playing, and to provide a click track.  The Arduino Uno can store up to two recordings in its slots (shared with the Step Sequencer).  The Mega can store up to nine recordings.
 \item {\bf MIDI Gauge.}\quad The gauge will display all incoming MIDI information on one or all channels.  Note on, note off, and polyphonic aftertouch are shown with pitch and velocity (or pressure).  Channel aftertouch is shown with the appropriate pitch.  Program changes indicate the number.  Pitch bends indicate the value in full 14-bit.  Control Change, NRPN, and RPN messages display the number, value, and whether the value is being set, incremented, or decremented.  Sysex, song position, song select, tune request, start, continue, stop, and system reset are simply noted.  Rapid-fire MIDI signals such as MIDI clock, active sensing, and time code just turn on individual LEDs.
@@ -302,7 +303,7 @@ There are six preset arpeggios: {\it up}, {\it down}, {\it up-down}, {\it random
 \item {\bf Down}.  Each note in your chord is played in turn, highest note first.  When all notes are exhausted, the pattern is repeated.
 \item {\bf Up-Down}.  Each note in your chord is played in turn, lowest note first, up to but not including the highest note.  When all notes are exhausted, all notes in the chord are played in turn, highest note first, down to but not including the lowest note.  When all notes are again exhausted, this pattern repeats.
 
-\item {\bf Random}.  Notes in your chord are played at random.  Gizmo tries not to play the same not twice in a row.
+\item {\bf Random}.  Chord notes are played at random.  Gizmo tries not to play the same not twice in a row.
 \item {\bf Chord Repeat}.  The entire chord is repeatedly played in its entirety.
 \item {\bf Assign}. Each note in your chord is played in turn, in the order in which you had pressed the keys when you formed the chord.  When all notes are exhausted, the pattern is repeated.
 \end{itemize}
@@ -312,7 +313,6 @@ As you play a preset arpeggio, the notes played by the arpeggio will appear at r
 While playing a preset arpeggio, you can select the number of octaves by choosing calling up the menu by Long-Pressing the Select button, then choosing {\bf Octaves}.  If you have an octaves value \(\geq 0\), then when the arpeggiator exhausts its notes, it will repeat them again one octave higher, then another octave higher, and so on, up to the number of octaves chosen. You an select any value from 0--6 octaves.\footnote{Note that this means that if your chord is larger than one octave, you may not get what you expected.  For example, if you are playing UP with C5 E5 G5 D6, and with octaves\(=\)1, then the arpeggiator will play C5 E5 G5 D6 C6 E6 G6 D7.  Note that C6 is played after D6 is played.  That's the current behavior right now anyway.}
 
 \begin{wrapfigure}{r}{1.6in}
-\vspace{-1em}
 \begin{center}
 \vspace{-1.5em}\includegraphics[width=1in]{arpeggioexample.pdf}\\
 Example Arpeggio\\[2em]
@@ -322,9 +322,12 @@ Ascending Notes\\in Sparse Mode\\[2em]
 Ascending Notes\\in Dense Mode\\
 \end{center}
 \vspace{-1em}\caption{\small Example Arpeggio Editing Displays}
+\vspace{-2em}
 \label{arpeggioediting}
 \end{wrapfigure}
 
+
+By default the key velocity (volume) of an arpeggio is determined by the {\bf first note} you press when you hold down a chord.  This strategy usually works well, but if you can instead fix the velocity to a specific value by (once again) calling up the menu by Long-Pressing the Select button, then choosing {\bf Velocity}.  At the far highest end of the velocity options is \texttt{FREE}, which means that the velocity is determined by your fingers again (this is the default).
 
 \paragraph{Creating an Arpeggio}
 
@@ -761,7 +764,6 @@ I might add more unusual filters later.
 		\item{\bf \textit{Choose}}: 1 ... 999 Beats Per Minute.  Note that this is a large number, and so may require you to choose it with the left potentiometer, then fine-tune it with the right potentiometer.\footnote{Gizmo can go lots faster than 999: in theory it could go clear to 31200 or so.  But then your synthesizer would explode and we wouldn't want that.}
 		\item{\bf \textit{Alternatively}}: Tap the Middle Button.  The BPM will be set to the rate you tap.
 		\end{description}
-		\clearpage
 		
 	\item{\bf Note Speed}\\
 		Various applications (arpeggiators, step sequencers)
@@ -997,7 +999,7 @@ MIDI Clock Control& $\checkmark$ & $\checkmark$ & &\\
 Keyboard Splitting& $\checkmark$ & $\checkmark$  & & Works well but the fade option is perhaps a bit unnecessary and weird.\\
 Thru Facility & $\checkmark$ & $\checkmark$ & & \\
 Control Voltage& $\checkmark$ & & & Untested\\
-Tap Tempo & $\checkmark$ & & & Untested \\
+Tap Tempo & $\checkmark$ & $\checkmark$& & Seems to work, but might be better to average in tempos.  This would require floating point probably, which would be too big for the Uno.
 \end{tabular}
 }
 \end{center}

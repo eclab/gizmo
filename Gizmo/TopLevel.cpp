@@ -956,11 +956,6 @@ GLOBAL uint8_t lastNotePlayed = NO_NOTE;
 GLOBAL _local local;
         
 
-//#if defined(__AVR_ATmega2560__)
-GLOBAL uint32_t lastTempoTapTime;
-//#endif
-
-
 void write3x5GlyphPair(uint8_t glyph1, uint8_t glyph2)
 	{
 	write3x5Glyph(led2, glyph1, 0);
@@ -1364,6 +1359,13 @@ void go()
             playArpeggio();
             }
         break;
+        case STATE_ARPEGGIATOR_PLAY_VELOCITY:
+            {
+            // yes, it's *128*, not 127, because 128 represents the default velocity
+            stateNumerical(0, 128, options.arpeggiatorPlayVelocity, backupOptions.arpeggiatorPlayVelocity, false, false, OTHER_FREE, STATE_ARPEGGIATOR_PLAY);
+            playArpeggio();
+            }
+        break;
         case STATE_ARPEGGIATOR_MENU:
             {
             stateArpeggiatorMenu();
@@ -1669,26 +1671,33 @@ void go()
             if (entry)
                 {
                 backupOptions = options; 
-//#if defined(__AVR_ATmega2560__)
-                lastTempoTapTime = 0;
-//#endif
+                local.options.lastTempoTapTime = 0;
                 }
                 
-//#if defined(__AVR_ATmega2560__)
             if (isUpdated(MIDDLE_BUTTON, PRESSED))
             	{
-            	if (lastTempoTapTime != 0)
+            	if (local.options.lastTempoTapTime != 0)
             		{
             		// BPM = 1/(min/beat).  min/beat = micros/beat *  sec / 1000000 micros * min / 60 sec
             		// So BPM = 60000000 / micros 
-            		options.tempo = (uint16_t)(60000000L / (currentTime - lastTempoTapTime));
+            		uint16_t newTempo = (uint16_t)(60000000L / (currentTime - local.options.lastTempoTapTime));
+
+					// fold into options.tempo as a smoothing effort. 
+					// Note that we increase newTempo by one
+					// so that if options.tempo = newTempo - 1, averaging the two won't
+					// just truncate back to options.tempo.  We don't do this if newTempo
+					// <= options.tempo because we'd truncate DOWN to newTempo in this case.
+            		if (options.tempo < newTempo)
+            			newTempo = newTempo + 1;
+            		options.tempo = ((options.tempo + newTempo) >> 1);
+
             		if (options.tempo < 1) options.tempo = 1;
             		if (options.tempo > 999) options.tempo = 999;
+
             		entry = true;
             		}
-          	 	lastTempoTapTime = currentTime;
+          	 	local.options.lastTempoTapTime = currentTime;
             	}
-//#endif
             
             uint8_t result = doNumericalDisplay(1, MAXIMUM_BPM, options.tempo, 0, OTHER_NONE);
             switch (result)
@@ -2275,8 +2284,7 @@ void handleNoteOn(byte channel, byte note, byte velocity)
         if (application == STATE_ARPEGGIATOR && local.arp.playing)
             {
             // the arpeggiation velocity shall be the velocity of the most recently added note
-            local.arp.velocity = velocity;
-            arpeggiatorAddNote(note);
+            arpeggiatorAddNote(note, velocity);
             }
 
 #if defined(__AVR_ATmega2560__)

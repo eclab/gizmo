@@ -7,6 +7,13 @@
 #define __OPTIONS_H__
 
 
+struct _optionsLocal
+	{
+	uint32_t lastTempoTapTime;
+	};
+
+
+
 ////// Options struct data type.  At present, 35 bytes.
 //
 // ON THE UNO    We have 78 bytes available
@@ -42,6 +49,7 @@ struct _options
     uint8_t selectButtonControlOff ;                            // 0 is off, n is value n+1, and 129 is "increment" (128)
     uint8_t noteLength;
     uint8_t arpeggiatorPlayOctaves;
+	uint8_t arpeggiatorPlayVelocity;
     uint8_t arpeggiatorLatch;
     //uint8_t stepSequencerNoEcho;
     //uint8_t recorderRepeat;

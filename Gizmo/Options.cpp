@@ -58,6 +58,7 @@ void resetOptions()
     options.noteLength = 100;
     options.click = NO_NOTE;
     options.clock = IGNORE_MIDI_CLOCK;
+    options.arpeggiatorPlayVelocity = 128;  // FREE
 #if defined(__AVR_ATmega2560__)
     options.menuDelay = 6;  // corresponds to DEFAULT_MENU_DELAY
     options.volume = 3;  // corresponds to no volume modification
