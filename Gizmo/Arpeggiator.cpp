@@ -118,72 +118,72 @@ void playArpeggio()
                         // Fall Thru
                         // [The magic here is that we do exactly the same as UP, except that in arpeggiatorAddNote we don't insert the note in order, but just tack it on the end!]
                     case ARPEGGIATOR_NUMBER_UP:
-                    {
-                    if (local.arp.currentPosition == ARP_POSITION_START)
                         {
-                        local.arp.currentPosition = 0;
+                        if (local.arp.currentPosition == ARP_POSITION_START)
+                            {
+                            local.arp.currentPosition = 0;
+                            }
+                        else
+                            {
+                            // though local.arp.currentPosition is signed and incrementAndWrap expects unsigned, it's okay
+                            // because local.arp.currentPosition will never be < 0 at this point, nor > 127.
+                            local.arp.currentPosition = incrementAndWrap(local.arp.currentPosition, max + 1);
+                            }
                         }
-                    else
-                        {
-                        // though local.arp.currentPosition is signed and incrementAndWrap expects unsigned, it's okay
-                        // because local.arp.currentPosition will never be < 0 at this point, nor > 127.
-                        local.arp.currentPosition = incrementAndWrap(local.arp.currentPosition, max + 1);
-                        }
-                    }
                     break;
                     case ARPEGGIATOR_NUMBER_DOWN:
-                    {
-                    if (local.arp.currentPosition == ARP_POSITION_START)
                         {
-                        local.arp.currentPosition = max;
-                        }
-                    else
-                        {
-                        local.arp.currentPosition--;
-                        if (local.arp.currentPosition < 0)
+                        if (local.arp.currentPosition == ARP_POSITION_START)
+                            {
                             local.arp.currentPosition = max;
+                            }
+                        else
+                            {
+                            local.arp.currentPosition--;
+                            if (local.arp.currentPosition < 0)
+                                local.arp.currentPosition = max;
+                            }
                         }
-                    }
                     break;
                     case ARPEGGIATOR_NUMBER_UP_DOWN:
-                    {
+                        {
                         
-                    if (!local.arp.goingDown)
-                        {
-                        local.arp.currentPosition++;
-                        }
-                    else if (local.arp.goingDown)
-                        {
-                        local.arp.currentPosition--;
-                        }
+                        if (!local.arp.goingDown)
+                            {
+                            local.arp.currentPosition++;
+                            }
+                        else if (local.arp.goingDown)
+                            {
+                            local.arp.currentPosition--;
+                            }
                         
-                    if (local.arp.currentPosition < 0)
-                        {
-                        local.arp.goingDown = 0;
-                        local.arp.currentPosition = ((local.arp.numChordNotes == 1) ? 0 : 1);
+                        if (local.arp.currentPosition < 0)
+                            {
+                            local.arp.goingDown = 0;
+                            local.arp.currentPosition = ((local.arp.numChordNotes == 1) ? 0 : 1);
+                            }
+                        else if (local.arp.currentPosition >= max)
+                            {
+                            local.arp.goingDown = 1;
+                            local.arp.currentPosition = max;
+                            }
                         }
-                    else if (local.arp.currentPosition >= max)
-                        {
-                        local.arp.goingDown = 1;
-                        local.arp.currentPosition = max;
-                        }
-                    }
                     break;
                     case ARPEGGIATOR_NUMBER_RANDOM:
-                    {
-                    if (local.arp.numChordNotes > 1)
                         {
-                        // we want semi-random: don't play the same note twice
-                        uint8_t newPosition;
-                        do
+                        if (local.arp.numChordNotes > 1)
                             {
-                            newPosition = random(max + 1);
+                            // we want semi-random: don't play the same note twice
+                            uint8_t newPosition;
+                            do
+                                {
+                                newPosition = random(max + 1);
+                                }
+                            while(newPosition == local.arp.currentPosition);
+                            local.arp.currentPosition = newPosition;
                             }
-                        while(newPosition == local.arp.currentPosition);
-                        local.arp.currentPosition = newPosition;
+                        else local.arp.currentPosition = 0;
                         }
-                    else local.arp.currentPosition = 0;
-                    }
                     break;
                     }
 
@@ -349,27 +349,27 @@ void stateArpeggiator()
     switch (result)
         {
         case NO_MENU_SELECTED:
-        {
-        entry = false;
-        }
+            {
+            entry = false;
+            }
         break;
         case MENU_SELECTED:
-        {
-        if (currentDisplay == ARPEGGIATOR_NUMBER_CREATE)
             {
-            goDownState(STATE_ARPEGGIATOR_CREATE);
+            if (currentDisplay == ARPEGGIATOR_NUMBER_CREATE)
+                {
+                goDownState(STATE_ARPEGGIATOR_CREATE);
+                }
+            else
+                {
+                goDownState(STATE_ARPEGGIATOR_PLAY);
+                local.arp.number = currentDisplay;
+                }
             }
-        else
-            {
-            goDownState(STATE_ARPEGGIATOR_PLAY);
-            local.arp.number = currentDisplay;
-            }
-        }
         break;
         case MENU_CANCELLED:
-        {
-        goUpState(STATE_ROOT);
-        }
+            {
+            goUpState(STATE_ROOT);
+            }
         break;
         }
     }
@@ -444,40 +444,40 @@ void stateArpeggiatorMenu()
     switch (result)
         {
         case NO_MENU_SELECTED:
-        {
-        }
+            {
+            }
         break;
         case MENU_SELECTED:
-        {
-        switch(currentDisplay)
             {
+            switch(currentDisplay)
+                {
 #define ARPEGGIATOR_PLAY_OCTAVES 0
 #define ARPEGGIATOR_PLAY_VELOCITY 1
 #define ARPEGGIATOR_PLAY_OPTIONS 2
 
-            case ARPEGGIATOR_PLAY_OCTAVES:
-            {
-            goDownState(STATE_ARPEGGIATOR_PLAY_OCTAVES);
+                case ARPEGGIATOR_PLAY_OCTAVES:
+                    {
+                    goDownState(STATE_ARPEGGIATOR_PLAY_OCTAVES);
+                    }
+                break;
+                case ARPEGGIATOR_PLAY_VELOCITY:
+                    {
+                    goDownState(STATE_ARPEGGIATOR_PLAY_VELOCITY);
+                    }
+                break;
+                case ARPEGGIATOR_PLAY_OPTIONS:
+                    {
+                    optionsReturnState = STATE_ARPEGGIATOR_MENU;
+                    goDownState(STATE_OPTIONS);
+                    }
+                break;                    
+                }
             }
-            break;
-            case ARPEGGIATOR_PLAY_VELOCITY:
-            {
-            goDownState(STATE_ARPEGGIATOR_PLAY_VELOCITY);
-            }
-            break;
-            case ARPEGGIATOR_PLAY_OPTIONS:
-            {
-            optionsReturnState = STATE_ARPEGGIATOR_MENU;
-            goDownState(STATE_OPTIONS);
-            }
-            break;                    
-            }
-        }
         break;
         case MENU_CANCELLED:
-        {
-        goUpState(STATE_ARPEGGIATOR_PLAY);
-        }
+            {
+            goUpState(STATE_ARPEGGIATOR_PLAY);
+            }
         break;
         }
     playArpeggio();          
@@ -733,35 +733,35 @@ void stateArpeggiatorCreateSave()
     switch (result)
         {
         case NO_MENU_SELECTED:
-        {
-        // do nothing
-        }
+            {
+            // do nothing
+            }
         break;
         case MENU_SELECTED:
-        {
-        data.arp.length = local.arp.currentPosition;
-        // convert root from a note to an index into numChordNotes
-        uint8_t r = 0;
-        for(uint8_t i = 0; i < local.arp.numChordNotes; i++)
             {
-            if (local.arp.chordNotes[i] >= data.arp.root)
-                { 
-                r = i;
-                break;
+            data.arp.length = local.arp.currentPosition;
+            // convert root from a note to an index into numChordNotes
+            uint8_t r = 0;
+            for(uint8_t i = 0; i < local.arp.numChordNotes; i++)
+                {
+                if (local.arp.chordNotes[i] >= data.arp.root)
+                    { 
+                    r = i;
+                    break;
+                    }
                 }
+            data.arp.root = r;
+            SAVE_ARPEGGIO(currentDisplay);
+            goDownState(STATE_ARPEGGIATOR);
+            //state = STATE_ARPEGGIATOR;
+            //entry = true;
             }
-        data.arp.root = r;
-        SAVE_ARPEGGIO(currentDisplay);
-        goDownState(STATE_ARPEGGIATOR);
-        //state = STATE_ARPEGGIATOR;
-        //entry = true;
-        }
         break;
         case MENU_CANCELLED:
-        {
-        goDownState(STATE_ARPEGGIATOR_CREATE_EDIT);
-        //state = STATE_ARPEGGIATOR_CREATE_EDIT;
-        }
+            {
+            goDownState(STATE_ARPEGGIATOR_CREATE_EDIT);
+            //state = STATE_ARPEGGIATOR_CREATE_EDIT;
+            }
         break;
         }
     }

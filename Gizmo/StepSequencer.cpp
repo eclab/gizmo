@@ -147,28 +147,28 @@ void stateStepSequencerFormat()
     switch (result)
         {
         case NO_MENU_SELECTED:
-        {
-        // do nothing
-        }
+            {
+            // do nothing
+            }
         break;
         case MENU_SELECTED:
-        {
-        // we assume that all zeros is erased
-        data.slot.type = SLOT_TYPE_STEP_SEQUENCER;
-        data.slot.data.stepSequencer.format = currentDisplay;
-        memset(data.slot.data.stepSequencer.buffer, 0, SLOT_DATA_SIZE - 2);
-        for(uint8_t i = 0; i < GET_NUM_TRACKS(); i++)
             {
-            resetTrack(i);
+            // we assume that all zeros is erased
+            data.slot.type = SLOT_TYPE_STEP_SEQUENCER;
+            data.slot.data.stepSequencer.format = currentDisplay;
+            memset(data.slot.data.stepSequencer.buffer, 0, SLOT_DATA_SIZE - 2);
+            for(uint8_t i = 0; i < GET_NUM_TRACKS(); i++)
+                {
+                resetTrack(i);
+                }
+            stopStepSequencer();
+            goDownState(STATE_STEP_SEQUENCER_PLAY);
             }
-        stopStepSequencer();
-        goDownState(STATE_STEP_SEQUENCER_PLAY);
-        }
         break;
         case MENU_CANCELLED:
-        {
-        goDownState(STATE_STEP_SEQUENCER);
-        }
+            {
+            goDownState(STATE_STEP_SEQUENCER);
+            }
         break;
         }
     }
@@ -337,16 +337,16 @@ void stateStepSequencerPlay()
         switch(local.stepSequencer.playState)
             {
             case PLAY_STATE_STOPPED:
-            {
-            local.stepSequencer.playState = PLAY_STATE_WAITING;
-            }
+                {
+                local.stepSequencer.playState = PLAY_STATE_WAITING;
+                }
             break;
             case PLAY_STATE_WAITING:
                 // Fall Thru
             case PLAY_STATE_PLAYING:
-            {
-            stopStepSequencer();
-            }
+                {
+                stopStepSequencer();
+                }
             break;
             }
         }
@@ -446,74 +446,74 @@ void stateStepSequencerMenu()
     switch (result)
         {
         case NO_MENU_SELECTED:
-        {
-        // do nothing
-        }
+            {
+            // do nothing
+            }
         break;
         case MENU_SELECTED:
-        {
-        state = STATE_STEP_SEQUENCER_PLAY;
-        entry = true;
-        switch(currentDisplay)
             {
-            case STEP_SEQUENCER_MENU_SOLO:
-            {
-            local.stepSequencer.solo = !local.stepSequencer.solo;
+            state = STATE_STEP_SEQUENCER_PLAY;
+            entry = true;
+            switch(currentDisplay)
+                {
+                case STEP_SEQUENCER_MENU_SOLO:
+                    {
+                    local.stepSequencer.solo = !local.stepSequencer.solo;
+                    }
+                break;
+                case STEP_SEQUENCER_MENU_LENGTH:
+                    {
+                    state = STATE_STEP_SEQUENCER_LENGTH;                            
+                    }
+                break;
+                case STEP_SEQUENCER_MENU_MIDI_OUT:
+                    {
+                    local.stepSequencer.backup = local.stepSequencer.outMIDI[local.stepSequencer.currentTrack];
+                    state = STATE_STEP_SEQUENCER_MIDI_CHANNEL_OUT;
+                    }
+                break;
+                case STEP_SEQUENCER_MENU_VELOCITY:
+                    {
+                    state = STATE_STEP_SEQUENCER_VELOCITY;
+                    }
+                break;
+                case STEP_SEQUENCER_MENU_FADER:
+                    {
+                    state = STATE_STEP_SEQUENCER_FADER;
+                    }
+                break;
+                //case STEP_SEQUENCER_MENU_NO_ECHO:
+                //    {
+                //    options.stepSequencerNoEcho = !options.stepSequencerNoEcho;
+                //    saveOptions();
+                //    }
+                break;
+                case STEP_SEQUENCER_MENU_RESET:
+                    {
+                    uint8_t trackLen = GET_TRACK_LENGTH();
+                    resetTrack(local.stepSequencer.currentTrack);
+                    break;
+                    }
+                case STEP_SEQUENCER_MENU_SAVE:
+                    {
+                    state = STATE_STEP_SEQUENCER_SAVE;
+                    }
+                break;
+                case STEP_SEQUENCER_MENU_OPTIONS:
+                    {
+                    optionsReturnState = STATE_STEP_SEQUENCER_MENU;
+                    goDownState(STATE_OPTIONS);
+                    }
+                break;
+                }
             }
-            break;
-            case STEP_SEQUENCER_MENU_LENGTH:
-            {
-            state = STATE_STEP_SEQUENCER_LENGTH;                            
-            }
-            break;
-            case STEP_SEQUENCER_MENU_MIDI_OUT:
-            {
-            local.stepSequencer.backup = local.stepSequencer.outMIDI[local.stepSequencer.currentTrack];
-            state = STATE_STEP_SEQUENCER_MIDI_CHANNEL_OUT;
-            }
-            break;
-            case STEP_SEQUENCER_MENU_VELOCITY:
-            {
-            state = STATE_STEP_SEQUENCER_VELOCITY;
-            }
-            break;
-            case STEP_SEQUENCER_MENU_FADER:
-            {
-            state = STATE_STEP_SEQUENCER_FADER;
-            }
-            break;
-            //case STEP_SEQUENCER_MENU_NO_ECHO:
-            //    {
-            //    options.stepSequencerNoEcho = !options.stepSequencerNoEcho;
-            //    saveOptions();
-            //    }
-            break;
-            case STEP_SEQUENCER_MENU_RESET:
-            {
-            uint8_t trackLen = GET_TRACK_LENGTH();
-            resetTrack(local.stepSequencer.currentTrack);
-            break;
-            }
-            case STEP_SEQUENCER_MENU_SAVE:
-            {
-            state = STATE_STEP_SEQUENCER_SAVE;
-            }
-            break;
-            case STEP_SEQUENCER_MENU_OPTIONS:
-            {
-            optionsReturnState = STATE_STEP_SEQUENCER_MENU;
-            goDownState(STATE_OPTIONS);
-            }
-            break;
-            }
-        }
         break;
         case MENU_CANCELLED:
-        {
-        // get rid of any residual select button calls, so we don't stop when exiting here
-        isUpdated(SELECT_BUTTON, RELEASED);
-        goUpState(STATE_STEP_SEQUENCER_PLAY);
-        }
+            {
+            // get rid of any residual select button calls, so we don't stop when exiting here
+            isUpdated(SELECT_BUTTON, RELEASED);
+            goUpState(STATE_STEP_SEQUENCER_PLAY);
+            }
         break;
         }
         

@@ -742,26 +742,26 @@ const char PROGMEM font_8x5[26][8] = {
     // It's also, for our purposes, *backwards*.
     // So note that the strings should be flipped
     // horizontally to make much sense of them.
-    { // GIZMO VERSION 1 pt 1
-	0b01100111,
-	0b10010100,
-	0b10110010,
-	0b00000100,
-	0b11110111,
-	0b00000000,
-	0b10010111,
-	0b10110101,
-	},
-    { // GIZMO VERSION 1 pt 2
-	0b11010101,
-	0b10010111,
-	0b00000000,
-	0b00000000,
-	0b00100000,
-	0b01111100,
-	0b00000000,
-	0b00000000,
-	},
+        { // GIZMO VERSION 1 pt 1
+        0b01100111,
+        0b10010100,
+        0b10110010,
+        0b00000100,
+        0b11110111,
+        0b00000000,
+        0b10010111,
+        0b10110101,
+        },
+        { // GIZMO VERSION 1 pt 2
+        0b11010101,
+        0b10010111,
+        0b00000000,
+        0b00000000,
+        0b00100000,
+        0b01111100,
+        0b00000000,
+        0b00000000,
+        },
     };
 
 
@@ -1398,64 +1398,64 @@ void writeNote(unsigned char* mat, unsigned char note)
     switch(note)
         {
         case NOTE_C:
-        {
-        memcpy_P(mat + 0, font_3x5[GLYPH_3x5_C], 3);
-        }
+            {
+            memcpy_P(mat + 0, font_3x5[GLYPH_3x5_C], 3);
+            }
         break;
         case NOTE_Db:
-        {
-        writeFlat(mat);
-        }
+            {
+            writeFlat(mat);
+            }
         // fall thru
         case NOTE_D:
-        {
-        memcpy_P(mat + 0, font_3x5[GLYPH_3x5_D], 3);
-        }
+            {
+            memcpy_P(mat + 0, font_3x5[GLYPH_3x5_D], 3);
+            }
         break;
         case NOTE_Eb:
-        {
-        writeFlat(mat);
-        }
+            {
+            writeFlat(mat);
+            }
         // fall thru
         case NOTE_E:
-        {
-        memcpy_P(mat + 0, font_3x5[GLYPH_3x5_E], 3);
-        }
+            {
+            memcpy_P(mat + 0, font_3x5[GLYPH_3x5_E], 3);
+            }
         break;
         case NOTE_F:
-        {
-        memcpy_P(mat + 0, font_3x5[GLYPH_3x5_F], 3);
-        }
+            {
+            memcpy_P(mat + 0, font_3x5[GLYPH_3x5_F], 3);
+            }
         break;
         case NOTE_Gb:
-        {
-        writeFlat(mat);
-        }
+            {
+            writeFlat(mat);
+            }
         // fall thru
         case NOTE_G:
-        {
-        memcpy_P(mat + 0, font_3x5[GLYPH_3x5_G], 3);
-        }
+            {
+            memcpy_P(mat + 0, font_3x5[GLYPH_3x5_G], 3);
+            }
         break;
         case NOTE_Ab:
-        {
-        writeFlat(mat);
-        }
+            {
+            writeFlat(mat);
+            }
         // fall thru
         case NOTE_A:
-        {
-        memcpy_P(mat + 0, font_3x5[GLYPH_3x5_A], 3);
-        }
+            {
+            memcpy_P(mat + 0, font_3x5[GLYPH_3x5_A], 3);
+            }
         break;
         case NOTE_Bb:
-        {
-        writeFlat(mat);
-        }
+            {
+            writeFlat(mat);
+            }
         // fall thru
         case NOTE_B:
-        {
-        memcpy_P(mat + 0, font_3x5[GLYPH_3x5_B], 3);
-        }
+            {
+            memcpy_P(mat + 0, font_3x5[GLYPH_3x5_B], 3);
+            }
         break;
         }
     }

@@ -231,36 +231,36 @@ void stateSave(uint8_t backState)
             switch(application)
                 {
                 case STATE_STEP_SEQUENCER:
-                {
-                uint8_t len = GET_TRACK_LENGTH();
-                uint8_t num = GET_NUM_TRACKS();
-                                        
-                // pack the high-bit parts
-                for(uint8_t i = 0; i < num; i++)
                     {
-                    //// 1 bit mute
-                    //// 5 bits MIDI out channel (including "use default")
-                    //// 7 bits length
-                    //// 8 bits velocity (including "use per-note velocity")
-                    //// 7 bits fader
+                    uint8_t len = GET_TRACK_LENGTH();
+                    uint8_t num = GET_NUM_TRACKS();
+                                        
+                    // pack the high-bit parts
+                    for(uint8_t i = 0; i < num; i++)
+                        {
+                        //// 1 bit mute
+                        //// 5 bits MIDI out channel (including "use default")
+                        //// 7 bits length
+                        //// 8 bits velocity (including "use per-note velocity")
+                        //// 7 bits fader
 
-                    uint16_t pos = i * len * 2;
-                    distributeByte(pos, local.stepSequencer.muted[i] << 7);
-                    distributeByte(pos + 1, local.stepSequencer.outMIDI[i] << 3);
-                    distributeByte(pos + 6, local.stepSequencer.noteLength[i] << 1);
-                    distributeByte(pos + 13, local.stepSequencer.velocity[i]);
-                    distributeByte(pos + 21, local.stepSequencer.fader[i] << 1);
+                        uint16_t pos = i * len * 2;
+                        distributeByte(pos, local.stepSequencer.muted[i] << 7);
+                        distributeByte(pos + 1, local.stepSequencer.outMIDI[i] << 3);
+                        distributeByte(pos + 6, local.stepSequencer.noteLength[i] << 1);
+                        distributeByte(pos + 13, local.stepSequencer.velocity[i]);
+                        distributeByte(pos + 21, local.stepSequencer.fader[i] << 1);
+                        }
+                    saveSlot(currentDisplay);
+                    stripHighBits();                        
                     }
-                saveSlot(currentDisplay);
-                stripHighBits();                        
-                }
                 break;
                 case STATE_RECORDER:
-                {
+                    {
 #ifndef NO_RECORDER
-                saveSlot(currentDisplay);
+                    saveSlot(currentDisplay);
 #endif
-                }
+                    }
                 break;
                 }
                                         

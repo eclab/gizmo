@@ -47,85 +47,85 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t
     switch(commandType)
         {
         case CONTROL_TYPE_OFF:
-        {
-        // do nothing
-        }
+            {
+            // do nothing
+            }
         break;
         case CONTROL_TYPE_CC:
-        {
-        MIDI.sendControlChange(commandNumber, msb, options.channelOut);
-        if (commandNumber < 32)             // send optional lsb if appropriate
             {
-            MIDI.sendControlChange(commandNumber + 32, lsb, options.channelOut);
+            MIDI.sendControlChange(commandNumber, msb, options.channelOut);
+            if (commandNumber < 32)             // send optional lsb if appropriate
+                {
+                MIDI.sendControlChange(commandNumber + 32, lsb, options.channelOut);
+                }
+            TOGGLE_OUT_LED(); 
             }
-        TOGGLE_OUT_LED(); 
-        }
         break;
         case CONTROL_TYPE_NRPN:
-        {
-        // Send 99 for NRPN, or 101 for RPN
-        MIDI.sendControlChange(99, commandNumber >> 7, options.channelOut);
-        MIDI.sendControlChange(98, commandNumber & 127, options.channelOut);  // LSB
-        if (msb == CONTROL_VALUE_INCREMENT)
             {
-            MIDI.sendControlChange(96, 1, options.channelOut);
+            // Send 99 for NRPN, or 101 for RPN
+            MIDI.sendControlChange(99, commandNumber >> 7, options.channelOut);
+            MIDI.sendControlChange(98, commandNumber & 127, options.channelOut);  // LSB
+            if (msb == CONTROL_VALUE_INCREMENT)
+                {
+                MIDI.sendControlChange(96, 1, options.channelOut);
+                }
+            else if (msb == CONTROL_VALUE_DECREMENT)
+                {
+                MIDI.sendControlChange(97, 1, options.channelOut);
+                }
+            else
+                {
+                MIDI.sendControlChange(6, msb, options.channelOut);  // MSB
+                MIDI.sendControlChange(38, lsb, options.channelOut);  // LSB
+                }
+            MIDI.sendControlChange(101, 127, options.channelOut);  // LSB of NULL command
+            MIDI.sendControlChange(100, 127, options.channelOut);  // LSB of NULL command
+            TOGGLE_OUT_LED(); 
             }
-        else if (msb == CONTROL_VALUE_DECREMENT)
-            {
-            MIDI.sendControlChange(97, 1, options.channelOut);
-            }
-        else
-            {
-            MIDI.sendControlChange(6, msb, options.channelOut);  // MSB
-            MIDI.sendControlChange(38, lsb, options.channelOut);  // LSB
-            }
-        MIDI.sendControlChange(101, 127, options.channelOut);  // LSB of NULL command
-        MIDI.sendControlChange(100, 127, options.channelOut);  // LSB of NULL command
-        TOGGLE_OUT_LED(); 
-        }
         break;
         // note merging these actually loses bytes.  I tried.
         case CONTROL_TYPE_RPN:
-        {
-        MIDI.sendControlChange(101, commandNumber >> 7, options.channelOut);
-        MIDI.sendControlChange(100, commandNumber & 127, options.channelOut);  // LSB
-        if (msb == CONTROL_VALUE_INCREMENT)
             {
-            MIDI.sendControlChange(96, 1, options.channelOut);
+            MIDI.sendControlChange(101, commandNumber >> 7, options.channelOut);
+            MIDI.sendControlChange(100, commandNumber & 127, options.channelOut);  // LSB
+            if (msb == CONTROL_VALUE_INCREMENT)
+                {
+                MIDI.sendControlChange(96, 1, options.channelOut);
+                }
+            else if (msb == CONTROL_VALUE_DECREMENT)
+                {
+                MIDI.sendControlChange(97, 1, options.channelOut);
+                }
+            else
+                {
+                MIDI.sendControlChange(6, msb, options.channelOut);  // MSB
+                MIDI.sendControlChange(38, lsb, options.channelOut);  // LSB
+                }
+            MIDI.sendControlChange(101, 127, options.channelOut);  // LSB of NULL command
+            MIDI.sendControlChange(100, 127, options.channelOut);  // LSB of NULL command
+            TOGGLE_OUT_LED(); 
             }
-        else if (msb == CONTROL_VALUE_DECREMENT)
-            {
-            MIDI.sendControlChange(97, 1, options.channelOut);
-            }
-        else
-            {
-            MIDI.sendControlChange(6, msb, options.channelOut);  // MSB
-            MIDI.sendControlChange(38, lsb, options.channelOut);  // LSB
-            }
-        MIDI.sendControlChange(101, 127, options.channelOut);  // LSB of NULL command
-        MIDI.sendControlChange(100, 127, options.channelOut);  // LSB of NULL command
-        TOGGLE_OUT_LED(); 
-        }
         break;
         case CONTROL_TYPE_PC:
-        {
-        if (msb <= MAXIMUM_PC_VALUE)
-            MIDI.sendProgramChange(msb, options.channelOut);
-        TOGGLE_OUT_LED(); 
-        }
+            {
+            if (msb <= MAXIMUM_PC_VALUE)
+                MIDI.sendProgramChange(msb, options.channelOut);
+            TOGGLE_OUT_LED(); 
+            }
         break;
 #if defined(__AVR_ATmega2560__)        
         case CONTROL_TYPE_VOLTAGE_A:
-        {
-        setValue(DAC_A, fullValue >> 2);
-        //setPot(DAC_A, value);
-        }
+            {
+            setValue(DAC_A, fullValue >> 2);
+            //setPot(DAC_A, value);
+            }
         break;
         case CONTROL_TYPE_VOLTAGE_B:
-        {
-        setValue(DAC_B, fullValue >> 2);
-        //setPot(DAC_B, value);
-        }
+            {
+            setValue(DAC_B, fullValue >> 2);
+            //setPot(DAC_B, value);
+            }
         break;
 #endif
         }
@@ -155,43 +155,43 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
     switch (result)
         {
         case NO_MENU_SELECTED:
-        {
-        type = currentDisplay;
-        }
+            {
+            type = currentDisplay;
+            }
         break;
         case MENU_SELECTED:
-        {
-        if (type == CONTROL_TYPE_OFF)
             {
-            saveOptions();
-            goUpState(STATE_CONTROLLER);
-            }
-#if defined(__AVR_ATmega2560__)
-        else if ((type == CONTROL_TYPE_PC || type == CONTROL_TYPE_VOLTAGE_A || type == CONTROL_TYPE_VOLTAGE_B))
-#else
-        else if (type == CONTROL_TYPE_PC)
-#endif
-            {
-            if (buttonOnState != STATE_NONE)                // it's a button, we need to get button values
-                {
-                goDownState(buttonOnState);
-                }
-            else
+            if (type == CONTROL_TYPE_OFF)
                 {
                 saveOptions();
                 goUpState(STATE_CONTROLLER);
                 }
+#if defined(__AVR_ATmega2560__)
+            else if ((type == CONTROL_TYPE_PC || type == CONTROL_TYPE_VOLTAGE_A || type == CONTROL_TYPE_VOLTAGE_B))
+#else
+            else if (type == CONTROL_TYPE_PC)
+#endif
+                {
+                if (buttonOnState != STATE_NONE)                // it's a button, we need to get button values
+                    {
+                    goDownState(buttonOnState);
+                    }
+                else
+                    {
+                    saveOptions();
+                    goUpState(STATE_CONTROLLER);
+                    }
+                }
+            else // CC, NRPN, or RPN, we need to get a number and maybe button values
+                {
+                goDownState(nextState);
+                }
             }
-        else // CC, NRPN, or RPN, we need to get a number and maybe button values
-            {
-            goDownState(nextState);
-            }
-        }
         break; 
         case MENU_CANCELLED:
-        {
-        goUpStateWithBackup(STATE_CONTROLLER);
-        }
+            {
+            goUpStateWithBackup(STATE_CONTROLLER);
+            }
         break;
         }
     }
@@ -210,23 +210,23 @@ void setControllerNumber(uint8_t type, uint16_t &number, uint8_t backupType, uin
     switch (result)
         {
         case NO_MENU_SELECTED:
-        {
-        number = currentDisplay;
-        }
+            {
+            number = currentDisplay;
+            }
         break;
         case MENU_SELECTED:
-        {
-        if (nextState == STATE_CONTROLLER)  // we're not doing buttons
-            saveOptions();
-        else                                                                // we're doing buttons and either NRPN or RPN
-            doIncrement = (type == CONTROL_TYPE_NRPN || type == CONTROL_TYPE_RPN);
-        goDownState(nextState);
-        }
+            {
+            if (nextState == STATE_CONTROLLER)  // we're not doing buttons
+                saveOptions();
+            else                                                                // we're doing buttons and either NRPN or RPN
+                doIncrement = (type == CONTROL_TYPE_NRPN || type == CONTROL_TYPE_RPN);
+            goDownState(nextState);
+            }
         break;
         case MENU_CANCELLED:
-        {
-        goDownStateWithBackup(STATE_CONTROLLER);
-        }
+            {
+            goDownStateWithBackup(STATE_CONTROLLER);
+            }
         break;
         }
     }
@@ -257,25 +257,25 @@ void setControllerButtonOnOff(uint8_t &onOff, int8_t backupOnOff, int8_t nextSta
     switch (result)
         {
         case NO_MENU_SELECTED:
-        {
-        onOff = (uint8_t) (currentDisplay + 1);
-        }
+            {
+            onOff = (uint8_t) (currentDisplay + 1);
+            }
         break;
         case MENU_SELECTED:
-        {
-        if (nextState == STATE_CONTROLLER)  // we're all done
             {
-            doIncrement = false;
-            saveOptions();
+            if (nextState == STATE_CONTROLLER)  // we're all done
+                {
+                doIncrement = false;
+                saveOptions();
+                }
+            goDownState(nextState);
             }
-        goDownState(nextState);
-        }
         break;
         case MENU_CANCELLED:
-        {
-        doIncrement = false;
-        goDownStateWithBackup(STATE_CONTROLLER);
-        }
+            {
+            doIncrement = false;
+            goDownStateWithBackup(STATE_CONTROLLER);
+            }
         break;
         }
     }
