@@ -152,7 +152,7 @@ struct _arpLocal
     {
     uint32_t offTime;                                                   // When should we send the next noteOff?
     uint8_t noteOff;                                                    // What note should be given a noteOff?
-    uint8_t steadyNoteOff;												// doesn't get erased by a NOTE OFF
+    uint8_t steadyNoteOff;                                                                                              // doesn't get erased by a NOTE OFF
     uint8_t number;                                                             // The arpeggio number.  0...4 are ARPEGGIATOR_NUMBER_UP...ARPEGGIATOR_NUMBER_RANDOM, 
     // then we have arpeggios 0..9, then we have ARPEGGIATOR_NUMBER_CREATE
     int8_t currentPosition;                                             // Which note in the arpeggio is being played or edited?  Note that this is signed.  

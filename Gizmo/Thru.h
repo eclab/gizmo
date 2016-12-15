@@ -23,7 +23,7 @@
 // Permanent options special to the Key Splitter are:
 //
 // options.thruExtraNotes               How many *additional* notes should I send out?
-// options.thruNumDistributionChannels	Over how many *additional* channels should I distribute notes?
+// options.thruNumDistributionChannels  Over how many *additional* channels should I distribute notes?
 //
 // GLOBALS (TEMPORARY DATA)
 //
@@ -34,8 +34,8 @@
 // options.channelIn
 // options.channelOut
 // options.channelControl
-// options.transpose				// only affects notes coming into channelIn
-// options.volume					// only affects notes coming into channelIn
+// options.transpose                            // only affects notes coming into channelIn
+// options.volume                                       // only affects notes coming into channelIn
 //
 // DISPLAY
 // 
@@ -44,12 +44,12 @@
 // INTERFACE
 //
 // Root
-//      Thru			STATE_THRU
+//      Thru                    STATE_THRU
 //              [special controls:]
-//						Back Button: 	STATE_ROOT 
-//				Go						STATE_THRU_PLAY
-//				Extra Notes:			STATE_THRU_EXTRA_NOTES
-//				Distribute Notes:		STATE_THRU_DISTRIBUTE_NOTES
+//                                              Back Button:    STATE_ROOT 
+//                              Go                                              STATE_THRU_PLAY
+//                              Extra Notes:                    STATE_THRU_EXTRA_NOTES
+//                              Distribute Notes:               STATE_THRU_DISTRIBUTE_NOTES
 
 
 struct _thruLocal

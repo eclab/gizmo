@@ -52,20 +52,20 @@ void drawMIDIChannel(uint8_t channel);
 #define GLYPH_OMNI 1                                    // ALLC
 #define GLYPH_DEFAULT 2                                 // DFLT
 #define GLYPH_DECREMENT 3                               // DECR
-#define GLYPH_INCREMENT 4								// INCR
-#define GLYPH_FREE 5                              		// FREE
+#define GLYPH_INCREMENT 4                                                               // INCR
+#define GLYPH_FREE 5                                            // FREE
 #define GLYPH_NOTE 6                                    // NOTE
 #define GLYPH_SYSEX 7                                   // SYSX
-#define GLYPH_SONG_POSITION 8                   		// SPOS
+#define GLYPH_SONG_POSITION 8                                   // SPOS
 #define GLYPH_SONG_SELECT 9                             // SSEL
-#define GLYPH_TUNE_REQUEST 10                    		// TREQ
+#define GLYPH_TUNE_REQUEST 10                                   // TREQ
 #define GLYPH_START 11                                  // STRT
 #define GLYPH_CONTINUE 12                               // CONT
 #define GLYPH_STOP 13                                   // STOP
-#define GLYPH_SYSTEM_RESET 14                   		// RSET
+#define GLYPH_SYSTEM_RESET 14                                   // RSET
 #if defined(__AVR_ATmega2560__)
-#define GLYPH_FADE 15									// FADE
-#define GLYPH_PLAY 16									// PLAY
+#define GLYPH_FADE 15                                                                   // FADE
+#define GLYPH_PLAY 16                                                                   // PLAY
 #endif // defined(__AVR_ATmega2560__)
 
 // Writes any of the above glyph sets to the screen

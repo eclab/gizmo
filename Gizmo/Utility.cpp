@@ -126,8 +126,8 @@ void goDownState(uint8_t nextState)
 //    state = nextState;
 //    entry = true;
 //    clearReleased();
-	goUpState(nextState);
-	defaultState = STATE_NONE;
+    goUpState(nextState);
+    defaultState = STATE_NONE;
     }
 
 void goUpState(uint8_t nextState)
@@ -231,36 +231,36 @@ void stateSave(uint8_t backState)
             switch(application)
                 {
                 case STATE_STEP_SEQUENCER:
-                    {
-                    uint8_t len = GET_TRACK_LENGTH();
-                    uint8_t num = GET_NUM_TRACKS();
+                {
+                uint8_t len = GET_TRACK_LENGTH();
+                uint8_t num = GET_NUM_TRACKS();
                                         
-                    // pack the high-bit parts
-                    for(uint8_t i = 0; i < num; i++)
-                        {
-                        //// 1 bit mute
-                        //// 5 bits MIDI out channel (including "use default")
-                        //// 7 bits length
-                        //// 8 bits velocity (including "use per-note velocity")
-                        //// 7 bits fader
+                // pack the high-bit parts
+                for(uint8_t i = 0; i < num; i++)
+                    {
+                    //// 1 bit mute
+                    //// 5 bits MIDI out channel (including "use default")
+                    //// 7 bits length
+                    //// 8 bits velocity (including "use per-note velocity")
+                    //// 7 bits fader
 
-                        uint16_t pos = i * len * 2;
-                        distributeByte(pos, local.stepSequencer.muted[i] << 7);
-                        distributeByte(pos + 1, local.stepSequencer.outMIDI[i] << 3);
-                        distributeByte(pos + 6, local.stepSequencer.noteLength[i] << 1);
-                        distributeByte(pos + 13, local.stepSequencer.velocity[i]);
-                        distributeByte(pos + 21, local.stepSequencer.fader[i] << 1);
-                        }
-                    saveSlot(currentDisplay);
-                    stripHighBits();                        
+                    uint16_t pos = i * len * 2;
+                    distributeByte(pos, local.stepSequencer.muted[i] << 7);
+                    distributeByte(pos + 1, local.stepSequencer.outMIDI[i] << 3);
+                    distributeByte(pos + 6, local.stepSequencer.noteLength[i] << 1);
+                    distributeByte(pos + 13, local.stepSequencer.velocity[i]);
+                    distributeByte(pos + 21, local.stepSequencer.fader[i] << 1);
                     }
+                saveSlot(currentDisplay);
+                stripHighBits();                        
+                }
                 break;
                 case STATE_RECORDER:
-                    {
+                {
 #ifndef NO_RECORDER
-                    saveSlot(currentDisplay);
+                saveSlot(currentDisplay);
 #endif
-                    }
+                }
                 break;
                 }
                                         
@@ -326,9 +326,9 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                             local.stepSequencer.fader[i] = (gatherByte(pos + 21) >> 1);  // top 7 bits moved down 1
                             }
                                 
-    					local.stepSequencer.solo = 0;
-    					local.stepSequencer.currentTrack = 0;
-    					local.stepSequencer.currentEditPosition = 0;
+                        local.stepSequencer.solo = 0;
+                        local.stepSequencer.currentTrack = 0;
+                        local.stepSequencer.currentEditPosition = 0;
                         stripHighBits();
                         stopStepSequencer();
                         }
@@ -442,8 +442,8 @@ void playApplication()
             playStepSequencer();
             break;
         case STATE_RECORDER_PLAY:  // note not MENU: we go directly to options from PLAY
-        	// This is a dummy function, which we include to keep the switch statement from growing by 100 bytes (!)
-        	// Because we do NOT want to play the recorder in the background ever.
+            // This is a dummy function, which we include to keep the switch statement from growing by 100 bytes (!)
+            // Because we do NOT want to play the recorder in the background ever.
             playRecorder();
             break; 
         }
@@ -469,32 +469,32 @@ void clearScreen()
 
 GLOBAL static uint8_t glyphTable[
 #if defined(__AVR_ATmega2560__)
-17
+    17
 #else
-15
+    15
 #endif // defined(__AVR_ATmega2560__)
-][4] = 
+    ][4] = 
     {
     // These first: ----, ALLC, DFLT, DECR, and INCR, must be the FIRST ones
     // because the correspond with the five glyph types in doNumericalDisplay
-    	{GLYPH_3x5_MINUS, GLYPH_3x5_MINUS, GLYPH_3x5_MINUS, GLYPH_3x5_MINUS},   // ----
-        {GLYPH_3x5_A, GLYPH_3x5_L, GLYPH_3x5_L, GLYPH_3x5_C},   // ALLC
-        {GLYPH_3x5_D, GLYPH_3x5_F, GLYPH_3x5_L, GLYPH_3x5_T},   // DFLT
-        {GLYPH_3x5_D, GLYPH_3x5_E, GLYPH_3x5_C, GLYPH_3x5_R},   // DECR
-        {GLYPH_3x5_I, GLYPH_3x5_N, GLYPH_3x5_C, GLYPH_3x5_R},   // INCR
-        {GLYPH_3x5_F, GLYPH_3x5_R, GLYPH_3x5_E, GLYPH_3x5_E},   // FREE
-        {GLYPH_3x5_N, GLYPH_3x5_O, GLYPH_3x5_T, GLYPH_3x5_E},   // NOTE
-        {GLYPH_3x5_S, GLYPH_3x5_Y, GLYPH_3x5_S, GLYPH_3x5_X},   // SYSX
-        {GLYPH_3x5_S, GLYPH_3x5_P, GLYPH_3x5_O, GLYPH_3x5_S},   // SPOS
-        {GLYPH_3x5_S, GLYPH_3x5_S, GLYPH_3x5_E, GLYPH_3x5_L},   // SSEL
-        {GLYPH_3x5_T, GLYPH_3x5_R, GLYPH_3x5_E, GLYPH_3x5_Q},   // TREQ
-        {GLYPH_3x5_S, GLYPH_3x5_T, GLYPH_3x5_R, GLYPH_3x5_T},   // STRT
-        {GLYPH_3x5_C, GLYPH_3x5_O, GLYPH_3x5_N, GLYPH_3x5_T},   // CONT
-        {GLYPH_3x5_S, GLYPH_3x5_T, GLYPH_3x5_O, GLYPH_3x5_P},   // STOP
-        {GLYPH_3x5_R, GLYPH_3x5_S, GLYPH_3x5_E, GLYPH_3x5_T},   // RSET
+    {GLYPH_3x5_MINUS, GLYPH_3x5_MINUS, GLYPH_3x5_MINUS, GLYPH_3x5_MINUS},   // ----
+    {GLYPH_3x5_A, GLYPH_3x5_L, GLYPH_3x5_L, GLYPH_3x5_C},   // ALLC
+    {GLYPH_3x5_D, GLYPH_3x5_F, GLYPH_3x5_L, GLYPH_3x5_T},   // DFLT
+    {GLYPH_3x5_D, GLYPH_3x5_E, GLYPH_3x5_C, GLYPH_3x5_R},   // DECR
+    {GLYPH_3x5_I, GLYPH_3x5_N, GLYPH_3x5_C, GLYPH_3x5_R},   // INCR
+    {GLYPH_3x5_F, GLYPH_3x5_R, GLYPH_3x5_E, GLYPH_3x5_E},   // FREE
+    {GLYPH_3x5_N, GLYPH_3x5_O, GLYPH_3x5_T, GLYPH_3x5_E},   // NOTE
+    {GLYPH_3x5_S, GLYPH_3x5_Y, GLYPH_3x5_S, GLYPH_3x5_X},   // SYSX
+    {GLYPH_3x5_S, GLYPH_3x5_P, GLYPH_3x5_O, GLYPH_3x5_S},   // SPOS
+    {GLYPH_3x5_S, GLYPH_3x5_S, GLYPH_3x5_E, GLYPH_3x5_L},   // SSEL
+    {GLYPH_3x5_T, GLYPH_3x5_R, GLYPH_3x5_E, GLYPH_3x5_Q},   // TREQ
+    {GLYPH_3x5_S, GLYPH_3x5_T, GLYPH_3x5_R, GLYPH_3x5_T},   // STRT
+    {GLYPH_3x5_C, GLYPH_3x5_O, GLYPH_3x5_N, GLYPH_3x5_T},   // CONT
+    {GLYPH_3x5_S, GLYPH_3x5_T, GLYPH_3x5_O, GLYPH_3x5_P},   // STOP
+    {GLYPH_3x5_R, GLYPH_3x5_S, GLYPH_3x5_E, GLYPH_3x5_T},   // RSET
 #if defined(__AVR_ATmega2560__)
-        {GLYPH_3x5_F, GLYPH_3x5_A, GLYPH_3x5_D, GLYPH_3x5_E},   // FADE
-        {GLYPH_3x5_P, GLYPH_3x5_L, GLYPH_3x5_A, GLYPH_3x5_Y},   // PLAY
+    {GLYPH_3x5_F, GLYPH_3x5_A, GLYPH_3x5_D, GLYPH_3x5_E},   // FADE
+    {GLYPH_3x5_P, GLYPH_3x5_L, GLYPH_3x5_A, GLYPH_3x5_Y},   // PLAY
 #endif // defined(__AVR_ATmega2560__)
 
     };

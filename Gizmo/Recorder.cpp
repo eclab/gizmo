@@ -9,9 +9,9 @@
 /// These are situations the recorder may find itself in.
 /// Don't confuse these with the STATUS VALUES in Recorder.h
 
-#define NOT_ENDED 0				// Song playing/recording isn't over yet
-#define ENDED 1					// Playing/recording is over
-#define ENDED_REPEATING 2		// Playing is now over but we're going to repeat the song
+#define NOT_ENDED 0                             // Song playing/recording isn't over yet
+#define ENDED 1                                 // Playing/recording is over
+#define ENDED_REPEATING 2               // Playing is now over but we're going to repeat the song
 
 
 
@@ -95,8 +95,8 @@ void stateRecorderPlay()
         {
         // we're having problems coming back to Play from the Options menu and going somewhere
         // else.  I'm gonna see if this fixed things
-		//clearReleased();
-		        
+        //clearReleased();
+                        
         resetRecorder();
         local.recorder.status = RECORDER_STOPPED;
         local.recorder.tickoff = 0;
@@ -368,57 +368,57 @@ void stateRecorderPlay()
         
         
 /*
-#define RECORDER_MENU_REPEAT 0
-#define RECORDER_MENU_OPTIONS 1
+  #define RECORDER_MENU_REPEAT 0
+  #define RECORDER_MENU_OPTIONS 1
 
 // Gives other options
 void stateRecorderMenu()
-    {
-    uint8_t result;
-    if (entry)
-        {
-        resetRecorder();
-        sendAllNotesOff();
-        local.recorder.status = RECORDER_STOPPED;
-        }
+{
+uint8_t result;
+if (entry)
+{
+resetRecorder();
+sendAllNotesOff();
+local.recorder.status = RECORDER_STOPPED;
+}
                 
-    const char* menuItems[2] = {    
-        (options.recorderRepeat ? PSTR("NO REPEAT") : PSTR("REPEAT")),
-        options_p 
-        };
-    result = doMenuDisplay(menuItems, 2, STATE_NONE, STATE_NONE, 1);
+const char* menuItems[2] = {    
+(options.recorderRepeat ? PSTR("NO REPEAT") : PSTR("REPEAT")),
+options_p 
+};
+result = doMenuDisplay(menuItems, 2, STATE_NONE, STATE_NONE, 1);
 
-    switch (result)
-        {
-        case NO_MENU_SELECTED:
-            {
-            // do nothing
-            }
-        break;
-        case MENU_SELECTED:
-            {
-            switch(currentDisplay)
-                {
-                case RECORDER_MENU_REPEAT:
-                    {
-                    options.recorderRepeat = !options.recorderRepeat;
-                    saveOptions();
-                    }
-                break;
-                case RECORDER_MENU_OPTIONS:
-                    {
-                    optionsReturnState = STATE_RECORDER_MENU;
-                    goDownState(STATE_OPTIONS);
-                    }
-                break;
-                }
-            }
-        break;
-        case MENU_CANCELLED:
-            {
-            goUpState(STATE_RECORDER_PLAY);
-            }
-        break;
-        }
-    }
+switch (result)
+{
+case NO_MENU_SELECTED:
+{
+// do nothing
+}
+break;
+case MENU_SELECTED:
+{
+switch(currentDisplay)
+{
+case RECORDER_MENU_REPEAT:
+{
+options.recorderRepeat = !options.recorderRepeat;
+saveOptions();
+}
+break;
+case RECORDER_MENU_OPTIONS:
+{
+optionsReturnState = STATE_RECORDER_MENU;
+goDownState(STATE_OPTIONS);
+}
+break;
+}
+}
+break;
+case MENU_CANCELLED:
+{
+goUpState(STATE_RECORDER_PLAY);
+}
+break;
+}
+}
 */

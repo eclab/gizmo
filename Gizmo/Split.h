@@ -35,14 +35,14 @@
 //
 // Permanent options special to the Key Splitter are:
 //
-// options.splitChannel               					What channel should be the "alternate" channel to play out?
-//															This can be any value 1-16.
-// options.splitNote									What should be the primary split note?  This can be any value 0..127
-// options.splitLayerNote								What should be the secondary split note?  This can be any value 0..127
-//															OR it can be NO_NOTE (128)
-// options.splitControls								If SPLIT_RIGHT, CC etc. are sent to options.channelOut.
-//															If SPLIT_LEFT, CC etc. are sent to options.splitChannel.
-//															If SPLIT_MIX, the fader/balance mechanism occurs.
+// options.splitChannel                                                 What channel should be the "alternate" channel to play out?
+//                                                                                                                      This can be any value 1-16.
+// options.splitNote                                                                    What should be the primary split note?  This can be any value 0..127
+// options.splitLayerNote                                                               What should be the secondary split note?  This can be any value 0..127
+//                                                                                                                      OR it can be NO_NOTE (128)
+// options.splitControls                                                                If SPLIT_RIGHT, CC etc. are sent to options.channelOut.
+//                                                                                                                      If SPLIT_LEFT, CC etc. are sent to options.splitChannel.
+//                                                                                                                      If SPLIT_MIX, the fader/balance mechanism occurs.
 //
 // Other permanent options affecting the Key Splitter include:
 //
@@ -69,18 +69,18 @@
 // INTERFACE
 //
 // Root
-//      Split			STATE_SPLIT
-//              Back Button: 	STATE_ROOT 
-//				Select Button: 	STATE_SPLIT_NOTE
-//				Middle Button:	STATE_SPLIT_LAYER_NOTE
-//				Select Button Long Press:	cycle through SPLIT_RIGHT, SPLIT_LEFT, and SPLIT_MIX
-//				Middle Button Long Press:	STATE_SPLIT_CHANNEL
-//				Play a note: it's routed appropriately
+//      Split                   STATE_SPLIT
+//              Back Button:    STATE_ROOT 
+//                              Select Button:  STATE_SPLIT_NOTE
+//                              Middle Button:  STATE_SPLIT_LAYER_NOTE
+//                              Select Button Long Press:       cycle through SPLIT_RIGHT, SPLIT_LEFT, and SPLIT_MIX
+//                              Middle Button Long Press:       STATE_SPLIT_CHANNEL
+//                              Play a note: it's routed appropriately
 
 
 
-#define SPLIT_CONTROLS_RIGHT	0		// this is the default, see options
-#define SPLIT_CONTROLS_LEFT	1
+#define SPLIT_CONTROLS_RIGHT    0               // this is the default, see options
+#define SPLIT_CONTROLS_LEFT     1
 #define SPLIT_MIX 2
 
 void stateSplit();

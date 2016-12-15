@@ -149,7 +149,7 @@
 #define CONTROL_TYPE_NRPN 2
 #define CONTROL_TYPE_RPN 3
 #define CONTROL_TYPE_PC 4
-#ifdef VOLTAGE
+#if defined(__AVR_ATmega2560__)
 #define CONTROL_TYPE_VOLTAGE_A 5
 #define CONTROL_TYPE_VOLTAGE_B 6
 #endif
@@ -160,11 +160,11 @@
 #define MAXIMUM_PC_VALUE 127
 
 struct _controlLocal
-	{
-	int16_t displayValue;
- 	uint8_t middleButtonToggle;
-	uint8_t selectButtonToggle;  // perhaps these two could be compressed, they're just booleans
-	};
+    {
+    int16_t displayValue;
+    uint8_t middleButtonToggle;
+    uint8_t selectButtonToggle;  // perhaps these two could be compressed, they're just booleans
+    };
 
 ////// BUTTON TOGGLES
 //

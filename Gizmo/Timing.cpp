@@ -106,15 +106,15 @@ void updateTicksAndWait()
 // other than IGNORE_MIDI_CLOCK, which has already been handled specially at this point (in
 // handleClockCommand())
 uint8_t shouldEmitClockMessages()
-	{
-	return (options.clock == USE_MIDI_CLOCK ||
-		   options.clock == GENERATE_MIDI_CLOCK
+    {
+    return (options.clock == USE_MIDI_CLOCK ||
+        options.clock == GENERATE_MIDI_CLOCK
 #if defined(__AVR_ATmega2560__)
-	|| options.clock == DIVIDE_MIDI_CLOCK
+        || options.clock == DIVIDE_MIDI_CLOCK
 #endif // defined(__AVR_ATmega2560__)
-			)
-		   && !bypass;
-	}
+        )
+        && !bypass;
+    }
 
 
 uint32_t lastExternalPulseTime = 0;
@@ -136,25 +136,25 @@ uint8_t clockState = CLOCK_STOPPED;
 //  an issue because swing doesn't happen until the SECOND note typically, and that's going to
 //  be well after the first pulse, at which point the estimate will be realistic.  I HOPE!
 void updateExternalClock()
-	{
-    if (lastExternalPulseTime > 0)	// we've seen one pulse already
-    	{
-    	// note that we're overwriting the microsecsPerPulse variable.  This will get
-    	// reset when the user changes the clock setting back to something that's not
-    	// external (see the case for STATE_OPTIONS_MIDI_CLOCK in TopLevel.cpp)
-    	externalMicrosecsPerPulse = currentTime - lastExternalPulseTime;
-    	}
-     lastExternalPulseTime = currentTime;
-	}
+    {
+    if (lastExternalPulseTime > 0)      // we've seen one pulse already
+        {
+        // note that we're overwriting the microsecsPerPulse variable.  This will get
+        // reset when the user changes the clock setting back to something that's not
+        // external (see the case for STATE_OPTIONS_MIDI_CLOCK in TopLevel.cpp)
+        externalMicrosecsPerPulse = currentTime - lastExternalPulseTime;
+        }
+    lastExternalPulseTime = currentTime;
+    }
 
 void pulseClock()
     {
     if (clockState == CLOCK_STOPPED)
         return;
 
-	// update our external clock pulse estimate
-	if (USING_EXTERNAL_CLOCK())  // we're using an external clock
-		updateExternalClock(); 
+    // update our external clock pulse estimate
+    if (USING_EXTERNAL_CLOCK())  // we're using an external clock
+        updateExternalClock(); 
 
     pulse = 1;
     pulseCount++;
@@ -162,9 +162,9 @@ void pulseClock()
 #if defined(__AVR_ATmega2560__)
     if (options.clock != DIVIDE_MIDI_CLOCK && shouldEmitClockMessages())
 #else
-    if (shouldEmitClockMessages())
+        if (shouldEmitClockMessages())
 #endif
-        { MIDI.sendRealTime(MIDIClock); TOGGLE_OUT_LED(); }
+            { MIDI.sendRealTime(MIDIClock); TOGGLE_OUT_LED(); }
     }
 
 uint8_t stopClock(uint8_t fromButton = false)
@@ -173,11 +173,11 @@ uint8_t stopClock(uint8_t fromButton = false)
         return 0;
         
     if (clockState != CLOCK_RUNNING)
-    	return 0;
+        return 0;
 
-	lastExternalPulseTime = 0;
-	externalMicrosecsPerPulse = 0;
-	
+    lastExternalPulseTime = 0;
+    externalMicrosecsPerPulse = 0;
+        
     clockState = CLOCK_STOPPED;
 
     if (shouldEmitClockMessages())
@@ -197,8 +197,8 @@ uint8_t startClock(uint8_t fromButton = false)
     if (fromButton && USING_EXTERNAL_CLOCK())
         return 0;
         
-	if (clockState != CLOCK_STOPPED)
-		return 0;
+    if (clockState != CLOCK_STOPPED)
+        return 0;
 
     notePulseCountdown = 1;
     beatCountdown = 1;
@@ -217,16 +217,16 @@ uint8_t startClock(uint8_t fromButton = false)
     // situation where the system clock is currently stopped.  Then he can control them via
     // the system clock like this. 
     if (application == STATE_STEP_SEQUENCER)
-    	{
-    	// reset the step sequencer
-    	resetStepSequencer();
-		}    	
+        {
+        // reset the step sequencer
+        resetStepSequencer();
+        }       
 #ifndef NO_RECORDER
     else if (application == STATE_RECORDER)
-    	{
-    	// reset the recorder
-    	resetRecorder();
-    	}
+        {
+        // reset the recorder
+        resetRecorder();
+        }
 #endif
 
     return 1;
@@ -235,8 +235,8 @@ uint8_t startClock(uint8_t fromButton = false)
 uint8_t continueClock(uint8_t fromButton = false)
     {
     if (clockState != CLOCK_STOPPED)
-    	return 0;
-    	
+        return 0;
+        
     if (fromButton && USING_EXTERNAL_CLOCK())
         return 0;
 
@@ -291,16 +291,16 @@ void setNotePulseRate(uint8_t noteSpeedType)
     }
 
 uint32_t getMicrosecsPerPulse()
-	{
-	if (externalMicrosecsPerPulse)
-		return externalMicrosecsPerPulse;
-	else return microsecsPerPulse;
-	}
+    {
+    if (externalMicrosecsPerPulse)
+        return externalMicrosecsPerPulse;
+    else return microsecsPerPulse;
+    }
 
 
 
 void updateTimers()
-	{
+    {
     // update our internal clock if we're making one
     if (options.clock >= IGNORE_MIDI_CLOCK)
         {
@@ -354,10 +354,10 @@ void updateTimers()
         }
   
 #if defined(__AVR_ATmega2560__)
-  	if (notePulse && options.clock == DIVIDE_MIDI_CLOCK)
-  		{
-  		MIDI.sendRealTime(MIDIClock); TOGGLE_OUT_LED(); 
-  		}
+    if (notePulse && options.clock == DIVIDE_MIDI_CLOCK)
+        {
+        MIDI.sendRealTime(MIDIClock); TOGGLE_OUT_LED(); 
+        }
 #endif
- 	}
+    }
 

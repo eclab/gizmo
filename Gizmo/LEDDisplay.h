@@ -117,12 +117,12 @@
 
 #define GLYPH_2x5_LEFT_PAREN    0
 #define GLYPH_2x5_RIGHT_PAREN   1
-#define GLYPH_3x5_UP            2		// associated with character '*'
-#define GLYPH_3x5_PLUS        	3
-#define GLYPH_3x5_DOWN  		4		// associated with character ','
-#define GLYPH_3x5_MINUS       	5
-#define GLYPH_3x5_PERIOD       	6
-#define GLYPH_3x5_UP_DOWN       7		// associated with character '/'
+#define GLYPH_3x5_UP            2               // associated with character '*'
+#define GLYPH_3x5_PLUS          3
+#define GLYPH_3x5_DOWN                  4               // associated with character ','
+#define GLYPH_3x5_MINUS         5
+#define GLYPH_3x5_PERIOD        6
+#define GLYPH_3x5_UP_DOWN       7               // associated with character '/'
 #define GLYPH_3x5_0             8
 #define GLYPH_3x5_1             9
 #define GLYPH_3x5_2             10
@@ -160,7 +160,7 @@
 #define GLYPH_3x5_Y             42
 #define GLYPH_3x5_Z             43
 #define GLYPH_3x5_FLAT          44
-#define GLYPH_3x5_BLANK      	45
+#define GLYPH_3x5_BLANK         45
 
 
 #define GLYPH_4x5_10    0

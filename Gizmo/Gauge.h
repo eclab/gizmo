@@ -47,10 +47,10 @@
 // If you receive CHANNEL AFTERTOUCH, "AT" will be displayed followed by the value.
 // If you receive PROGRAM CHANGE, "PC" will be displayed, followed by the value.
 // If you receive CHANNEL CONTROL, CHANNEL MODE, NRPN, or RPN, text will be scrolled: first the MSB will be shown, then 
-//     					"CC", "CHANNEL MODE", "NRPN", or "RPN", then the parameter number, then (if 14-bit) the MSB+LSB 
-//						will be shown in parentheses
+//                                      "CC", "CHANNEL MODE", "NRPN", or "RPN", then the parameter number, then (if 14-bit) the MSB+LSB 
+//                                              will be shown in parentheses
 // If you receive SysEx, Song Position, Song Select, Tune Request, Start, Continue, Stop, or System Reset, then
-// 						SYSX, SPOS, SSEL, TREQ, STRT, CONT, STOP, or RSET will be shown.
+//                                              SYSX, SPOS, SSEL, TREQ, STRT, CONT, STOP, or RSET will be shown.
 // If you receive MIDI Clock, then LED(2,5) on the right Matrix will light
 // If you receive MIDI Time Code, then LED(2,6) on the right Matrix will light
 // If you receive Active Sensing, then LED(2,7) on the right Matrix will light
@@ -60,7 +60,7 @@
 //
 // Root
 //      Gauge                   STATE_GAUGE
-//              Back Button: 	STATE_ROOT 
+//              Back Button:    STATE_ROOT 
 
 
 

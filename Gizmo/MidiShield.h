@@ -8,7 +8,7 @@
 
 
 #ifdef HEADLESS
-extern uint8_t throwaway;		// need this in order to have a blank macro, else gcc complains
+extern uint8_t throwaway;               // need this in order to have a blank macro, else gcc complains
 #define TOGGLE_IN_LED() (throwaway = 0)
 #define TOGGLE_OUT_LED() (throwaway = 0)
 

@@ -74,405 +74,412 @@
 
 
 /*
-const char PROGMEM font_2x5[1][2] = {
-    { //1
-    A00010A,
-    A11111A
-    },
-};
+  const char PROGMEM font_2x5[1][2] = {
+  { //1
+  A00010A,
+  A11111A
+  },
+  };
 */
 
 
+// This semicolon is critical to clue Emacs into properly
+// indenting the following array
+;
+
 const char PROGMEM font_3x5[46][3] = {
-    { // (
-    A01110A,
-    A10001A,
-    A00000A,
-    },
-    { // )
-    A00000A,
-    A10001A,
-    A01110A,
-    },
-    { // 	UP
-    A00010A,
-    A11111A,
-    A00010A,
-    },  
-    { // +   PLUS
-    A00100A,
-    A01110A,
-    A00100A
-    },
-    { // 	DOWN 
-    A01000A,
-    A11111A,
-    A01000A,
-    },
-    { // - 	MINUS 
-    A00100A,
-    A00100A,
-    A00100A,
-    },
-    { //  .   PERIOD
-    A00000A,
-    A10000A,
-    A00000A
-    },
-    { // / 		UP-DOWN
-    A01010A,
-    A11111A,
-    A01010A,
-    },
-    { //0
-    A01110A,
-    A10001A,
-    A01110A
-    },
-    { //1
-    A10010A,
-    A11111A,
-    A10000A,
-    },
-    { //2
-    A11001A,
-    A10101A,
-    A10010A
-    },
-    { //3
-    A10001A,
-    A10101A,
-    A11111A,
-    },
-    { //4
-    A00111A,
-    A00100A,
-    A11111A
-    },
-    { //5
-    A10111A,
-    A10101A,
-    A01001A
-    },
-    { //6
-    A11111A,
-    A10101A,
-    A11101A
-    },
-    { //7
-    A11001A,
-    A00101A,
-    A00011A
-    },
-    { //8
-    A11111A,
-    A10101A,
-    A11111A
-    },
-    { //9
-    A10111A,
-    A10101A,
-    A11111A
-    },
-    { //A
-    A11111A,
-    A00101A,
-    A11111A
-    },
-    { //B
-    A11111A,
-    A10101A,
-    A01010A
-    },
-    { //C
-    A01110A,
-    A10001A,
-    A10001A
-    },
-    { //D
-    A11111A,
-    A10001A,
-    A01110A
-    },
-    { //E
-    A11111A,
-    A10101A,
-    A10101A
-    },
-    { //F
-    A11111A,
-    A00101A,
-    A00101A
-    },
-    { //G
-    A01110A,
-    A10001A,
-    A01101A,
-    },
-    { //H
-    A11111A,
-    A00100A,
-    A11111A
-    },
-    { //I
-    A10001A,
-    A11111A,
-    A10001A
-    },
-    { //J
-    A01000A,
-    A10000A,
-    A01111A
-    },
-    { //K
-    A11111A,
-    A00100A,
-    A11011A
-    },
-    { //L
-    A11111A,
-    A10000A,
-    A10000A
-    },
-    { //M               // Unreadable
-    A11111A,
-    A00110A,
-    A11111A
-    },
-    { //N
-    A11110A,
-    A00001A,
-    A11110A
-    },
-    { //O
-    A01110A,
-    A10001A,
-    A01110A
-    },
-    { //P
-    A11111A,
-    A00101A,
-    A00111A
-    },
-    { //Q               // Tough to Read
-    A00110A,
-    A01001A,
-    A10110A
-    },
-    { //R
-    A11111A,
-    A01101A,
-    A10111A
-    },
-    { //S
-    A10010A,
-    A10101A,
-    A01001A,
-    },
-    { //T
-    A00001A,
-    A11111A,
-    A00001A
-    },
-    { //U
-    A11111A,
-    A10000A,
-    A11111A,
-    },
-    { //V               // Tough to read
-    A01111A,
-    A10000A,
-    A01111A,
-    },
-    { //W               // Unreadable
-    A01111A,
-    A11100A,
-    A01111A
-    },
-    { //X
-    A11011A,
-    A00100A,
-    A11011A
-    },
-    { //Y
-    A00011A,
-    A11100A,
-    A00011A
-    },
-    { //Z
-    A11001A,
-    A10101A,
-    A10011A
-    },
-    { // b (flat)
-    A11111A,
-    A10100A,
-    A01100A
-    },
-    { // BLANK
-    A00000A,
-    A00000A,
-    A00000A,
-    },
-};
+        { // (
+        A01110A,
+        A10001A,
+        A00000A,
+        },
+        { // )
+        A00000A,
+        A10001A,
+        A01110A,
+        },
+        { //    UP
+        A00010A,
+        A11111A,
+        A00010A,
+        },  
+        { // +   PLUS
+        A00100A,
+        A01110A,
+        A00100A
+        },
+        { //    DOWN 
+        A01000A,
+        A11111A,
+        A01000A,
+        },
+        { // -  MINUS 
+        A00100A,
+        A00100A,
+        A00100A,
+        },
+        { //  .   PERIOD
+        A00000A,
+        A10000A,
+        A00000A
+        },
+        { // /          UP-DOWN
+        A01010A,
+        A11111A,
+        A01010A,
+        },
+        { //0
+        A01110A,
+        A10001A,
+        A01110A
+        },
+        { //1
+        A10010A,
+        A11111A,
+        A10000A,
+        },
+        { //2
+        A11001A,
+        A10101A,
+        A10010A
+        },
+        { //3
+        A10001A,
+        A10101A,
+        A11111A,
+        },
+        { //4
+        A00111A,
+        A00100A,
+        A11111A
+        },
+        { //5
+        A10111A,
+        A10101A,
+        A01001A
+        },
+        { //6
+        A11111A,
+        A10101A,
+        A11101A
+        },
+        { //7
+        A11001A,
+        A00101A,
+        A00011A
+        },
+        { //8
+        A11111A,
+        A10101A,
+        A11111A
+        },
+        { //9
+        A10111A,
+        A10101A,
+        A11111A
+        },
+        { //A
+        A11111A,
+        A00101A,
+        A11111A
+        },
+        { //B
+        A11111A,
+        A10101A,
+        A01010A
+        },
+        { //C
+        A01110A,
+        A10001A,
+        A10001A
+        },
+        { //D
+        A11111A,
+        A10001A,
+        A01110A
+        },
+        { //E
+        A11111A,
+        A10101A,
+        A10101A
+        },
+        { //F
+        A11111A,
+        A00101A,
+        A00101A
+        },
+        { //G
+        A01110A,
+        A10001A,
+        A01101A,
+        },
+        { //H
+        A11111A,
+        A00100A,
+        A11111A
+        },
+        { //I
+        A10001A,
+        A11111A,
+        A10001A
+        },
+        { //J
+        A01000A,
+        A10000A,
+        A01111A
+        },
+        { //K
+        A11111A,
+        A00100A,
+        A11011A
+        },
+        { //L
+        A11111A,
+        A10000A,
+        A10000A
+        },
+        { //M               // Unreadable
+        A11111A,
+        A00110A,
+        A11111A
+        },
+        { //N
+        A11110A,
+        A00001A,
+        A11110A
+        },
+        { //O
+        A01110A,
+        A10001A,
+        A01110A
+        },
+        { //P
+        A11111A,
+        A00101A,
+        A00111A
+        },
+        { //Q               // Tough to Read
+        A00110A,
+        A01001A,
+        A10110A
+        },
+        { //R
+        A11111A,
+        A01101A,
+        A10111A
+        },
+        { //S
+        A10010A,
+        A10101A,
+        A01001A,
+        },
+        { //T
+        A00001A,
+        A11111A,
+        A00001A
+        },
+        { //U
+        A11111A,
+        A10000A,
+        A11111A,
+        },
+        { //V               // Tough to read
+        A01111A,
+        A10000A,
+        A01111A,
+        },
+        { //W               // Unreadable
+        A01111A,
+        A11100A,
+        A01111A
+        },
+        { //X
+        A11011A,
+        A00100A,
+        A11011A
+        },
+        { //Y
+        A00011A,
+        A11100A,
+        A00011A
+        },
+        { //Z
+        A11001A,
+        A10101A,
+        A10011A
+        },
+        { // b (flat)
+        A11111A,
+        A10100A,
+        A01100A
+        },
+        { // BLANK
+        A00000A,
+        A00000A,
+        A00000A,
+        },
+    };
 
 
 
 const char PROGMEM font_4x5[19][4] = {
-    { //10   // not super recognizable
-    A11111A,
-    A01110A,
-    A10001A,
-    A01110A
-    },
-    { //11
-    A11111A,
-    A00000A,
-    A00000A,
-    A11111A,
-    },
-    { //12
-    A11111A,
-    A00000A,
-    A11101A,
-    A10111A
-    },  
-    { //13
-    A11111A,
-    A00000A,
-    A10101A,
-    A11111A
-    },  
-    { //14          // Not very readable
-    A11111A,
-    A00111A,
-    A00100A,
-    A11111A
-    },  
-    { //15
-    A11111A,
-    A00000A,
-    A10111A,
-    A11101A
-    },  
-    { //16
-    A11111A,
-    A01110A,
-    A10101A,
-    A01101A
-    },  
-    { //17
-    A11111A,
-    A00000A,
-    A11101A,
-    A00011A
-    },  
-    { //18
-    A11111A,
-    A01110A,
-    A10101A,
-    A01110A
-    },  
-    { //19
-    A11111A,
-    A00010A,
-    A00101A,
-    A11111A
-    },  
-    { // -1
-    A00100A,
-    A00100A,
-    A00010A,
-    A11111A
-    },
-    { // -2
-    A00100A,
-    A00000A,
-    A11101A,
-    A10111A
-    },  
-    { // -3
-    A00100A,
-    A00000A,
-    A10101A,
-    A11111A
-    },
-    { // -4
-    A00100A,
-    A00011A,
-    A00100A,
-    A11111A
-    },
-    { // -5
-    A00100A,
-    A00000A,
-    A10111A,
-    A11101A
-    },
-    { // -6
-    A00100A,
-    A01110A,
-    A10101A,
-    A11101A
-    },
-    { // -7
-    A00100A,
-    A00001A,
-    A11101A,
-    A00011A
-    },
-    { // -8
-    A00100A,
-    A11011A,
-    A10101A,
-    A11011A
-    },
-    { // -9
-    A00100A,
-    A00011A,
-    A00101A,
-    A11111A
-    },
+        { //10   // not super recognizable
+        A11111A,
+        A01110A,
+        A10001A,
+        A01110A
+        },
+        { //11
+        A11111A,
+        A00000A,
+        A00000A,
+        A11111A,
+        },
+        { //12
+        A11111A,
+        A00000A,
+        A11101A,
+        A10111A
+        },  
+        { //13
+        A11111A,
+        A00000A,
+        A10101A,
+        A11111A
+        },  
+        { //14          // Not very readable
+        A11111A,
+        A00111A,
+        A00100A,
+        A11111A
+        },  
+        { //15
+        A11111A,
+        A00000A,
+        A10111A,
+        A11101A
+        },  
+        { //16
+        A11111A,
+        A01110A,
+        A10101A,
+        A01101A
+        },  
+        { //17
+        A11111A,
+        A00000A,
+        A11101A,
+        A00011A
+        },  
+        { //18
+        A11111A,
+        A01110A,
+        A10101A,
+        A01110A
+        },  
+        { //19
+        A11111A,
+        A00010A,
+        A00101A,
+        A11111A
+        },  
+        { // -1
+        A00100A,
+        A00100A,
+        A00010A,
+        A11111A
+        },
+        { // -2
+        A00100A,
+        A00000A,
+        A11101A,
+        A10111A
+        },  
+        { // -3
+        A00100A,
+        A00000A,
+        A10101A,
+        A11111A
+        },
+        { // -4
+        A00100A,
+        A00011A,
+        A00100A,
+        A11111A
+        },
+        { // -5
+        A00100A,
+        A00000A,
+        A10111A,
+        A11101A
+        },
+        { // -6
+        A00100A,
+        A01110A,
+        A10101A,
+        A11101A
+        },
+        { // -7
+        A00100A,
+        A00001A,
+        A11101A,
+        A00011A
+        },
+        { // -8
+        A00100A,
+        A11011A,
+        A10101A,
+        A11011A
+        },
+        { // -9
+        A00100A,
+        A00011A,
+        A00101A,
+        A11111A
+        },
     };
     
 
-const char PROGMEM font_5x5[5][5] {
-    { //M
-    A11111A,
-    A00010A,
-    A00100A,
-    A00010A,
-    A11111A
-    },
-    { //N
-    A11111A,
-    A00010A,
-    A00100A,
-    A01000A,
-    A11111A
-    },
-    { //Q
-    A01110A,
-    A10001A,
-    A10001A,
-    A11110A,
-    A10000A
-    },
-    { //V
-    A00011A,
-    A01100A,
-    A10000A,
-    A01100A,
-    A00011A
-    },
-    { //W
-    A01111A,
-    A10000A,
-    A01100A,
-    A10000A,
-    A01111A
-    },
-};
+// interestingly, the AVR preprocessor for GCC
+// does NOT REQUIRE the equals sign below.  This was
+// a gotcha for me that wasn't caught.  :-(
+const char PROGMEM font_5x5[5][5] = {
+        { //M
+        A11111A,
+        A00010A,
+        A00100A,
+        A00010A,
+        A11111A
+        },
+        { //N
+        A11111A,
+        A00010A,
+        A00100A,
+        A01000A,
+        A11111A
+        },
+        { //Q
+        A01110A,
+        A10001A,
+        A10001A,
+        A11110A,
+        A10000A
+        },
+        { //V
+        A00011A,
+        A01100A,
+        A10000A,
+        A01100A,
+        A00011A
+        },
+        { //W
+        A01111A,
+        A10000A,
+        A01100A,
+        A10000A,
+        A01111A
+        },
+    };
 
   
 /////   Fixed width 8-wide glyphs
@@ -489,267 +496,273 @@ const char PROGMEM font_5x5[5][5] {
 /////   isn't normally drawn using writeNumber
 
 const char PROGMEM font_8x5[26][8] = {
-    { // 1/96 note (eighth-triplet) [1 MIDI clock beat]
-    A10000A,
-    A11111A,
-    A01111A,
-    A11111A,
-    A11111A,
-    A01111A,
-    A11111A,
-    A11111A,
-    },
-    { // 1/48 note (quarter-triplet) [2 MIDI clock beats]
-    A10000A,
-    A11111A,
-    A00111A,
-    A10111A,
-    A11111A,
-    A00111A,
-    A10111A,
-    A11111A,
-    },
-    { // 1/32 note [3 MIDI clock beats]
-    A00000A,
-    A10000A,
-    A11111A,
-    A00111A,
-    A00111A,
-    A10111A,
-    A11111A,
-    A00000A,
-    },
-    { // 1/24 note (half-triplet) [4 MIDI clock beats]
-    A10000A,
-    A11111A,
-    A00101A,
-    A10101A,
-    A11111A,
-    A00101A,
-    A10101A,
-    A11111A,
-    },
-    { // 1/16 note  [6 MIDI clock beats]
-    A00000A,
-    A10000A,
-    A11111A,
-    A00101A,
-    A00101A,
-    A10101A,
-    A11111A,
-    A00000A,
-    },
-    { // 1/12 note (triplet)  [8 MIDI clock beats]
-    A11000A,
-    A11111A,
-    A00011A,
-    A11011A,
-    A11111A,
-    A00011A,
-    A11011A,
-    A11111A,
-    },
-    { // 1/8   [12 MIDI beats]
-    A00000A,
-    A11000A,
-    A11111A,
-    A00011A,
-    A00011A,
-    A11011A,
-    A11111A,
-    A00000A,
-    },
-    { // 1/4   [24 MIDI beats]
-    A11000A,
-    A11000A,
-    A11111A,
-    A00000A,
-    A00000A,
-    A00000A,
-    A00000A,
-    A00000A,
-    },
-    { // 1/4 tied to triplet (32 MIDI beats)
-    A11000A,
-    A11000A,
-    A11111A,
-    A00000A,
-    A10000A,
-    A00001A,
-    A00111A,
-    A00001A,
-    },
-    { // Dotted 1/4 note (36 MIDI beats)
-    A11000A,
-    A11000A,
-    A11111A,
-    A00000A,
-    A10000A,
-    A00000A,
-    A00000A,
-    A00000A,
-    },
-    { // Half note (48 MIDI beats)
-    A11100A,
-    A10100A,
-    A11111A,
-    A00000A,
-    A00000A,
-    A00000A,
-    A00000A,
-    A00000A,
-    },
-    { // 1/2 tied to two triplets (60 MIDI beats)
-    A11100A,
-    A10100A,
-    A11111A,
-    A00000A,
-    A10000A,
-    A00001A,
-    A00111A,
-    A00001A,
-    },
-    { // Dotted half note (72 MIDI beats)
-    A11100A,
-    A10100A,
-    A11111A,
-    A00000A,
-    A10000A,
-    A00000A,
-    A00000A,
-    A00000A,
-    },
-    { // Whole note (96 MIDI beats)
-    A11100A,
-    A10100A,
-    A10100A,
-    A11100A,
-    A00000A,
-    A00000A,
-    A00000A,
-    A00000A,
-    },
-    { // Dotted whole note (144 MIDI beats)
-    A11100A,
-    A10100A,
-    A10100A,
-    A11100A,
-    A00000A,
-    A10000A,
-    A00000A,
-    A00000A,
-    },
-    { // Double whole note (198 MIDI beats)
-    A11100A,
-    A00000A,
-    A11100A,
-    A10100A,
-    A10100A,
-    A11100A,
-    A00000A,
-    A11100A,
-    },
-    { // Infinity
-    A00000A,
-    A00100A,
-    A01010A,
-    A01010A,
-    A00100A,
-    A01010A,
-    A01010A,
-    A00100A
-    },
-    { // 1/8
-    A11111A,
-    A00000A,
-    A11100A,
-    A00111A,
-    A00000A,
-    A11111A,
-    A10101A,
-    A11111A
-    },
-    { // 1/6
-    A11111A,
-    A00000A,
-    A11100A,
-    A00111A,
-    A00000A,
-    A11111A,
-    A10101A,
-    A11101A,
-    },
-    { // 1/4
-    A11111A,
-    A00000A,
-    A11100A,
-    A00111A,
-    A00000A,
-    A00111A,
-    A00100A,
-    A11111A
-    },
-    { // 1/3
-    A11111A,
-    A00000A,
-    A11100A,
-    A00111A,
-    A00000A,
-    A10101A,
-    A10101A,
-    A11111A
-    },
-    { // 1/2
-    A11111A,
-    A00000A,
-    A11100A,
-    A00111A,
-    A00000A,
-    A11001A,
-    A10101A,
-    A10010A
-    },
-    { // SURE? pt 1
-    A10111A,
-    A11101A,
-    A00000A,
-    A11111A,
-    A10000A,
-    A11111A,
-    A00000A,
-    A11111A
-    },
-    { // SURE? pt 2
-    A00101A,
-    A11010A,
-    A00000A,
-    A11111A,
-    A10101A,
-    A00000A,
-    A10101A,
-    A00011A
-    },
+        { // 1/96 note (eighth-triplet) [1 MIDI clock beat]
+        A10000A,
+        A11111A,
+        A01111A,
+        A11111A,
+        A11111A,
+        A01111A,
+        A11111A,
+        A11111A,
+        },
+        { // 1/48 note (quarter-triplet) [2 MIDI clock beats]
+        A10000A,
+        A11111A,
+        A00111A,
+        A10111A,
+        A11111A,
+        A00111A,
+        A10111A,
+        A11111A,
+        },
+        { // 1/32 note [3 MIDI clock beats]
+        A00000A,
+        A10000A,
+        A11111A,
+        A00111A,
+        A00111A,
+        A10111A,
+        A11111A,
+        A00000A,
+        },
+        { // 1/24 note (half-triplet) [4 MIDI clock beats]
+        A10000A,
+        A11111A,
+        A00101A,
+        A10101A,
+        A11111A,
+        A00101A,
+        A10101A,
+        A11111A,
+        },
+        { // 1/16 note  [6 MIDI clock beats]
+        A00000A,
+        A10000A,
+        A11111A,
+        A00101A,
+        A00101A,
+        A10101A,
+        A11111A,
+        A00000A,
+        },
+        { // 1/12 note (triplet)  [8 MIDI clock beats]
+        A11000A,
+        A11111A,
+        A00011A,
+        A11011A,
+        A11111A,
+        A00011A,
+        A11011A,
+        A11111A,
+        },
+        { // 1/8   [12 MIDI beats]
+        A00000A,
+        A11000A,
+        A11111A,
+        A00011A,
+        A00011A,
+        A11011A,
+        A11111A,
+        A00000A,
+        },
+        { // 1/4   [24 MIDI beats]
+        A11000A,
+        A11000A,
+        A11111A,
+        A00000A,
+        A00000A,
+        A00000A,
+        A00000A,
+        A00000A,
+        },
+        { // 1/4 tied to triplet (32 MIDI beats)
+        A11000A,
+        A11000A,
+        A11111A,
+        A00000A,
+        A10000A,
+        A00001A,
+        A00111A,
+        A00001A,
+        },
+        { // Dotted 1/4 note (36 MIDI beats)
+        A11000A,
+        A11000A,
+        A11111A,
+        A00000A,
+        A10000A,
+        A00000A,
+        A00000A,
+        A00000A,
+        },
+        { // Half note (48 MIDI beats)
+        A11100A,
+        A10100A,
+        A11111A,
+        A00000A,
+        A00000A,
+        A00000A,
+        A00000A,
+        A00000A,
+        },
+        { // 1/2 tied to two triplets (60 MIDI beats)
+        A11100A,
+        A10100A,
+        A11111A,
+        A00000A,
+        A10000A,
+        A00001A,
+        A00111A,
+        A00001A,
+        },
+        { // Dotted half note (72 MIDI beats)
+        A11100A,
+        A10100A,
+        A11111A,
+        A00000A,
+        A10000A,
+        A00000A,
+        A00000A,
+        A00000A,
+        },
+        { // Whole note (96 MIDI beats)
+        A11100A,
+        A10100A,
+        A10100A,
+        A11100A,
+        A00000A,
+        A00000A,
+        A00000A,
+        A00000A,
+        },
+        { // Dotted whole note (144 MIDI beats)
+        A11100A,
+        A10100A,
+        A10100A,
+        A11100A,
+        A00000A,
+        A10000A,
+        A00000A,
+        A00000A,
+        },
+        { // Double whole note (198 MIDI beats)
+        A11100A,
+        A00000A,
+        A11100A,
+        A10100A,
+        A10100A,
+        A11100A,
+        A00000A,
+        A11100A,
+        },
+        { // Infinity
+        A00000A,
+        A00100A,
+        A01010A,
+        A01010A,
+        A00100A,
+        A01010A,
+        A01010A,
+        A00100A
+        },
+        { // 1/8
+        A11111A,
+        A00000A,
+        A11100A,
+        A00111A,
+        A00000A,
+        A11111A,
+        A10101A,
+        A11111A
+        },
+        { // 1/6
+        A11111A,
+        A00000A,
+        A11100A,
+        A00111A,
+        A00000A,
+        A11111A,
+        A10101A,
+        A11101A,
+        },
+        { // 1/4
+        A11111A,
+        A00000A,
+        A11100A,
+        A00111A,
+        A00000A,
+        A00111A,
+        A00100A,
+        A11111A
+        },
+        { // 1/3
+        A11111A,
+        A00000A,
+        A11100A,
+        A00111A,
+        A00000A,
+        A10101A,
+        A10101A,
+        A11111A
+        },
+        { // 1/2
+        A11111A,
+        A00000A,
+        A11100A,
+        A00111A,
+        A00000A,
+        A11001A,
+        A10101A,
+        A10010A
+        },
+        { // SURE? pt 1
+        A10111A,
+        A11101A,
+        A00000A,
+        A11111A,
+        A10000A,
+        A11111A,
+        A00000A,
+        A11111A
+        },
+        { // SURE? pt 2
+        A00101A,
+        A11010A,
+        A00000A,
+        A11111A,
+        A10101A,
+        A00000A,
+        A10101A,
+        A00011A
+        },
+
+    // NOTE we're using gcc's 0b.... syntax.
+    // This is not portable of course, but who cares.
+    // It's also, for our purposes, *backwards*.
+    // So note that the strings should be flipped
+    // horizontally to make much sense of them.
     { // GIZMO VERSION 1 pt 1
-    0b10101101,
-    0b11101001,
-    0b00000000,
-    0b11101111,
-    0b00100000,
-    0b01001101,
-    0b00101001,
-    0b11100110,
-    },
-    { // GIZMO VERSION 1 pt w
-    0b00000000,
-    0b00000000,
-    0b00111110,
-    0b00000100,
-    0b00000000,
-    0b00000000,
-    0b11101001,
-    0b10101011,
-    },
- };
+	0b01100111,
+	0b10010100,
+	0b10110010,
+	0b00000100,
+	0b11110111,
+	0b00000000,
+	0b10010111,
+	0b10110101,
+	},
+    { // GIZMO VERSION 1 pt 2
+	0b11010101,
+	0b10010111,
+	0b00000000,
+	0b00000000,
+	0b00100000,
+	0b01111100,
+	0b00000000,
+	0b00000000,
+	},
+    };
 
 
 
@@ -1370,9 +1383,9 @@ void writeHex(unsigned char* mat, unsigned char val)
     }
 
 void writeFlat(unsigned char* mat)
-	{
-	memcpy_P(mat + 4, font_3x5[GLYPH_3x5_FLAT], 3);
-	}
+    {
+    memcpy_P(mat + 4, font_3x5[GLYPH_3x5_FLAT], 3);
+    }
 
 // Prints a note to the matrix.  If the note is
 // not in the range NOTE_C ... NOTE_B  (0 ... 11), nothing
@@ -1385,64 +1398,64 @@ void writeNote(unsigned char* mat, unsigned char note)
     switch(note)
         {
         case NOTE_C:
-            {
-            memcpy_P(mat + 0, font_3x5[GLYPH_3x5_C], 3);
-            }
+        {
+        memcpy_P(mat + 0, font_3x5[GLYPH_3x5_C], 3);
+        }
         break;
         case NOTE_Db:
-            {
-			writeFlat(mat);
-            }
+        {
+        writeFlat(mat);
+        }
         // fall thru
         case NOTE_D:
-            {
-            memcpy_P(mat + 0, font_3x5[GLYPH_3x5_D], 3);
-            }
+        {
+        memcpy_P(mat + 0, font_3x5[GLYPH_3x5_D], 3);
+        }
         break;
         case NOTE_Eb:
-            {
-			writeFlat(mat);
-            }
+        {
+        writeFlat(mat);
+        }
         // fall thru
         case NOTE_E:
-            {
-            memcpy_P(mat + 0, font_3x5[GLYPH_3x5_E], 3);
-            }
+        {
+        memcpy_P(mat + 0, font_3x5[GLYPH_3x5_E], 3);
+        }
         break;
         case NOTE_F:
-            {
-            memcpy_P(mat + 0, font_3x5[GLYPH_3x5_F], 3);
-            }
+        {
+        memcpy_P(mat + 0, font_3x5[GLYPH_3x5_F], 3);
+        }
         break;
         case NOTE_Gb:
-            {
-			writeFlat(mat);
-            }
+        {
+        writeFlat(mat);
+        }
         // fall thru
         case NOTE_G:
-            {
-            memcpy_P(mat + 0, font_3x5[GLYPH_3x5_G], 3);
-            }
+        {
+        memcpy_P(mat + 0, font_3x5[GLYPH_3x5_G], 3);
+        }
         break;
         case NOTE_Ab:
-            {
-			writeFlat(mat);
-            }
+        {
+        writeFlat(mat);
+        }
         // fall thru
         case NOTE_A:
-            {
-            memcpy_P(mat + 0, font_3x5[GLYPH_3x5_A], 3);
-            }
+        {
+        memcpy_P(mat + 0, font_3x5[GLYPH_3x5_A], 3);
+        }
         break;
         case NOTE_Bb:
-            {
-			writeFlat(mat);
-            }
+        {
+        writeFlat(mat);
+        }
         // fall thru
         case NOTE_B:
-            {
-            memcpy_P(mat + 0, font_3x5[GLYPH_3x5_B], 3);
-            }
+        {
+        memcpy_P(mat + 0, font_3x5[GLYPH_3x5_B], 3);
+        }
         break;
         }
     }
@@ -1701,14 +1714,14 @@ void addToBuffer(const char* val, uint8_t extra = 0)
                     else break;
                     }
                 /*
-                else if (c == '1') // || c == '(' || c == ')')		// 2-pixel thin letters
-                    {
-                    if (len + 2 <= maxLen)
-                        len += 3;
-                    else break;
-                    }
+                  else if (c == '1') // || c == '(' || c == ')')                // 2-pixel thin letters
+                  {
+                  if (len + 2 <= maxLen)
+                  len += 3;
+                  else break;
+                  }
                 */
-                else											// everything else is 3 pixels
+                else                                                                                    // everything else is 3 pixels
                     {
                     if (len + 3 <= maxLen)
                         len += 4;
@@ -1750,11 +1763,11 @@ void addToBuffer(const char* val, uint8_t extra = 0)
         if (c == 'M' || c == 'W' || c == 'N' || c == 'Q' || c == 'V' )   // wide letters
             {
             memcpy_P(buffer + bufferLength, font_5x5[
-            	(c == 'M') ? 0 :
-            	((c == 'N') ? 1 :
-            	((c == 'Q') ? 2 :
-            	((c == 'V') ? 3 : 4)))
-            	], 5);
+                    (c == 'M') ? 0 :
+                    ((c == 'N') ? 1 :
+                        ((c == 'Q') ? 2 :
+                        ((c == 'V') ? 3 : 4)))
+                    ], 5);
             bufferLength += 5;
             }
         else if (c >= 'A' && c <= 'Z')  // letter, add it plus a thin space
@@ -1768,50 +1781,50 @@ void addToBuffer(const char* val, uint8_t extra = 0)
             buffer[bufferLength] = 0;
             bufferLength += 1;
             }
-		/*
-        else if (c == '1')  // number
-            {
-            memcpy_P(buffer + bufferLength, font_2x5[GLYPH_2x5_1], 2);
-            bufferLength += 2;
-            }
-        else if (c == '(' | c == ')')
-            {
-            memcpy_P(buffer + bufferLength, font_2x5[GLYPH_2x5_LEFT_PAREN + c - '('], 2);
-            bufferLength += 2;
-            }
+        /*
+          else if (c == '1')  // number
+          {
+          memcpy_P(buffer + bufferLength, font_2x5[GLYPH_2x5_1], 2);
+          bufferLength += 2;
+          }
+          else if (c == '(' | c == ')')
+          {
+          memcpy_P(buffer + bufferLength, font_2x5[GLYPH_2x5_LEFT_PAREN + c - '('], 2);
+          bufferLength += 2;
+          }
         */
         else 
             {
             if (c >= '(' && c <= '9')   // one of ( ) UP PLUS DOWN MINUS PERIOD UP_DOWN 0 1 2 3 4 5 6 7 8 9
-            	memcpy_P(buffer + bufferLength, font_3x5[c - '(' + GLYPH_2x5_LEFT_PAREN], 3);
+                memcpy_P(buffer + bufferLength, font_3x5[c - '(' + GLYPH_2x5_LEFT_PAREN], 3);
             /*
-            if (c >= '0' && c <= '9')  // number
-                {
-                memcpy_P(buffer + bufferLength, font_3x5[c - '0' + GLYPH_3x5_0], 3);
-                }
-            else if (c == '-')
-                {
-                memcpy_P(buffer + bufferLength, font_3x5[GLYPH_3x5_MINUS], 3);
-                }
-            else if (c >= CHAR_UP && c <= CHAR_UPDOWN)
-            	{
-            	memcpy_P(buffer + bufferLength, font_3x5[c - CHAR_UP + GLYPH_3x5_UP], 3);
-            	}
-            // This is the character for UP
-            else if (c == CHAR_UP)
-                {
-                memcpy_P(buffer + bufferLength, font_3x5[GLYPH_3x5_UP], 3);
-                }
-            // This is the character for DOWN (because it's next to UP)
-            else if (c == CHAR_DOWN)
-                {
-                memcpy_P(buffer + bufferLength, font_3x5[GLYPH_3x5_DOWN], 3);
-                }
-            // This is the character for UPDOWN (because it's next to UP)
-            else if (c == CHAR_UPDOWN)
-                {
-                memcpy_P(buffer + bufferLength, font_3x5[GLYPH_3x5_UP_DOWN], 3);
-                }
+              if (c >= '0' && c <= '9')  // number
+              {
+              memcpy_P(buffer + bufferLength, font_3x5[c - '0' + GLYPH_3x5_0], 3);
+              }
+              else if (c == '-')
+              {
+              memcpy_P(buffer + bufferLength, font_3x5[GLYPH_3x5_MINUS], 3);
+              }
+              else if (c >= CHAR_UP && c <= CHAR_UPDOWN)
+              {
+              memcpy_P(buffer + bufferLength, font_3x5[c - CHAR_UP + GLYPH_3x5_UP], 3);
+              }
+              // This is the character for UP
+              else if (c == CHAR_UP)
+              {
+              memcpy_P(buffer + bufferLength, font_3x5[GLYPH_3x5_UP], 3);
+              }
+              // This is the character for DOWN (because it's next to UP)
+              else if (c == CHAR_DOWN)
+              {
+              memcpy_P(buffer + bufferLength, font_3x5[GLYPH_3x5_DOWN], 3);
+              }
+              // This is the character for UPDOWN (because it's next to UP)
+              else if (c == CHAR_UPDOWN)
+              {
+              memcpy_P(buffer + bufferLength, font_3x5[GLYPH_3x5_UP_DOWN], 3);
+              }
             */
             bufferLength += 3;
             }

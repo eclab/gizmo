@@ -132,7 +132,6 @@
 #define STATE_OPTIONS_CLICK 57
 #define STATE_OPTIONS_SCREEN_BRIGHTNESS 58
 #define STATE_OPTIONS_MENU_DELAY 59
-#ifdef VOLTAGE
 #define STATE_OPTIONS_VOLTAGE 60
 #define STATE_OPTIONS_ABOUT 61
 #define STATE_SPLIT_CHANNEL 62
@@ -141,18 +140,9 @@
 #define STATE_THRU_PLAY 65
 #define STATE_THRU_EXTRA_NOTES 66
 #define STATE_THRU_DISTRIBUTE_NOTES 67
-#else
-#define STATE_OPTIONS_ABOUT 60
-#define STATE_SPLIT_CHANNEL 61
-#define STATE_SPLIT_NOTE 62
-#define STATE_SPLIT_LAYER_NOTE 63
-#define STATE_THRU_PLAY 64
-#define STATE_THRU_EXTRA_NOTES 65
-#define STATE_THRU_DISTRIBUTE_NOTES 66
-#endif // VOLTAGE
 
 
-#else					// STANDARD ARRANGEMENT FOR UNO
+#else                                   // STANDARD ARRANGEMENT FOR UNO
 #define STATE_NONE 255
 #define STATE_ROOT 0
 #define STATE_ARPEGGIATOR 1
@@ -211,12 +201,7 @@
 #define STATE_OPTIONS_MIDI_CLOCK 54
 #define STATE_OPTIONS_CLICK 55
 #define STATE_OPTIONS_SCREEN_BRIGHTNESS 56
-#ifdef VOLTAGE
-#define STATE_OPTIONS_VOLTAGE 57
-#define STATE_OPTIONS_ABOUT 58
-#else
 #define STATE_OPTIONS_ABOUT 57
-#endif  // VOLTAGE
 
 #endif // defined(__AVR_ATmega2560__)
 
@@ -225,7 +210,7 @@
 
 /// THE STATE MACHINE
 #define MAX_APPLICATIONS        12        // How many applications do we have slots for?
-extern uint8_t state;                 	  // The current state
+extern uint8_t state;                     // The current state
 extern uint8_t application;               // The top-level non-root state (the application, so to speak)
 extern uint8_t entry;                     // Are we just entering a state?
 extern uint8_t optionsReturnState;        // If we're in STATE_OPTIONS and the user presses BACK, where should we go?
@@ -251,7 +236,7 @@ extern const char* cc_p;// = PSTR("CC");
 extern const char* v_p;// = PSTR("IS");
 extern const char* up_p;// = PSTR("UP");
 extern const char* down_p;// = PSTR("DOWN");
-#ifdef VOLTAGE
+#if defined(__AVR_ATmega2560__)
 extern const char* voltage_p;// = PSTR("VOLTAGE");
 #endif
 extern const char* options_p;
@@ -365,7 +350,7 @@ uint8_t isUpdated(uint8_t button, uint8_t val);
 
 // NEW INCOMING MIDI DATA TRIGGERS
 extern uint8_t  newItem;                // newItem can be 0, 1, or WAIT_FOR_A_SEC
-extern uint8_t 	itemType;
+extern uint8_t  itemType;
 extern uint16_t itemNumber;             // Note on/off/poly aftertouch use this for NOTE PITCH, otherwise it's the parameter for PC/CC/NRPN/RPN
 extern uint16_t itemValue;              // Note on/off/poly aftertouch use this for NOTE VELOCITY / AFTERTOUCH, otherwise it's the value for PC/CC/NRPN/RPN, and PITCH BEND
 extern uint8_t itemChannel;
@@ -558,7 +543,7 @@ void handleSystemReset();
 // like transposition and volume control.
 void sendNoteOn(uint8_t note, uint8_t velocity, uint8_t channel);
 void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel);
-void sendAllNotesOff();	// sends all notes off on ALL CHANNELS, unless bypass is in effect
+void sendAllNotesOff(); // sends all notes off on ALL CHANNELS, unless bypass is in effect
 void sendAllNotesOffDisregardBypass();
 void sendPolyPressure(uint8_t note, uint8_t pressure, uint8_t channel);
 

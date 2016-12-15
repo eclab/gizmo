@@ -63,12 +63,12 @@ void resetOptions()
     options.menuDelay = 5;  // corresponds to DEFAULT_MENU_DELAY
     options.volume = 3;  // corresponds to no volume modification
     options.splitChannel = 1;
-	options.splitNote = 60;  // Middle C
-	options.splitLayerNote = NO_NOTE;
+    options.splitNote = 60;  // Middle C
+    options.splitLayerNote = NO_NOTE;
 #endif
 
 #if defined(HEADLESS_RESET)
-	options.channelControl = 16;
+    options.channelControl = 16;
 #endif 
     }
 

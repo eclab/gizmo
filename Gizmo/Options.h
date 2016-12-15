@@ -8,9 +8,9 @@
 
 
 struct _optionsLocal
-	{
-	uint32_t lastTempoTapTime;
-	};
+    {
+    uint32_t lastTempoTapTime;
+    };
 
 
 
@@ -49,27 +49,25 @@ struct _options
     uint8_t selectButtonControlOff ;                            // 0 is off, n is value n+1, and 129 is "increment" (128)
     uint8_t noteLength;
     uint8_t arpeggiatorPlayOctaves;
-	uint8_t arpeggiatorPlayVelocity;
+    uint8_t arpeggiatorPlayVelocity;
     uint8_t arpeggiatorLatch;
     //uint8_t stepSequencerNoEcho;
     //uint8_t recorderRepeat;
     uint8_t click;
     uint8_t clickVelocity;
-#ifdef VOLTAGE
-  uint8_t voltage;
-#endif
-     
+
 #if defined(__AVR_ATmega2560__)
-  uint8_t menuDelay ;
+    uint8_t voltage;
+    uint8_t menuDelay ;
     int8_t transpose;
     uint8_t volume;
-  uint8_t splitControls;					  // = 0 by default, SPLIT_RIGHT
-  uint8_t splitChannel;
-  uint8_t splitNote;
-  uint8_t splitLayerNote;
-  uint8_t thruExtraNotes;
-  uint8_t thruNumDistributionChannels;
-#endif	// defined(__AVR_ATmega2560__)
+    uint8_t splitControls;                                          // = 0 by default, SPLIT_RIGHT
+    uint8_t splitChannel;
+    uint8_t splitNote;
+    uint8_t splitLayerNote;
+    uint8_t thruExtraNotes;
+    uint8_t thruNumDistributionChannels;
+#endif  // defined(__AVR_ATmega2560__)
 
     };
 

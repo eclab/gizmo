@@ -1,7 +1,18 @@
 Necessary Modifications to Build the Code 
 =========================================
 
-You will need to modify your Arduino libraries slightly in order to build
+You will need to install TWO libraries, both found in Gizmo's libraries
+directory.  
+
+1. The FortySevenEffects MIDI library.  Install the Gizmo version, not the
+   most recent online version.  (The online version is changing in such a way
+   as to be too big for Gizmo on the Uno for the moment).
+
+2. The SoftReset library.
+
+
+
+You will also need to modify your Arduino software slightly in order to build
 this code successfully.  Here are the items:
 
 
