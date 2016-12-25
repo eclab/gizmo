@@ -753,14 +753,11 @@ void stateArpeggiatorCreateSave()
             data.arp.root = r;
             SAVE_ARPEGGIO(currentDisplay);
             goDownState(STATE_ARPEGGIATOR);
-            //state = STATE_ARPEGGIATOR;
-            //entry = true;
             }
         break;
         case MENU_CANCELLED:
             {
             goDownState(STATE_ARPEGGIATOR_CREATE_EDIT);
-            //state = STATE_ARPEGGIATOR_CREATE_EDIT;
             }
         break;
         }

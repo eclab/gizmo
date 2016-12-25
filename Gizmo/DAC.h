@@ -7,6 +7,7 @@
 #define __DAC_H_
 
 #include <Wire.h>
+#include <Arduino.h>
 
 
 // Writing to the DACs is quite slow; you may have very slight MIDI lag issues.
@@ -16,6 +17,9 @@
 
 // I2C address of DAC B
 #define DAC_B   0x63
+
+// Address of Digital Pin which goes LOW when Gate is opened (a note is played)
+#define VOLTAGE_GATE  (8)
 
 // Sets the value of a DAC.  Legal DAC values range from 0...4095
 // Values outside this range will silently fail.

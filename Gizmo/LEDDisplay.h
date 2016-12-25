@@ -119,7 +119,7 @@
 #define GLYPH_2x5_RIGHT_PAREN   1
 #define GLYPH_3x5_UP            2               // associated with character '*'
 #define GLYPH_3x5_PLUS          3
-#define GLYPH_3x5_DOWN                  4               // associated with character ','
+#define GLYPH_3x5_DOWN          4               // associated with character ','
 #define GLYPH_3x5_MINUS         5
 #define GLYPH_3x5_PERIOD        6
 #define GLYPH_3x5_UP_DOWN       7               // associated with character '/'

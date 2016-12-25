@@ -25,9 +25,6 @@ GLOBAL const char* nrpn_p;// = PSTR("NRPN");
 GLOBAL const char* rpn_p;// = PSTR("RPN");
 GLOBAL const char* cc_p;// = PSTR("CC");
 GLOBAL const char* v_p;// = PSTR("IS");
-#if defined(__AVR_ATmega2560__)
-GLOBAL const char* voltage_p;// = PSTR("VOLTAGE");
-#endif
 GLOBAL const char* options_p;  // = PSTR("OPTIONS");
 
 
@@ -1304,7 +1301,8 @@ void go()
                                           ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
                                           PSTR("BRIGHTNESS"), 
                                           PSTR("MENU DELAY"), 
-                                          (options.voltage ? PSTR("NO VOLTAGE") : voltage_p),
+                                          (options.voltage == NO_VOLTAGE ? PSTR("CV+VELOCITY") : 
+                                          	(options.voltage == VOLTAGE_WITH_VELOCITY ? PSTR("CV+AFTERTOUCH") : PSTR("NO CV"))),
                                           PSTR("GIZMO V1 (C) 2016 SEAN LUKE") };
             doMenuDisplay(menuItems, 15, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
 #else
@@ -2046,7 +2044,9 @@ void go()
 
         case STATE_OPTIONS_VOLTAGE:
             {
-            options.voltage = !options.voltage;
+            options.voltage++;
+            if (options.voltage > VOLTAGE_WITH_AFTERTOUCH)
+            	options.voltage = NO_VOLTAGE;
             saveOptions();
             goUpState(STATE_OPTIONS);
             playApplication();
@@ -2312,18 +2312,24 @@ void handleAfterTouchPoly(byte channel, byte note, byte pressure)
             {
             if (options.splitControls == SPLIT_MIX)
                 {
-                sendPolyPressure(note, pressure,options.channelOut);
-                sendPolyPressure(note, pressure,options.splitChannel);
+                sendPolyPressure(note, pressure, options.channelOut);
+                sendPolyPressure(note, pressure, options.splitChannel);
                 }
             else
                 {
                 if (note >= options.splitNote)
+                    {
                     sendPolyPressure((uint8_t) note, pressure,options.channelOut);
+                    }
                 if (((options.splitLayerNote != NO_NOTE) && (note <= options.splitLayerNote)) ||
                     note < options.splitNote)
                     sendPolyPressure((uint8_t) note, pressure,options.splitChannel);
                 }
             }
+		if (options.voltage != NO_VOLTAGE && 
+    		options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_B &&
+            options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_B)
+            	{ setNote(DAC_B, pressure); }  
         }
 #endif
     updateMIDI(channel, MIDI_AFTERTOUCH_POLY, note, pressure);
@@ -2957,6 +2963,12 @@ void handleAfterTouchChannel(byte channel, byte pressure)
             {
             MIDI.sendAfterTouch(pressure, channel);
             }
+#if defined(__AVR_Atmega2560__)
+	if (options.voltage != NO_VOLTAGE && 
+		options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_B &&
+		options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_B)
+		{ setNote(DAC_B, pressure); }  
+#endif
         }
     TOGGLE_OUT_LED();
     }
@@ -3101,12 +3113,17 @@ void sendPolyPressure(uint8_t note, uint8_t pressure, uint8_t channel)
 #if defined(__AVR_ATmega2560__)
 void turnOffVoltage()
     {
-    if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_A &&
+    if (options.voltage != NO_VOLTAGE && 
+    	options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_A &&
         options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_A)
         setNote(DAC_A, 0);
-    if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_B &&
+    if (options.voltage != NO_VOLTAGE && 
+    	options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_B &&
         options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_B)
         setNote(DAC_B, 0);
+    
+    // shut off gate regardless
+    digitalWrite(VOLTAGE_GATE, 0);
     }
 #endif
         
@@ -3134,13 +3151,18 @@ void sendNoteOn(uint8_t note, uint8_t velocity, uint8_t channel)
 #if defined(__AVR_ATmega2560__)
     if (channel == options.channelOut && lastNotePlayed != note)
         {
-        if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_A &&
+        if (options.voltage != NO_VOLTAGE && 
+    		options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_A &&
             options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_A)
-            { setNote(DAC_A, note); lastNotePlayed = note; }
-        if (options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_B &&
+            { 
+            setNote(DAC_A, note); lastNotePlayed = note;
+		    digitalWrite(VOLTAGE_GATE, 1);
+		    }
+        if (options.voltage != NO_VOLTAGE && 
+    		options.leftKnobControlType != CONTROL_TYPE_VOLTAGE_B &&
             options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_B)
             { setNote(DAC_B, velocity); lastNotePlayed = note; }  
-        }  
+	    }  
 #endif
     TOGGLE_OUT_LED();
     }

@@ -83,9 +83,6 @@ void setup()
     rpn_p = PSTR("RPN");
     cc_p = PSTR("CC");
     v_p = PSTR("IS");
-#if defined(__AVR_ATmega2560__)
-    voltage_p = PSTR("VOLTAGE");
-#endif
     options_p = PSTR("OPTIONS");
 
     // seed random number generator
@@ -93,6 +90,10 @@ void setup()
 
     // prepare the pots
     setupPots();
+    
+    // Set up the CV Gates.  For now we just do digitalWrite
+    pinMode(VOLTAGE_GATE, OUTPUT);
+    digitalWrite(VOLTAGE_GATE, 0);
 	    
     // Set up the LED display	
     initLED();

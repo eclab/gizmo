@@ -236,9 +236,6 @@ extern const char* cc_p;// = PSTR("CC");
 extern const char* v_p;// = PSTR("IS");
 extern const char* up_p;// = PSTR("UP");
 extern const char* down_p;// = PSTR("DOWN");
-#if defined(__AVR_ATmega2560__)
-extern const char* voltage_p;// = PSTR("VOLTAGE");
-#endif
 extern const char* options_p;
 
 
@@ -260,6 +257,12 @@ union _local
 extern _local local;
 
 
+
+//// CV OPTIONS
+
+#define NO_VOLTAGE  0
+#define VOLTAGE_WITH_VELOCITY	1
+#define VOLTAGE_WITH_AFTERTOUCH 2
 
 
 
