@@ -49,7 +49,7 @@ Gizmo comes built-in with the following applications and other capabilities:
 As if this weren't enough, Gizmo also comes with the following capabilities.  All of these settings are automatically saved permanently in memory.
 
 \begin{itemize}
-\item {\bf Tempo and the MIDI Clock.}\quad Gizmo can sync to an external MIDI clock, can ignore it and use its own internal clock, and can emit the same as a MIDI clock.  Gizmo can also pass the external MIDI clock through or block it.  When using its own internal clock, Gizmo supports tempos ranging from 1 to 999 BPM, settable numerically or via tapping.  You can start, pause/unpause, and stop this clock (sending the appropriate MIDI Start, Stop, or Continue signals).  Gizmo can also divide the MIDI clock, thereby outputting a slower clock than it is inputting.
+\item {\bf Tempo and the MIDI Clock.}\quad Gizmo can sync to an external MIDI clock, can ignore it and use its own internal clock, and can emit the same as a MIDI clock.  Gizmo can also pass the external MIDI clock through or block it.  When using its own internal clock, Gizmo supports tempos ranging from 1 to 999 BPM, settable numerically or via tapping.  You can start, pause/un-pause, and stop this clock (sending the appropriate MIDI Start, Stop, or Continue signals).  Gizmo can also divide the MIDI clock, thereby outputting a slower clock than it is inputting.
 
 Gizmo applications can also be set with a {\it note value} (or {\it note speed}) to play their notes relative to this clock, ranging from eighth triplets (1/24 beat) to double whole notes (8 beats).  At any time, Gizmo pulses on-screen LEDs indicating the clock and note speed pulses.  Finally, Gizmo can be configured to vary the degree of {\it swing} or {\it syncopation}.
 
@@ -61,7 +61,7 @@ Gizmo applications can also be set with a {\it note value} (or {\it note speed})
 
 \item {\bf Screen Brightness.}\quad You can change the screen brightness.  
 
-\item {\bf  \textit{Mega Only} Control Voltage.}\quad You can configure Gizmo to optionally output control voltage (CV) values from 0--5V, through two DACs, in response to notes being played.    One CV output is in response to the note pitch, and the other is in response to the note velocity.
+\item {\bf  \textit{Mega Only} Control Voltage / Gate.}\quad You can configure Gizmo to output control voltage (CV) values from 0--5V, as well as trigger a 5V gate, and output 0--5V in response to another signal, either velocity or aftertouch, all in response to notes being played. 
 
 \item {\bf \textit{Mega Only}\quad Transposition and Volume Control.}\footnote{{\it Didn't this used to be available for the Uno?\quad}Yeah.  Ran out of space fixing bugs.}\quad You can transpose all of Gizmo's MIDI output pitch by anywhere from \(-60...60\) steps.  Additionally you can multiply the MIDI output velocity (volume) by multiples of two ranging from \(1/8\) to \(8\).
 
@@ -619,9 +619,11 @@ Note pitches are displayed by showing the note (such as B$\flat$), with the octa
 \label{octave}
 \end{wrapfigure}
 
-The Controller allows you to assign to each of two buttons and two potentiometers any NRPN, RPN, Control Change (CC), or Program Change (PC) value.  These assignments are stored in Flash memory and survive reboots and power cycling.
+The Controller allows you to assign to each of two buttons and two potentiometers any NRPN, RPN, Control Change (CC), or Program Change (PC) value, or optionally a control voltage.  These assignments are stored in Flash memory and survive reboots and power cycling.
 
 The Controller interacts with Bypass mode differently than other applications.  In bypass mode, the Controller passes all the incoming MIDI data to MIDI out as usual.  But it will still emit values when you press the buttons or more the knobs.  This is because it's typical that you'd want to use Controller to (for example) manipulate the VCF on an analog synthesizer while playing it via a remote keyboard.  To do this, you'd plug the keyboard into Gizmo, plug Gizmo into the synthesizer, and turn on bypass mode.
+
+Optional control voltage is sent out one of two Digital-to-Analog Converters or DACs you may have attached, which it refers to as DAC A (I2C address 0x62) or DAC B (I2C address 0x63).\footnote{Gizmo assumes you're DACs of this kind: https:/\!/www.adafruit.com/product/935\quad These DACs can be connected via I2C, send 0--5V, and can be set to either I2C address 0x62 or 0x63.  If you need more than 5V, you'll need to wire up your own op-amp.}
 
 	\begin{description}
 
@@ -631,13 +633,13 @@ The Controller interacts with Bypass mode differently than other applications.  
 	
 	When you turn a knob or press a button, and the knob/button has had its control type set to something other than OFF, then the appropriate MIDI message is sent, and the value of the message is displayed as a number on-screen.  Messages are only sent if the MIDI OUT channel is something other than NO CHANNEL (See {\bf Options\(\boldsymbol\rightarrow\) Out MIDI}, in Section \ref{options}).
 	
-	Several protocols (NRPN, RPN, some CC) can accept 14-bit numbers, that is, values in the range 0...16383.  However Gizmo's potentiometers have a maximum resolution of 10 bits, that is, 0...1023.   The potentiometers in fact send 10 bits of data: their top 7 bits are the MSB, and their bottom 3 bits become the upper 3 bits of the LSB (the bottom 4 bits are padded with zeros).   While only the MSB is displayed on-screen, this partial LSB is being sent as well to give you a bit more control.
+	Several protocols (NRPN, RPN, some CC) can accept 14-bit numbers, that is, values in the range 0...16383.  However Gizmo's potentiometers have a maximum resolution of 10 bits, that is, 0...1023.   The potentiometers in fact send 10 bits of data: their top 7 bits are the MSB, and their bottom 3 bits become the upper 3 bits of the LSB (the bottom 4 bits are padded with zeros).   While only the MSB is displayed on-screen, this partial LSB is being sent as well to give you a bit more control.  For control voltage, all ten bits will be mapped to 0--5V.\footnote{The DACs are actually 12-bit, but what can you do: the pots are only 10 bit.}
 
 	\item{\bf Left Knob} and {\bf Right Knob}
 	
 	These submenus let you select your control type and parameter number for the left and right potentiometers.
 	
-	In each, you are first given the option of what kind of {\bf control type} (OFF, CC, NRPN, RPN, PC) you would like to manipulate with the left knob.  If OFF, then turning the knob will not do anything.
+	In each, you are first given the option of what kind of {\bf control type} (OFF, CC, NRPN, RPN, PC, or (on the Mega) A Voltage or B Voltage) you would like to manipulate with the left knob.  If OFF, then turning the knob will not do anything.
 
 	After you have selected a control type, if you have selected CC, NRPN, or RPN, you will be then asked to select a {\bf controller parameter number}.  (Otherwise ,for PC and OFF, you will go back to the top-level Controller Menu).  CC parameter numbers may range 0 ... 119.  NRPN and RPN parameter numbers may range 0 ... 16383. When you have completed this, you will be sent back to the top-level Controller menu.
 
@@ -645,7 +647,7 @@ The Controller interacts with Bypass mode differently than other applications.  
 	
 	Thees submenus let you select your control type, parameter number, and on/off values for the middle and select buttons.
 	
-	In each, you are first given the option of what kind of {\bf control type} (OFF, CC, NRPN, RPN, PC) you would like to manipulate with the middle button.  If OFF, then pressing the button will not do anything.
+	In each, you are first given the option of what kind of {\bf control type} (OFF, CC, NRPN, RPN, PC, or (on the Mega) A Voltage or B Voltage) you would like to manipulate with the middle button.  If OFF, then pressing the button will not do anything.
 
 	After you have selected a control type, if you have selected CC, NRPN, or RPN, you will be then asked to select a {\bf controller parameter number}.  (Otherwise ,for PC and OFF, you will go back to the top-level Controller Menu).  CC parameter numbers may range 0 ... 119.  NRPN and RPN parameter numbers may range 0 ... 16383.
 	
@@ -946,8 +948,8 @@ Double Whole Note				&192\\
 		\end{description}
 
 
-	\item{\bf  \textit{Mega Only:}\quad Voltage} (or {\bf No Voltage})\\
-		Toggles whether Gizmo will send control voltage information out via the optional DACs in response to notes played or to Controller potentiometers being turned.  Note that control voltage is sent in response to an I2C signal, and this may cause a very slight MIDI delay.
+	\item{\bf  \textit{Mega Only:}\quad CV+Velocity \textit{or} CV+Aftertouch \textit{or} No CV}\\
+		Toggles whether Gizmo will send control voltage and gate information.  If {\bf CV+Velocity}, then control voltage will be sent out DAC A (I2C address 0x62), velocity will be sent out DAC B (I2C address 0x63), and digital pin 8 will be set HIGH (5V) when a note is played (or LOW (0V) when a note is released).\footnote{As mentioned in an earlier footnote, Gizmo assumes you're DACs of this kind: https:/\!/www.adafruit.com/product/935} If {\bf CV+Aftertouch}, then the same is done except that aftertouch will be sent out DAC B instead of velocity.  If {\bf No CV}, then nothing is sent.  Pitch Bend at present has no effect.	\footnote{Note that at present if you have set either knob in the Controller to control voltage, that DAC will be unavailable even outside the Controller.  I'll fix that soon.}
 		
 	\item{\bf The About Screen}\\
 		Presently says:\quad \texttt{GIZMO V1 (C) 2016 BY SEAN LUKE}
