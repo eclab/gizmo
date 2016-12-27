@@ -81,5 +81,425 @@ The files are in certain categories:
 	Split.h/cpp		The keyboard splitter / layerer
 	Thru.h/cpp		The MIDI thru application
 	
+
+
+
+
+
+
+
+MAKING AN APPLICATION
+
+The state machine is for the moment just a bunch of #defines located in TopLevel.h.  If you'd like to add
+an application, typically you'd add the TOP LEVEL APPLICATION STATE and then add the SUBSIDIARY STATES.
+A top-level application state would replace the first STATE_UNDEFINED_* state (presently STATE_UNDEFINED_3
+on the Mega).  Just replace it with your own named state, perhaps STATE_FOO
+
+Additional states would typically get tacked onto the end of the #define list and be called stuff like
+STATE_FOO_EDIT or STATE_FOO_WHATEVER.  The critical part here is to make sure that the #defines are
+continguous -- no gaps between the numbers -- so the switch works efficiently.
+
+Next you need to add a state.  Let's add STATE_FOO.  In TopLevel.cpp, find the STATE_UNDEFINED_3 case
+(or whatever was appropriate) and rename it STATE_FOO.  At the moment it just says:
+
+        case STATE_UNDEFINED_3:
+            // FALL THRU
+
+Instead you should change it to:
+
+		case STATE_FOO:
+			{
+			stateFoo();
+			}
+
+ Now, create a Foo.h and Foo.cpp files, and add Foo.h to All.h as an #include.
+ 
+ Your Foo.h file should look like this:
+ 
+#ifndef __FOO_H__
+#define __FOO_H__ 
+void stateFoo();
+#endif
+
+Your Foo.cpp file should look like this:
+
+#include "All.h"
+
+void stateFoo()
+	{
+	}
+
+Now what goes in your function?   First you need to understand some global variables.
+
+state				The current state
+entry				Did we just transition to this state?  We have to set/reset this manually.
+application 		The last state we transitioned to that was top level application state
+defaultState		If we transitioned back up the menu hierarchy to a higher-level state whose
+					menu includes us as an option, set this to clud the higher-level state that
+					it should first display us (which makes sense to the user).
+optionsReturnState	If we transition temporarily to Options to let the user choose something
+					from the options menu from within our application, when the user is finished,
+					to what state should options transition back
+display				If TRUE, it's time to draw on the display
+		
+In fact, the code below doesn't set any of these variables (except entry = false): it calls a 
+helper function which does it for us.  The helper function really exists to save space, that's 
+all.  Namely, the function goUpState() combines setting the state, entry, and defaultState in 
+one easy package when you want to transition back to a higher-level menu state.
+There are other versions, such as goDownState(), which is the same but doesn't set defaultState
+(use goUpState() to go to *menu* states *higher* in the menu hierarchy, and goDownState() in other
+cases).  There's also versions that do backup saves for options (you'll need to dig around to see
+how that would be useful).
+
+Additionally we can test for buttons like this:
+
+	isUpdated(BACK_BUTTON, RELEASED)
+or
+	isUpdated(SELECT_BUTTON, PRESSED)
+or
+	isUpdated(MIDDLE_BUTTON, RELEASED_LONG)
 	
+If you're testing for RELEASED_LONG you shouldn't also test for PRESSED -- instead, test for
+RELEASED.  Also, the BACK_BUTTON is *always* tested for RELEASED because RELEASED_LONG is
+automatically BYPASS.
+
+Finally, the LEDs are led2 (on the left) and led (on the right).  See LEDDisplay for stuff
+you can do with them.	
+				
+So we might say this for example:
+
+
+uint8_t fooCounter = 0;
+uint8_t fooGo = 0;
+
+void stateFoo()
+	{
+	if (entry)
+		{
+		// this is where we initialize stuff
+		fooCounter = 0;
+		fooGo = 1;
+		entry = false;
+		}
+		
+	if (isUpdated(BACK_BUTTON, RELEASED))  // time to exit
+		{
+		// Change the state so that next iteration we go back to root, which we're under 
+		// (we're an application state), and also automatically set defaultState and entry 
+		// -- see goUpState in Utility.h if you don't believe me!
+		goUpState(STATE_ROOT);
+		}
+		
+	if (isUpdated(SELECT_BUTTON, PRESSED))  // reset counter
+		{
+		fooCounter = 0;
+		}
+		
+	if (isUpdated(MIDDLE_BUTTON, PRESSED)) // start/stop
+		{
+		fooGo = !fooGo;
+		}
+		
+	if (update)
+		{
+		clearScreen();
+		writeNumber(led, led2, fooCounter);
+
+		if (fooGo)
+			{
+			fooCounter++;
+			if (fooCounter > 127)
+				fooCounter = 0;
+			// In TopLevel.h go(), Gizmo will tack on the header and write this out
+			}
+		}
+	}
+
+
+Notice that I used some global variables.  Instead we might save some memory by including it in the
+locals union.  In Foo.h we'd add:
+
+struct _fooLocal
+	{
+	uint8_t counter;
+	uint8_t go;
+	}
+	
+Then in TopLevel.h we modify add the following line to _union local:
+
+    struct _fooLocal foo;
+
+Finally we modify the code to look like this:
+
+void stateFoo()
+	{
+	if (entry)
+		{
+		// this is where we initialize stuff
+		local.foo.counter = 0;
+		local.foo.go = 1;
+		entry = false;
+		}
+		
+	if (isUpdated(BACK_BUTTON, RELEASED))  // time to exit
+		{
+		// Change the state so that next iteration we go back to root, which we're under 
+		// (we're an application state), and also automatically set defaultState and entry 
+		// -- see goUpState in Utility.h if you don't believe me!
+		goUpState(STATE_ROOT);
+		}
+		
+	if (isUpdated(SELECT_BUTTON, PRESSED))  // reset counter
+		{
+		local.foo.counter = 0;
+		}
+		
+	if (isUpdated(MIDDLE_BUTTON, PRESSED)) // start/stop
+		{
+		local.foo.go = !local.foo.go;
+		}
+		
+	if (update)
+		{
+		clearScreen();
+		writeNumber(led, led2, local.foo.counter);
+
+		if (local.foo.go)
+			{
+			local.foo.counter++;
+			if (local.foo.counter > 127)
+				local.foo.counter = 0;
+			// In TopLevel.h go(), Gizmo will tack on the header and write this out
+			}
+		}
+	}
+
+
+
+ADDING AN OPTION
+
+Maybe we want go to be an option stored in flash.  We add it to struct _options in Options.h:
+
+	uint8_t fooGo;
+
+Since the default setting is 1, we need to add this to resetOptions() in Options.cpp:
+
+	options.fooGo = 1;
+	
+Now we need to (1) no longer initialize it on entry and (2) store it in flash when
+the user presses the middle button.  So we change our code as:
+
+
+void stateFoo()
+	{
+	if (entry)
+		{
+		// this is where we initialize stuff
+		local.foo.counter = 0;
+		entry = false;
+		}
+		
+	if (isUpdated(BACK_BUTTON, RELEASED))  // time to exit
+		{
+		// Change the state so that next iteration we go back to root, which we're under 
+		// (we're an application state), and also automatically set defaultState and entry 
+		// -- see goUpState in Utility.h if you don't believe me!
+		goUpState(STATE_ROOT);
+		}
+		
+	if (isUpdated(SELECT_BUTTON, PRESSED))  // reset counter
+		{
+		local.foo.counter = 0;
+		}
+		
+	if (isUpdated(MIDDLE_BUTTON, PRESSED)) // start/stop
+		{
+		options.fooGo = !options.fooGo;
+		saveOptions();
+		}
+		
+	if (update)
+		{
+		clearScreen();
+		writeNumber(led, led2, local.foo.counter);
+
+		if (options.fooGo)
+			{
+			local.foo.counter++;
+			if (local.foo.counter > 127)
+				local.foo.counter = 0;
+			// In TopLevel.h go(), Gizmo will tack on the header and write this out
+			}
+		}
+	}
+
+
+ADDING MIDI OUTPUT EVERY BEAT
+
+Let's change things so that we update the counter only every beat.  Read Timing.h, and you'll
+find you can access the current TIME, TICK, PULSE, BEAT, and NOTE PULSE.
+
+Every beat we'll send the counter out as a note, pushed out to the default MIDI channel.
+Note that when we send a NOTE ON, we're using sendNoteOn rather than MIDI.sendNoteOn (the
+FortySevenEffects MIDI library).  This is because sendNoteOn filters the note to transpose
+it and change its volume, or not send it at all, according to the user's options and bypass
+setting.  Other filtered senders include sendPolyPressure, sendNoteOff, sendAllNotesOffDisregardBypass,
+and sendAllNotesOff.  For other stuff, just the MIDI.blah(...) version.
+
+void stateFoo()
+	{
+	if (entry)
+		{
+		// this is where we initialize stuff
+		local.foo.counter = 0;
+		entry = false;
+		}
+		
+	if (isUpdated(BACK_BUTTON, RELEASED))  // time to exit
+		{
+		// Change the state so that next iteration we go back to root, which we're under 
+		// (we're an application state), and also automatically set defaultState and entry 
+		// -- see goUpState in Utility.h if you don't believe me!
+		goUpState(STATE_ROOT);
+		}
+		
+	if (isUpdated(SELECT_BUTTON, PRESSED))  // reset counter
+		{
+		local.foo.counter = 0;
+		}
+		
+	if (isUpdated(MIDDLE_BUTTON, PRESSED)) // start/stop
+		{
+		options.fooGo = !options.fooGo;
+		saveOptions();
+		}
+		
+	if (update)
+		{
+		clearScreen();
+		writeNumber(led, led2, local.foo.counter);
+		}
+	
+	if (beat)
+		{
+		// we're not keeping track of the last note we played, so, meh, just send all notes off on all channels
+		sendAllNotesOff();
+		// note that options.channelOut could be 17 ("OFF"), which the MIDI library will just ignore
+		sendNoteOn(local.foo.counter, 127, options.channelOut);
+		if (options.fooGo)
+			{
+			local.foo.counter++;
+			if (local.foo.counter > 127)
+				local.foo.counter = 0;
+			// In TopLevel.h go(), Gizmo will tack on the header and write this out
+			}
+		}
+	}
+
+
+
+READING MIDI INPUT
+
+Finally, let's send a note out only if one is being played.  The counter now becomes
+the volume rather than the note.
+
+Here's how MIDI reading is done in Gizmo.  Each MIDI message is passed through a HANDLER FUNCTION.
+You could add your own code directly to this function -- and a few rare apps have done this --
+but more commonly you'll just let it do its thing.  The HANDLER FUNCTION will set the following
+variables (for more information, see TopLevel.h):
+
+newItem			Set to NEW_ITEM if we've got a new message
+itemType		Set to the item type 
+itemNumber		Set to the NOTE if any, or to the CC/RPN/NRPN/PC PARAMETER if any
+itemValue		Set to the VELOCITY if any, or to the CC/RPN/NRPN/PC VALUE if any
+itemChannel		Set to the incoming item channel
+
+No, they're not good names.
+
+The only MIDI messages registered this way are ones which come in through the default MIDI IN
+(options.channelIn), or to all channels if options.channelIn is CHANNEL_OMNI.
+
+So anyway, we might do this:
+
+
+void stateFoo()
+	{
+	if (entry)
+		{
+		// this is where we initialize stuff
+		local.foo.counter = 0;
+		entry = false;
+		}
+		
+	if (isUpdated(BACK_BUTTON, RELEASED))  // time to exit
+		{
+		// Change the state so that next iteration we go back to root, which we're under 
+		// (we're an application state), and also automatically set defaultState and entry 
+		// -- see goUpState in Utility.h if you don't believe me!
+		goUpState(STATE_ROOT);
+		}
+		
+	if (isUpdated(SELECT_BUTTON, PRESSED))  // reset counter
+		{
+		local.foo.counter = 0;
+		}
+		
+	if (isUpdated(MIDDLE_BUTTON, PRESSED)) // start/stop
+		{
+		options.fooGo = !options.fooGo;
+		saveOptions();
+		}
+		
+	if (update)
+		{
+		clearScreen();
+		writeNumber(led, led2, local.foo.counter);
+		}
+	
+	if (beat)
+		{
+		if (newItem == NEW_ITEM &&
+			itemType = MIDI_NOTE_ON)
+			{
+			// we're not keeping track of the last note we played, so, meh, just send all notes off on all channels
+			sendAllNotesOff();
+			// note that options.channelOut could be 17 ("OFF"), which the MIDI library will just ignore
+			sendNoteOn(itemNumber, local.foo.counter, options.channelOut);
+			}
+			
+		if (options.fooGo)
+			{
+			local.foo.counter++;
+			if (local.foo.counter > 127)
+				local.foo.counter = 0;
+			// In TopLevel.h go(), Gizmo will tack on the header and write this out
+			}
+		}
+	}
+
+One last item.  You'll notice that a lot of Gizmo's states are MENUs or NUMBER-SETTING or GLYPH-CHOOSING states.
+Gizmo provides the following useful functions for you in TopLevel.h:
+
+	doMenuDisplay(...)
+	doNumericalDisplay(...)
+	doGlyphDisplay(...)
+
+Look around to see how these functions are called.  Note in particular (1) that they handle setting and resetting
+entry internally, so don't override them, and (2) doMenuDisplay has TWO modes, one which makes it easy to deal with
+menus consisting of consecutive states, and one which just does general menu picking.
+
+In TopLevel.cpp (not exposed to TopLevel.h) is a cover function which handles basic (positive) number selection for you
+as an entire state.  It's called stateNumerical(), and is used a lot in TopLevel.cpp to reduce the code size.  It may not
+be worth your time complexity-wise, but you might check it out.
+
+Also in Utility.h there are some similar cover functions which handle an entire state for loading files, saving files,
+asking if if the user's "sure" (basically a Cancel/Okay panel), and asking the user to enter a note.
+
+
+DEBUGGING
+
+You can't write out the serial port -- it's being used by MIDI.  So how do you insert debugging statements?  You could
+try the debug(...) functions provided in Utility.h, which write messages to the screen and pause.  Note that
+because they pause a long time [so you can read it], the timer will race to make up its lost time, so you'll see the screen speeding
+up etc. afterwards.
 
