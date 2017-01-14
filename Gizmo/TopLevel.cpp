@@ -1282,6 +1282,13 @@ void go()
             }
         break;
         
+		case STATE_THRU:
+            {            
+            const char* menuItems[3] = { PSTR("GO"), PSTR("EXTRA NOTES"), PSTR("DISTRIBUTE NOTES") };
+            doMenuDisplay(menuItems, 3, STATE_THRU_PLAY, STATE_ROOT, 1);
+            }
+        break;
+                
         case STATE_MEASURE:
         	{
         	stateMeasure();
