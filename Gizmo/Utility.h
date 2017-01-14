@@ -20,13 +20,13 @@
 ///// LED matrix.  These functions will do this.
 
 /// Print an integer (-9999 to 19999) to the LED, and pause for 1/4 sec 
-uint8_t debug(int val);
+uint8_t debug(int16_t val);
 
 /// Print a maximum TWO-character string to the LED, along with an integer from -99...127, and pause for 1/4 sec 
-uint8_t debug(const char* str, int val);
+uint8_t debug(const char* str, int8_t val);
 
 /// Print two integers, each from -99...127, and pause for 1/4 sec 
-uint8_t debug(uint8_t val1, uint8_t val2);
+uint8_t debug(int8_t val1, int8_t val2);
 
 
 

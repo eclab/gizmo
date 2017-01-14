@@ -150,8 +150,10 @@
 #define CONTROL_TYPE_RPN 3
 #define CONTROL_TYPE_PC 4
 #if defined(__AVR_ATmega2560__)
-#define CONTROL_TYPE_VOLTAGE_A 5
-#define CONTROL_TYPE_VOLTAGE_B 6
+#define CONTROL_TYPE_PITCH_BEND 5
+#define CONTROL_TYPE_AFTERTOUCH 6
+#define CONTROL_TYPE_VOLTAGE_A 7
+#define CONTROL_TYPE_VOLTAGE_B 8
 #endif
 
 // numerical value that means a button isn't sending a value but is rather incrementing 
@@ -164,16 +166,9 @@ struct _controlLocal
     int16_t displayValue;
     uint8_t middleButtonToggle;
     uint8_t selectButtonToggle;  // perhaps these two could be compressed, they're just booleans
+    uint8_t doIncrement; 		// This is set to 1 when we're doing NRPN or RPN, and doing buttons and need to display increment as an option
+    uint8_t displayType;
     };
-
-////// BUTTON TOGGLES
-//
-// The Control application emits different things depending on what the "toggle state" of the
-// buttons are when they are pushed.  
-
-extern uint8_t middleButtonToggle;
-extern uint8_t selectButtonToggle;  // perhaps these two could be compressed, they're just booleans
-
 
 
 // SEND CONTROLLER COMMAND
@@ -200,7 +195,7 @@ void setControllerNumber(uint8_t type, uint16_t &number, uint8_t backupType, uin
 // SET CONTROLLER BUTTON ON OFF
 // Lets the user specify a control value to be sent when the button is pressed on (or off).  This
 // value is stored in onOff and will be restored if the user cancels everything.
-void setControllerButtonOnOff(uint8_t &onOff, int8_t backupOnOff, int8_t nextState);
+void setControllerButtonOnOff(uint16_t &onOff, int8_t nextState);
 
 #endif
 

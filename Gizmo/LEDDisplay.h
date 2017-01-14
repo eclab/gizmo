@@ -230,7 +230,13 @@ extern const char PROGMEM font_3x5[46][3];
 extern const char PROGMEM font_4x5[19][4];
 extern const char PROGMEM font_5x5[5][5];
 //extern const char PROGMEM font_alphabet5x5[26][5];
-extern const char PROGMEM font_8x5[26][8];
+extern const char PROGMEM font_8x5[
+#if defined(__AVR_ATmega2560__)        
+38
+#else
+26
+#endif
+][8];
 
 
 
@@ -266,7 +272,10 @@ void clearMatrix(unsigned char* mat);
 void setPoint(unsigned char* mat, uint8_t x, uint8_t y);
 
 // Sets a point to unlit
-unsigned char* clearPoint(unsigned char* mat, uint8_t x, uint8_t y);
+void clearPoint(unsigned char* mat, uint8_t x, uint8_t y);
+
+// Sets a point to lit (if val != 0) or to unlit (if val == 0)
+void setOrClearPoint(unsigned char* mat, uint8_t x, uint8_t y, uint8_t val);
 
 // Sets the number of send(...) messages which pass before
 // blink elements blink on and off respectively.  

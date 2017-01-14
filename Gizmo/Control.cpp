@@ -33,6 +33,8 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t
     uint8_t msb = fullValue >> 7;
     uint8_t lsb = fullValue & 127;
     
+    // amazingly, putting this here reduces the code by 4 bytes.  Though it could
+    // easily be removed as the switch below handles it!
     if (commandType == CONTROL_TYPE_OFF)
         return;
     
@@ -53,6 +55,10 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t
         break;
         case CONTROL_TYPE_CC:
             {
+            // There are two kinds of CC messages: ones with an MSB only,
+            // and ones with an MSB + [optional] LSB.  The second kind are messages whose
+            // command number is 0...31.  The first kind are messages > 31.
+            
             MIDI.sendControlChange(commandNumber, msb, options.channelOut);
             if (commandNumber < 32)             // send optional lsb if appropriate
                 {
@@ -79,7 +85,7 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t
                 MIDI.sendControlChange(6, msb, options.channelOut);  // MSB
                 MIDI.sendControlChange(38, lsb, options.channelOut);  // LSB
                 }
-            MIDI.sendControlChange(101, 127, options.channelOut);  // LSB of NULL command
+            MIDI.sendControlChange(101, 127, options.channelOut);  // MSB of NULL command
             MIDI.sendControlChange(100, 127, options.channelOut);  // LSB of NULL command
             TOGGLE_OUT_LED(); 
             }
@@ -102,7 +108,7 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t
                 MIDI.sendControlChange(6, msb, options.channelOut);  // MSB
                 MIDI.sendControlChange(38, lsb, options.channelOut);  // LSB
                 }
-            MIDI.sendControlChange(101, 127, options.channelOut);  // LSB of NULL command
+            MIDI.sendControlChange(101, 127, options.channelOut);  // MSB of NULL command
             MIDI.sendControlChange(100, 127, options.channelOut);  // LSB of NULL command
             TOGGLE_OUT_LED(); 
             }
@@ -115,6 +121,17 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t
             }
         break;
 #if defined(__AVR_ATmega2560__)        
+		case CONTROL_TYPE_PITCH_BEND:
+			{
+			// move from 0...16k to -8k...8k
+			MIDI.sendPitchBend(((int)fullValue) - MIDI_PITCHBEND_MIN, options.channelOut);
+			}
+		break;
+		case CONTROL_TYPE_AFTERTOUCH:
+			{
+			MIDI.sendAfterTouch(msb, options.channelOut);
+			}
+		break;
         case CONTROL_TYPE_VOLTAGE_A:
             {
             setValue(DAC_A, fullValue >> 2);
@@ -146,8 +163,8 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
         backupOptions = options; 
         }
 #if defined(__AVR_ATmega2560__)
-    const char* menuItems[7] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC"), PSTR("A VOLTAGE"), PSTR("B VOLTAGE")};
-    result = doMenuDisplay(menuItems, 7, STATE_NONE,  STATE_NONE, 1);
+	const char* menuItems[9] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC"), PSTR("BEND"), PSTR("AFTERTOUCH"), PSTR("A VOLTAGE"), PSTR("B VOLTAGE")};
+	result = doMenuDisplay(menuItems, 9, STATE_NONE,  STATE_NONE, 1);
 #else
     const char* menuItems[5] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC")};
     result = doMenuDisplay(menuItems, 5, STATE_NONE, STATE_NONE, 1);
@@ -167,7 +184,7 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
                 goUpState(STATE_CONTROLLER);
                 }
 #if defined(__AVR_ATmega2560__)
-            else if ((type == CONTROL_TYPE_PC || type == CONTROL_TYPE_VOLTAGE_A || type == CONTROL_TYPE_VOLTAGE_B))
+            else if ((type == CONTROL_TYPE_PC || type == CONTROL_TYPE_VOLTAGE_A || type == CONTROL_TYPE_VOLTAGE_B || type == CONTROL_TYPE_PITCH_BEND || type == CONTROL_TYPE_AFTERTOUCH))
 #else
             else if (type == CONTROL_TYPE_PC)
 #endif
@@ -196,8 +213,6 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
         }
     }
 
-// This is set to 1 when we're doing NRPN or RPN, and doing buttons and need to display increment as an option
-static uint8_t doIncrement;
 
 // SET CONTROLLER NUMBER
 // Lets the user set a controller number for the given conroller type.   
@@ -219,7 +234,7 @@ void setControllerNumber(uint8_t type, uint16_t &number, uint8_t backupType, uin
             if (nextState == STATE_CONTROLLER)  // we're not doing buttons
                 saveOptions();
             else                                                                // we're doing buttons and either NRPN or RPN
-                doIncrement = (type == CONTROL_TYPE_NRPN || type == CONTROL_TYPE_RPN);
+                local.control.doIncrement = (type == CONTROL_TYPE_NRPN || type == CONTROL_TYPE_RPN);
             goDownState(nextState);
             }
         break;
@@ -232,10 +247,10 @@ void setControllerNumber(uint8_t type, uint16_t &number, uint8_t backupType, uin
     }
 
 // SET CONTROLLER BUTTON ON OFF
-// Lets the user set a controller number for the given conroller type.   
+// Lets the user set a controller number for the given controller type.   
 // This is stored in &number.  The user can cancel everything and the type and
 // number will be reset.
-void setControllerButtonOnOff(uint8_t &onOff, int8_t backupOnOff, int8_t nextState)
+void setControllerButtonOnOff(uint16_t &onOff, int8_t nextState)
     {
     if (entry) 
         {
@@ -247,10 +262,19 @@ void setControllerButtonOnOff(uint8_t &onOff, int8_t backupOnOff, int8_t nextSta
         
     uint8_t result;
     
-    if (doIncrement)
+    if (local.control.doIncrement)
         // note that if it's the MIDDLE BUTTON we do decrement, else we do increment
         result = doNumericalDisplay(-1, CONTROL_VALUE_INCREMENT, ((int16_t)onOff) - 1, true, 
             (((&onOff) == (&options.middleButtonControlOn)) || ((&onOff) == (&options.middleButtonControlOff))) ? OTHER_DECREMENT: OTHER_INCREMENT);
+#if defined(__AVR_ATmega2560__) 
+    else if (	
+    			((((&onOff) == (&options.middleButtonControlOn)) || ((&onOff) == (&options.middleButtonControlOff))) &&
+    		 		(options.middleButtonControlType == CONTROL_TYPE_PITCH_BEND)) ||
+    			((((&onOff) == (&options.selectButtonControlOn)) || ((&onOff) == (&options.selectButtonControlOff))) &&
+    		 		(options.selectButtonControlType == CONTROL_TYPE_PITCH_BEND))
+    		 )  // ugh, all this work just to determine if we're doing pitch bend YUCK
+        result = doNumericalDisplay(MIDI_PITCHBEND_MIN - 1, MIDI_PITCHBEND_MAX, 0, true, OTHER_NONE);
+#endif
     else
         result = doNumericalDisplay(-1, CONTROL_VALUE_INCREMENT - 1, ((int16_t)onOff) - 1, true, OTHER_NONE);
 
@@ -258,14 +282,31 @@ void setControllerButtonOnOff(uint8_t &onOff, int8_t backupOnOff, int8_t nextSta
         {
         case NO_MENU_SELECTED:
             {
-            onOff = (uint8_t) (currentDisplay + 1);
+#if defined(__AVR_ATmega2560__) 
+            if (
+            		((((&onOff) == (&options.middleButtonControlOn)) || ((&onOff) == (&options.middleButtonControlOff))) &&
+    		 			(options.middleButtonControlType == CONTROL_TYPE_PITCH_BEND)) ||
+    				((((&onOff) == (&options.selectButtonControlOn)) || ((&onOff) == (&options.selectButtonControlOff))) &&
+    		 			(options.selectButtonControlType == CONTROL_TYPE_PITCH_BEND))
+	    		 )  // ugh, all this work just to determine if we're doing pitch bend YUCK
+            	{
+            	if (currentDisplay == MIDI_PITCHBEND_MIN - 1)
+            		onOff = 0;
+            	else
+	            	onOff = (uint16_t) (currentDisplay - MIDI_PITCHBEND_MIN) + 1;
+            	}
+            else
+#endif
+            	{
+	            onOff = (uint8_t) (currentDisplay + 1);
+	            }
             }
         break;
         case MENU_SELECTED:
             {
             if (nextState == STATE_CONTROLLER)  // we're all done
                 {
-                doIncrement = false;
+                local.control.doIncrement = false;
                 saveOptions();
                 }
             goDownState(nextState);
@@ -273,10 +314,20 @@ void setControllerButtonOnOff(uint8_t &onOff, int8_t backupOnOff, int8_t nextSta
         break;
         case MENU_CANCELLED:
             {
-            doIncrement = false;
+            local.control.doIncrement = false;
             goDownStateWithBackup(STATE_CONTROLLER);
             }
         break;
         }
     }
-            
+
+/*** LFOS AND ENVELOPES
+
+2 LFOs, tied to the BUTTON VALUES: Max is BUTTON ON, Min is BUTTON OFF, if either button is OFF, nothing is done?
+	- RATE
+	- WAVE
+	- RESET ON NOTE ON
+
+2 ENVs, tied to the KNOB VALUES: Max is KNOB 
+
+*/

@@ -56,7 +56,7 @@
 #include "Gauge.h"
 #include "Split.h"
 #include "Thru.h"
-
+#include "Measure.h"
 
 // This lets everyone have access to the MIDI global, not just
 // the .ino file

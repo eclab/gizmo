@@ -200,7 +200,7 @@ void stateFoo()
 		fooGo = !fooGo;
 		}
 		
-	if (update)
+	if (updateDisplay)	// this only happens once every 64 steps
 		{
 		clearScreen();
 		writeNumber(led, led2, fooCounter);
@@ -259,7 +259,7 @@ void stateFoo()
 		local.foo.go = !local.foo.go;
 		}
 		
-	if (update)
+	if (updateDisplay)	// this only happens once every 64 steps
 		{
 		clearScreen();
 		writeNumber(led, led2, local.foo.counter);
@@ -318,7 +318,7 @@ void stateFoo()
 		saveOptions();
 		}
 		
-	if (update)
+	if (updateDisplay)	// this only happens once every 64 steps
 		{
 		clearScreen();
 		writeNumber(led, led2, local.foo.counter);
@@ -374,7 +374,7 @@ void stateFoo()
 		saveOptions();
 		}
 		
-	if (update)
+	if (updateDisplay)	// this only happens once every 64 steps
 		{
 		clearScreen();
 		writeNumber(led, led2, local.foo.counter);
@@ -450,7 +450,7 @@ void stateFoo()
 		saveOptions();
 		}
 		
-	if (update)
+	if (updateDisplay)	// this only happens once every 64 steps
 		{
 		clearScreen();
 		writeNumber(led, led2, local.foo.counter);

@@ -495,7 +495,13 @@ const char PROGMEM font_5x5[5][5] = {
 /////   And we have the number 211 to represent a sequencer pattern 2 + 1 + 1 that
 /////   isn't normally drawn using writeNumber
 
-const char PROGMEM font_8x5[26][8] = {
+const char PROGMEM font_8x5[
+#if defined(__AVR_ATmega2560__)        
+38
+#else
+26
+#endif
+][8] = {
         { // 1/96 note (eighth-triplet) [1 MIDI clock beat]
         A10000A,
         A11111A,
@@ -763,152 +769,129 @@ const char PROGMEM font_8x5[26][8] = {
         0b00000000,
         },
 
-/*
-	{
-	A00110A,
-	A00001A,
-	A00001A,
-	A01110A,
-	A10000A,
-	A10000A,
-	A01100A,
-	A00000A
-	},
-
-	{
-	A00001A,
-	A00001A,
-	A01110A,
-	A10000A,
-	A10000A,
-	A01110A,
-	A00001A,
-	A00001A,
-	},
-
-	{
-	A01100A,
-	A10000A,
-	A10000A,
-	A01110A,
-	A00001A,
-	A00001A,
-	A00110A,
-	A00000A
-	}
-
-	{
-	A10000A,
-	A10000A,
-	A01110A,
-	A00001A,
-	A00001A,
-	A01110A,
-	A10000A,
-	A10000A,
-	},
-
-	{
-	A11111A,
-	A00001A,
-	A00001A,
-	A11111A,
-	A10000A,
-	A10000A,
-	A11111A,
-	A00000A,
-	},
-
-	{
-	A11111A,
-	A10000A,
-	A10000A,
-	A11111A,
-	A00001A,
-	A00001A,
-	A11111A,
-	A00000A,
-	},
-
-	{
-	A00100A,
-	A00010A,
-	A00001A,
-	A00010A,
-	A00100A,
-	A01000A,
-	A10000A,
-	A01000A,
-	},
-
-	{
-	A00001A,
-	A00010A,
-	A00100A,
-	A01000A,
-	A10000A,
-	A01000A,
-	A00100A,
-	A00010A,
-	},
-
-	{
-	A00100A,
-	A01000A,
-	A10000A,
-	A01000A,
-	A00100A,
-	A00010A,
-	A00001A,
-	A00010A,
-	},
-
-	{
-	A00100A,
-	A01000A,
-	A10000A,
-	A01000A,
-	A00100A,
-	A00010A,
-	A00001A,
-	A00010A,
-	},
-
-	{
-	A10000A,
-	A01000A,
-	A00100A,
-	A00010A,
-	A00001A,
-	A00010A,
-	A00100A,
-	A01000A,
-	},
-
-	{
-	A11111A,
-	A10000A,
-	A01000A,
-	A00100A,
-	A00010A,
-	A00001A,
-	A11111A,
-	A00000A,
-	},
-
-	{
-	A11111A,
-	A00001A,
-	A00010A,
-	A00100A,
-	A01000A,
-	A10000A,
-	A11111A,
-	A00000A,
-	},
-*/
-
-    };
+#if defined(__AVR_ATmega2560__)        
+		{
+		A00110A,
+		A00001A,
+		A00001A,
+		A01110A,
+		A10000A,
+		A10000A,
+		A01100A,
+		A00000A
+		},	
+		{
+		A00001A,
+		A00001A,
+		A01110A,
+		A10000A,
+		A10000A,
+		A01110A,
+		A00001A,
+		A00001A,
+		},
+		{
+		A01100A,
+		A10000A,
+		A10000A,
+		A01110A,
+		A00001A,
+		A00001A,
+		A00110A,
+		A00000A
+		},
+		{
+		A10000A,
+		A10000A,
+		A01110A,
+		A00001A,
+		A00001A,
+		A01110A,
+		A10000A,
+		A10000A,
+		},
+		{
+		A00100A,
+		A00010A,
+		A00001A,
+		A00010A,
+		A00100A,	
+		A01000A,
+		A10000A,
+		A01000A,
+		},
+		{
+		A00001A,
+		A00010A,
+		A00100A,
+		A01000A,
+		A10000A,
+		A01000A,
+		A00100A,
+		A00010A,
+		},
+		{
+		A00100A,
+		A01000A,
+		A10000A,
+		A01000A,
+		A00100A,
+		A00010A,
+		A00001A,
+		A00010A,
+		},
+		{
+		A10000A,
+		A01000A,
+		A00100A,
+		A00010A,
+		A00001A,
+		A00010A,
+		A00100A,
+		A01000A,
+		},	
+		{
+		A11111A,
+		A10000A,
+		A01000A,
+		A00100A,
+		A00010A,
+		A00001A,
+		A11111A,
+		A00000A,
+		},
+		{
+		A11111A,
+		A00001A,
+		A00010A,
+		A00100A,
+		A01000A,
+		A10000A,
+		A11111A,
+		A00000A,
+		},
+		{
+		A11111A,
+		A00001A,
+		A00001A,
+		A11111A,
+		A10000A,
+		A10000A,
+		A11111A,
+		A00000A,
+		},
+		{
+		A11111A,
+		A10000A,
+		A10000A,
+		A11111A,
+		A00001A,
+		A00001A,
+		A11111A,
+		A00000A,
+		},
+#endif
+	};
 
 
 
@@ -1253,6 +1236,14 @@ void setPoint(unsigned char* mat, uint8_t x, uint8_t y)
     mat[x] |= (0x01 << y);
     }
 
+void setOrClearPoint(unsigned char* mat, uint8_t x, uint8_t y, uint8_t val)
+	{
+	if (val) 
+		mat[x] |= (0x01 << y);
+	else
+		mat[x] &= ~(0x01 << y);
+	}
+
 // Clears a vertical line (sets it to unlit)
 void clearVerticalLine(unsigned char* mat, uint8_t x, unsigned char line)
     {
@@ -1265,17 +1256,16 @@ void setVerticalLine(unsigned char* mat, uint8_t x, unsigned char line)
     mat[x] |= line;
     }
 
-
-
 // Sets a point to blink.  This works as follows.  Each time sendMatrix is called,
 // it increments a counter.  blinkPoint uses this counter to determine, based on the
 // duty cycle above, whether to XOR the point or to not touch it.  
 void blinkPoint(unsigned char* mat, uint8_t x, uint8_t y)
     {
-    if (blinkToggle > blinkOn)
-        mat[x] |= (0x01 << y);
-    else
-        mat[x] &= ~(0x01 << y);
+    setOrClearPoint(mat, x, y, blinkToggle > blinkOn);
+//    if (blinkToggle > blinkOn)
+//        mat[x] |= (0x01 << y);
+//    else
+//        mat[x] &= ~(0x01 << y);
     }
 
 // Blinks a vertical line
@@ -1289,7 +1279,7 @@ void blinkVerticalLine(unsigned char* mat, uint8_t x, unsigned char line)
 
 
 // Sets a point to unlit
-unsigned char* clearPoint(unsigned char* mat, uint8_t x, uint8_t y)
+void clearPoint(unsigned char* mat, uint8_t x, uint8_t y)
     {
     mat[x] &= ~(0x01 << y);
     }
@@ -1391,7 +1381,7 @@ void writeShortNumber(unsigned char* mat1, int8_t val, uint8_t leftJustify)
 // Writes a number (-9999...19999) as a string to the given buffer (which must be 6 in size)
 void numberToString(char* buffer, int16_t val)
     {
-    if (val < -9999 || val > 19999) return;
+    if (val < -9999 || val > 19999) { buffer[0] = "0"; return; }
     
     strcpy_P(buffer, PSTR("     "));  // 5 spaces. This will get put in dynamic memory :-(
 

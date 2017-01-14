@@ -235,6 +235,10 @@ Buttons do different things.  Here are certain common items:
 \item {\bf Pressing the Select Button}\quad If you're being presented with a menu of options, or a number to choose, or a glyph to choose, the Select button will select the currently-displayed option.  In some applications (such as the Step Sequencer, Arpeggiator, and Recorder) the Select Button is assigned other tasks.
 \end{itemize}
 
+\begin{itemize}
+\item {\bf Pressing the Middle Button}\quad Likewise if you're being presented with a menu of options, or a number to choose, or a glyph to choose, the Middle button will increment the current display (but not select it). 
+\end{itemize}
+
 \paragraph{Potentiometers}
 
 Gizmo's potentionmeters  (or {\bf pots}) do a number of tasks, including scrolling through menu options, moving a cursor horizontally or vertically, or choosing a number.  The left pot does primary tasks, and the right pot assists when appropate.  Note that these are potentiometers, not encoders: if you start turning one, you may experience a big jump initially.  The potentiometers have a limited range (0...1023), and a significant degree of noise, so realistically they can only choose numbers between 0...256 or so.  If asked to select a {\it big} number, the {\bf left pot} will act as a coarse-level selector, and the {\bf right pot} will fine-tune the number.
@@ -303,7 +307,7 @@ There are six preset arpeggios: {\it up}, {\it down}, {\it up-down}, {\it random
 \item {\bf Down}.  Each note in your chord is played in turn, highest note first.  When all notes are exhausted, the pattern is repeated.
 \item {\bf Up-Down}.  Each note in your chord is played in turn, lowest note first, up to but not including the highest note.  When all notes are exhausted, all notes in the chord are played in turn, highest note first, down to but not including the lowest note.  When all notes are again exhausted, this pattern repeats.
 
-\item {\bf Random}.  Chord notes are played at random.  Gizmo tries not to play the same not twice in a row.
+\item {\bf Random}.  Chord notes are played at random.  Gizmo tries not to play the same note twice in a row.
 \item {\bf Chord Repeat}.  The entire chord is repeatedly played in its entirety.
 \item {\bf Assign}. Each note in your chord is played in turn, in the order in which you had pressed the keys when you formed the chord.  When all notes are exhausted, the pattern is repeated.
 \end{itemize}
@@ -597,7 +601,7 @@ Note messages are displayed with both the {\bf pitch} (at left) and the {\bf vel
 
 How do you distinguish between a Note On, Note Off, or Polyphonic Aftertouch message?  Figure~\ref{notegauge} shows a four-LED region, in orange, where a certain pattern is displayed to indicate this.  The patterns are shown in Figure~\ref{notefunction}.
 
-Note pitches are displayed by showing the note (such as B$\flat$), with the octave number directly below it.  MIDI has eleven different octaves (0--10): Middle C is the bottom note of octave 5.  The octave number is displayed as shown in Figure~\ref{octave}.  As usual, the MIDI In Channel is shown below that.
+Note pitches are displayed by showing the note (such as B$\flat$), with the octave value directly below it.  MIDI has eleven different octaves (0--10): Middle C is the bottom note of octave 5.  The octave number is displayed as shown in Figure~\ref{octave}.  As usual, the MIDI In Channel is shown below that.
 
 
 \paragraph{Frequent MIDI Display}  These are messages which are too fast to display usefully in most cases.  In each case, a specific LED will be toggled (see Figure~\ref{generalgauge}).
@@ -615,7 +619,7 @@ Note pitches are displayed by showing the note (such as B$\flat$), with the octa
 
 \begin{wrapfigure}{r}{1.8in}
 \vspace{-11em}\includegraphics[width=1.8in]{octave.pdf}
-\vspace{-2em}\caption{\small Octave Values}\vspace{-1em}
+\vspace{-2em}\caption{\small Octave Values.  Three common octave numbering schemes shown: Yamaha, SPN (so-called {\it Scientific Pitch Notation}), and MIDI.  SPN is the most common on keyboards.}\vspace{-1em}
 \label{octave}
 \end{wrapfigure}
 
@@ -958,12 +962,18 @@ Double Whole Note				&192\\
 	\section{Starting, Stopping, and Continuing the Clock}
 	\label{startingclock}
 
-		You can start, stop, and continue the clock via NRPN as discussed earlier (see {\bf Control MIDI} in Section \ref{options}).   But there's another ``secret'' way to do it using Gizmo's buttons.  If you are in the Options menu, long-press the Middle Button: this toggles {\bf starting} or {\bf stopping} the clock (you can't continue the clock this way).  Remember that you can also get to the Options menu from inside the Arpeggiator, Step Sequencer, or Recorder.
+		You can start, stop, and continue the clock via NRPN as discussed earlier (see {\bf Control MIDI} in Section \ref{options}).   But there's another ``secret'' way to do it using Gizmo's buttons.  If you are in the Options menu, long-press the Middle Button: this toggles {\bf starting} or {\bf stopping} the clock.  Furthermore, on the Mega, if you long-press the Select button, you can toggle {\bf continuing} or {\bf stopping} the clock.  Remember that you can also get to the Options menu from inside the Arpeggiator, Step Sequencer, or Recorder.
 		
 		Neither long-pressing the Middle Button, nor using NRPN to start/stop/continue, will do anything if the MIDI Clock is set to {\bf Use, Divide,} or {\bf Consume} (in which case the MIDI Clock is out of your control).  See {\bf MIDI Clock} in Section \ref{options}.
 				
 		Note that starting and stopping the clock doesn't mean that an application starts or stops playing.  However, the Start message {\it will} cause applications to reset themselves to the beginning when appropriate.   This means that if you want to start/stop/pause/continue the Step Sequencer (for example), you can do it as follows: first stop the clock, then start the sequencer playing.  Note that it won't play because there's no clock pulses.  But now you can start, stop, and pause/continue the sequencer by controlling the Start/Stop/Continue clock messages directly.
 		
+	\section{The Internal Clock}
+	\label{internalclock}
+
+The Arduino has an internal clock with 32 bits, yielding a maximum of 42,949,672,95 ticks (one tick per microsecond) before it rolls back over to 0.  This sounds like a lot, but it's not: it's a bit over an hour.\footnote{71.5827882666 minutes to be exact.}  This means that once an hour, Gizmo might do something odd, if you're using the internal clock.  Most likely it could drop a single pulse (1/24 of a quarter note), so it might be off by that much with respect to other instruments synced to it.  You've been warned.
+
+
 \section{Buttons, Shield Quality, and Debouncing}
 \label{debouncing}
 
@@ -991,7 +1001,7 @@ Step Sequencer& $\checkmark$ & $\checkmark$ & $\checkmark$ & Occasionally the be
 Recorder& $\checkmark$ & $\checkmark$ & $\checkmark$ & Rarely a note will get stuck after recording: appears that a NOTE OFF message isn't getting matched with the ID of the corresponding NOTE ON message when entered into memory.  
 I also think there may be a bug causing chords near the start of the song to be rushed a bit.  Perhaps timing is being delayed for some reason?\\
 Gauge& $\checkmark$ & $\checkmark$ &\\ 
-Controller& $\checkmark$ & $\checkmark$ & & \\ 
+Controller& $\checkmark$ & $\checkmark$ & & Voltage and Aftertouch untested.  Pitch Bend displays correctly but MIDI output is untested.\\ 
 NRPN Control  &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
 Transposition / Volume  &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
 Brightness / Delay  &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\

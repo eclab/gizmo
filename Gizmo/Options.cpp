@@ -65,6 +65,8 @@ void resetOptions()
     options.splitChannel = 1;
     options.splitNote = 60;  // Middle C
     options.splitLayerNote = NO_NOTE;
+    options.measureBeatsPerBar = 4;
+    options.measureBarsPerPhrase = 4;
 #endif
 
 #if defined(HEADLESS_RESET)

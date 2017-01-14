@@ -75,7 +75,7 @@ uint16_t medianOfFive(uint16_t array[])
 ////// DEBUGGING CODE
 
 
-uint8_t debug(int val)
+uint8_t debug(int16_t val)
     {
     clearMatrix(led);
     clearMatrix(led2);
@@ -85,7 +85,7 @@ uint8_t debug(int val)
     return 1;
     }
 
-uint8_t debug(const char* str, int val)
+uint8_t debug(const char* str, int8_t val)
     {
     char s[3];
     strncpy_P(s, str, 2);
@@ -446,6 +446,11 @@ void playApplication()
             // Because we do NOT want to play the recorder in the background ever.
             playRecorder();
             break; 
+#if defined(__AVR_ATmega2560__)
+         case STATE_MEASURE:
+        	playMeasure();
+        	break;
+#endif
         }
     }
         

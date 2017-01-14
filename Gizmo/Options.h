@@ -30,6 +30,10 @@ struct _options
     uint16_t rightKnobControlNumber; 
     uint16_t middleButtonControlNumber;
     uint16_t selectButtonControlNumber;
+    uint16_t middleButtonControlOn ;                            // 0 is off, n is value n+1, and 129 is "decrement" (128)
+    uint16_t middleButtonControlOff  ;                          // 0 is off, n is value n+1, and 129 is "decrement" (128)
+    uint16_t selectButtonControlOn ;                            // 0 is off, n is value n+1, and 129 is "increment" (128)
+    uint16_t selectButtonControlOff ;                           // 0 is off, n is value n+1, and 129 is "increment" (128)
 
     // then 8-bit stuff
     uint8_t screenBrightness;
@@ -42,15 +46,11 @@ struct _options
     uint8_t leftKnobControlType ;
     uint8_t rightKnobControlType  ;
     uint8_t middleButtonControlType ;
-    uint8_t middleButtonControlOn ;                            // 0 is off, n is value n+1, and 129 is "decrement" (128)
-    uint8_t middleButtonControlOff  ;                            // 0 is off, n is value n+1, and 129 is "decrement" (128)
     uint8_t selectButtonControlType ;
-    uint8_t selectButtonControlOn ;                            // 0 is off, n is value n+1, and 129 is "increment" (128)
-    uint8_t selectButtonControlOff ;                            // 0 is off, n is value n+1, and 129 is "increment" (128)
     uint8_t noteLength;
     uint8_t arpeggiatorPlayOctaves;
     uint8_t arpeggiatorPlayVelocity;
-    uint8_t arpeggiatorLatch;
+    uint8_t arpeggiatorLatch;  
     //uint8_t stepSequencerNoEcho;
     //uint8_t recorderRepeat;
     uint8_t click;
@@ -67,6 +67,8 @@ struct _options
     uint8_t splitLayerNote;
     uint8_t thruExtraNotes;
     uint8_t thruNumDistributionChannels;
+    uint8_t measureBeatsPerBar;
+    uint8_t measureBarsPerPhrase;
 #endif  // defined(__AVR_ATmega2560__)
 
     };
