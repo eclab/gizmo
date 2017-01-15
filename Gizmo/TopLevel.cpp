@@ -1283,9 +1283,9 @@ void go()
         break;
         
 		case STATE_THRU:
-            {            
-            const char* menuItems[3] = { PSTR("GO"), PSTR("EXTRA NOTES"), PSTR("DISTRIBUTE NOTES") };
-            doMenuDisplay(menuItems, 3, STATE_THRU_PLAY, STATE_ROOT, 1);
+            {
+            const char* menuItems[4] = { PSTR("GO"), PSTR("EXTRA NOTES"), PSTR("DISTRIBUTE NOTES"), options.thruChordMemorySize == 0 ? PSTR("CHORD MEMORY") : PSTR("NO CHORD MEMORY") };
+            doMenuDisplay(menuItems, 4, STATE_THRU_PLAY, STATE_ROOT, 1);
             }
         break;
                 
@@ -2170,6 +2170,28 @@ void go()
             }
         break;
         
+        case STATE_THRU_CHORD_MEMORY:
+            {
+            if (entry && options.thruChordMemorySize > 0)  // maybe entry is not necessary
+            	{
+            	options.thruChordMemorySize = 0;
+            	saveOptions();
+            	goUpState(STATE_THRU);
+            	}
+            else	
+            	{
+            	uint8_t retval = stateEnterChord(local.thru.chordMemory, MAX_CHORD_MEMORY_NOTES, STATE_THRU);
+            	if (retval != NO_NOTE)
+            		{
+            		options.thruChordMemorySize = retval;
+            		memcpy(options.thruChordMemory, local.thru.chordMemory, MAX_CHORD_MEMORY_NOTES);
+            		saveOptions();
+            		goUpState(STATE_THRU);
+            		}
+				}
+            }
+        break;
+        
         case STATE_MEASURE_MENU:
         	{
         	measureMenu();
@@ -2185,7 +2207,7 @@ void go()
     
     	case STATE_MEASURE_BARS_PER_PHRASE:
     		{
-            stateNumerical(1, 16, options.measureBarsPerPhrase, backupOptions.measureBarsPerPhrase, true, false, OTHER_NONE, STATE_MEASURE);
+            stateNumerical(1, 32, options.measureBarsPerPhrase, backupOptions.measureBarsPerPhrase, true, false, OTHER_NONE, STATE_MEASURE);
             playApplication();
     		}
     	break;

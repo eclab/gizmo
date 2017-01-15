@@ -66,6 +66,7 @@ void drawMIDIChannel(uint8_t channel);
 #if defined(__AVR_ATmega2560__)
 #define GLYPH_FADE 15                                                                   // FADE
 #define GLYPH_PLAY 16                                                                   // PLAY
+#define GLYPH_CHORD 17                                                                  // CHRD
 #endif // defined(__AVR_ATmega2560__)
 
 // Writes any of the above glyph sets to the screen
@@ -134,14 +135,24 @@ void stateSure(uint8_t selectedState, uint8_t backState);
 
 
 ///// Call this repeatedly from your ENTER NOTE state to query the user about what note he'd like.
-///// You can provide GLYPHS, which indicates a glyph set to write to the screen via write3x5Glyphs(...) 
 ///// The value returned is either NO_NOTE, indicating that the user has not entered a note yet,
 ///// or it is a note pitch, which the user has chosen.  The velocity of the note is stored in
 ///// the global variable stateEnterNoteVelocity.  
-///// glyphs                    glyph set to display.
 ///// backState                 where we should go after the user has cancelled                         
 extern uint8_t stateEnterNoteVelocity;
 uint8_t stateEnterNote(uint8_t backState);
+
+
+///// Call this repeatedly from your ENTER CHORD state to query the user about what chord he'd like.
+///// You pass in an array CHORD of size MAXCHORDNOTES.
+///// The value returned is either NO_NOTE, indicating that the user has not entered a (full) chord yet,
+///// or it is the number of notes in the chord the user played (up to MAXCHORDNOTES).  This value will never
+///// be ZERO.  The velocity of the LAST NEW note entered is stored in the global variable 
+///// stateEnterNoteVelocity.  The notes are stored, sorted, in CHORD.  Note that if the user cancels his 
+///// chord (that is, we go to backState), the values in the chord array will be undefined.
+///// chord                     Notes are stored here.
+///// backState                 where we should go after the user has cancelled                         
+uint8_t stateEnterChord(uint8_t* chord, uint8_t maxChordNotes, uint8_t backState);
 
 
 ///// Increments playing notes from an application (such as a step sequencer or arpeggiator).

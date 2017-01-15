@@ -6,6 +6,7 @@
 #ifndef __OPTIONS_H__
 #define __OPTIONS_H__
 
+#include "All.h"
 
 struct _optionsLocal
     {
@@ -67,6 +68,8 @@ struct _options
     uint8_t splitLayerNote;
     uint8_t thruExtraNotes;
     uint8_t thruNumDistributionChannels;
+    uint8_t thruChordMemory[MAX_CHORD_MEMORY_NOTES];
+    uint8_t thruChordMemorySize;
     uint8_t measureBeatsPerBar;
     uint8_t measureBarsPerPhrase;
 #endif  // defined(__AVR_ATmega2560__)

@@ -66,6 +66,14 @@ void stateThruPlay()
                 {
                 sendNoteOn(itemNumber, itemValue, channel);
                 }
+                
+            // CHORD MEMORY
+            for(uint8_t i = 1; i < options.thruChordMemorySize; i++)  // Yes, I see the *1*.  We aren't playing the bottom note a second time
+            	{
+            	uint8_t note = options.thruChordMemory[i] + itemNumber;  // can't overflow, it'll only go to 254 (127 + 127).
+            	if (note <= 127)
+	            	sendNoteOn(note, itemValue, channel);
+            	}
             }
         else if (itemType == MIDI_NOTE_OFF)
             {
@@ -94,7 +102,15 @@ void stateThruPlay()
                     sendNoteOff(itemNumber, itemValue, channel);
                     }
                 }
-            }
+                
+             // CHORD MEMORY
+            for(uint8_t i = 1; i < options.thruChordMemorySize; i++)  // Yes, I see the *1*.  We aren't playing the bottom note a second time
+            	{
+            	uint8_t note = options.thruChordMemory[i] + itemNumber;  // can't overflow, it'll only go to 254 (127 + 127).
+            	if (note <= 127)
+	            	sendNoteOff(note, itemValue, channel);
+            	}
+           }
         else if (itemType == MIDI_AFTERTOUCH_POLY)
             {
             // NOTE DISTRIBUTION OVER MULTIPLE CHANNELS
@@ -121,6 +137,14 @@ void stateThruPlay()
                     sendPolyPressure(itemNumber, itemValue, channel);
                     }
                 }
+
+            // CHORD MEMORY
+            for(uint8_t i = 1; i < options.thruChordMemorySize; i++)  // Yes, I see the *1*.  We aren't playing the bottom note a second time
+            	{
+            	uint8_t note = options.thruChordMemory[i] + itemNumber;  // can't overflow, it'll only go to 254 (127 + 127).
+            	if (note <= 127)
+	            	sendPolyPressure(note, itemValue, channel);
+            	}
             }
         }
     }

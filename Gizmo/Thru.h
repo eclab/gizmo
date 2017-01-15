@@ -51,9 +51,11 @@
 //                              Extra Notes:                    STATE_THRU_EXTRA_NOTES
 //                              Distribute Notes:               STATE_THRU_DISTRIBUTE_NOTES
 
+#define MAX_CHORD_MEMORY_NOTES (8)
 
 struct _thruLocal
     {
+    uint8_t chordMemory[MAX_CHORD_MEMORY_NOTES];
     uint8_t distributionNotes[16];
     uint8_t currentDistributionChannelIndex;
     };

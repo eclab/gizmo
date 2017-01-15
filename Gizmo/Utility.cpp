@@ -393,7 +393,7 @@ uint8_t incrementAndWrap(uint8_t n, uint8_t max)
     return n;
     }
 
-
+	
 GLOBAL uint8_t stateEnterNoteVelocity;
 
 uint8_t stateEnterNote(uint8_t backState)
@@ -427,6 +427,88 @@ uint8_t stateEnterNote(uint8_t backState)
     return NO_NOTE;
     }
 
+
+GLOBAL uint8_t chordCount;
+
+uint8_t stateEnterChord(uint8_t* chord, uint8_t maxChordNotes, uint8_t backState)
+    {
+    if (entry)
+        {
+        newItem = 0;            // clear any current note
+        clearScreen();
+        write3x5Glyphs(GLYPH_CHORD);
+        entry = false;
+        chordCount = 0;
+        }
+        
+    if (isUpdated(BACK_BUTTON, RELEASED))
+        {
+        goUpState(backState);
+        }
+    
+    // process these but do nothing with them so if the user
+    // accidentally presses these buttons BEFORE he chooses a note,
+    // the button press isn't queued for later -- I do that a lot.
+    isUpdated(SELECT_BUTTON, RELEASED);
+    isUpdated(MIDDLE_BUTTON, RELEASED);
+        
+    if (newItem == NEW_ITEM && chordCount < maxChordNotes)
+    	{
+    	if (itemType == MIDI_NOTE_ON)
+			{
+			for(uint8_t i = 0; i < chordCount; i++)
+				{
+				if ((chord[i] & 127) == itemNumber)
+					return NO_NOTE;  // already have that one
+				}
+		
+			// okay, so it's a new note
+			chordCount++;
+			chord[chordCount] = (itemNumber | 128);
+			stateEnterNoteVelocity = itemValue;  // velocity
+			}
+    	else if (itemType == MIDI_NOTE_OFF)
+    		{
+    		// first mark the note as up
+    		
+			for(uint8_t i = 0; i < chordCount; i++)
+				{
+				if ((chord[i] & 127) == itemNumber)
+					{
+					chord[i] = itemNumber;  // move off of +128 if it's already there
+					break;
+					}
+				}
+			
+			// next check to see if any notes are still down
+			// (this could easily be done with a count, but we only have a few notes, so no biggie)
+			for(uint8_t i = 0; i < chordCount; i++)
+				{
+				if (chord[i] >= 128)  // something's being held down
+					return NO_NOTE;
+				}
+			
+			// at this point nothing is held down.  Insertion Sort FTW!
+            uint8_t j;
+            for(uint8_t i = 1; i < chordCount; i++)
+				{
+				uint8_t val = chord[i];
+				j = i - 1;
+				while((j >= 0) && (chord[j] > val))
+					{
+					chord[j + 1] = chord[j];
+					j = j - 1;
+					}
+				chord[j + 1] = val;
+				}
+			
+			// return the count
+			return chordCount;
+    		}
+    	}
+        
+    return NO_NOTE;
+    }
 
 
 
@@ -474,7 +556,7 @@ void clearScreen()
 
 GLOBAL static uint8_t glyphTable[
 #if defined(__AVR_ATmega2560__)
-    17
+    18
 #else
     15
 #endif // defined(__AVR_ATmega2560__)
@@ -500,6 +582,7 @@ GLOBAL static uint8_t glyphTable[
 #if defined(__AVR_ATmega2560__)
     {GLYPH_3x5_F, GLYPH_3x5_A, GLYPH_3x5_D, GLYPH_3x5_E},   // FADE
     {GLYPH_3x5_P, GLYPH_3x5_L, GLYPH_3x5_A, GLYPH_3x5_Y},   // PLAY
+    {GLYPH_3x5_C, GLYPH_3x5_H, GLYPH_3x5_R, GLYPH_3x5_D},   // CHRD
 #endif // defined(__AVR_ATmega2560__)
 
     };
