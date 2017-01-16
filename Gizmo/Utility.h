@@ -143,6 +143,7 @@ extern uint8_t stateEnterNoteVelocity;
 uint8_t stateEnterNote(uint8_t backState);
 
 
+#if defined(__AVR_ATmega2560__)
 ///// Call this repeatedly from your ENTER CHORD state to query the user about what chord he'd like.
 ///// You pass in an array CHORD of size MAXCHORDNOTES.
 ///// The value returned is either NO_NOTE, indicating that the user has not entered a (full) chord yet,
@@ -153,6 +154,7 @@ uint8_t stateEnterNote(uint8_t backState);
 ///// chord                     Notes are stored here.
 ///// backState                 where we should go after the user has cancelled                         
 uint8_t stateEnterChord(uint8_t* chord, uint8_t maxChordNotes, uint8_t backState);
+#endif
 
 
 ///// Increments playing notes from an application (such as a step sequencer or arpeggiator).

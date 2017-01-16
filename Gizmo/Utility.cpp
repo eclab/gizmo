@@ -428,6 +428,8 @@ uint8_t stateEnterNote(uint8_t backState)
     }
 
 
+#if defined(__AVR_ATmega2560__)
+
 GLOBAL uint8_t chordCount;
 
 uint8_t stateEnterChord(uint8_t* chord, uint8_t maxChordNotes, uint8_t backState)
@@ -510,7 +512,7 @@ uint8_t stateEnterChord(uint8_t* chord, uint8_t maxChordNotes, uint8_t backState
     return NO_NOTE;
     }
 
-
+#endif
 
 
 void playApplication()
