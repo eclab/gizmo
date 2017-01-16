@@ -134,7 +134,7 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
 void stateSure(uint8_t selectedState, uint8_t backState);
 
 
-///// Call this repeatedly from your ENTER NOTE state to query the user about what note he'd like.
+///// Call this repeatedly from your notional "please enter a note" state to query the user about what note he'd like.
 ///// The value returned is either NO_NOTE, indicating that the user has not entered a note yet,
 ///// or it is a note pitch, which the user has chosen.  The velocity of the note is stored in
 ///// the global variable stateEnterNoteVelocity.  
@@ -144,7 +144,7 @@ uint8_t stateEnterNote(uint8_t backState);
 
 
 #if defined(__AVR_ATmega2560__)
-///// Call this repeatedly from your ENTER CHORD state to query the user about what chord he'd like.
+///// Call this repeatedly from your notional "please enter a chord" state to query the user about what chord he'd like.
 ///// You pass in an array CHORD of size MAXCHORDNOTES.
 ///// The value returned is either NO_NOTE, indicating that the user has not entered a (full) chord yet,
 ///// or it is the number of notes in the chord the user played (up to MAXCHORDNOTES).  This value will never

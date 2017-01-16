@@ -70,7 +70,7 @@ void stateThruPlay()
             // CHORD MEMORY
             for(uint8_t i = 1; i < options.thruChordMemorySize; i++)  // Yes, I see the *1*.  We aren't playing the bottom note a second time
             	{
-            	uint8_t note = options.thruChordMemory[i] + itemNumber;  // can't overflow, it'll only go to 254 (127 + 127).
+            	uint8_t note = options.thruChordMemory[i] - options.thruChordMemory[0] + itemNumber;  // can't overflow, it'll only go to 254 (127 + 127).
             	if (note <= 127)
 	            	sendNoteOn(note, itemValue, channel);
             	}
@@ -106,7 +106,7 @@ void stateThruPlay()
              // CHORD MEMORY
             for(uint8_t i = 1; i < options.thruChordMemorySize; i++)  // Yes, I see the *1*.  We aren't playing the bottom note a second time
             	{
-            	uint8_t note = options.thruChordMemory[i] + itemNumber;  // can't overflow, it'll only go to 254 (127 + 127).
+            	uint8_t note = options.thruChordMemory[i] - options.thruChordMemory[0] + itemNumber;  // can't overflow, it'll only go to 254 (127 + 127).
             	if (note <= 127)
 	            	sendNoteOff(note, itemValue, channel);
             	}
@@ -141,7 +141,7 @@ void stateThruPlay()
             // CHORD MEMORY
             for(uint8_t i = 1; i < options.thruChordMemorySize; i++)  // Yes, I see the *1*.  We aren't playing the bottom note a second time
             	{
-            	uint8_t note = options.thruChordMemory[i] + itemNumber;  // can't overflow, it'll only go to 254 (127 + 127).
+            	uint8_t note = options.thruChordMemory[i] - options.thruChordMemory[0] + itemNumber;  // can't overflow, it'll only go to 254 (127 + 127).
             	if (note <= 127)
 	            	sendPolyPressure(note, itemValue, channel);
             	}

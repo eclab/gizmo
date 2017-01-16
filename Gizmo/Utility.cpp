@@ -465,8 +465,8 @@ uint8_t stateEnterChord(uint8_t* chord, uint8_t maxChordNotes, uint8_t backState
 				}
 		
 			// okay, so it's a new note
-			chordCount++;
 			chord[chordCount] = (itemNumber | 128);
+			chordCount++;
 			stateEnterNoteVelocity = itemValue;  // velocity
 			}
     	else if (itemType == MIDI_NOTE_OFF)

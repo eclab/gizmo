@@ -89,10 +89,14 @@ void playArpeggiatorNote(uint16_t note)
 // Continue to play the arpeggio
 void playArpeggio()
     {
-    // turn off previous note?
-    // NOTE: if noteLength==100, this won't sound in time.  So we need to erase it anyway.
-    // Hence the "notePulse" bit
-    if (local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || currentTime >= local.arp.offTime))
+    // We turn off the previous note under the following conditions:
+    // 1. There's a note to turn off AND
+    // 2. The off time isn't 0 AND
+    // 3. There's a note pulse OR the off time has been exceeded and the note length isn't 100%
+    //
+    // The last condition is because if the note length is 100% we want to NEVER turn off unless there's
+    // a note pulse, even if the off time is exceeded, because we're doing fully legato.
+    if (local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || (currentTime >= local.arp.offTime && options.noteLength < 100)))
         {
         if (local.arp.number == ARPEGGIATOR_NUMBER_CHORD_REPEAT)
             {
