@@ -347,7 +347,7 @@ As you enter notes, they are displayed in the left half of the LED, and the late
 
 If you don't like the latest portion of your arpeggio, you can scroll the cursor back to an earlier section by turning the right knob.  Then if you start playing, the later notes will be discarded and the arpeggio pattern will continue from where the cursor was.  You can also scroll to view your past notes, then scroll all the way back to continue.
 
-An {\bf important note regarding the scrolling.}  The cursor is always located at the position where new notes will be entered.  However as you scroll back and forth, you'll hear the notes of your arpeggio.  When you scroll and hear a note, that note is the note {\it immediately before} the cursor position.  It's the last note in the arpeggio before you start adding new notes. It is {\it not} the note that you'll replace when you start entering notes. 
+An {\bf important note regarding the scrolling.}  The cursor is always located at the position where new notes will be entered.  But as you scroll back and forth, you'll hear the notes of your arpeggio.  When you scroll and hear a note, that note is the note {\it immediately before} the cursor position.  It's the last note in the arpeggio before you start adding new notes. It is {\it not} the note that you'll replace when you start entering notes. 
 
 Anyway, when you are satisfied with your arpeggio, Long-Press the Select button to save.  You'll be asked for a slot to save in, and after that, you'll be back in the main Arpeggiator menu.
 
@@ -377,7 +377,7 @@ In MIDI& Out MIDI&Control MIDI&MIDI Clock&Volume (on Mega)\\
 \vspace{1em}
 Of particular interest to you may be Length and Tempo.  And Swing!
 
-
+One note regarding the {\bf Note Length} option.  If the Note Length is set to 100 (and {\it only} 100), the Arpeggiator behaves specially: each note will extend until the next note (or rest) is played, regardless of how long that is.  Thus if you have Swing turned on, notes will extend until the next syncopated (delayed) note even if their time is up. This provides a fully legato feel.
 
 
 \clearpage
@@ -1054,7 +1054,7 @@ Interface Utilities &  $\checkmark$ & $\checkmark$ &  $\checkmark$ & \\
 Storage Facility &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
 MIDI Clock Control& $\checkmark$ & $\checkmark$ & &\\
 Keyboard Splitting& $\checkmark$ & $\checkmark$  & & Works well but the fade option is perhaps a bit unnecessary and weird.\\
-Thru Facility & $\checkmark$ & $\checkmark$ & & Chord memory is untested. \\
+Thru Facility & $\checkmark$ & $\checkmark$ & & \\
 Control Voltage& $\checkmark$ & & & Untested\\
 Tap Tempo & $\checkmark$ & $\checkmark$& & Seems to work, but might be better to average in tempos.  This would require floating point probably, which would be too big for the Uno.\\
 Measure Counter & $\checkmark$ & $\checkmark$& & Seems to work.  MIDI clock response has not been tested.
