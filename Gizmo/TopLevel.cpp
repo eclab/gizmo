@@ -2258,6 +2258,10 @@ void go()
 
 
 // Sets DAC_A when appropriate
+//
+// TODO: Perhaps we should allow high-resolution pitch bend in
+// this as well.  It'd require (1) storing the current note on, and
+// (2) allowing the user to specify the pitch bend range.
 void setPrimaryVoltage(uint8_t voltage, uint8_t on)
 	{
 	// always turn off gate
@@ -2270,7 +2274,9 @@ void setPrimaryVoltage(uint8_t voltage, uint8_t on)
 		 (options.leftKnobControlType == CONTROL_TYPE_VOLTAGE_A ||
 		  options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_A)))
 		return; 
-		
+	
+	// per setNote(), the only valid notes are MIDI# 36 ... 60, which
+	// will correspond to 0...5V with 1V per octave
 	setNote(DAC_A, voltage); 
 	if (on) digitalWrite(VOLTAGE_GATE, on);
 	}
@@ -2285,7 +2291,9 @@ void setSecondaryVoltage(uint8_t voltage)
 		 (options.leftKnobControlType == CONTROL_TYPE_VOLTAGE_B ||
 		  options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_B)))
 
-	setNote(DAC_B, voltage); 
+	// We translate 0...127 to 0...4095.  Wish it was higher
+	// resolution than 7 bits, but there you have it.  :-(
+	setValue(DAC_B, (((uint16_t) voltage) * 4095) / 127);
 	}
 
 

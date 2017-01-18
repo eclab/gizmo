@@ -32,13 +32,13 @@ void setPot(uint8_t dacI2C, uint16_t value)
     }
         
 // Sets the value of a DAC to a value corresponding to a note.  Typically octaves are 1V each.
-// Our DAC is 5B, meaning that we may have a range of 60 notes.  We assume that middle C 
-// (MIDI note 60) is value 24 in this range.  Thus our legal range is from 36...95.
+// Our DAC is 5V, meaning that we may have a range of 61 notes (0...60 inclusive).  We assume that middle C 
+// (MIDI note 60) is value 24 in this range.  Thus our legal range is from 36...96.
 // Values outside of this range will silently fail.
 void setNote(uint8_t dacI2C, uint8_t note)
     {
-    if (note < 36 || note > 95) return;
-    setValue(dacI2C, (4096 * (uint16_t) note) / 60);
+    if (note < 36 || note > 96) return;
+    setValue(dacI2C, (4095 * ((uint16_t) note - 36)) / 60);
     }
         
 // Called in setup() to set up the DAC
