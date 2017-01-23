@@ -748,7 +748,7 @@ const char PROGMEM font_8x5[
     // It's also, for our purposes, *backwards*.
     // So note that the strings should be flipped
     // horizontally to make much sense of them.
-        { // GIZMO VERSION 1 pt 1
+        { // GIZMO VERSION 1... pt 1
         0b01100111,
         0b10010100,
         0b10110010,
@@ -758,16 +758,27 @@ const char PROGMEM font_8x5[
         0b10010111,
         0b10110101,
         },
-        { // GIZMO VERSION 1 pt 2
+        { // GIZMO VERSION 2 pt 2
         0b11010101,
         0b10010111,
         0b00000000,
         0b00000000,
-        0b00100000,
-        0b01111100,
-        0b00000000,
+        0b01001100,
+        0b01010100,
+        0b00100100,
         0b00000000,
         },
+
+//        { // GIZMO VERSION 1 pt 2
+//        0b11010101,
+//        0b10010111,
+//        0b00000000,
+//        0b00000000,
+//        0b00100000,
+//        0b01111100,
+//        0b00000000,
+//        0b00000000,
+//        },
 
 #if defined(__AVR_ATmega2560__)        
 		{

@@ -120,7 +120,7 @@ void playArpeggio()
                     {
                     case ARPEGGIATOR_NUMBER_ASSIGN:
                         // Fall Thru
-                        // [The magic here is that we do exactly the same as UP, except that in arpeggiatorAddNote we don't insert the note in order, but just tack it on the end!]
+                        // [The magic here is that we do exactly the same as UP, except that in arpeggiatorAddNote we don't insert the note in order, but just tacks it on the end!]
                     case ARPEGGIATOR_NUMBER_UP:
                         {
                         if (local.arp.currentPosition == ARP_POSITION_START)

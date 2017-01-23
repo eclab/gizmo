@@ -52,14 +52,14 @@ struct _options
     uint8_t arpeggiatorPlayOctaves;
     uint8_t arpeggiatorPlayVelocity;
     uint8_t arpeggiatorLatch;  
-    //uint8_t stepSequencerNoEcho;
     //uint8_t recorderRepeat;
     uint8_t click;
     uint8_t clickVelocity;
 
 #if defined(__AVR_ATmega2560__)
+	uint8_t clockDivisor;
     uint8_t voltage;
-    uint8_t menuDelay ;
+    uint8_t menuDelay;
     int8_t transpose;
     uint8_t volume;
     uint8_t splitControls;                                          // = 0 by default, SPLIT_RIGHT
@@ -72,6 +72,8 @@ struct _options
     uint8_t thruChordMemorySize;
     uint8_t measureBeatsPerBar;
     uint8_t measureBarsPerPhrase;
+    uint8_t stepSequencerNoEcho;
+    uint8_t stepSequencerSendClock;
 #endif  // defined(__AVR_ATmega2560__)
 
     };

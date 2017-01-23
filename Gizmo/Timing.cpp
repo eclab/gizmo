@@ -59,6 +59,10 @@ GLOBAL uint8_t notePulseRate = 6;
 //     the notePulseRate when it reaches zero.
 GLOBAL uint8_t notePulseCountdown = 1;
 
+// The number of PULSES left before we emit a divided MIDI CLOCK if we're doing CLOCK DIVIDE.
+//     This value is updated to options.clockDivide when it reaches zero.
+GLOBAL uint8_t dividePulseCountdown = 1;
+
 // Is a NOTE PULSE presently underway this TICK?
 GLOBAL uint8_t notePulse;
 
@@ -147,7 +151,7 @@ void updateExternalClock()
     lastExternalPulseTime = currentTime;
     }
 
-void pulseClock()
+void pulseClock(uint8_t fromButton)
     {
     if (clockState == CLOCK_STOPPED)
         return;
@@ -167,9 +171,9 @@ void pulseClock()
             { MIDI.sendRealTime(MIDIClock); TOGGLE_OUT_LED(); }
     }
 
-uint8_t stopClock(uint8_t fromButton = false)
+uint8_t stopClock(uint8_t fromButton)
     {
-    if (fromButton && USING_EXTERNAL_CLOCK())
+    if (fromButton && !GENERATING_CLOCK())
         return 0;
         
     if (clockState != CLOCK_RUNNING)
@@ -192,15 +196,16 @@ uint8_t stopClock(uint8_t fromButton = false)
 extern uint8_t drawBeatToggle;
 extern uint8_t drawNotePulseToggle;
 
-uint8_t startClock(uint8_t fromButton = false)
+uint8_t startClock(uint8_t fromButton)
     {
-    if (fromButton && USING_EXTERNAL_CLOCK())
+    if (fromButton && !GENERATING_CLOCK())
         return 0;
         
     if (clockState != CLOCK_STOPPED)
         return 0;
 
     notePulseCountdown = 1;
+    dividePulseCountdown = 1;
     beatCountdown = 1;
     drawBeatToggle = 0;
     drawNotePulseToggle = 0;
@@ -232,14 +237,14 @@ uint8_t startClock(uint8_t fromButton = false)
     return 1;
     }
         
-uint8_t continueClock(uint8_t fromButton = false)
+uint8_t continueClock(uint8_t fromButton)
     {
+    if (fromButton && !GENERATING_CLOCK())
+        return 0;
+
     if (clockState != CLOCK_STOPPED)
         return 0;
         
-    if (fromButton && USING_EXTERNAL_CLOCK())
-        return 0;
-
     clockState = CLOCK_RUNNING;
 
     if (shouldEmitClockMessages())
@@ -285,6 +290,7 @@ void setNotePulseRate(uint8_t noteSpeedType)
     {
     notePulseRate = notePulseRateTable[noteSpeedType];
     notePulseCountdown = 1;   // set it up so that if we're right on a note pulse border, we pulse next time.
+    dividePulseCountdown = 1;
     beatCountdown = 1;
     drawNotePulseToggle = 0;
     drawBeatToggle = 0;
@@ -307,7 +313,7 @@ void updateTimers()
         if (currentTime > targetNextPulseTime)
             {
             targetNextPulseTime += microsecsPerPulse;
-            pulseClock();
+            pulseClock(false);	// note that the 'false' is ignored
             }
         }
 
@@ -351,13 +357,17 @@ void updateTimers()
             beat = 1;
             beatCountdown = PULSES_PER_BEAT;
             }
-        }
   
 #if defined(__AVR_ATmega2560__)
-    if (notePulse && options.clock == DIVIDE_MIDI_CLOCK)
-        {
-        MIDI.sendRealTime(MIDIClock); TOGGLE_OUT_LED(); 
-        }
+		if (--dividePulseCountdown == 0)
+			{
+			dividePulseCountdown = options.clockDivisor;
+			if (options.clock == DIVIDE_MIDI_CLOCK)
+				{
+				MIDI.sendRealTime(MIDIClock); TOGGLE_OUT_LED(); 
+				}
+			}
 #endif
+		}
     }
 

@@ -493,14 +493,14 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
         
         if (baseState == STATE_NONE)                                            // These aren't states, so just use the first item
             currentDisplay = 0;
-        else if (defaultState == STATE_NONE)                            // We don't have a default state specified.  So use the first item
+        else if (defaultState == STATE_NONE)                            		// We don't have a default state specified.  So use the first item
             currentDisplay = 0;
-        else                                                                                            // We have a default state.  So use it
+        else                                                                    // We have a default state.  So use it
             currentDisplay = defaultState - baseState;
                 
         newDisplay = FORCE_NEW_DISPLAY;                                         // This tells us that we MUST compute a new display
         entry = false;
-        defaultState = STATE_NONE;                                                      // We're done with this
+        defaultState = STATE_NONE;                                              // We're done with this
         }
     else
         {
@@ -1318,6 +1318,7 @@ void go()
                     }
                 else
                     {
+                    debug(1);
                     continueClock(true);
                     }
             	}
@@ -1331,14 +1332,14 @@ void go()
                                           PSTR("MENU DELAY"), 
                                           (options.voltage == NO_VOLTAGE ? PSTR("CV+VELOCITY") : 
                                           	(options.voltage == VOLTAGE_WITH_VELOCITY ? PSTR("CV+AFTERTOUCH") : PSTR("NO CV"))),
-                                          PSTR("GIZMO V1 (C) 2016 SEAN LUKE") };
+                                          PSTR("GIZMO V2 (C) 2017 SEAN LUKE") };
             doMenuDisplay(menuItems, 15, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
 #else
             const char* menuItems[11] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), 
                                           PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), 
                                           ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
                                           PSTR("BRIGHTNESS"),
-                                          PSTR("GIZMO V1 (C) 2016 SEAN LUKE") };
+                                          PSTR("GIZMO V2 (C) 2017 SEAN LUKE") };
             doMenuDisplay(menuItems, 11, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
 #endif // defined(__AVR_ATmega2560__)
 
@@ -1973,6 +1974,15 @@ void go()
                 break;
                 case MENU_SELECTED:
                     {
+#if defined(__AVR_ATmega2560__)
+					if (options.clock == DIVIDE_MIDI_CLOCK)
+						{
+						// gotta determine the divisor
+						goDownState(STATE_OPTIONS_MIDI_CLOCK_DIVIDE);
+						break;  // don't FALL THRU
+						}
+					else
+#endif
                     if (options.clock != backupOptions.clock)  // got something new
                         {
                         // If I'm moving to being controlled by MIDI I should assume I'm stopped
@@ -1989,7 +1999,7 @@ void go()
                         saveOptions();
                         }
                     }
-                // FALL THRU
+                // Else FALL THRU
                 case MENU_CANCELLED:
                     {
                     goUpStateWithBackup(STATE_OPTIONS);
@@ -1999,6 +2009,33 @@ void go()
             playApplication();     
             }
         break;
+#if defined(__AVR_ATmega2560__)
+        case STATE_OPTIONS_MIDI_CLOCK_DIVIDE:
+        	{
+        	uint8_t result = doNumericalDisplay(2, 64,  options.clockDivisor, false, OTHER_NONE);
+        	switch(result)
+        		{
+				case NO_MENU_SELECTED:
+					{
+					}
+				break;
+				case MENU_SELECTED:
+					{
+					options.clockDivisor = currentDisplay;
+					saveOptions();	// this ALSO saves options.clock
+					goUpState(STATE_OPTIONS);
+					}
+				break;
+				case MENU_CANCELLED:
+					{
+					goUpStateWithBackup(STATE_OPTIONS);
+					}
+				break;
+        		}
+            playApplication();
+        	}
+        break;
+#endif
         case STATE_OPTIONS_CLICK:
             {
             // The logic here is somewhat tricky. On entering, if we are presently clicking,
@@ -2337,7 +2374,7 @@ uint8_t updateMIDI(byte channel, uint8_t _itemType, uint16_t _itemNumber, uint16
 
 
 // A code-shortening effort.  Processes a MIDI clock command (start/stop/continue/clock)
-void handleClockCommand(void (*clockFunction)(), midi::MidiType clockMIDI)
+void handleClockCommand(void (*clockFunction)(uint8_t), midi::MidiType clockMIDI)
     {
     newItem = NEW_ITEM;
     itemType = MIDI_CLOCK;
@@ -2355,7 +2392,7 @@ void handleClockCommand(void (*clockFunction)(), midi::MidiType clockMIDI)
     // note NOT else, so that bypass will pass through the clock even if we "CONSUME" it
     if (USING_EXTERNAL_CLOCK())
         {
-        clockFunction();
+        clockFunction(false);
         }
     }
 

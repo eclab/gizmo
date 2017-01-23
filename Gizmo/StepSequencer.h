@@ -6,6 +6,12 @@
 #ifndef __STEP_SEQUENCER_H__
 #define __STEP_SEQUENCER_H__
 
+#if defined (__AVR_ATmega2560__)
+#define __FOO__
+#endif
+
+
+
 #include "All.h"
 
 
@@ -18,8 +24,8 @@
 // 1. 12-track 16-note, 8-track 24-note, or 6-track 32-note step sequences.
 //
 // 2. The user can enter notes STEP-BY-STEP at the cursor position, or (by moving the cursor position to off the left of the screen)
-//    enter notes at the PLAY POSITION.  Notes can be entered while the sequencer is playing.  He can also add RESTS and CONTINUATIONS.
-//    A continuation says "keep on playing the note in the previous slot position".
+//    enter notes at the PLAY POSITION.  Notes can be entered while the sequencer is playing.  He can also add RESTS and TIES.
+//    A tie says "keep on playing the note in the previous slot position".
 // 
 // 3. Stop, start, and restart the sequencer (including affecting external MIDI Clocks), mute tracks, and clear tracks.   
 // 
@@ -39,7 +45,7 @@
 //
 // Notice that the number of tracks, times the number of notes is 12x16 = 8x24 = 6x32 = 192.  The step sequencer stores
 // the PITCH and the VELOCITY of each note, which are 7 bits each, in two bytes, for a total of 192 x 2 = 384 bytes.
-// Additionally a REST is defined as having a pitch of 0 and a velocity of 0.  A CONTINUATION has a pitch of 1 and a velocity of 0.
+// Additionally a REST is defined as having a pitch of 0 and a velocity of 0.  A TIE has a pitch of 1 and a velocity of 0.
 //
 // A step sequence has a one-byte FORMAT, 16 bytes that are presently UNUSED, and a 384 byte BUFFER holding the notes.  
 //
@@ -83,14 +89,15 @@
 // DISPLAY
 // 
 // Step sequences are displayed in the top 6 rows of both LEDs.  A 16-note track takes up one full row.  24-note and 32-note
-// tracks take up two rows.  The sequencer also displays an EDIT CURSOR (a dot) and a PLAY CURSOR (a vertical set of dots).
+// tracks take up two rows.  A 48-note track takes up 3 rows.  A 64-note track takes up 4 rows.
+// The sequencer also displays an EDIT CURSOR (a dot) and a PLAY CURSOR (a vertical set of dots).
 // The play cursor shows where the sequencer is currently playing.  The edit cursor is where new notes played, or rests or 
-// continuations entered, will be put into the data.  This is known as STEP-BY-STEP editing mode.  You can move the edit cursor
+// ties entered, will be put into the data.  This is known as STEP-BY-STEP editing mode.  You can move the edit cursor
 // up or down (to new tracks), or back and forth.  If you move the cursor beyond the left edge of the screen, the PLAY CURSOR
 // changes to indicate the current playing track.  Now if you play notes they will be entered in the current track at the
 // play cursor as it is playing.  This is known as PLAY POSITION mode.  
 //
-// In step-by-step mode, the middle button enters rests or continuations (with a long press).  In play position mode, the
+// In step-by-step mode, the middle button enters rests or ties (with a long press).  In play position mode, the
 // middle button either mutes or clears the track.  The select button stops and starts the sequencer, or (long press)
 // brings up the sequecer's menu.
 //
@@ -108,7 +115,7 @@
 //                      Left Knob:      scroll up/down track 
 //                      Right Knob:     scroll left-right in track, or far left to enter PLAY POSITION mode
 //                      Middle Button [step-by-step mode]:      rest
-//                      Middle Button Long Press [step-by-step mode]: continuation
+//                      Middle Button Long Press [step-by-step mode]: tie
 //                      Middle Button [play position mode]:     mute track
 //                      Middle Button Long Press [play position mode]: clear track
 //                      Select Button:  toggle start/stop (pause) sequence playing
@@ -155,7 +162,7 @@
 #define PLAY_STATE_WAITING 2
 #define PLAY_STATE_PLAYING 1
 
-//RESTS are NOTE 0 VEL 0, and CONTINUATIONS are NOTE 1 VEL 0
+// RESTS are NOTE 0 VEL 0, and TIES are NOTE 1 VEL 0
 
 /// LOCAL
 
@@ -178,7 +185,9 @@ struct _stepSequencerLocal
     uint8_t fader[MAX_STEP_SEQUENCER_TRACKS];               // Per-track fader, values from 0...100
     uint32_t offTime[MAX_STEP_SEQUENCER_TRACKS];    // When do we turn off?  Note it's uint16, not uint32.  It's a delta from the lastTime
     uint8_t noteOff[MAX_STEP_SEQUENCER_TRACKS];
-        
+#if defined(__AVR_ATmega2560__)        
+    uint8_t dontPlay[MAX_STEP_SEQUENCER_TRACKS];
+#endif      
     uint8_t solo;
     uint8_t currentTrack;                                                   // which track are we editing?
     uint8_t backup;                                                                 // used to back up various values when the user cancels
@@ -195,27 +204,38 @@ struct _stepSequencerLocal
 #define STEP_SEQUENCER_FORMAT_16x12_ 0
 #define STEP_SEQUENCER_FORMAT_24x8_ 1
 #define STEP_SEQUENCER_FORMAT_32x6_ 2
+#if defined(__FOO__) 
+#define STEP_SEQUENCER_FORMAT_48x4_ 3
+#define STEP_SEQUENCER_FORMAT_64x3_ 4
+#endif
 
 struct _stepSequencer
     {
     uint8_t format;                                             // step sequencer format in question
-    uint16_t unused;                                    // future expansion!
+	uint8_t locked;
+	uint8_t unused;  											// future expansion
     uint8_t buffer[SLOT_DATA_SIZE - 2];
     };
 
 
+#if defined(__FOO__) 
+// Used by GET_TRACK_LENGTH to return the length of tracks in the current format
+extern uint8_t _trackLength[5];
+// Used by GET_NUM_TRACKS to return the number of tracks in the current format
+extern uint8_t _numTracks[5];
+#else
 // Used by GET_TRACK_LENGTH to return the length of tracks in the current format
 extern uint8_t _trackLength[3];
 // Used by GET_NUM_TRACKS to return the number of tracks in the current format
 extern uint8_t _numTracks[3];
-
+#endif
 
 // Returns the track length in the current format
 #define GET_TRACK_LENGTH() (_trackLength[data.slot.data.stepSequencer.format])
 // Returns the number of tracks in the current format
 #define GET_NUM_TRACKS() (_numTracks[data.slot.data.stepSequencer.format])
 
-// Turns off all notes as appropriate (rests and continuations aren't cleared),
+// Turns off all notes as appropriate (rests and ties aren't cleared),
 // unless clearAbsolutely is true, in which case absolutely everything gets cleared regardless
 void clearNotesOnTracks(uint8_t clearEvenIfNoteNotFinished);
 
