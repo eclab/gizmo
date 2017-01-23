@@ -2380,11 +2380,7 @@ void handleClockCommand(void (*clockFunction)(uint8_t), midi::MidiType clockMIDI
     itemType = MIDI_CLOCK;
 
     TOGGLE_IN_LED();
-    if (bypass || (options.clock == IGNORE_MIDI_CLOCK) 
-#if defined(__AVR_ATmega2560__)
-        || (state == STATE_THRU_PLAY)
-#endif
-        )  // pass it right through, don't process it
+    if (bypass || (options.clock == IGNORE_MIDI_CLOCK))  // pass it right through, don't process it
         { 
         if (!bypass) MIDI.sendRealTime(clockMIDI);
         TOGGLE_OUT_LED();
