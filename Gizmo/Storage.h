@@ -25,7 +25,7 @@
 //// Finally comes the options struct.  This starts at OPTIONS_OFFSET.
 //// The Mega has space for a 424-byte options struct.  The Uno has space for 68 bytes.
 
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
 #define NUM_SLOTS 9
 #else
 #define NUM_SLOTS 2

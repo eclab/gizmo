@@ -231,7 +231,7 @@ extern const char PROGMEM font_4x5[19][4];
 extern const char PROGMEM font_5x5[5][5];
 //extern const char PROGMEM font_alphabet5x5[26][5];
 extern const char PROGMEM font_8x5[
-#if defined(__AVR_ATmega2560__)        
+#if defined(__MEGA__)        
 38
 #else
 26

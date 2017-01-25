@@ -4,7 +4,7 @@
 #include "All.h"
 
 
-#if defined (__AVR_ATmega2560__)
+#if defined (__MEGA__)
 #define __FOO__
 #endif
 
@@ -171,7 +171,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
         (local.stepSequencer.outMIDI[local.stepSequencer.currentTrack] == MIDI_OUT_DEFAULT) ?
         options.channelOut : local.stepSequencer.outMIDI[local.stepSequencer.currentTrack]);
 
-#if defined(__AVR_ATmega2560__) 
+#if defined(__MEGA__) 
     // Are we locked?
     if (data.slot.data.stepSequencer.locked)
         setPoint(led, 4, 1);
@@ -412,7 +412,7 @@ void stateStepSequencerPlay()
                 }
             }
         else 
-#if defined(__AVR_ATmega2560__) 
+#if defined(__MEGA__) 
         if (!data.slot.data.stepSequencer.locked)
 #endif
             {
@@ -422,7 +422,7 @@ void stateStepSequencerPlay()
         }
     else if (isUpdated(SELECT_BUTTON, RELEASED))
         {
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
         if (options.stepSequencerSendClock)
         	{
         	// we always stop the clock just in case, even if we're immediately restarting it
@@ -434,7 +434,7 @@ void stateStepSequencerPlay()
             case PLAY_STATE_STOPPED:
                 {
                 local.stepSequencer.playState = PLAY_STATE_WAITING;
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
 				if (options.stepSequencerSendClock)
 					{
 					// Possible bug condition:
@@ -481,7 +481,7 @@ void stateStepSequencerPlay()
             }
         }
     else if (newItem && (itemType == MIDI_NOTE_ON) //// there is a note played
-#if defined(__AVR_ATmega2560__) 
+#if defined(__MEGA__) 
 			&& !data.slot.data.stepSequencer.locked  
 #endif
 	)
@@ -508,7 +508,7 @@ void stateStepSequencerPlay()
             }
         else 
         	{
-#if defined(__AVR_ATmega2560__)        
+#if defined(__MEGA__)        
         	local.stepSequencer.dontPlay[local.stepSequencer.currentTrack] = 1;
         	if (!options.stepSequencerNoEcho)          // only play if we're echoing
         	    {
@@ -520,7 +520,7 @@ void stateStepSequencerPlay()
         local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
         }
     else if (newItem && (itemType == MIDI_NOTE_OFF)
-#if defined(__AVR_ATmega2560__) 
+#if defined(__MEGA__) 
 			&& !data.slot.data.stepSequencer.locked  
 #endif
     )
@@ -543,7 +543,7 @@ void stateStepSequencerPlay()
 #define STEP_SEQUENCER_MENU_VELOCITY 3
 #define STEP_SEQUENCER_MENU_FADER 4
 
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
 #define STEP_SEQUENCER_MENU_RESET 5
 #define STEP_SEQUENCER_MENU_SAVE 6
 #define STEP_SEQUENCER_MENU_SEND_CLOCK 7
@@ -564,7 +564,7 @@ void stateStepSequencerMenu()
     {
     uint8_t result;
 
-#if defined(__AVR_ATmega2560__)    
+#if defined(__MEGA__)    
     const char* menuItems[11] = {    
         (local.stepSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),
         PSTR("LENGTH (TRACK)"),
@@ -644,7 +644,7 @@ void stateStepSequencerMenu()
                     state = STATE_STEP_SEQUENCER_SAVE;
                     }
                 break;
-#if defined(__AVR_ATmega2560__)    
+#if defined(__MEGA__)    
                 case STEP_SEQUENCER_MENU_SEND_CLOCK:
                     {
                     options.stepSequencerSendClock = !options.stepSequencerSendClock;
@@ -759,7 +759,7 @@ void playStepSequencer()
                 local.stepSequencer.noteOff[track] = NO_NOTE;
                 }
             else if (vel != 0 
-#if defined(__AVR_ATmega2560__)        
+#if defined(__MEGA__)        
             && !local.stepSequencer.dontPlay[track]  // not a rest or tie
 #endif
 				)            
@@ -779,7 +779,7 @@ void playStepSequencer()
                 local.stepSequencer.noteOff[track] = note;
                 }
             }
-#if defined(__AVR_ATmega2560__)                    
+#if defined(__MEGA__)                    
         // clear the dontPlay flags
         memset(local.stepSequencer.dontPlay, 0, numTracks);
 #endif

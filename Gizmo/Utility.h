@@ -63,11 +63,11 @@ void drawMIDIChannel(uint8_t channel);
 #define GLYPH_CONTINUE 12                               // CONT
 #define GLYPH_STOP 13                                   // STOP
 #define GLYPH_SYSTEM_RESET 14                                   // RSET
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
 #define GLYPH_FADE 15                                                                   // FADE
 #define GLYPH_PLAY 16                                                                   // PLAY
 #define GLYPH_CHORD 17                                                                  // CHRD
-#endif // defined(__AVR_ATmega2560__)
+#endif // defined(__MEGA__)
 
 // Writes any of the above glyph sets to the screen
 void write3x5Glyphs(uint8_t index);
@@ -78,13 +78,13 @@ void clearScreen();
 
 
 
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
 
 // SET MENU DELAY
 // Changes the menu delay to a desired value (between 0: no menu delay, and 11: infinite menu delay).  The default is 5
 void setMenuDelay(uint8_t index);
 
-#endif // defined(__AVR_ATmega2560__)
+#endif // defined(__MEGA__)
 
 // The index values passed into setMenuDelay correspond to the following delays (but these
 // constants may NOT be passed into setMenuDelay).
@@ -143,7 +143,7 @@ extern uint8_t stateEnterNoteVelocity;
 uint8_t stateEnterNote(uint8_t backState);
 
 
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
 ///// Call this repeatedly from your notional "please enter a chord" state to query the user about what chord he'd like.
 ///// You pass in an array CHORD of size MAXCHORDNOTES.
 ///// The value returned is either NO_NOTE, indicating that the user has not entered a (full) chord yet,

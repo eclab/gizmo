@@ -111,7 +111,7 @@ void setup()
     delay(2000);
 	
     // Reset the menu delay
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
     setMenuDelay(options.menuDelay);
 #else
     setScrollDelays(DEFAULT_MENU_DELAY, DEFAULT_SHORT_DELAY);

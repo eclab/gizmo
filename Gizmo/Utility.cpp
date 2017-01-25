@@ -428,7 +428,7 @@ uint8_t stateEnterNote(uint8_t backState)
     }
 
 
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
 
 GLOBAL uint8_t chordCount;
 
@@ -530,7 +530,7 @@ void playApplication()
             // Because we do NOT want to play the recorder in the background ever.
             playRecorder();
             break; 
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
          case STATE_MEASURE:
         	playMeasure();
         	break;
@@ -557,11 +557,11 @@ void clearScreen()
 
 
 GLOBAL static uint8_t glyphTable[
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
     18
 #else
     15
-#endif // defined(__AVR_ATmega2560__)
+#endif // defined(__MEGA__)
     ][4] = 
     {
     // These first: ----, ALLC, DFLT, DECR, and INCR, must be the FIRST ones
@@ -581,11 +581,11 @@ GLOBAL static uint8_t glyphTable[
     {GLYPH_3x5_C, GLYPH_3x5_O, GLYPH_3x5_N, GLYPH_3x5_T},   // CONT
     {GLYPH_3x5_S, GLYPH_3x5_T, GLYPH_3x5_O, GLYPH_3x5_P},   // STOP
     {GLYPH_3x5_R, GLYPH_3x5_S, GLYPH_3x5_E, GLYPH_3x5_T},   // RSET
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
     {GLYPH_3x5_F, GLYPH_3x5_A, GLYPH_3x5_D, GLYPH_3x5_E},   // FADE
     {GLYPH_3x5_P, GLYPH_3x5_L, GLYPH_3x5_A, GLYPH_3x5_Y},   // PLAY
     {GLYPH_3x5_C, GLYPH_3x5_H, GLYPH_3x5_R, GLYPH_3x5_D},   // CHRD
-#endif // defined(__AVR_ATmega2560__)
+#endif // defined(__MEGA__)
 
     };
 
@@ -647,7 +647,7 @@ void doClick()
 
 
 
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
 ///// SCROLL DELAY
 ///// 
 
@@ -667,4 +667,4 @@ void setMenuDelay(uint8_t index)
     if (index > 10) index = 5;
     setScrollDelays(menuDelays[index], DEFAULT_SHORT_DELAY);
     }
-#endif // defined(__AVR_ATmega2560__)
+#endif // defined(__MEGA__)

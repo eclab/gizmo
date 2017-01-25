@@ -1,7 +1,7 @@
 #include "All.h"
 
 
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
 
 
 

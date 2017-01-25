@@ -6,7 +6,7 @@
 #ifndef __STEP_SEQUENCER_H__
 #define __STEP_SEQUENCER_H__
 
-#if defined (__AVR_ATmega2560__)
+#if defined (__MEGA__)
 #define __FOO__
 #endif
 
@@ -185,7 +185,7 @@ struct _stepSequencerLocal
     uint8_t fader[MAX_STEP_SEQUENCER_TRACKS];               // Per-track fader, values from 0...100
     uint32_t offTime[MAX_STEP_SEQUENCER_TRACKS];    // When do we turn off?  Note it's uint16, not uint32.  It's a delta from the lastTime
     uint8_t noteOff[MAX_STEP_SEQUENCER_TRACKS];
-#if defined(__AVR_ATmega2560__)        
+#if defined(__MEGA__)        
     uint8_t dontPlay[MAX_STEP_SEQUENCER_TRACKS];
 #endif      
     uint8_t solo;

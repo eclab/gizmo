@@ -28,7 +28,7 @@ void loadOptions()
     setPulseRate(options.tempo);
     setNotePulseRate(options.noteSpeedType);
     setScreenBrightness(options.screenBrightness);
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
     setMenuDelay(options.menuDelay);
 #endif
     }
@@ -59,8 +59,8 @@ void resetOptions()
     options.click = NO_NOTE;
     options.clock = IGNORE_MIDI_CLOCK;
     options.arpeggiatorPlayVelocity = 128;  // FREE
-#if defined(__AVR_ATmega2560__)
-	options.clockDivisor = 2;
+#if defined(__MEGA__)
+	options.clockDivisor = 1;
     options.menuDelay = 5;  // corresponds to DEFAULT_MENU_DELAY
     options.volume = 3;  // corresponds to no volume modification
     options.splitChannel = 1;

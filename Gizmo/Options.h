@@ -56,7 +56,7 @@ struct _options
     uint8_t click;
     uint8_t clickVelocity;
 
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
 	uint8_t clockDivisor;
     uint8_t voltage;
     uint8_t menuDelay;
@@ -74,7 +74,7 @@ struct _options
     uint8_t measureBarsPerPhrase;
     uint8_t stepSequencerNoEcho;
     uint8_t stepSequencerSendClock;
-#endif  // defined(__AVR_ATmega2560__)
+#endif  // defined(__MEGA__)
 
     };
 

@@ -9,6 +9,13 @@
 ////// This is just distributing #include file.  Everyone #includes All.h
 
 
+// This little dance allows me to test for Uno code while on a Mega, in case I don't
+// have an Uno around, simply by by commenting out the #define __MEGA__ line
+#if defined (__AVR_ATmega2560__)
+#define __MEGA__
+#endif
+
+
 // You'll see GLOBAL here and there.  It means nothing -- but it makes it easy
 // for me to grep for global variables.
 #define GLOBAL

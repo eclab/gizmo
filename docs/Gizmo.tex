@@ -17,8 +17,7 @@
 \begin{document}
 
 \noindent {\Huge\bf Gizmo}\\[0.5em]
-{\large \bf An Arduino MIDI Tool\\
-Version 2\\
+{\large \bf An Arduino MIDI Tool, Version 2\\
 By Sean Luke\quad sean@cs.gmu.edu} 
 \hspace{\fill}{\it \textbf{For Aric}}\\
 
@@ -53,7 +52,7 @@ And yes, you can do all three simultaneously.
 As if this weren't enough, Gizmo also comes with the following capabilities.  All of these settings are automatically saved permanently in memory.
 
 \begin{itemize}
-\item {\bf Tempo and the MIDI Clock.}\quad Gizmo can sync to an external MIDI clock, can ignore it and use its own internal clock, and can emit the same as a MIDI clock.  Gizmo can also pass the external MIDI clock through or block it.  When using its own internal clock, Gizmo supports tempos ranging from 1 to 999 BPM, settable numerically or via tapping.  You can start, pause/un-pause, and stop this clock (sending the appropriate MIDI Start, Stop, or Continue signals).  Gizmo can also divide the MIDI clock, thereby outputting a slower clock than it is inputting.
+\item {\bf Tempo and the MIDI Clock.}\quad Gizmo can sync to an external MIDI clock, can ignore it and use its own internal clock, and can emit the same as a MIDI clock.  Gizmo can also pass the external MIDI clock through or block it.  When using its own internal clock, Gizmo supports tempos ranging from 1 to 999 BPM, settable numerically or via tapping.  You can start, pause/un-pause, and stop this clock (sending the appropriate MIDI Start, Stop, or Continue signals).  Gizmo (on the Mega) can also divide the MIDI clock, thereby outputting a slower clock than it is inputting.
 
 Gizmo applications can also be set with a {\it note value} (or {\it note speed}) to play their notes relative to this clock, ranging from eighth triplets (1/24 beat) to double whole notes (8 beats).  At any time, Gizmo pulses on-screen LEDs indicating the clock and note speed pulses.  Finally, Gizmo can be configured to vary the degree of {\it swing} or {\it syncopation}.
 
@@ -221,7 +220,7 @@ Also shown in Figure~\ref{HighLevelGizmoLayout} are the {\bf Beat/Bypass} light 
 
 If Gizmo's clock is presently {\bf stopped}, either because you have stopped it internally or because Gizmo is being driven by an external MIDI clock which is currently stopped, then {\bf both the Beat/Bypass and the Note Pulse lights will be off} (though if Bypass mode is on, then Beat/Bypass will still blink rapidly).  See Section \ref{startingclock} for more information about starting and stopping the clock.
 
-The reset of the screen is given over to the application.  In many cases an application will display text and other data in the {\bf Application Display} region, while lighting up certain status LEDs in the {\bf Application Footer}.
+The reset of the screen is given over to the application.  In many cases an application will display text and other data in the {\bf Application Display} region, and light certain status LEDs in the {\bf Application Footer}.
 
 You wend your way through menus, choose applications, and manipulate them using Gizmo's three buttons and two potentiometers as follows:
 
@@ -477,7 +476,6 @@ In MIDI& Out MIDI&Control MIDI&MIDI Clock&Volume (on Mega)\\
 Of particular use are Tempo, Note Speed, Swing, and especially Click.
 
 
-\clearpage
 
 \section {The Note Recorder}
 
@@ -544,6 +542,8 @@ The Recorder records nothing but MIDI NOTE ON and NOTE OFF messages.  It present
 \label{gaugedisplays} \end{center}
 \vspace{-3em}\end{figure}
 
+
+\clearpage
 \section {The MIDI Gauge}
 
 
@@ -601,8 +601,17 @@ Messages that are associated with a MIDI channel will have their channel number 
 \end{itemize}
 
 
+\begin{wrapfigure}{r}{1.6in}
+\vspace{-20em}\includegraphics[width=1.6in]{notefunction.pdf}
+\vspace{-2em}\caption{\small Note Function}\vspace{-2em}
+\label{notefunction}
+\end{wrapfigure}
+
+
+Note messages are displayed with both the {\bf pitch} (at left) and the {\bf velocity} (at right) of the note value, plus the particular kind of message in question: {\bf Note On, Note Off,} and {\bf Polyphonic Aftertouch}.
+
 \begin{wrapfigure}{r}{1.8in}
-\vspace{-46em}\includegraphics[width=1.8in]{octave.pdf}
+\vspace{-2.5em}\includegraphics[width=1.8in]{octave.pdf}
 \vspace{-2em}\caption{\small Octave Values.  Three common octave numbering schemes shown: Yamaha, SPN (so-called {\it Scientific Pitch Notation}), and MIDI.  SPN is the most common on keyboards.}\vspace{-4em}
 \label{octave}
 \end{wrapfigure}
@@ -610,13 +619,6 @@ Messages that are associated with a MIDI channel will have their channel number 
 
 \paragraph{Note Display}
 
-Note messages are displayed with both the {\bf pitch} (at left) and the {\bf velocity} (at right) of the note value, plus the particular kind of message in question: {\bf Note On, Note Off,} and {\bf Polyphonic Aftertouch}.
-
-\begin{wrapfigure}{r}{1.6in}
-\vspace{-20em}\includegraphics[width=1.6in]{notefunction.pdf}
-\vspace{-2em}\caption{\small Note Function}\vspace{-2em}
-\label{notefunction}
-\end{wrapfigure}
 
 How exactly do you distinguish between a Note On, Note Off, or Polyphonic Aftertouch message then?  Figure~{\ref{gaugedisplays}}~[Right] shows a four-LED region, in orange, where a certain pattern is displayed to indicate this.  The patterns are shown in Figure~\ref{notefunction}.
 
@@ -697,7 +699,7 @@ The two MIDI channels in question are the Default MIDI Out Channel (defined in t
 \end{itemize}
 
 \begin{wrapfigure}{r}{1.5in}
-\vspace{-3.5em}\includegraphics[width=1.5in]{Fade}
+\includegraphics[width=1.5in]{Fade}
 \vspace{-2em}\caption{\small Cumulative Velocity the MIDI Out Channels when fading.  Default is {\color{red}red}, and Alternative is {\color{blue} blue}.}
 \vspace{-3em}
 \label{splitter}
@@ -737,7 +739,6 @@ Long-pressing the Middle Button cycles through three options:
 \item Fade/Balance the Keyboard.  All CC, PC, Channel Aftertouch, and NRPN/RPN if routed to the alternative MIDI Out Channel.  Pitch Bend is routed to both channels, as is Polyphonic Aftertouch and all Note On and Note Off messages (though with inverted velocities as discussed earlier).  The screen will display \texttt{FADE}.
 \end{itemize}
 
-\clearpage
 
 \section{The Thru Facility}
 \label{thru}
@@ -783,6 +784,10 @@ You can do all three of these at the same time.  I might add more unusual transf
 		\end{description}
 		
 	\end{description}
+
+
+
+\clearpage
 
 \section {The Measure Counter}
 \label{measure}
@@ -929,8 +934,6 @@ You can do all three of these at the same time.  I might add more unusual transf
 			\begin{tabbing}
 			Ignore\hspace{0.5in}\=Use an internal clock but let any external MIDI clock pass through.\\
 			Use\>Use an external MIDI clock and also let it pass through.\\
-			Divide\>Use an external MIDI Clock.  Don't pass it through, but \\
-			\>~~~~~~instead send out a MIDI clock pulse every \(N\) pulses received.\\
 			Consume\>Use an external MIDI clock but don't let it pass through.\\
 			Generate\>Use an internal clock and emit it as a MIDI clock.\\
 			\>~~~~~~Don't let any external MIDI clock pass through.\\	
@@ -940,10 +943,15 @@ You can do all three of these at the same time.  I might add more unusual transf
 		\end{description}
 }
 
-The {\bf Divide} option is special: instead of sending MIDI clock command every pulse, it sends MIDI clock every \(N\) pulses, thus slowing down (dividing) the clock signal.  When you choose {\bf Divide}, you'll be further asked to specify what \(N\) is:
+		You can also start/stop/continue the clock via by pressing the Middle button while in the Options menu (see {\bf Starting, Stopping, and Continuing the Clock} at the end of this section), or by sending an appropriate NRPN message (see {\bf Control MIDI} earlier).
+
+	\item{\bf Divide}\\
+	If your MIDI Clock option is set to {\bf Use}, {\bf Ignore}, or {\bf Generate} (that is, something which causes Gizmo to emit MIDI Clock), then you have the option of slowing down the emitted MIDI clock by {\it dividing} it by some constant \(N\)  For example, if your clock is presently running at 120 BPM, and you're doing Generate, and \(N=3\), then Gizmo's emitted MIDI clock will be at 40BPM.   Or if you're doing Use and the incoming MIDI Clock is at 100BPM, and \(N=2\), then Gizmo will adjust this to 50BPM when sent out.  Note that Gizmo's internal applications will use the original clock speed.  Note that {\bf Bypass Mode} disables all this nonsense.
+	
+Why is this useful?  Here's an example scenario.  You have a sequencer on Device A which is playing a song at 120 BPM, and you want to slave another sequencer, on Device B, to it which plays its part at half that speed.  You can do this by having Device A send to Gizmo, and Gizmo send to Device B with a divided clock.
 
 			\begin{description}
-					\item{\bf \textit{Choose}}: 2 ... 64 (the value for \(N\)) when using {\bf Divide}
+					\item{\bf \textit{Choose}}: 2 ... 16 (the value for \(N\)) when using {\bf Divide}, or None\hspace{1.45in}\smash{\includegraphics[width=1in]{none.pdf}}
 			\end{description}
 
 
@@ -969,7 +977,6 @@ The {\bf Divide} option is special: instead of sending MIDI clock command every 
 %	Double Whole Note				&192\\
 %	\end{tabular}\end{center}
 
-		You can also start/stop/continue the clock via by pressing the Middle button while in the Options menu (see {\bf Starting, Stopping, and Continuing the Clock} at the end of this section), or by sending an appropriate NRPN message (see {\bf Control MIDI} earlier).
 		
 	\item{\bf Click} or {\bf No Click}\\
 		This toggles the note played by Gizmo to provide a click track for applications such as the Step Sequencer or Recorder.  If you select {\bf Click}, you will be asked to play a {\bf note}.  The note pitch and velocity form the click.  If you select {\bf No Click}, this turns off the click track.
@@ -1065,7 +1072,8 @@ Display Subsystem  &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
 Timing  Subsystem &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
 Interface Utilities &  $\checkmark$ & $\checkmark$ &  $\checkmark$ & \\
 Storage Facility &  $\checkmark$ & $\checkmark$ &  $\checkmark$ &\\
-MIDI Clock Control& $\checkmark$ & $\checkmark$ & &\\
+MIDI Clock Control& $\checkmark$ & $\checkmark$ & &Odd things may happen when changing the clock control option while an external clock is active.\\
+Clock Division&$\checkmark$&$\checkmark$& &\\
 Keyboard Splitting& $\checkmark$ & $\checkmark$  & & Works well but the fade option is perhaps a bit unnecessary and weird.\\
 Thru Facility & $\checkmark$ & $\checkmark$ & & \\
 Control Voltage& $\checkmark$ & & & Untested\\

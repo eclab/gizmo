@@ -3,7 +3,7 @@
 
 #include "All.h"
 
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
 
 void resetDistributionNotes() 
     { 
@@ -149,5 +149,5 @@ void stateThruPlay()
         }
     }
         
-#endif // defined(__AVR_ATmega2560__)
+#endif // defined(__MEGA__)
 

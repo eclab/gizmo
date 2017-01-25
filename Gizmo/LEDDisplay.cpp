@@ -496,7 +496,7 @@ const char PROGMEM font_5x5[5][5] = {
 /////   isn't normally drawn using writeNumber
 
 const char PROGMEM font_8x5[
-#if defined(__AVR_ATmega2560__)        
+#if defined(__MEGA__)        
 38
 #else
 26
@@ -780,7 +780,7 @@ const char PROGMEM font_8x5[
 //        0b00000000,
 //        },
 
-#if defined(__AVR_ATmega2560__)        
+#if defined(__MEGA__)        
 		{
 		A00110A,
 		A00001A,

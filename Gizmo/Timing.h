@@ -173,6 +173,11 @@ uint8_t stopClock(uint8_t fromButton);
 uint8_t startClock(uint8_t fromButton);
 uint8_t continueClock(uint8_t fromButton);
 
+#if defined(__MEGA__)
+void sendDividedClock();
+void resetDividedClock();
+#endif
+
 #define CLOCK_STOPPED   0       
 #define CLOCK_RUNNING   1
 

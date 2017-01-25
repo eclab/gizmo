@@ -10,7 +10,7 @@
 // Values outside this range will silently fail.
 void setValue(uint8_t dacI2C, uint16_t val)
     {
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
     if (val >= 4096) return;
     if (options.voltage)
         {

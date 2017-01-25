@@ -120,7 +120,7 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t
             TOGGLE_OUT_LED(); 
             }
         break;
-#if defined(__AVR_ATmega2560__)        
+#if defined(__MEGA__)        
 		case CONTROL_TYPE_PITCH_BEND:
 			{
 			// move from 0...16k to -8k...8k
@@ -162,7 +162,7 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
         {
         backupOptions = options; 
         }
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
 	const char* menuItems[9] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC"), PSTR("BEND"), PSTR("AFTERTOUCH"), PSTR("A VOLTAGE"), PSTR("B VOLTAGE")};
 	result = doMenuDisplay(menuItems, 9, STATE_NONE,  STATE_NONE, 1);
 #else
@@ -183,7 +183,7 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
                 saveOptions();
                 goUpState(STATE_CONTROLLER);
                 }
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
             else if ((type == CONTROL_TYPE_PC || type == CONTROL_TYPE_VOLTAGE_A || type == CONTROL_TYPE_VOLTAGE_B || type == CONTROL_TYPE_PITCH_BEND || type == CONTROL_TYPE_AFTERTOUCH))
 #else
             else if (type == CONTROL_TYPE_PC)
@@ -266,7 +266,7 @@ void setControllerButtonOnOff(uint16_t &onOff, int8_t nextState)
         // note that if it's the MIDDLE BUTTON we do decrement, else we do increment
         result = doNumericalDisplay(-1, CONTROL_VALUE_INCREMENT, ((int16_t)onOff) - 1, true, 
             (((&onOff) == (&options.middleButtonControlOn)) || ((&onOff) == (&options.middleButtonControlOff))) ? OTHER_DECREMENT: OTHER_INCREMENT);
-#if defined(__AVR_ATmega2560__) 
+#if defined(__MEGA__) 
     else if (	
     			((((&onOff) == (&options.middleButtonControlOn)) || ((&onOff) == (&options.middleButtonControlOff))) &&
     		 		(options.middleButtonControlType == CONTROL_TYPE_PITCH_BEND)) ||
@@ -282,7 +282,7 @@ void setControllerButtonOnOff(uint16_t &onOff, int8_t nextState)
         {
         case NO_MENU_SELECTED:
             {
-#if defined(__AVR_ATmega2560__) 
+#if defined(__MEGA__) 
             if (
             		((((&onOff) == (&options.middleButtonControlOn)) || ((&onOff) == (&options.middleButtonControlOff))) &&
     		 			(options.middleButtonControlType == CONTROL_TYPE_PITCH_BEND)) ||

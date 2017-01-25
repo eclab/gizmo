@@ -106,18 +106,13 @@ void updateTicksAndWait()
     ++tickCount;
     }
 
-// Returns whether we are using a clock command that either PASSES THROUGH or EMITS clock messages, 
-// other than IGNORE_MIDI_CLOCK, which has already been handled specially at this point (in
-// handleClockCommand())
+// Returns whether we are using a clock command which allows us to emit a clock message
+// in response to a button press, internal pulse, or 
 uint8_t shouldEmitClockMessages()
     {
-    return (options.clock == USE_MIDI_CLOCK ||
-        options.clock == GENERATE_MIDI_CLOCK
-#if defined(__AVR_ATmega2560__)
-        || options.clock == DIVIDE_MIDI_CLOCK
-#endif // defined(__AVR_ATmega2560__)
-        )
-        && !bypass;
+    return 	!bypass &
+    		(options.clock == GENERATE_MIDI_CLOCK ||
+    		 options.clock == USE_MIDI_CLOCK);
     }
 
 
@@ -151,41 +146,82 @@ void updateExternalClock()
     lastExternalPulseTime = currentTime;
     }
 
+
+#if defined(__MEGA__)
+void sendDividedClock()
+	{
+	if (--dividePulseCountdown == 0)
+		{
+		dividePulseCountdown = options.clockDivisor;
+		MIDI.sendRealTime(MIDIClock);
+		TOGGLE_OUT_LED(); 
+		}
+	}
+	
+void resetDividedClock()
+	{
+	dividePulseCountdown = 1;
+	}
+#endif
+
+
+// This method is called whenever we get an internal or external pulse.
+// The fromButton parameter is ALWAYS false.
+//
+// If we have an external pulse, we want to update to reflect this.
+// If we're doing USE or GENERATE, pass it through (on the UNO).
+// On the mega, we'll do this via division in updateTimers()
+
 void pulseClock(uint8_t fromButton)
     {
     if (clockState == CLOCK_STOPPED)
         return;
 
     // update our external clock pulse estimate
-    if (USING_EXTERNAL_CLOCK())  // we're using an external clock
+    if (USING_EXTERNAL_CLOCK())
         updateExternalClock(); 
 
+#if defined(__MEGA__)
+#else
+	if (options.clock == USE_MIDI_CLOCK ||
+		options.clock == GENERATE_MIDI_CLOCK)
+		{
+		//debug(13);
+		MIDI.sendRealTime(MIDIClock); 
+		TOGGLE_OUT_LED();
+		}
+#endif
+		
     pulse = 1;
     pulseCount++;
-
-#if defined(__AVR_ATmega2560__)
-    if (options.clock != DIVIDE_MIDI_CLOCK && shouldEmitClockMessages())
-#else
-        if (shouldEmitClockMessages())
-#endif
-            { MIDI.sendRealTime(MIDIClock); TOGGLE_OUT_LED(); }
     }
+
+
+
+// This method is only called when a user presses a BUTTON
+// or when an external MIDI comes in and we're dong USE or CONSUME.
+//
+// If we're dong USE or CONSUME and a button is pressed, ignore it entirely.
+// Otherwise, respond to it.
+//
+// If we're doing USE and it's not a button, *or* if we're doing
+// GENERATE and it's a button, emit it.
 
 uint8_t stopClock(uint8_t fromButton)
     {
-    if (fromButton && !GENERATING_CLOCK())
+    if (fromButton && (USING_EXTERNAL_CLOCK() || clockState == CLOCK_STOPPED))
         return 0;
         
-    if (clockState != CLOCK_RUNNING)
-        return 0;
+    if ((options.clock == USE_MIDI_CLOCK && !fromButton) ||
+    	(options.clock == GENERATE_MIDI_CLOCK && fromButton))
+        { 
+        MIDI.sendRealTime(MIDIStop); 
+        TOGGLE_OUT_LED();
+        }
 
     lastExternalPulseTime = 0;
     externalMicrosecsPerPulse = 0;
-        
     clockState = CLOCK_STOPPED;
-
-    if (shouldEmitClockMessages())
-        { MIDI.sendRealTime(MIDIStop); TOGGLE_OUT_LED(); }
 
     // if we stop the clock some notes may be playing.  We reset them here.
     sendAllNotesOff();
@@ -196,25 +232,37 @@ uint8_t stopClock(uint8_t fromButton)
 extern uint8_t drawBeatToggle;
 extern uint8_t drawNotePulseToggle;
 
+
+// This method is only called when a user presses a BUTTON
+// or when an external MIDI comes in and we're dong USE or CONSUME.
+//
+// If we're dong USE or CONSUME and a button is pressed, ignore it entirely.
+// Otherwise, respond to it.
+//
+// If we're doing USE and it's not a button, *or* if we're doing
+// GENERATE and it's a button, emit it.
+
 uint8_t startClock(uint8_t fromButton)
     {
-    if (fromButton && !GENERATING_CLOCK())
+    if (fromButton && (USING_EXTERNAL_CLOCK() || clockState != CLOCK_STOPPED))
         return 0;
         
-    if (clockState != CLOCK_STOPPED)
-        return 0;
+    if ((options.clock == USE_MIDI_CLOCK && !fromButton) ||
+    	(options.clock == GENERATE_MIDI_CLOCK && fromButton))
+        {
+        //debug(10);
+        MIDI.sendRealTime(MIDIStart); 
+        TOGGLE_OUT_LED();
+        }
 
-    notePulseCountdown = 1;
     dividePulseCountdown = 1;
+    notePulseCountdown = 1;
     beatCountdown = 1;
     drawBeatToggle = 0;
     drawNotePulseToggle = 0;
     pulseCount = 0;
     clockState = CLOCK_RUNNING;
     swingToggle = 0;
-
-    if (shouldEmitClockMessages())
-        { MIDI.sendRealTime(MIDIStart); }
 
     // When we start the clock we want to have applications starting at their initial points.
     // NOTE: It may be that instead actually want to START them playing.  But I don't think so.
@@ -236,19 +284,35 @@ uint8_t startClock(uint8_t fromButton)
 
     return 1;
     }
-        
+
+
+// This method is only called when a user presses a BUTTON
+// or when an external MIDI comes in and we're dong USE or CONSUME.
+//
+// If we're dong USE or CONSUME and a button is pressed, ignore it entirely.
+// Otherwise, respond to it.
+//
+// If we're doing USE and it's not a button, *or* if we're doing
+// GENERATE and it's a button, emit it.
+
 uint8_t continueClock(uint8_t fromButton)
     {
-    if (fromButton && !GENERATING_CLOCK())
+    if (fromButton && (USING_EXTERNAL_CLOCK() || clockState != CLOCK_STOPPED))
         return 0;
 
     if (clockState != CLOCK_STOPPED)
         return 0;
         
+    if ((options.clock == USE_MIDI_CLOCK && !fromButton) ||
+    	(options.clock == GENERATE_MIDI_CLOCK && fromButton))
+        { 
+        //debug(11);
+        MIDI.sendRealTime(MIDIContinue); 
+        TOGGLE_OUT_LED();
+        }
+
     clockState = CLOCK_RUNNING;
 
-    if (shouldEmitClockMessages())
-        { MIDI.sendRealTime(MIDIContinue); TOGGLE_OUT_LED(); }
     return 1;
     }     
         
@@ -289,11 +353,11 @@ GLOBAL static uint8_t notePulseRateTable[16] = { 1, 2, 3, 4, 6, 8, 12, 24, 32, 3
 void setNotePulseRate(uint8_t noteSpeedType)
     {
     notePulseRate = notePulseRateTable[noteSpeedType];
-    notePulseCountdown = 1;   // set it up so that if we're right on a note pulse border, we pulse next time.
-    dividePulseCountdown = 1;
-    beatCountdown = 1;
-    drawNotePulseToggle = 0;
-    drawBeatToggle = 0;
+    notePulseCountdown = ((uint8_t)(pulseCount % notePulseRate)) + 1;
+#if defined(__MEGA__)
+     drawNotePulseToggle = (uint8_t)((pulseCount / notePulseRate) % 2);
+#endif
+// Not enough space to do this for the Uno.  :-(  So we could get off-sync.
     }
 
 uint32_t getMicrosecsPerPulse()
@@ -308,7 +372,7 @@ uint32_t getMicrosecsPerPulse()
 void updateTimers()
     {
     // update our internal clock if we're making one
-    if (options.clock >= IGNORE_MIDI_CLOCK)
+    if (!USING_EXTERNAL_CLOCK())
         {
         if (currentTime > targetNextPulseTime)
             {
@@ -357,17 +421,13 @@ void updateTimers()
             beat = 1;
             beatCountdown = PULSES_PER_BEAT;
             }
-  
-#if defined(__AVR_ATmega2560__)
-		if (--dividePulseCountdown == 0)
-			{
-			dividePulseCountdown = options.clockDivisor;
-			if (options.clock == DIVIDE_MIDI_CLOCK)
-				{
-				MIDI.sendRealTime(MIDIClock); TOGGLE_OUT_LED(); 
-				}
-			}
+            
+#if defined(__MEGA__)
+	if (options.clock == USE_MIDI_CLOCK ||
+		options.clock == GENERATE_MIDI_CLOCK)
+        sendDividedClock();
 #endif
-		}
+      }
     }
+
 

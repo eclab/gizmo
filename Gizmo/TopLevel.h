@@ -20,26 +20,16 @@
 // We have five options for handling the MIDI clock (or producing our own)
 // These are the possible settings for options.clock
 
-#if defined(__AVR_ATmega2560__)
-#define USE_MIDI_CLOCK 0         // Use external MIDI clock, and pass it through
-#define DIVIDE_MIDI_CLOCK 1      // Use external MIDI clock, and pass it through, but slowed down to the given NOTE VALUE
-#define CONSUME_MIDI_CLOCK 2     // Use external MIDI clock, but don't pass it through
-#define IGNORE_MIDI_CLOCK 3      // Use our own internal clock, but pass any MIDI clock through
-#define GENERATE_MIDI_CLOCK 4    // Use our own internal clock and produce an outgoing MIDI clock from it, rather than passing through any MIDI clock
-#define BLOCK_MIDI_CLOCK 5       // Use our own internal clock.  Don't pass through or generate any MIDI clock.
-#else
 #define USE_MIDI_CLOCK 0         // Use external MIDI clock, and pass it through
 #define CONSUME_MIDI_CLOCK 1     // Use external MIDI clock, but don't pass it through
 #define IGNORE_MIDI_CLOCK 2      // Use our own internal clock, but pass any MIDI clock through
-#define GENERATE_MIDI_CLOCK 3    // Use our own internal clock and produce an outgoing MIDI clock from it, rather than passing through any MIDI clock
-#define BLOCK_MIDI_CLOCK 4       // Use our own internal clock.  Don't pass through or generate any MIDI clock.
-#endif
+#define GENERATE_MIDI_CLOCK 3    // Use our own internal clock and emit a MIDI clock from it, rather than passing through any MIDI clock
+#define BLOCK_MIDI_CLOCK 4       // Use our own internal clock.  Don't pass through or emit any MIDI clock.
+
 
 // Some useful predicates
-#define USING_EXTERNAL_CLOCK() (options.clock <= CONSUME_MIDI_CLOCK)
-#define GENERATING_CLOCK() (options.clock == GENERATE_MIDI_CLOCK)
-#define PASSING_THROUGH_EXTERNAL_CLOCK() ( (options.clock <= DIVIDE_MIDI_CLOCK) || (options.clock == IGNORE_MIDI_CLOCK))
-#define USING_INTERNAL_CLOCK() (options.clock > CONSUME_MIDI_CLOCK)
+#define USING_EXTERNAL_CLOCK() (options.clock <= CONSUME_MIDI_CLOCK)	// are we using any external clock?
+#define EMITTING_CLOCK() ( (options.clock == CONSUME_MIDI_CLOCK) || (options.clock == BLOCK_MIDI_CLOCK))
 
 // I don't want to do MIDI Namespace stuff.  
 // So I have defined the following #defines, copies
@@ -73,7 +63,7 @@
 // STATES
 // These are the states in the overall state machine
 
-#if defined(__AVR_ATmega2560__)
+#if defined(__MEGA__)
 #define STATE_NONE 255
 #define STATE_ROOT 0
 #define STATE_ARPEGGIATOR 1
@@ -213,7 +203,7 @@
 #define STATE_OPTIONS_SCREEN_BRIGHTNESS 57
 #define STATE_OPTIONS_ABOUT 58
 
-#endif // defined(__AVR_ATmega2560__)
+#endif // defined(__MEGA__)
 
 
 
