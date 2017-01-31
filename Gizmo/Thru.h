@@ -53,11 +53,19 @@
 
 #define MAX_CHORD_MEMORY_NOTES (8)
 
+#define DEBOUNCE_STATE_OFF 0
+#define DEBOUNCE_STATE_FIRST_NOTE_DOWN 1
+#define DEBOUNCE_STATE_FIRST_NOTE_UP_IGNORED 2
+#define DEBOUNCE_STATE_FIRST_NOTE_UP 3
+
 struct _thruLocal
     {
     uint8_t chordMemory[MAX_CHORD_MEMORY_NOTES];
     uint8_t distributionNotes[16];
     uint8_t currentDistributionChannelIndex;
+    uint8_t debounceState;
+    uint32_t debounceTime;
+    uint8_t debounceNote;
     };
 
 

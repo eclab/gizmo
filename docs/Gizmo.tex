@@ -40,8 +40,7 @@ Gizmo comes built-in with the following applications and other capabilities:
 
 \item {\bf \textit{Mega Only:}\quad Keyboard Splitter.}\quad You can split incoming MIDI notes by pitch and route them to different MIDI out channels.  You can also fade notes between two channels depending on note velocity.
 
-\item {\bf \textit{Mega Only}\quad Midi Thru: Distributing and Layering Notes, and Chord Memory.}\quad Gizmo can {\it distribute} notes to different MIDI channels as you play: this lets you play multiple mono synths as if they were polyphonic, for example.  Gizmo can also {\it layer} notes: when you play a note, Gizmo will send some \(N>1\) note-on messages instead of one.  This lets you use a polyphonic synthesizer to play a note with more than one voice, making it fatter, but not going all the way to unison.  Finally, Gizmo can perform {\it chord memory}, playing a transposed chord of your choosing starting at a note you are currently playing.
-And yes, you can do all three simultaneously.
+\item {\bf \textit{Mega Only}\quad MIDI Thru}\quad Gizmo can do magic with incoming notes.  First, it can {\it distribute} notes to different MIDI channels as you play: this lets you play multiple mono synths as if they were polyphonic, for example.  Gizmo can also {\it layer} notes: when you play a note, Gizmo will send some \(N>1\) note-on messages instead of one.  This lets you use a polyphonic synthesizer to play a note with more than one voice, making it fatter, but not going all the way to unison.  Gizmo can also perform {\it chord memory}, playing a transposed chord of your choosing starting at a note you are currently playing.  Last, Gizmo can {\it debounce} notes (typically from drum pads), refusing to play a second identical note if it happens to soon after the first one.  You can do all of these simultaneously.
 
 \item {\bf \textit{Mega Only:}\quad Measure Counter.}\quad You can count elapsed beats, measures (bars), and phrases; and alternatively count eighths of a second, seconds, and minutes.  The counter also responds to external MIDI clock directives.
 
@@ -745,7 +744,7 @@ Long-pressing the Middle Button cycles through three options:
 \section{The Thru Facility}
 \label{thru}
 
-\textit{[Mega Only]}\qquad The {\bf Thru Facility} passes MIDI through the box, but if MIDI data comes in via the MIDI In channel, it applies various transformations to it and then routes it out specially.  There are three transformations at present:
+\textit{[Mega Only]}\qquad The {\bf Thru Facility} passes MIDI through the box, but if MIDI data comes in via the MIDI In channel, it applies various transformations to it and then routes it out specially:
 
 \begin{itemize}
 \item First, you can {\it distribute} incoming notes, one by one, to separate MIDI channels, round-robin.  Thus if you have multiple copies of the same monosynth, you could distribute notes to the various synths and basically treat them as if they were a polysynth\footnote{This is an idea directly stolen from the MIDIPal.}
@@ -753,6 +752,8 @@ Long-pressing the Middle Button cycles through three options:
 \item Second, you can have Gizmo add {\it extra notes}, that is, repeat notes you're playing multiple times extremely rapidly.  For example, if you play the note G, Gizmo might send four G notes out essentially at the same time.  This is useful for fattening up a synth but not making it fully unison (mono).  For example, I have an Oberheim Matrix 1000 with six voices.  If I instruct Gizmo to provide two extra notes, then every time I press a note, Gizmo emits {\it three} copies of that note to the Oberheim, causing three voices to play together.  This basically turns the Matrix into a fatter two-voice polysynth.
 
 \item Third, you can perform {\it chord memory}.  Here you first specify a chord, and then afterwards, every time you play a note, Gizmo will instead emit that chord, transposed so that its lowest note corresponds with the note you played.  This is a classic facility available on a number of synthesizers, including early ones such as the Oberheim OB-Xa, Sequential Circuits Prophet 600, Korg PolySix, and so on.\footnote{This idea was also directly stolen from the MIDIPal.}
+
+\item Fourth, you can {\it debounce notes}.  The objective here is to counteract the situation where you hit a drum pad, and instead of staying down, it quickly bounces up, then down again, resulting in a buh-dum sound..\footnote{For example, I have debouncing issues with the Arturia Beatstep Pro.}  It works like this.  When you first press a note, Gizmo will require that this note be no less than \(N\) milliseconds long.  Furthermore, if the same note is pressed within these \(N\) milliseconds, Gizmo will ignore it.     Large values of \(N\) catch more bounces but prevent you from playing the pad rapidly, and will also prevent you from making short stabs.  Thus this would be better for one-shot sounds (drums, etc.) which play in their entirety regardless of when the note-off occurs.
 
 \end{itemize}
 
@@ -777,19 +778,21 @@ You can do all three of these at the same time.  I might add more unusual transf
 		\begin{description}
 		\item{\bf \textit{Choose}}: No Extra Channels, or 1...15 \hspace{2.8in}\smash{\includegraphics[width=1in]{none.pdf}} 
 		\end{description}
-		
+
 	\item{\bf Chord Memory} or {\bf No Chord Memory}\\
-		This will show the text \texttt{CHRD}, and you can then specify a chord (of up to eight notes).  Thereafter if you play a single note, the chord will be played instead, transposed so that its root note corresponds with the note you play. (If you play more than one note, more than one chord will be played).  If you have already chosen a chord, then selecting this option a again will turn off chord memory.
+		This will show the text \texttt{CHRD}, and you can then specify a chord (of up to eight notes).  Thereafter if you play a single note, the chord will be played instead, transposed so that its root note corresponds with the note you play. (If you play more than one note, more than one chord will be played).  If you have already chosen a chord, then selecting this option again will turn off chord memory.
 				
 		\begin{description}
 		\item{\bf \textit{Choose}}: a chord of up to eight notes.
 		\end{description}
 		
+	\item{\bf Debounce}\\
+		This lets you choose the number of milliseconds between successive identical MIDI notes (the \(N\) value discussed earlier).  100 milliseconds seems to work well for me.
+		\begin{description}
+		\item{\bf \textit{Choose}}: No Debouncing, or 1...255 (milliseconds)\\\rule[0em]{0em}{0em}\hspace{\fill}\smash{\includegraphics[width=1in]{none.pdf}} 
+		\end{description}
+
 	\end{description}
-
-
-
-\clearpage
 
 \section {The Measure Counter}
 \label{measure}
@@ -878,6 +881,8 @@ You can do all three of these at the same time.  I might add more unusual transf
 
 	\item{\bf \textit{Mega Only:}\quad Volume}\\
 		Like Transpose, here you can state that any notes generated by Gizmo have their volume changed by multiplying their MIDI note velocity by some value.  If a resulting MIDI note velocity exceeds the maximum (127), it is bounded to 127.
+			
+			\clearpage
 			
 			\begin{description}
 			\item{\bf \textit{Choose}}:
@@ -995,6 +1000,9 @@ Why is this useful?  Here's an example scenario.  You have a sequencer on Device
 		
 	\item{\bf \textit{Mega Only:}\quad Menu Delay}\\
 		Gizmo often will display text (such as \texttt{SWING}) by filling the screen with the first few letters (in this case, \texttt{SWI}), then {\it delaying} for a certain interval, then scrolling through the whole word horizontally. You can specify how long that delay is.
+		
+		\clearpage
+		
 		\begin{description}
 			\item{\bf \textit{Choose}}:
 			\begin{tabbing}

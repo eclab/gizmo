@@ -1286,8 +1286,8 @@ void go()
         
 		case STATE_THRU:
             {
-            const char* menuItems[4] = { PSTR("GO"), PSTR("EXTRA NOTES"), PSTR("DISTRIBUTE NOTES"), options.thruChordMemorySize == 0 ? PSTR("CHORD MEMORY") : PSTR("NO CHORD MEMORY") };
-            doMenuDisplay(menuItems, 4, STATE_THRU_PLAY, STATE_ROOT, 1);
+            const char* menuItems[5] = { PSTR("GO"), PSTR("EXTRA NOTES"), PSTR("DISTRIBUTE NOTES"), options.thruChordMemorySize == 0 ? PSTR("CHORD MEMORY") : PSTR("NO CHORD MEMORY"), PSTR("DEBOUNCE") };
+            doMenuDisplay(menuItems, 5, STATE_THRU_PLAY, STATE_ROOT, 1);
             }
         break;
                 
@@ -2189,6 +2189,12 @@ void go()
             		goUpState(STATE_THRU);
             		}
 				}
+            }
+        break;
+        
+        case STATE_THRU_DEBOUNCE:
+            {
+            stateNumerical(0, 255, options.thruDebounceMilliseconds, backupOptions.thruDebounceMilliseconds, true, true, OTHER_NONE, STATE_THRU);
             }
         break;
         
