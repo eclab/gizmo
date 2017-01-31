@@ -181,7 +181,7 @@ uint8_t gatherByte(uint16_t pos)
 void stripHighBits()
     {
     // strip the high bits
-    for(uint16_t i = 0; i < SLOT_DATA_SIZE - 2; i++)
+    for(uint16_t i = 0; i < STEP_SEQUENCER_BUFFER_SIZE; i++)
         data.slot.data.stepSequencer.buffer[i] = (127 & data.slot.data.stepSequencer.buffer[i]);
     }
 
@@ -285,11 +285,6 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
         case NO_MENU_SELECTED:
             break;
         case MENU_SELECTED:
-            // FIXME: did I fix the issue of synchronizing the beats with the sequencer notes?
-        
-            local.stepSequencer.currentPlayPosition = 
-                div12((24 - beatCountdown) * notePulseRate) >> 1;   // get in sync with beats
-
             if (currentDisplay == -1)  // Init
                 {
                 state = initState;
@@ -307,6 +302,10 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                     state = selectedState;
                     if (application == STATE_STEP_SEQUENCER)
                         {
+            			// FIXME: did I fix the issue of synchronizing the beats with the sequencer notes?
+            			local.stepSequencer.currentPlayPosition = 
+                			div12((24 - beatCountdown) * notePulseRate) >> 1;   // get in sync with beats
+
                         uint8_t len = GET_TRACK_LENGTH();
                         uint8_t num = GET_NUM_TRACKS();
                                 

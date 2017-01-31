@@ -671,6 +671,8 @@ Optional control voltage is sent out one of two Digital-to-Analog Converters or 
 	After you have selected a control type, if you have selected CC, NRPN, or RPN, you will be then asked to select a {\bf controller parameter number}.  (Otherwise ,for PC and OFF, you will go back to the top-level Controller Menu).  CC parameter numbers may range 0 ... 119.  NRPN and RPN parameter numbers may range 0 ... 16383.
 	
 	When you have completed this, you will be then asked to enter the value sent when the button is {\bf pressed}.  This value must be 0...127 (the Controller does not send 14-bit values).  Afterwards, you will be similarly asked to enter the value sent when the button is {\bf pressed again} (the buttons act as toggles).  When you have completed this, you will be sent back to the top-level Controller menu.
+
+		\item{\bf \textit{Note}} At the borders of 14-bit values (near 0 or 16383) you may find it harder to precisely set the BPM due to anti-potentiometer noise code in Gizmo. Just use the right knob to fine-tune your value. 
 	\end{description}
 
 \section {The Keyboard Splitter}
@@ -820,6 +822,7 @@ You can do all three of these at the same time.  I might add more unusual transf
 		\begin{description}
 		\item{\bf \textit{Choose}}: 1 ... 999 Beats Per Minute.  Note that this is a large number, and so may require you to choose it with the left potentiometer, then fine-tune it with the right potentiometer.\footnote{Gizmo can go lots faster than 999: in theory it could go clear to 31200 or so.  But then your synthesizer would explode and we wouldn't want that.}
 		\item{\bf \textit{Alternatively}}: Tap the Middle Button.  The BPM will be set to the rate you tap.
+		\item{\bf \textit{Note}} At the borders (near 1 or 999) you may find it harder to precisely set the BPM due to anti-potentiometer noise code in Gizmo. Just use the right knob to fine-tune your value. 
 		\end{description}
 		
 	\item{\bf Note Speed}\\

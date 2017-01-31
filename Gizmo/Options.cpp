@@ -19,6 +19,9 @@ GLOBAL struct _options options;
 // You only need to set options = backupOptions
 GLOBAL struct _options backupOptions;
 
+// last timestamp for time tempo
+uint32_t lastTempoTapTime;
+
 
 
 // Loads the current options from flash.

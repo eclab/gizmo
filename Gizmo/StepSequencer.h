@@ -6,10 +6,6 @@
 #ifndef __STEP_SEQUENCER_H__
 #define __STEP_SEQUENCER_H__
 
-#if defined (__MEGA__)
-#define __FOO__
-#endif
-
 
 
 #include "All.h"
@@ -204,21 +200,24 @@ struct _stepSequencerLocal
 #define STEP_SEQUENCER_FORMAT_16x12_ 0
 #define STEP_SEQUENCER_FORMAT_24x8_ 1
 #define STEP_SEQUENCER_FORMAT_32x6_ 2
-#if defined(__FOO__) 
+#if defined(__MEGA__) 
 #define STEP_SEQUENCER_FORMAT_48x4_ 3
 #define STEP_SEQUENCER_FORMAT_64x3_ 4
 #endif
+
+
+#define STEP_SEQUENCER_BUFFER_SIZE		(SLOT_DATA_SIZE - 3)
 
 struct _stepSequencer
     {
     uint8_t format;                                             // step sequencer format in question
 	uint8_t locked;
 	uint8_t unused;  											// future expansion
-    uint8_t buffer[SLOT_DATA_SIZE - 2];
+    uint8_t buffer[STEP_SEQUENCER_BUFFER_SIZE];
     };
 
 
-#if defined(__FOO__) 
+#if defined(__MEGA__) 
 // Used by GET_TRACK_LENGTH to return the length of tracks in the current format
 extern uint8_t _trackLength[5];
 // Used by GET_NUM_TRACKS to return the number of tracks in the current format

@@ -219,11 +219,13 @@ uint8_t updatePot(uint16_t &pot, uint16_t* potCurrent, uint16_t &potCurrentFinal
     // we clean up the pots as follows:
     // 1. Run it through a median of three filter
     // 2. potCurrentFinal <- 1/2 potCurrentFinal + 1/2 result from #1
-    // 3. If potCurrentFinal differs from its old value by at least MINIMUM_POT_DEVIATION (4), then we have a new pot value.
+    // 3. If potCurrentFinal differs from its old value by at least MINIMUM_POT_DEVIATION (8), then we have a new pot value.
     
-    // This implies that the pots have a realistic resolution of 1024 / 4 = 256.
+    // This implies that the pots have a realistic resolution of 1024 / 8 = 128.
     // The biggest range that we need to dial in is 2^14 = 16384.
-    // This means that the RIGHT POT must have a resolution of at least 64, since 64 * 256 = 16384.
+    // This means that the RIGHT POT must have a resolution of at least 128, since 128 * 128 = 16384.
+    
+    // I'd like MINIMUM_POT_DEVIATION to be 4, but it's just too noisy.  :-(
  
     potCurrent[0] = potCurrent[1];
     potCurrent[1] = potCurrent[2];
@@ -236,8 +238,8 @@ uint8_t updatePot(uint16_t &pot, uint16_t* potCurrent, uint16_t &potCurrentFinal
     if (potLast != potCurrentFinal && 
             (potLast > potCurrentFinal && potLast - potCurrentFinal >= MINIMUM_POT_DEVIATION ||
             potCurrentFinal > potLast && potCurrentFinal - potLast >= MINIMUM_POT_DEVIATION ||
-            potCurrentFinal >= 1023 - MINIMUM_POT_DEVIATION ||             // handle boundary condition
-            potCurrentFinal <= MINIMUM_POT_DEVIATION))             // handle boundary condition
+            potCurrentFinal == 1023 || //potCurrentFinal == 1023 - MINIMUM_POT_DEVIATION ||             // handle boundary condition	-- NOTE: too noisy.  I've removed it and mentioned it in the manual.
+            potCurrentFinal == 0 )) //potCurrentFinal <= MINIMUM_POT_DEVIATION))             // handle boundary condition
         { potLast = potCurrentFinal; pot = potCurrentFinal; return CHANGED; }
     else return NO_CHANGE;
     }
@@ -673,14 +675,14 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
         }
 #endif
     
-    // if we're doing a high-resolution number (> 256 basically) then
+    // if we're doing a high-resolution number (>= 256 basically) then
     // we check the right pot and use it as a fine-tuning
     if (potUpdated[RIGHT_POT] && (maxValue - minValue + 1) >= 256)
         {
         // this is gonna have funky effects at the boundaries
         
         currentDisplay -= potFineTune;  // old one
-        potFineTune = (pot[RIGHT_POT] >> 4) - 32;  // right pot always maps to a delta of -32 ... 32.
+        potFineTune = (pot[RIGHT_POT] >> 3) - 64;  // right pot always maps to a delta of -64 ... 63.
         currentDisplay += potFineTune;
 
         currentDisplay = boundValue(currentDisplay, minValue, maxValue);
@@ -1731,16 +1733,16 @@ void go()
             if (entry)
                 {
                 backupOptions = options; 
-                local.options.lastTempoTapTime = 0;
+                lastTempoTapTime = 0;
                 }
-                
+
             if (isUpdated(MIDDLE_BUTTON, PRESSED))
                 {
-                if (local.options.lastTempoTapTime != 0)
+                if (lastTempoTapTime != 0)
                     {
                     // BPM = 1/(min/beat).  min/beat = micros/beat *  sec / 1000000 micros * min / 60 sec
                     // So BPM = 60000000 / micros 
-                    uint16_t newTempo = (uint16_t)(60000000L / (currentTime - local.options.lastTempoTapTime));
+                    uint16_t newTempo = (uint16_t)(60000000L / (currentTime - lastTempoTapTime));
 
                     // fold into options.tempo as a smoothing effort. 
                     // Note that we increase newTempo by one
@@ -1756,7 +1758,7 @@ void go()
 
                     entry = true;
                     }
-                local.options.lastTempoTapTime = currentTime;
+                lastTempoTapTime = currentTime;
                 }
 
 			// at this point, MIDDLE_BUTTON shouldn't have any effect on doNumericalDisplay (incrementing it)

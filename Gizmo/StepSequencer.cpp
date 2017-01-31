@@ -4,22 +4,16 @@
 #include "All.h"
 
 
-#if defined (__MEGA__)
-#define __FOO__
-#endif
-
-
-
-#if defined(__FOO__) 
+#if defined(__MEGA__) 
 // Used by GET_TRACK_LENGTH to return the length of tracks in the current format
-GLOBAL static uint8_t _trackLength[5] = {16, 24, 32, 48, 64};
+GLOBAL uint8_t _trackLength[5] = {16, 24, 32, 48, 64};
 // Used by GET_NUM_TRACKS to return the number of tracks in the current format
-GLOBAL static uint8_t _numTracks[5] = {12, 8, 6, 4, 3};
+GLOBAL uint8_t _numTracks[5] = {12, 8, 6, 4, 3};
 #else
 // Used by GET_TRACK_LENGTH to return the length of tracks in the current format
-GLOBAL static uint8_t _trackLength[3] = {16, 24, 32};
+GLOBAL uint8_t _trackLength[3] = {16, 24, 32};
 // Used by GET_NUM_TRACKS to return the number of tracks in the current format
-GLOBAL static uint8_t _numTracks[3] = {12, 8, 6};
+GLOBAL uint8_t _numTracks[3] = {12, 8, 6};
 #endif
 
 
@@ -47,6 +41,17 @@ void blinkOrSetPoint(unsigned char* led, uint8_t x, uint8_t y, uint8_t isCursor)
         setPoint(led, x, y);
     }
 
+    
+uint8_t shouldMuteTrack(uint8_t track)
+	{
+	return 
+		(
+		// We're muted if solo is on and we're not the current track
+		(local.stepSequencer.solo && track != local.stepSequencer.currentTrack) ||
+		// We're muted if solo is NOT on and our mute is on
+		(!local.stepSequencer.solo && local.stepSequencer.muted[track]));
+	}
+
 // Draws the sequence with the given track length, number of tracks, and skip size
 void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
     {
@@ -58,7 +63,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
     // this code is designed to allow the user to move down to about the middle of the screen,
     // at which point the cursor stays there and the screen scrolls instead.
     uint8_t firstTrack = local.stepSequencer.currentTrack;
-//#if defined(__FOO__) 
+//#if defined(__MEGA__) 
     uint8_t fourskip =  4 / skip;
 //#else
 //    uint8_t fourskip = (4 >> (skip - 1));  // 4 >> (skip - 1) is a fancy way of saying 4 / skip for skip = 1 or 2.  We want to move to the middle of the screen, and only then start scrolling
@@ -68,7 +73,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
     else firstTrack = firstTrack - fourskip + 1;
     
     uint8_t lastTrack = numTracks;          // lastTrack is 1+ the final track we'll be drawing
-//#if defined(__FOO__) 
+//#if defined(__MEGA__) 
     uint8_t sixskip = 6 / skip;
 //#else
 //    uint8_t sixskip = (6 >> (skip - 1));
@@ -88,14 +93,16 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
         // for each note in the track
         for (uint8_t d = 0; d < trackLen; d++)
             {
-            uint8_t weAreNotSolo = (local.stepSequencer.solo && t != local.stepSequencer.currentTrack);
+            uint8_t shouldDrawMuted = shouldMuteTrack(t);
+//            uint8_t weAreNotSolo = (local.stepSequencer.solo && t != local.stepSequencer.currentTrack);
             uint16_t pos = (t * (uint16_t) trackLen + d) * 2;
             uint8_t vel = data.slot.data.stepSequencer.buffer[pos + 1];
             // check for tie
             if ((vel == 0) && (data.slot.data.stepSequencer.buffer[pos] == 1))
                 vel = 1;  // so we draw it
-            if (weAreNotSolo)   // solo is on but we're not the current track, don't draw us 
-                vel = 0; // don't draw if we're not solo
+            if (shouldDrawMuted)
+                vel = 0;
+            uint8_t xpos = d - ((d >> 4) * 16);  // x position on screen
             uint8_t blink = (
                 // draw play position cursor
                     ((local.stepSequencer.playState != PLAY_STATE_STOPPED) && 
@@ -103,8 +110,11 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
                         ((local.stepSequencer.currentEditPosition < 0 ) && (t == local.stepSequencer.currentTrack) && (abs(d - local.stepSequencer.currentPlayPosition) == 2)))) ||  // crosshatch
                 // draw edit cursor
                 ((t == local.stepSequencer.currentTrack) && (d == local.stepSequencer.currentEditPosition)) ||
-                // draw mute or solo indicator          
-                ((local.stepSequencer.muted[t] || weAreNotSolo) && (d == 0 || d == trackLen - 1)));
+                
+                // draw mute or solo indicator.  Solo overrides mute.
+                // So draw if solo is on but we're not it, OR if solo is turned off and we're muted
+                ((xpos == 0 || xpos == 15) && shouldDrawMuted));
+
             if (vel || blink)
                 {       
 // <8 <16 <24 <32 <40 <48 <56 <64
@@ -198,7 +208,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
 void stateStepSequencerFormat()
     {
     uint8_t result;
-#if defined(__FOO__) 
+#if defined(__MEGA__) 
     const char* menuItems[5] = {  PSTR("16 NOTES"), PSTR("24 NOTES"), PSTR("32 NOTES"), PSTR("48 NOTES"), PSTR("64 NOTES") };
     result = doMenuDisplay(menuItems, 5, STATE_NONE, 0, 1);
 #else
@@ -214,10 +224,10 @@ void stateStepSequencerFormat()
         break;
         case MENU_SELECTED:
             {
-            // we assume that all zeros is erased
             data.slot.type = SLOT_TYPE_STEP_SEQUENCER;
             data.slot.data.stepSequencer.format = currentDisplay;
-            memset(data.slot.data.stepSequencer.buffer, 0, SLOT_DATA_SIZE - 2);
+            data.slot.data.stepSequencer.locked = 0;
+            memset(data.slot.data.stepSequencer.buffer, 0, STEP_SEQUENCER_BUFFER_SIZE);
             for(uint8_t i = 0; i < GET_NUM_TRACKS(); i++)
                 {
                 resetTrack(i);
@@ -260,8 +270,10 @@ void sendTrackNote(uint8_t note, uint8_t velocity, uint8_t track)
     if (out == MIDI_OUT_DEFAULT) 
         out = options.channelOut;
     if (out != NO_MIDI_OUT)
+    	{
         if (note < 128) sendNoteOn(note, velocity, out);
         else sendNoteOff(note - 128, velocity, out);
+        }
     }
 
 
@@ -273,17 +285,8 @@ void loadBuffer(uint8_t position, uint8_t note, uint8_t velocity)
     }
 
 
-/*
 
-int16_t getNewCursorXPos(uint8_t trackLen)
-    {
-    // pot / 2 * (tracklen + 1) / 9 - 1
-    // we do it this way because pot * (tracklen + 1) / 10 - 1 exceeds 64K
-    return ((int16_t)(((pot[RIGHT_POT] >> 1) * (trackLen + 1)) >> 9)) - 1;  ///  / 1024 - 1;
-    }
-*/
-
-
+#if defined(__MEGA__)
 
 // I'd prefer the following code as it creates a bit of a buffer so scrolling to position 0 doesn't go straight
 // into play position mode.  Or perhaps we should change things so that you scroll to the far RIGHT edge, dunno.
@@ -298,7 +301,18 @@ int16_t getNewCursorXPos(uint8_t trackLen)
 	return val;
 	}
 
+#else
 
+// Uno version -- no buffer so we scroll right to -1 immediately.  But it saves us
+// 20 bytes or so, which matters now.  ;-(
+int16_t getNewCursorXPos(uint8_t trackLen)
+    {
+    // pot / 2 * (tracklen + 1) / 9 - 1
+    // we do it this way because pot * (tracklen + 1) / 10 - 1 exceeds 64K
+    return ((int16_t)(((pot[RIGHT_POT] >> 1) * (trackLen + 1)) >> 9)) - 1;  ///  / 1024 - 1;
+    }
+    
+#endif
 
 
 void resetStepSequencer()
@@ -323,7 +337,7 @@ void stateStepSequencerPlay()
     uint8_t trackLen = GET_TRACK_LENGTH();
     uint8_t numTracks = GET_NUM_TRACKS();
     
-//#if defined(__FOO__) 
+//#if defined(__MEGA__) 
 	// this little function correctly maps:
 	// 8 -> 1
 	// 12 -> 1
@@ -766,9 +780,12 @@ void playStepSequencer()
                 {
                 if (local.stepSequencer.velocity[track] != STEP_SEQUENCER_NO_OVERRIDE_VELOCITY)
                     vel = local.stepSequencer.velocity[track];
-                    
-                if ((!local.stepSequencer.muted[track]) &&                      // if we're not muted
-                    ((!(local.stepSequencer.solo) || track == local.stepSequencer.currentTrack)))  // solo is turned off, or solo is turne don AND we're the current track
+
+// The Atmel compiler optimizer is insane.  If I replace the following two lines with just this:
+// 				if (!shouldMuteTrack(track))
+// ... then I go UP by 8 bytes!
+                if ((!local.stepSequencer.solo && !local.stepSequencer.muted[track]) ||			// If solo is off AND we're not muted......  OR...
+                	(local.stepSequencer.solo && track == local.stepSequencer.currentTrack))	// Solo is turned on we're the current track regardless of mute
                     {
                     uint16_t newvel = (vel * (uint16_t)(local.stepSequencer.fader[track])) >> 5;
                     if (newvel > 127) 

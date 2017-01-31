@@ -8,10 +8,8 @@
 
 #include "All.h"
 
-struct _optionsLocal
-    {
-    uint32_t lastTempoTapTime;
-    };
+// last timestamp for time tempo
+extern uint32_t lastTempoTapTime;
 
 
 
