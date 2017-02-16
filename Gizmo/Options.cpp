@@ -31,7 +31,7 @@ void loadOptions()
     setPulseRate(options.tempo);
     setNotePulseRate(options.noteSpeedType);
     setScreenBrightness(options.screenBrightness);
-#if defined(__MEGA__)
+#ifdef INCLUDE_OPTIONS_MENU_DELAY
     setMenuDelay(options.menuDelay);
 #endif
     }
@@ -61,14 +61,34 @@ void resetOptions()
     options.noteLength = 100;
     options.click = NO_NOTE;
     options.clock = IGNORE_MIDI_CLOCK;
+
+#ifdef INCLUDE_ARPEGGIATOR
     options.arpeggiatorPlayVelocity = 128;  // FREE
-#if defined(__MEGA__)
-	options.clockDivisor = 1;
+#endif
+
+#ifdef INCLUDE_OPTIONS_MIDI_CLOCK_DIVIDE
+    options.clockDivisor = 1;
+#endif
+
+#ifdef INCLUDE_OPTIONS_MENU_DELAY
     options.menuDelay = 5;  // corresponds to DEFAULT_MENU_DELAY
+#endif
+
+#ifdef INCLUDE_OPTIONS_TRANSPOSE_AND_VOLUME
     options.volume = 3;  // corresponds to no volume modification
+#endif
+
+#ifdef INCLUDE_EXTENDED_RECORDER
+    options.recorderRepeat = true;
+#endif
+
+#ifdef INCLUDE_SPLIT
     options.splitChannel = 1;
     options.splitNote = 60;  // Middle C
     options.splitLayerNote = NO_NOTE;
+#endif
+
+#ifdef INCLUDE_MEASURE
     options.measureBeatsPerBar = 4;
     options.measureBarsPerPhrase = 4;
 #endif

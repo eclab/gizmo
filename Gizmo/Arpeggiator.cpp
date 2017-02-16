@@ -5,11 +5,13 @@
 #include "All.h"
 
 
+#ifdef INCLUDE_ARPEGGIATOR
 
 
 // Starting at position pos, draws up to next SEVEN notes of the arpeggio.  
 // We leave a one-column space so as not to interfere with the right LED matrix
-void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len = 7)
+//void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len = 7)
+void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len)
     {
     clearMatrix(mat);
 
@@ -41,7 +43,7 @@ void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len = 7
             else if (interval > 8)
                 {
                 setPoint(mat, j, n >> 1);
-                if (n & 1 == 1)  // it's odd, add another point
+                if ((n & 1) == 1)  // it's odd, add another point
                     setPoint(mat, j, (n >> 1) + 1);
                 }
             else
@@ -768,5 +770,5 @@ void stateArpeggiatorCreateSave()
     }
 
 
-
+#endif
 

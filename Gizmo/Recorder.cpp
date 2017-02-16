@@ -5,6 +5,8 @@
 
 
 
+#ifdef INCLUDE_RECORDER
+
 /// PLAY STATES
 /// These are situations the recorder may find itself in.
 /// Don't confuse these with the STATUS VALUES in Recorder.h
@@ -152,8 +154,11 @@ void stateRecorderPlay()
     else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
         {
         optionsReturnState = STATE_RECORDER_PLAY;  
-        //goDownState(STATE_RECORDER_MENU);
+#ifdef INCLUDE_EXTENDED_RECORDER
+        goDownState(STATE_RECORDER_MENU);
+#else
         goDownState(STATE_OPTIONS);
+#endif
         // we don't allow playing in the menu in recorder -- if you choose the menu, you stop.
         ended = ENDED;
         }
@@ -170,7 +175,11 @@ void stateRecorderPlay()
         if ((local.recorder.bufferPos >= data.slot.data.recorder.length && local.recorder.tick % 96 == 0) ||  // out of notes and at a measure boundary, ugh, divide by 96
             (local.recorder.tick > MAXIMUM_RECORDER_TICK))  // out of time
             {
-            ended = ENDED_REPEATING;  //options.recorderRepeat + 1;                     // if recorderRepeat is false, this is ENDED.  Else it is ENDED_REPEAT
+#ifdef INCLUDE_EXTENDED_RECORDER
+            ended = options.recorderRepeat + 1;  // if recorderRepeat is false, this is ENDED.  Else it is ENDED_REPEAT
+#else
+            ended = ENDED_REPEATING;                     
+#endif
             }
         else
             {
@@ -357,68 +366,69 @@ void stateRecorderPlay()
             // Positions 0..3 indicate status values
             setPoint(led2, local.recorder.status, 0);
             }
-                
-        //if (options.recorderRepeat)
-        //    setPoint(led2, 6, 0);
+            
+#ifdef INCLUDE_EXTENDED_RECORDER        
+        if (options.recorderRepeat)
+            setPoint(led2, 6, 0);
+#endif
         }
     }
-        
-        
-        
-        
-        
-/*
-  #define RECORDER_MENU_REPEAT 0
-  #define RECORDER_MENU_OPTIONS 1
+       
+ 
+#ifdef INCLUDE_EXTENDED_RECORDER
+
+#define RECORDER_MENU_REPEAT 0
+#define RECORDER_MENU_OPTIONS 1
 
 // Gives other options
 void stateRecorderMenu()
-{
-uint8_t result;
-if (entry)
-{
-resetRecorder();
-sendAllNotesOff();
-local.recorder.status = RECORDER_STOPPED;
-}
+    {
+    uint8_t result;
+    if (entry)
+        {
+        resetRecorder();
+        sendAllNotesOff();
+        local.recorder.status = RECORDER_STOPPED;
+        }
                 
-const char* menuItems[2] = {    
-(options.recorderRepeat ? PSTR("NO REPEAT") : PSTR("REPEAT")),
-options_p 
-};
-result = doMenuDisplay(menuItems, 2, STATE_NONE, STATE_NONE, 1);
+    const char* menuItems[2] = { (options.recorderRepeat ? PSTR("NO REPEAT") : PSTR("REPEAT")), options_p };
+    result = doMenuDisplay(menuItems, 2, STATE_NONE, STATE_NONE, 1);
 
-switch (result)
-{
-case NO_MENU_SELECTED:
-{
-// do nothing
-}
-break;
-case MENU_SELECTED:
-{
-switch(currentDisplay)
-{
-case RECORDER_MENU_REPEAT:
-{
-options.recorderRepeat = !options.recorderRepeat;
-saveOptions();
-}
-break;
-case RECORDER_MENU_OPTIONS:
-{
-optionsReturnState = STATE_RECORDER_MENU;
-goDownState(STATE_OPTIONS);
-}
-break;
-}
-}
-break;
-case MENU_CANCELLED:
-{
-goUpState(STATE_RECORDER_PLAY);
-}
-break;
-}
-}
-*/
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            {
+            // do nothing
+            }
+        break;
+        case MENU_SELECTED:
+            {
+            switch(currentDisplay)
+                {
+                case RECORDER_MENU_REPEAT:
+                    {
+                    options.recorderRepeat = !options.recorderRepeat;
+                    saveOptions();
+                    goDownState(STATE_RECORDER_PLAY);
+                    }
+                break;
+                case RECORDER_MENU_OPTIONS:
+                    {
+                    optionsReturnState = STATE_RECORDER_MENU;
+                    goDownState(STATE_OPTIONS);
+                    }
+                break;
+                }
+            }
+        break;
+        case MENU_CANCELLED:
+            {
+            goUpState(STATE_RECORDER_PLAY);
+            }
+        break;
+        }
+    }
+#endif
+
+
+#endif

@@ -17,7 +17,7 @@
 \begin{document}
 
 \noindent {\Huge\bf Gizmo}\\[0.5em]
-{\large \bf An Arduino MIDI Tool, Version 2\\
+{\large \bf An Arduino MIDI Tool, Version 3\\
 By Sean Luke\quad sean@cs.gmu.edu} 
 \hspace{\fill}{\it \textbf{For Aric}}\\
 
@@ -33,10 +33,14 @@ Gizmo comes built-in with the following applications and other capabilities:
 \paragraph{Applications}
 \begin{itemize}
 \item {\bf Arpeggiator.}\quad Gizmo's arpeggiator has built-in up, down, up/down, repeated chord, note-assign, and random arpeggios spanning one to three octaves.  Additionally, you can define up to ten additional arpeggiator patterns, each up to 32 notes long, involving up to 15 different chord notes, plus rests.  Arpeggios can be {\it latched} (or not), meaning that they may continue to play even after you have released the keys.  You can specify  the note value relative to the tempo (ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), whether or not the velocity is fixed, the output MIDI channel, and the degree of swing (syncopation).  Gizmo will show the arpeggio on-screen.
-\item {\bf Step Sequencer.}\quad Gizmo's step sequencer can be organized as 12 16-note tracks, 8 24-note tracks, or 6 32-note tracks.  Each note in a track can have its own unique pitch and velocity, or be a rest, or continue (lengthen, tie) the previous note.  You can also fix the velocity for an entire track, mute tracks, fade their volume, specify their independent output MIDI channels, specify the note value relative to the tempo (again ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), and the degree of swing (syncopation).    The step sequencer lets you edit in two modes: either by triggering independent steps like a classic drum sequencer, or by playing a sequence of notes.  The Arduino Uno can store up to two sequences in its slots (shared with the Recorder, discussed next).  The Mega can store up to nine sequences.  Gizmo will show and edit sequences on-screen.
-\item {\bf Recorder.}\quad The Arduino doesn't have a lot of memory, but we provide a note recorder which records and plays back up to 64 notes (pitch and velocity) played over 21 measures. The recorder has 16-voice polyphony.   It's enough to record a very short ditty.  You can also set the recorder to loop the recording while playing, and to provide a click track.  The Arduino Uno can store up to two recordings in its slots (shared with the Step Sequencer).  The Mega can store up to nine recordings.
-\item {\bf MIDI Gauge.}\quad The gauge will display all incoming MIDI information on one or all channels.  Note on, note off, and polyphonic aftertouch are shown with pitch and velocity (or pressure).  Channel aftertouch is shown with the appropriate pitch.  Program changes indicate the number.  Pitch bends indicate the value in full 14-bit.  Control Change, NRPN, and RPN messages display the number, value, and whether the value is being set, incremented, or decremented.  Sysex, song position, song select, tune request, start, continue, stop, and system reset are simply noted.  Rapid-fire MIDI signals such as MIDI clock, active sensing, and time code just turn on individual LEDs.
-\item {\bf MIDI Control Surface.}\quad Gizmo has two potentiometers and two buttons.  Each can be configured to send a unique Program Change, Control Change, NRPN, or RPN commands, or (Arduino Mega only) control voltage values via either of two DACs.  The potentiometers can only send MSB values.
+
+\item {\bf Step Sequencer.}\quad Gizmo's step sequencer can be organized as 12 16-note tracks, 8 24-note tracks, or 6 32-note tracks.  Each note in a track can have its own unique pitch and velocity, or be a rest, or continue (lengthen, tie) the previous note.  You can also fix the velocity for an entire track, mute tracks, fade their volume, specify their independent output MIDI channels, specify the note value relative to the tempo (again ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), and the degree of swing (syncopation).    The step sequencer lets you edit in two modes: either by triggering independent steps like a classic drum sequencer, or by playing a sequence of notes.  The Arduino Uno can store up to two sequences in its slots (shared with the Recorder, discussed next).  Gizmo will show and edit sequences on-screen.  {\bf Extended Version on the Mega:} The extended version also permits 4 48-note tracks or 3 64-note tracks.  You can lock a sequence so that playing along with it won't modify it.  You can stipulate whether starting/stopping the sequencer will also start/stop the MIDI clock.  You can also have the Sequencer avoid playing notes out as they are entered.  The Mega can store up to nine sequences.
+
+\item {\bf Recorder.}\quad The Arduino doesn't have a lot of memory, but we provide a note recorder which records and plays back up to 64 notes (pitch and velocity) played over 21 measures. The recorder has 16-voice polyphony.   It's enough to record a very short ditty.  You can also set the recorder to loop the recording while playing, and to provide a click track.  The Arduino Uno can store up to two recordings in its slots (shared with the Step Sequencer).   {\bf Extended Version on the Mega:}  The extended recorder gives you the option of auto-repeating a recording or stopping when it is finished.  The Mega can store up to nine recordings.
+
+\item {\bf MIDI Gauge.}\quad The gauge will display all incoming MIDI information on one or all channels.  Note on, note off, and polyphonic aftertouch are shown with pitch and velocity (or pressure).  Channel aftertouch is shown with the appropriate pitch.  Program changes indicate the number.  Pitch bends indicate the value in full 14-bit.  Control Change, Channel Mode, NRPN, and RPN messages display the number, value, and whether the value is being set, incremented, or decremented.  Sysex, song position, song select, tune request, start, continue, stop, and system reset are simply noted.  Rapid-fire MIDI signals such as MIDI clock, active sensing, and time code just turn on individual LEDs. {\bf Extended Version on the Mega:}  The extended version lets you read raw Control Change messages (that is, not parsed into NRPN etc.), and provides more useful information on Channel Mode messages.  The Mega can store up to nine recordings.
+
+\item {\bf MIDI Control Surface.}\quad Gizmo has two potentiometers and two buttons.  Each can be configured to send a unique Program Change, Control Change, NRPN, or RPN commands.  The potentiometers can send up to 10 bits of data (MSB + partial LSB).   {\bf Extended Version on the Mega:}  The extended version also can send pitch bend, aftertouch, and control voltage values via either of two DACs. 
 
 \item {\bf \textit{Mega Only:}\quad Keyboard Splitter.}\quad You can split incoming MIDI notes by pitch and route them to different MIDI out channels.  You can also fade notes between two channels depending on note velocity.
 
@@ -51,13 +55,13 @@ Gizmo comes built-in with the following applications and other capabilities:
 As if this weren't enough, Gizmo also comes with the following capabilities.  All of these settings are automatically saved permanently in memory.
 
 \begin{itemize}
-\item {\bf Tempo and the MIDI Clock.}\quad Gizmo can sync to an external MIDI clock, can ignore it and use its own internal clock, and can emit the same as a MIDI clock.  Gizmo can also pass the external MIDI clock through or block it.  When using its own internal clock, Gizmo supports tempos ranging from 1 to 999 BPM, settable numerically or via tapping.  You can start, pause/un-pause, and stop this clock (sending the appropriate MIDI Start, Stop, or Continue signals).  Gizmo (on the Mega) can also divide the MIDI clock, thereby outputting a slower clock than it is inputting.
+\item {\bf Tempo and the MIDI Clock.}\quad Gizmo can sync to an external MIDI clock, can ignore it and use its own internal clock, and can emit the same as a MIDI clock.  Gizmo can also pass the external MIDI clock through or block it.  When using its own internal clock, Gizmo supports tempos ranging from 1 to 999 BPM, settable numerically or via tapping.  You can start, pause/un-pause, and stop this clock via NRPN.  {\bf Extended Options on the Mega:} Gizmo can also divide the MIDI clock, thereby outputting a slower clock than it is inputting.  And you can also start, stop, and continue clock via buttons on Gizmo or via CC.
 
 Gizmo applications can also be set with a {\it note value} (or {\it note speed}) to play their notes relative to this clock, ranging from eighth triplets (1/24 beat) to double whole notes (8 beats).  At any time, Gizmo pulses on-screen LEDs indicating the clock and note speed pulses.  Finally, Gizmo can be configured to vary the degree of {\it swing} or {\it syncopation}.
 
 \item {\bf In and Out MIDI Channels}\quad Gizmo can be configured with input and output MIDI channels (some applications will use these: others will have multiple channels and will treat these as defaults).  Both channels can be turned off, and the input channel can be OMNI.  Gizmo pulses on-board LEDs indicating incoming and outgoing MIDI data.  
 
-\item {\bf Remote Control via MIDI NRPN.}\quad Gizmo can be controlled remotely via NRPN rather than using its on-board controls.  If you start using the controls, Gizmo's onboard potentiometers are locked out so their noise will not interfere with your remote control.  You can unlock the potentiometers by pressing a button on-board Gizmo, or by sending Gizmo's {\it Release} NRPN message.
+\item {\bf Remote Control via MIDI NRPN.}\quad Gizmo can be controlled remotely via NRPN rather than using its on-board controls.  If you start using the controls, Gizmo's onboard potentiometers are locked out so their noise will not interfere with your remote control.  You can unlock the potentiometers by pressing a button on-board Gizmo, or by sending Gizmo's {\it Release} NRPN message.  {\bf Extended Options on the Mega:} Gizmo can be remote-controlled via CC.
 
 \item {\bf Bypass.}\quad You can quickly put Gizmo in Bypass mode, to pass through all MIDI signals and generate no new ones (with the exception of the Controller, see Section \ref{controller}).  Putting Gizmo in Bypass mode will also send an All Notes Off message, so toggling Bypass is also a useful way to hush your synthesizer.
 
@@ -82,6 +86,7 @@ I have written but not tested some additional code.  It won't appear on the Uno 
 \end{itemize}
 
 Hopefully there'll be more than this.  Message filtering?  A MIDIPal-style CC LFO?  Longer note recorder songs?  And so on.
+
 
 \section{Building Gizmo}
 
@@ -201,6 +206,13 @@ Now you need to modify Gizmo's code to run headless, so it doesn't bother lighti
 
 I make no guarantees that this will work: but it might.
 
+\subsection{Customizing Your Arduino}
+
+Gizmo is fairly modular: you can choose which applications you want to have on your device, as well as various features.  This allows us to (for example) have more applications and features on the Mega than on the Uno.  If you want to port to a device with a somewhat tighter memory footprint (such as the Arduino Mini), or want to make room on the Uno for your own application, you just need to change which options are installed.  See the file \texttt{All.h}
+
+
+\clearpage
+
 \section{User Interface}
 
 \begin{wrapfigure}{r}{3in}
@@ -223,23 +235,24 @@ The reset of the screen is given over to the application.  In many cases an appl
 
 You wend your way through menus, choose applications, and manipulate them using Gizmo's three buttons and two potentiometers as follows:
 
-\paragraph{Buttons}  The left button is called the {\bf back button}.  The right button is called the {\bf select button}.  The center button is called (unsurprisingly) the {\bf middle button}.   The buttons respond to being {\bf pressed} and immediately released, and also respond to {\bf long presses}: holding a button down for a long time (presently one-half second) and then releasing it. 
-
 \begin{wrapfigure}{r}{1.6in}
 \includegraphics[width=1.6in]{Application.pdf}
 \vspace{-2em}\caption{\small Application Values}\vspace{-4em}
 \label{applicationvalues}
 \end{wrapfigure}
 
+\paragraph{Buttons}  The left button is called the {\bf back button}.  The right button is called the {\bf select button}.  The center button is called (unsurprisingly) the {\bf middle button}.   The buttons respond to being {\bf pressed} and immediately released, and also respond to {\bf long presses}: holding a button down for a long time (presently one-half second) and then releasing it. 
+
+
 Buttons do different things.  Here are certain common items:
 
 \begin{itemize}
 \item {\bf Pressing the Back Button}\quad This is the ``escape'' or ``cancel'' button: it {\bf always goes back up the menu hierarchy.}  Thus you can't ever get lost\,---\,just keep pressing the Back button and you'll eventually find yourself at the root menu.
 \item {\bf Long-Pressing the Back Button}\quad This toggles {\bf bypass mode}, where Gizmo tries hard to act as if it's just a MIDI THRU coupler between its input and output MIDI wires: it passes through all the MIDI it receives, and with one exception (the Controller, see Section \ref{controller}) it doesn't output any new data.  In bypass mode, the {\bf Beat/Bypass} light (Figure~\ref{HighLevelGizmoLayout}) will stop beating and instead will flash rapidly.
-\item {\bf Pressing the Select Button}\quad If you're being presented with a menu of options, or a number to choose, or a glyph to choose, the Select button will select the currently-displayed option.  In some applications (such as the Step Sequencer, Arpeggiator, and Recorder) the Select Button is assigned other tasks.
 \end{itemize}
 
 \begin{itemize}
+\item {\bf Pressing the Select Button}\quad If you're being presented with a menu of options, or a number to choose, or a glyph to choose, the Select button will select the currently-displayed option.  In some applications (such as the Step Sequencer, Arpeggiator, and Recorder) the Select Button is assigned other tasks.
 \item {\bf Pressing the Middle Button}\quad Likewise if you're being presented with a menu of options, or a number to choose, or a glyph to choose, the Middle button will increment the current display (but not select it). 
 \end{itemize}
 
@@ -251,6 +264,20 @@ Gizmo's potentiometers (or {\bf pots}) do a number of tasks, including scrolling
 \paragraph{On-Board LEDs}
 
 There are two LEDs on-board the SparkFun MIDI Shield.  The {\bf red LED} is toggled on and off to reflect incoming MIDI data.  The {\bf green LED} is toggled on and off to reflect outgoing MIDI data.  
+
+\section{How Gizmo Handles MIDI}
+
+Gizmo listens for certain kinds of incoming MIDI data, then hands it to an {\bf application}, which may in turn send MIDI data out.  Applications can send data out any way they wish, but in many cases they restrict themselves to sending data out only to Gizmo's {\bf default MIDI Out Channel.}  Note data (Note on, Note Off) sent out may also be subject to further user-specified transformation in the form of transposition or volume control.  
+
+\vspace{-0.5em}\paragraph{Channel Data} If the incoming data is {\it channel data} (Note on/off, Aftertouch, Pitch Bend, Program Change, Control Change / NRPN / RPN), most applications will listen to it only if it is from the {\bf default MIDI In Channel}, which can be 1--16, or OMNI (all channels), or OFF (no channels).  Some applications may listen to channel data from certain additional channels: for example the MIDI Thru Facility also listens to data on an additional ``Merge channel''.  {\bf Data from all remaining channels is simply passed through to MIDI Out. }  
+
+\vspace{-0.5em}\paragraph{Clock Data} Gizmo can follow clock data or ignore it and generate its own clock.  Furthermore Gizmo can pass incoming clock data through to MIDI Out, or block it.  Gizmo can also emit its own clock data.
+
+\vspace{-0.5em}\paragraph{Other Data} Most other data is simply passed through from MIDI In to MIDI Out.
+
+\vspace{-0.5em}\paragraph{Bypass Mode} When bypass mode is engaged, all data received is simply passed to MIDI Out.  Applications may still listen to 
+
+\vspace{-0.5em}\paragraph{Controlling Gizmo} One incoming channel can be defined as the {\bf default MIDI Control Channel}.  Data on this channel is used only to manipulate Gizmo (via NRPN or CC), for example, changing a parameter.
 
 \section{Initializing Gizmo}
 
@@ -276,6 +303,7 @@ Gizmo will reset all of its flash RAM and reboot.  This means that all options w
 If you power up Gizmo, or press its reset button, it will display its {\bf boot screen}, which includes the version number (at right, the version number is ``1'').
 
 Gizmo will then show the {\bf root menu}.  Use the left potentiometer to scroll to any of the following applications, and use the select button to select an application.  Available applications are:
+
 \section {The Arpeggiator}
 
 \begin{wrapfigure}{r}{3in}
@@ -290,8 +318,6 @@ An arpeggio is a pattern for repeatedly playing the notes in a chord.  When you 
 
 Alternatively if you toggle the {\bf latch}, then the playing will continue after you have released the keys, and will only shift to a new chord when you release all notes and then hold down an entirely new chord.  Latch mode is toggled by pressing the Middle button while playing an arpeggio.  When Latch mode is engaged, an LED will light as shown in Figure~\ref{arpeggiator}.
 
-Also, normally you toggle {\bf bypass mode} by Long-Pressing the back button.  But that's not fast enough to turn arpeggiation on and off in performance.  So the arpeggiator also lets you toggle bypass by pressing the {\bf select} button.  (Of course you can also toggle bypass via NRPN if you like). 
-
 \begin{wrapfigure}{r}{2.7in}
 \begin{center}
 \vspace{-2em}\includegraphics[width=1in]{updown}
@@ -300,6 +326,9 @@ Also, normally you toggle {\bf bypass mode} by Long-Pressing the back button.  B
 \vspace{-3em}
 \end{center}
 \end{wrapfigure}
+
+
+Also, normally you toggle {\bf bypass mode} by Long-Pressing the back button.  But that's not fast enough to turn arpeggiation on and off in performance.  So the arpeggiator also lets you toggle bypass by pressing the {\bf select} button.  (Of course you can also toggle bypass via NRPN if you like). 
 
 
 \paragraph{Playing Preset Arpeggios}
@@ -316,9 +345,13 @@ There are six preset arpeggios: {\it up}, {\it down}, {\it up-down}, {\it random
 \item {\bf Assign}. Each note in your chord is played in turn, in the order in which you had pressed the keys when you formed the chord.  When all notes are exhausted, the pattern is repeated.
 \end{itemize}
 
+As you play a preset arpeggio, the notes played by the arpeggio will appear at right.  The symbol representing the preset will appear at left.
+
+While playing a preset arpeggio, you can select the number of octaves by choosing calling up the menu by Long-Pressing the Select button, then choosing {\bf Octaves}.  If you have an octaves value \(\geq 0\), then when the arpeggiator exhausts its notes, it will repeat them again one octave higher, then another octave higher, and so on, up to the number of octaves chosen. You an select any value from 0--6 octaves.\footnote{Note that this means that if your chord is larger than one octave, you may not get what you expected.  For example, if you are playing UP with C5 E5 G5 D6, and with octaves\(=\)1, then the arpeggiator will play C5 E5 G5 D6 C6 E6 G6 D7.  Note that C6 is played after D6 is played.  That's the current behavior right now anyway.}
+
 \begin{wrapfigure}{r}{1.6in}
 \begin{center}
-\vspace{-1.5em}\includegraphics[width=1in]{arpeggioexample.pdf}\\
+\vspace{-2em}\includegraphics[width=1in]{arpeggioexample.pdf}\\
 Example Arpeggio\\[2em]
 \vspace{-1.5em}\includegraphics[width=1in]{arpeggioup.pdf}\\
 Ascending Notes\\in Sparse Mode\\[2em]
@@ -329,10 +362,6 @@ Ascending Notes\\in Dense Mode\\
 \vspace{-3em}
 \label{arpeggioediting}
 \end{wrapfigure}
-
-As you play a preset arpeggio, the notes played by the arpeggio will appear at right.  The symbol representing the preset will appear at left.
-
-While playing a preset arpeggio, you can select the number of octaves by choosing calling up the menu by Long-Pressing the Select button, then choosing {\bf Octaves}.  If you have an octaves value \(\geq 0\), then when the arpeggiator exhausts its notes, it will repeat them again one octave higher, then another octave higher, and so on, up to the number of octaves chosen. You an select any value from 0--6 octaves.\footnote{Note that this means that if your chord is larger than one octave, you may not get what you expected.  For example, if you are playing UP with C5 E5 G5 D6, and with octaves\(=\)1, then the arpeggiator will play C5 E5 G5 D6 C6 E6 G6 D7.  Note that C6 is played after D6 is played.  That's the current behavior right now anyway.}
 
 By default the key velocity\footnote{By velocity we mean in the MIDI sense: how fast the key is struck; this basically translates to loudness.} that {\it all} notes in the track will use (as a value 0...127).  If you would instead prefer that each note in the track use its own indepof an arpeggio is determined by the {\bf first note} you press when you hold down a chord.  This strategy usually works well, but if you can instead fix the velocity to a specific value by (once again) calling up the menu by Long-Pressing the Select button, then choosing {\bf Velocity}.  At the far highest end of the velocity options is \texttt{FREE}, which means that the velocity is determined by your fingers again (this is the default).
 
@@ -380,14 +409,16 @@ Of particular interest to you may be Length and Tempo.  And Swing!
 
 One note regarding the {\bf Note Length} option.  If the Note Length is set to 100 (and {\it only} 100), the Arpeggiator behaves specially: each note will extend until the next note (or rest) is played, regardless of how long that is.  Thus if you have Swing turned on, notes will extend until the next syncopated (delayed) note even if their time is up. This provides a fully legato feel.
 
-
 \clearpage
+
 
 \begin{wrapfigure}{r}{3in}
 \vspace{-1.5em}\includegraphics[width=3in]{stepsequencer}
 \vspace{-2em}\caption{\small Step Sequencer Display}\vspace{-1em}
 \label{stepsequencer}
 \end{wrapfigure}
+
+
 
 \section {The Step Sequencer}
 
@@ -576,18 +607,18 @@ Messages that are associated with a MIDI channel will have their channel number 
 \item {\bf Control Change (CC)}\quad If the CC parameter is for 7-bit values, then the value is shown first, then text is scrolled with the value, then \texttt{CC}, then the parameter.  If the CC parameter is for 14-bit values, the MSB of the value is shown first, then text is scrolled with the value, then \texttt{CC}, then the parameter, then in parentheses the 14-bit (MSB+LSB) value.
 \item {\bf Registered Parameter Number (RPN)}\quad The value (7-bit MSB only) is shown first, then text is scrolled with the value (MSB), then \texttt{RPN}, then the parameter (14-bit), then in parentheses the 14-bit (MSB+LSB) value.
 \item {\bf Non-Registered Parameter Number (NRPN)}\quad The value (7-bit MSB only) is shown first, then text is scrolled with the value (MSB), then \texttt{NRPN}, then the parameter (14-bit), then in parentheses the 14-bit (MSB+LSB) value.
-\item {\bf Channel Mode}\quad The value is shown first, then text is scrolled with the value, then \texttt{CHANNEL MODE}, then the parameter.  Channel Mode parameters are:\footnote{Why no text to describe these things?  Because the Arduino Uno is out of space.  And they're not that common.}
-\begin{center}\begin{tabular}{@{}rll@{}}
-{\it Parameter}&{\it Value}&{\it Meaning}\\[0.1em]
+\item {\bf Channel Mode}\quad On the Uno, the channel mode value is shown first, then the text \texttt{CHANNEL MODE}, then the channel mode parameter (120--127).  The Mega is more specific: the meaning channel mode parameter and value are instead shown as a text message (such as \texttt{RESET ALL CONTROLLERS}).  In the case of \texttt{MONO ON} the channel count is shown first.  The Channel Mode parameters are:
+\begin{center}\begin{tabular}{@{}rlll@{}}
+{\it Parameter}&{\it Value}&{\it Meaning (Displayed On Mega)}\\[0.1em]
 \hline\\[-0.9em]
 120&Normally 0&All Sound Off\\
 121&Normally 0&Reset All Controllers\\
-122&0=Off, 1=On&Local Control (On/Off)\\
+122&0=Off, 1=On&Local Control Off ({\it or} On)\\
 123&Normally 0&All Notes Off\\
-124&Normally 0&Omni Mode Off\\
-125&Normally 0&Omni Mode On\\
-126&\(C\)&Mono Mode On, with \(C\) channels total\\
-127&Normally 0&Poly Mode On\\
+124&Normally 0&Omni Off\\
+125&Normally 0&Omni On\\
+126&\(C\)&Mono On ({\it with \(C\) channels, shown first})\\
+127&Normally 0&Poly On\\
 \end{tabular}\end{center}
 \item {\bf System Exclusive}\quad \texttt{SYSX} is displayed.\footnote{Note that the version of the MIDI library on which Gizmo relies presently doesn't handle large System Exclusive messages well.}
 \item {\bf Song Position}\quad \texttt{SPOS} is displayed.
@@ -653,7 +684,7 @@ Optional control voltage is sent out one of two Digital-to-Analog Converters or 
 	
 	Several protocols (NRPN, RPN, some CC) can accept 14-bit numbers, that is, values in the range 0...16383.  However Gizmo's potentiometers have a maximum resolution of 10 bits, that is, 0...1023.   The potentiometers in fact send 10 bits of data: their top 7 bits are the MSB, and their bottom 3 bits become the upper 3 bits of the LSB (the bottom 4 bits are padded with zeros).   While only the MSB is displayed on-screen, this partial LSB is being sent as well to give you a bit more control.  For control voltage, all ten bits will be mapped to 0--5V.\footnote{The DACs are actually 12-bit, but what can you do: the pots are only 10 bit.}  \ For Pitch Bend, the ten bits will be mapped to \(-8192...8191\).
 
-	\item{\bf Left Knob} and {\bf Right Knob}
+	\item{\bf Left Knob} and {\bf Right Knob}\quad (\texttt{L KNOB} and \texttt{R KNOB})
 	
 	These submenus let you select your control type and parameter number for the left and right potentiometers.
 	
@@ -661,7 +692,7 @@ Optional control voltage is sent out one of two Digital-to-Analog Converters or 
 
 	After you have selected a control type, if you have selected CC, NRPN, or RPN, you will be then asked to select a {\bf controller parameter number}.  (Otherwise ,for PC and OFF, you will go back to the top-level Controller Menu).  CC parameter numbers may range 0 ... 119.  NRPN and RPN parameter numbers may range 0 ... 16383. When you have completed this, you will be sent back to the top-level Controller menu.
 
-	\item{\bf Middle Button} and {\bf Select Button}
+	\item{\bf Middle Button} and {\bf Select Button}\quad (\texttt{M BUTTON} and \texttt{R BUTTON})
 	
 	Thees submenus let you select your control type, parameter number, and on/off values for the middle and select buttons.
 	
@@ -716,6 +747,8 @@ The two MIDI channels in question are the Default MIDI Out Channel (defined in t
 
 This is a fancy way of saying that the total velocity of both channels is the same as the input velocity, and that the ratio of the Alternative velocity versus the Default velocity increases linearly as you get closer to 127.  I don't know if this is the right approach, and certainly different keyboards synthesizers have different and often nonlinear velocity mappings.  But there you have it.  If you'd like to play with it, it's in the function \texttt{handleNoteOn(...)} in \texttt{TopLevel.cpp}.
 
+As you play notes in the fader, their velocity will appear on-screen.
+
 \paragraph{Defining Notes and Channels}
 
 If you press the Select Button, you'll be asked to enter a note.  This note will be Split Note A.  By default this note is Middle C.  You can back out if you don't want to enter the note.
@@ -741,23 +774,40 @@ Long-pressing the Middle Button cycles through three options:
 \end{itemize}
 
 
+\begin{figure}[t]
+\includegraphics[width=6.5in]{thru.pdf}
+\vspace{-1.25em}
+\caption{Flow graph of the Thru Facility.}
+\vspace{-0.5em}
+\end{figure}
+
 \section{The Thru Facility}
 \label{thru}
 
-\textit{[Mega Only]}\qquad The {\bf Thru Facility} passes MIDI through the box, but if MIDI data comes in via the MIDI In channel, it applies various transformations to it and then routes it out specially:
+\textit{[Mega Only]}\qquad The {\bf Thru Facility} passes MIDI through the box, but if MIDI data comes in via certain channels, it applies various optional transformations to it before it sends it out:
 
 \begin{itemize}
-\item First, you can {\it distribute} incoming notes, one by one, to separate MIDI channels, round-robin.  Thus if you have multiple copies of the same monosynth, you could distribute notes to the various synths and basically treat them as if they were a polysynth\footnote{This is an idea directly stolen from the MIDIPal.}
+\item First, you can {\it merge} two incoming channels: the Default MIDI In channel and a {\bf Merge Channel}.  Additionally you can also merge {\it all} channels by simply setting the Default MIDI In channel to OMNI.
 
-\item Second, you can have Gizmo add {\it extra notes}, that is, repeat notes you're playing multiple times extremely rapidly.  For example, if you play the note G, Gizmo might send four G notes out essentially at the same time.  This is useful for fattening up a synth but not making it fully unison (mono).  For example, I have an Oberheim Matrix 1000 with six voices.  If I instruct Gizmo to provide two extra notes, then every time I press a note, Gizmo emits {\it three} copies of that note to the Oberheim, causing three voices to play together.  This basically turns the Matrix into a fatter two-voice polysynth.
+\item Note data and Control data (CC/PC/RPN/NRPN/Pitch Bend) are then handled differently. We'll start with Note data.   Note data is passed through an option that allows you to {\bf debounce notes}.   The objective here is to counteract the situation where you hit a drum pad, and instead of staying down, it quickly bounces up, then down again, resulting in a buh-dum sound..\footnote{For example, I have debouncing issues with the Arturia Beatstep Pro.}  It works like this.  When you first press a note, Gizmo will require that this note be no less than \(N\) milliseconds long.  Furthermore, if the same note is pressed within these \(N\) milliseconds, Gizmo will ignore it.     Large values of \(N\) catch more bounces but prevent you from playing the pad rapidly, and will also prevent you from making short stabs.  Thus this would be better for one-shot sounds (drums, etc.) which play in their entirety regardless of when the note-off occurs.
 
-\item Third, you can perform {\it chord memory}.  Here you first specify a chord, and then afterwards, every time you play a note, Gizmo will instead emit that chord, transposed so that its lowest note corresponds with the note you played.  This is a classic facility available on a number of synthesizers, including early ones such as the Oberheim OB-Xa, Sequential Circuits Prophet 600, Korg PolySix, and so on.\footnote{This idea was also directly stolen from the MIDIPal.}
+\item You can then {\bf distribute} incoming notes, one by one, to separate MIDI channels, rotating the distribution round-robin.  Thus if you have multiple copies of the same monosynth, you could distribute notes to the various synths and basically treat them as if they were a polysynth\footnote{This is an idea directly stolen from the MIDIPal.}
 
-\item Fourth, you can {\it debounce notes}.  The objective here is to counteract the situation where you hit a drum pad, and instead of staying down, it quickly bounces up, then down again, resulting in a buh-dum sound..\footnote{For example, I have debouncing issues with the Arturia Beatstep Pro.}  It works like this.  When you first press a note, Gizmo will require that this note be no less than \(N\) milliseconds long.  Furthermore, if the same note is pressed within these \(N\) milliseconds, Gizmo will ignore it.     Large values of \(N\) catch more bounces but prevent you from playing the pad rapidly, and will also prevent you from making short stabs.  Thus this would be better for one-shot sounds (drums, etc.) which play in their entirety regardless of when the note-off occurs.
+\item Further, you can have Gizmo add {\bf extra notes}, that is, repeat notes you're playing multiple times extremely rapidly.  For example, if you play the note G, Gizmo might send four G notes out essentially at the same time.  This is useful for fattening up a synth but not making it fully unison (mono).  For example, I have an Oberheim Matrix 1000 with six voices.  If I instruct Gizmo to provide two extra notes, then every time I press a note, Gizmo emits {\it three} copies of that note to the Oberheim, causing three voices to play together.  This basically turns the Matrix into a fatter two-voice polysynth.  {\bf Important Note}: Polyphonic Aftertouch is not repeated.\footnote{\label{serialbuffer}Because it overwhelms the Arduino's serial output, which blocks, causing Gizmo to miss messages, resulting in stuck notes.}
+
+\item You can also perform {\bf chord memory}.  Here you first specify a chord, and then afterwards, every time you play a note, Gizmo will instead emit that chord, transposed so that its lowest note corresponds with the note you played.  This is a classic facility available on a number of synthesizers, including early ones such as the Oberheim OB-Xa, Sequential Circuits Prophet 600, Korg PolySix, and so on.\footnote{This idea was also directly stolen from the MIDIPal.}   {\bf Important Note}: Polyphonic Aftertouch is not chorded.\footnote{See Footnote \ref{serialbuffer}.}
+
+\item Control Data (CC/PC/RPN/NRPN/Pitch Bend) follows a different path.  First, you're given the option of {\bf mapping CC to NRPN Data}.  Some devices (for example, the Matrix 1000 with 1.20 ROM) expect NRPN, but few DAWs (grrr) send NRPN; furthermore, most DAWs send raw CC values in total violation of MIDI spec.  At present Gizmo can convert all 128 raw CC numbers to their equivalent NRPN parameter numbers.
+
+\item CC/RPN/NRPN from the Merge Channel is neither merged nor passed through, but is simply ignored.  This is because it is nontrivial to merge it.
+
+\item Data from channels other than Default MIDI In and Merge is simply passed through.  {\bf Warning.}  If your Default MIDI Out is not the same as your Default MIDI In (that is, you're routing from one channel to another) 
+
+\item Finally, if you are distributing incoming notes, control data will also be {\bf distributed}, but instead of sending it round-robin to each of the relevant channels, control data is sent to {\bf all of them in parallel}.
 
 \end{itemize}
 
-You can do all three of these at the same time.  I might add more unusual transformers later.  Anyway, here's how it works:
+I might add more unusual transformers later.  Anyway, here are your options:
 
 	\begin{description}
 	
@@ -792,7 +842,18 @@ You can do all three of these at the same time.  I might add more unusual transf
 		\item{\bf \textit{Choose}}: No Debouncing, or 1...255 (milliseconds)\\\rule[0em]{0em}{0em}\hspace{\fill}\smash{\includegraphics[width=1in]{none.pdf}} 
 		\end{description}
 
+	\item{\bf Merge Channel}\\
+		Here you select the alternate MIDI-In channel (if any) to merge with the Default MIDI In channel
+		\begin{description}
+		\item{\bf \textit{Choose}}: No Channel, Channels 1...16, or ALL Channels (OMNI)\hspace{0.25in}{\includegraphics[width=1in]{none.pdf}}~{\includegraphics[width=1in]{all.pdf}}
+		\end{description}
+
+	\item{\bf CC-NRPN} or {\bf No CC-NRPN}\\
+		This will toggle whether raw CC is converted to equivalent NRPN values.
+				
 	\end{description}
+
+\clearpage
 
 \section {The Measure Counter}
 \label{measure}
@@ -803,14 +864,16 @@ You can do all three of these at the same time.  I might add more unusual transf
 \vspace{-1em}\label{measurecounter}
 \end{wrapfigure}
 
-	The measure counter is basically a stopwatch which counts elapsed beats, measures (bars), and phrases (up to 127 phrases).  Alternatively if can count eighths of a second,\footnote{\label{footnotetenths} Why not tenths of a second?  Because \(10 \times 60 \times 128\) is larger than \(2^{16}\), so it won't fit in a 16-bit integer.} seconds, and minutes (up to 127 minutes) via the internal clock or external MIDI clock.  If the minutes or phrases exceed 127, then \texttt{HI} is displayed in that space instead.\footnote{The Measure Counter was added to Gizmo at the request of \texttt{Inkog}, a member of http:/\!/gearslutz.com and early adopter of Gizmo.}
+	The measure counter\footnote{The Measure Counter was added to Gizmo at the request of \texttt{Inkog}, a member of http:/\!/gearslutz.com and early adopter of Gizmo.} is basically a stopwatch which counts elapsed beats, measures (bars), and phrases (up to 127 phrases).  Alternatively if can count eighths of a second,\footnote{\label{footnotetenths}Why not tenths of a second?  Because \(10 \times 60 \times 128\) is larger than \(2^{16}\), so it won't fit in a 16-bit integer.} seconds, and minutes (up to 127 minutes) via the internal clock or external MIDI clock.  If the minutes or phrases exceed 127, then \texttt{HI} is displayed instead.
 	
-	By default, Measure counts beats, measures (bars), and phrases.  Long-press the Select button to bring up the Menu.  Here you can choose the {\bf Beats Per Bar} (a value from 1...16)\footnote{Why not 32 like Bars Per Phrase?  Because \(32 \times 32 \times 128 > 2^{16}\).  So basically for the same reason as Footnote \ref{footnotetenths}.} and the {\bf Bars per Phrase} (a value from 1...32), and as usual, call up the {\bf Options Menu} to change the {\bf Tempo}, etc.
+	To change what a measure (bar) or phrase means, long-press the Select button to bring up the Menu.  Here you can choose the {\bf Beats Per Bar} (a value from 1...16)\footnote{Why not 32, like Bars Per Phrase uses?  Because \(32 \times 32 \times 128 > 2^{16}\).  So basically for the same reason as Footnote \ref{footnotetenths}.} and the {\bf Bars per Phrase} (1...32), and as usual, call up the {\bf Options Menu} to change the {\bf Tempo}, etc.
 	
 	Pressing the Middle Button starts and and restarts the stopwatch.  Long-pressing the Middle Button pauses the stopwatch (pressing the Middle Button afterwards will continue).  Additionally, external MIDI Start, Stop, and Continue commands will affect the stopwatch: Stop will pause it, Continue will continue from last pause, and Start will reset the stopwatch and start it fresh.
 
-	If you press the Select button, this shifts Measure into counting time, so it's basically a stopwatch.  Rather than counting beats, measures (bars), and phrases, Measure will count tenths of a second, seconds, and minutes.  The response to buttons is the same, as is the response to MIDI clock directives.
-
+	Normally the measure counter shows beats, measures, and phrases.  But if you press the Select button, Measure will instead start displaying elapsed time, so it's basically a stopwatch.  More specifically, rather than counting beats, measures (bars), and phrases, Measure will count eighths of a second, seconds, and minutes.  The response to buttons is the same, as is the response to MIDI clock directives.
+	
+	You can also restart the stopwatch by sending Gizmo three MIDI (clock) Stop commands in succession even if Gizmo is not responding to external MIDI Clock commands.
+	
 \section {Options}
 \label{options}
 
@@ -882,7 +945,6 @@ You can do all three of these at the same time.  I might add more unusual transf
 	\item{\bf \textit{Mega Only:}\quad Volume}\\
 		Like Transpose, here you can state that any notes generated by Gizmo have their volume changed by multiplying their MIDI note velocity by some value.  If a resulting MIDI note velocity exceeds the maximum (127), it is bounded to 127.
 			
-			\clearpage
 			
 			\begin{description}
 			\item{\bf \textit{Choose}}:
@@ -908,26 +970,27 @@ You can do all three of these at the same time.  I might add more unusual transf
 		\item{\bf \textit{Choose}}: No Channel, or Channels 1...16\hspace{0.5in}\smash{\includegraphics[width=1in]{none.pdf}}
 		\end{description}
 	\item{\bf Control MIDI}\\
-		The arduino can be controlled via NRPN messages.  You specify the channel here on which it will listen for them
+		The arduino can be controlled via NRPN or (on the Mega) CC messages.  You specify the channel here on which it will listen for them.
 		\begin{description}
 		\item{\bf \textit{Choose}}: No Channel, or Channels 1...16\hspace{0.5in}\smash{\includegraphics[width=1in]{none.pdf}}
 		\end{description}
 		
-		The NRPN Messages are:
+		The default\footnote{If you need to change these parameters, see constants (such as \texttt{CC\_LEFT\_POT\_PARAMETER}) in the file \texttt{MidiInterface.h}.  Remember, you'll want the Pot parameters to be 14-bit.} CC and NRPN Messages are (note that CC 14 and 15 are 14-bit: their LSB are sent with 46 and 47):
 		
-		\noindent\begin{tabular}{@{}rlllp{2.4in}@{}}
-		{\it NRPN Parameter}&{\it Min  Value}&{\it Max Value}&{\it MSB/LSB}&{\it Description}\\[0.1em]
+		\noindent\begin{tabular}{@{}rr|lllp{2.4in}@{}}
+		\multicolumn{2}{c}{\it Parameter}\\
+		{\it CC}&{\it \hspace{-0.8em} NRPN}&{\it Min  Value}&{\it Max Value}&{\it MSB/LSB}&{\it Description}\\[0.1em]
 		\hline\\[-0.9em]
-		0	&0 (released)	&1 (pressed) & MSB& Press/Release the Back Button\\
-		1	&0 (released)	&1 (pressed) & MSB & Press/Release the Middle Button\\
-		2	&0 (released)	&1 (pressed) & MSB & Press/Release the Select Button\\
-		3	&0	& 1023 & MSB + LSB & Turn the Left Potentiometer\\
-		4	&0	& 1023 & MSB + LSB & Turn the Right Potentiometer\\
-		5	&0 (un-bypass)	&1 (bypass) & MSB& Toggle Bypass\\
-		6	& Any Value &Any Value & MSB& Unlock Potentiometers.  When an NRPN message is received, normally the on-board potentiometers are locked so that turning them has no effect.  Pressing an on-board button unlocks them: so does sending this NRPN message.\\
-		7	&	Any Value &Any Value & MSB& Start Clock.  If Gizmo's clock is stopped, resets and starts it.  When appropriate, sends a MIDI START message.\\
-		8	& Any Value	&Any Value & MSB& Stop Clock.  If Gizmo's clock is playing, stops it.  When appropriate, sends a MIDI STOP message.\\
-		9	&	Any Value &Any Value & MSB & Continue Clock.    If Gizmo's clock is stopped, continues it.  When appropriate, sends a MIDI CONTINUE message.\\
+		14&0	&0	& 1023 & MSB + LSB (46)& Turn the Left Potentiometer\\
+		15&1	&0	& 1023 & MSB + LSB (47) & Turn the Right Potentiometer\\
+		102&2	&0 (released)	&1 (pressed) & MSB& Press/Release the Back Button\\
+		103&3	&0 (released)	&1 (pressed) & MSB & Press/Release the Middle Button\\
+		104&4	&0 (released)	&1 (pressed) & MSB & Press/Release the Select Button\\
+		105&5	&0 (un-bypass)	&1 (bypass) & MSB& Toggle Bypass\\
+		106&6	& Any Value &Any Value & MSB& Unlock Potentiometers.  When an NRPN message is received, normally the on-board potentiometers are locked so that turning them has no effect.  Pressing an on-board button unlocks them: so does sending this NRPN message.\\
+		107&7	&	Any Value &Any Value & MSB& Start Clock.  If Gizmo's clock is stopped, resets and starts it.  When appropriate, sends a MIDI START message.\\
+		108&8	& Any Value	&Any Value & MSB& Stop Clock.  If Gizmo's clock is playing, stops it.  When appropriate, sends a MIDI STOP message.\\
+		109&9	&	Any Value &Any Value & MSB & Continue Clock.    If Gizmo's clock is stopped, continues it.  When appropriate, sends a MIDI CONTINUE message.\\
 		\end{tabular}\\
 		\\
 		\\
@@ -1028,10 +1091,10 @@ Why is this useful?  Here's an example scenario.  You have a sequencer on Device
 		Presently says:\quad \texttt{GIZMO V2 (C) 2017 BY SEAN LUKE}
 	\end{description}
 
-	\section{Starting, Stopping, and Continuing the Clock}
+	\section{Starting, Stopping, and Continuing the Clock (on the Mega)}
 	\label{startingclock}
 
-		You can start, stop, and continue the clock via NRPN as discussed earlier (see {\bf Control MIDI} in Section \ref{options}).   But there's another ``secret'' way to do it using Gizmo's buttons.  If you are in the Options menu, long-press the Middle Button: this toggles {\bf starting} or {\bf stopping} the clock.  Furthermore, on the Mega, if you long-press the Select button, you can toggle {\bf continuing} or {\bf stopping} the clock.  Remember that you can also get to the Options menu from inside the Arpeggiator, Step Sequencer, or Recorder.
+		You can start, stop, and continue the clock via NRPN/CC as discussed earlier (see {\bf Control MIDI} in Section \ref{options}).   But there's another ``secret'' way to do it on the Mega, using Gizmo's buttons.  If you are in the Options menu, long-press the Middle Button: this toggles {\bf starting} or {\bf stopping} the clock.  And if you long-press the Select button, you can toggle {\bf continuing} or {\bf stopping} the clock.  Remember that you can also get to the Options menu from inside the Arpeggiator, Step Sequencer, or Recorder.
 		
 		Neither long-pressing the Middle Button, nor using NRPN to start/stop/continue, will do anything if the MIDI Clock is set to {\bf Use, Divide,} or {\bf Consume} (in which case the MIDI Clock is out of your control).  See {\bf MIDI Clock} in Section \ref{options}.
 				
@@ -1053,9 +1116,6 @@ The SparkFun MIDI Shield uses poor quality buttons.  You can push down on the bu
 Gizmo has a debounce mechanism built-in: it ignores secondary apparent button-presses if they occurred within \(N\) milliseconds of an earlier button release.  At present \(N\) is set to 100ms.  If you need to press buttons faster than ten times a second (and it's possible) set the \texttt{BUTTON\_PRESSED\_COUNTDOWN\_DEBOUNCE} constant (in \texttt{TopLevel.h}) to something smaller.
 
 After about four months of extremely heavy use, my select and back buttons began to fail: if I pressed either the right way it wouldn't indicate that it's been pressed.  If you reach this state you may have to replace the buttons, though that's kind of hard to do: I just built a new board with different, better-quality low-profile buttons (just look on Adafruit for 12mm pushbutton switches).  Fingers crossed.
-
-\section{Space on the Arduino Uno}
-Gimzo uses nearly all available space on the Arduino Uno, and whenever I need to fix a bug I have to go on a hunting expedition to squeeze out a little more space somewhere.   You don't want to do that.  If you want to do any serious development, you should get an Arduino Mega instead, which has lots of available space.  But if you {\it insist} on extending Gizmo on the Uno with some tiny application, you can remove the Note Recorder to make space.  In \texttt{All.h} just uncomment the line that says \texttt{NO\_RECORDER} and you'll get about 1.5K of code space.  It's not a lot but should be enough to write a small app. Note that ``Recorder'' will still appear in the Menu: it just won't do anything.  To get rid of that you need to modify the state machine a bit.  I'd not bother.
 
 \section{Development Status}
 

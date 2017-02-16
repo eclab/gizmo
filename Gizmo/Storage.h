@@ -27,7 +27,8 @@
 
 #if defined(__MEGA__)
 #define NUM_SLOTS 9
-#else
+#endif
+#if defined(__UNO__)
 #define NUM_SLOTS 2
 #endif
 

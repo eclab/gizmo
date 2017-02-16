@@ -94,7 +94,7 @@ void setup()
     // Set up the CV Gates.  For now we just do digitalWrite
     pinMode(VOLTAGE_GATE, OUTPUT);
     digitalWrite(VOLTAGE_GATE, 0);
-	    
+	
     // Set up the LED display	
     initLED();
     setBlinkOnOff(1, 4);		// as fast as we can go.  This is good because we're only redrawing every 32 ticks (about 100 times a second).  It's also faster than 999 BPM (our maximum).
@@ -111,7 +111,7 @@ void setup()
     delay(2000);
 	
     // Reset the menu delay
-#if defined(__MEGA__)
+#ifdef INCLUDE_OPTIONS_MENU_DELAY
     setMenuDelay(options.menuDelay);
 #else
     setScrollDelays(DEFAULT_MENU_DELAY, DEFAULT_SHORT_DELAY);
@@ -140,6 +140,11 @@ void setup()
     MIDI.turnThruOff();
 
     defaultState = STATE_NONE;
+
+	// start the DAC (actually this does nothing for now
+#ifdef INCLUDE_VOLTAGE
+	initDAC();
+#endif
 
     // start clock
     startClock(true);

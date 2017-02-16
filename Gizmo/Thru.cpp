@@ -3,7 +3,7 @@
 
 #include "All.h"
 
-#if defined(__MEGA__)
+#ifdef INCLUDE_THRU
 
 void resetDistributionNotes() 
     { 
@@ -13,41 +13,139 @@ void resetDistributionNotes()
 
 
 void performThruNoteOff(uint8_t note, uint8_t velocity, uint8_t channel)
-	{
-	// NOTE DISTRIBUTION OVER MULTIPLE CHANNELS
-	if (options.thruNumDistributionChannels > 0)
-		{
-		// turn off ALL instances of this note on ALL channels
-		for(uint8_t i = 0; i <= options.thruNumDistributionChannels; i++)
-			{
-			if (local.thru.distributionNotes[i] == note)
-				{
-				channel = (options.channelOut + i - 1) % NUM_MIDI_CHANNELS + 1;
-				for(uint8_t i = 0; i <= options.thruExtraNotes; i++)            // do at least once
-					{
-					sendNoteOff(note, velocity, channel);
-					}
-				local.thru.distributionNotes[i] = NO_NOTE;
-				}
-			}
-		}
-	else
-		{
-		// NOTE REPLICATION
-		for(uint8_t i = 0; i <= options.thruExtraNotes; i++)            // do at least once
-			{
-			sendNoteOff(note, velocity, channel);
-			}
-		}
-		
-	 // CHORD MEMORY
-	for(uint8_t i = 1; i < options.thruChordMemorySize; i++)  // Yes, I see the *1*.  We aren't playing the bottom note a second time
-		{
-		uint8_t note = options.thruChordMemory[i] - options.thruChordMemory[0] + note;  // can't overflow, it'll only go to 254 (127 + 127).
-		if (note <= 127)
-			sendNoteOff(note, velocity, channel);
-		}
-	}
+    {
+    // NOTE DISTRIBUTION OVER MULTIPLE CHANNELS
+    if (options.thruNumDistributionChannels > 0)
+        {
+        // turn off ALL instances of this note on ALL channels
+        for(uint8_t i = 0; i <= options.thruNumDistributionChannels; i++)
+            {
+            if (local.thru.distributionNotes[i] == note)
+                {
+                uint8_t newchannel = (options.channelOut + i - 1) % NUM_MIDI_CHANNELS + 1;
+                for(uint8_t i = 0; i <= options.thruExtraNotes; i++)            // do at least once
+                    {
+                    sendNoteOff(note, velocity, newchannel);
+                    }
+                local.thru.distributionNotes[i] = NO_NOTE;
+                }
+            }
+        }
+    else
+        {
+        // NOTE REPLICATION
+        for(uint8_t i = 0; i <= options.thruExtraNotes; i++)            // do at least once
+            {
+            sendNoteOff(note, velocity, channel);
+            }
+        }
+                
+    // CHORD MEMORY
+    for(uint8_t i = 1; i < options.thruChordMemorySize; i++)  // Yes, I see the *1*.  We aren't playing the bottom note a second time
+        {
+        uint8_t chordNote = options.thruChordMemory[i] - options.thruChordMemory[0] + note;  // can't overflow, it'll only go to 254 (127 + 127).
+        if (chordNote <= 127)
+            {
+            sendNoteOff(chordNote, velocity, channel);
+            }
+        }
+    }
+
+void performThruNoteOn(uint8_t note, uint8_t velocity, uint8_t channel)
+    {
+    // NOTE DISTRIBUTION OVER MULTIPLE CHANNELS
+    if (options.thruNumDistributionChannels > 0)
+        {
+        // revise the channel
+        channel = (options.channelOut + local.thru.currentDistributionChannelIndex - 1) % NUM_MIDI_CHANNELS + 1;
+                                                        
+        // do I need to turn off a note?
+        if (local.thru.distributionNotes[local.thru.currentDistributionChannelIndex] != NO_NOTE)
+            {
+            for(uint8_t i = 0; i <= options.thruExtraNotes; i++)            // do at least once
+                {
+                sendNoteOff(local.thru.distributionNotes[local.thru.currentDistributionChannelIndex], 127, channel);
+                }
+            }
+        
+        // store the note and update
+        local.thru.distributionNotes[local.thru.currentDistributionChannelIndex] = note;
+        local.thru.currentDistributionChannelIndex++;
+        if (local.thru.currentDistributionChannelIndex > options.thruNumDistributionChannels )  // yes, it's > not >= because options.thruNumDistributionChannels starts at *1*
+            local.thru.currentDistributionChannelIndex = 0;
+        }
+
+    // NOTE REPLICATION
+    for(uint8_t i = 0; i <= options.thruExtraNotes; i++)            // do at least once
+        {
+        sendNoteOn(note, itemValue, channel);
+        }
+        
+    // CHORD MEMORY
+    for(uint8_t i = 1; i < options.thruChordMemorySize; i++)  // Yes, I see the *1*.  We aren't playing the bottom note a second time
+        {
+        uint8_t chordNote = options.thruChordMemory[i] - options.thruChordMemory[0] + note;  // can't overflow, it'll only go to 254 (127 + 127).
+        if (chordNote <= 127)
+            {
+            sendNoteOn(chordNote, itemValue, channel);
+            }
+        }
+    }
+        
+void performThruPolyAftertouch(uint8_t note, uint8_t velocity, uint8_t channel)
+    {
+    // We note here that although a NOTE ON can be filtered out, 
+    // its corresponding NOTE OFF will not, nor will any POLYPHONIC AFTERTOUCH.
+    // I had considered storing the note on that was being filtered so
+    // as to also filter out the later note off, but this has downsides,
+    // namely if you have a bounce that gets filtered, but the note off hasn't
+    // happened yet, then you get ANOTHER BOUNCE, it can't get filtered :-(
+
+    // NOTE DISTRIBUTION OVER MULTIPLE CHANNELS
+    if (options.thruNumDistributionChannels > 0)
+        {
+        // change ALL instances of this note on ALL channels
+        for(uint8_t i = 0; i <= options.thruNumDistributionChannels; i++)
+            {
+            if (local.thru.distributionNotes[i] == note)
+                {
+                channel = (options.channelOut + i - 1) % NUM_MIDI_CHANNELS + 1;
+                // We do NOT send extra notes with poly aftertouch because it consumes
+                // so much buffer space that we will block on output and then start missing
+                // incoming messages 
+                //for(uint8_t i = 0; i <= options.thruExtraNotes; i++)            // do at least once
+                    {
+                    sendPolyPressure(note, itemValue, channel);
+                    }
+                }
+            }
+        }
+    else
+        {
+        // NOTE REPLICATION
+        // We do NOT send extra notes with poly aftertouch because it consumes
+        // so much buffer space that we will block on output and then start missing
+        // incoming messages 
+        //for(uint8_t i = 0; i <= options.thruExtraNotes; i++)            // do at least once
+            {
+            sendPolyPressure(note, itemValue, channel);
+            }
+        }
+
+    // CHORD MEMORY
+    // We do NOT send extra notes with poly aftertouch because it consumes
+    // so much buffer space that we will block on output and then start missing
+    // incoming messages 
+    /*
+      for(uint8_t i = 1; i < options.thruChordMemorySize; i++)  // Yes, I see the *1*.  We aren't playing the bottom note a second time
+      {
+      uint8_t chordNote = options.thruChordMemory[i] - options.thruChordMemory[0] + note;  // can't overflow, it'll only go to 254 (127 + 127).
+      if (chordNote <= 127)
+      sendPolyPressure(chordNote, itemValue, channel);
+      }
+    */
+    }
+
 
 void stateThruPlay()
     {
@@ -67,155 +165,194 @@ void stateThruPlay()
         
     // here we check if it's time to submit a NOTE OFF
     if (local.thru.debounceState == DEBOUNCE_STATE_FIRST_NOTE_UP_IGNORED && 
-		local.thru.debounceTime + ((uint32_t)options.thruDebounceMilliseconds) * 1000 <= currentTime)
-    	{
-		performThruNoteOff(local.thru.debounceNote, 127, options.channelOut);
-		local.thru.debounceState = DEBOUNCE_STATE_OFF;
-    	}
+        local.thru.debounceTime + ((uint32_t)options.thruDebounceMilliseconds) * 1000 <= currentTime)
+        {
+        performThruNoteOff(local.thru.debounceNote, 127, options.channelOut);
+        local.thru.debounceState = DEBOUNCE_STATE_OFF;
+        }
 
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
         goUpState(STATE_THRU);
         sendAllNotesOff();
         }
-
-    else if (!bypass && newItem && (itemChannel == options.channelIn || options.channelIn == CHANNEL_OMNI) && options.channelOut != 0)
+        
+    else if (!bypass && newItem && options.channelOut != CHANNEL_OFF && 
+        (itemChannel == options.channelIn || options.channelIn == CHANNEL_OMNI || itemChannel == options.thruMergeChannelIn))
         {
         uint8_t channel = options.channelOut;
                 
         if (itemType == MIDI_NOTE_ON)
             {
-            if (itemNumber != local.thru.debounceNote ||
-            	local.thru.debounceState == DEBOUNCE_STATE_OFF ||
-            	((local.thru.debounceState == DEBOUNCE_STATE_FIRST_NOTE_UP_IGNORED ||
-            	  local.thru.debounceState == DEBOUNCE_STATE_FIRST_NOTE_UP) &&
-            	  local.thru.debounceTime + ((uint32_t)options.thruDebounceMilliseconds) * 1000 <= currentTime))
-            	{
-        		if (options.thruDebounceMilliseconds != 0)
-        			{
-        			// set up state machine
-        			local.thru.debounceState = DEBOUNCE_STATE_FIRST_NOTE_DOWN;
-        			local.thru.debounceTime = currentTime;
-        			local.thru.debounceNote = itemNumber;
-        			}
-        			
-				// NOTE DISTRIBUTION OVER MULTIPLE CHANNELS
-				if (options.thruNumDistributionChannels > 0)
-					{
-					// revise the channel
-					channel = (options.channelOut + local.thru.currentDistributionChannelIndex - 1) % NUM_MIDI_CHANNELS + 1;
-										
-					// do I need to turn off a note?
-					if (local.thru.distributionNotes[local.thru.currentDistributionChannelIndex] != NO_NOTE)
-						{
-						for(uint8_t i = 0; i <= options.thruExtraNotes; i++)            // do at least once
-							{
-							sendNoteOff(local.thru.distributionNotes[local.thru.currentDistributionChannelIndex], 127, channel);
-							}
-						}
-				
-					// store the note and update
-					local.thru.distributionNotes[local.thru.currentDistributionChannelIndex] = itemNumber;
-					local.thru.currentDistributionChannelIndex++;
-					if (local.thru.currentDistributionChannelIndex > options.thruNumDistributionChannels )  // yes, it's > not >= because options.thruNumDistributionChannels starts at *1*
-						local.thru.currentDistributionChannelIndex = 0;
-					}
-	
-				// NOTE REPLICATION
-				for(uint8_t i = 0; i <= options.thruExtraNotes; i++)            // do at least once
-					{
-					sendNoteOn(itemNumber, itemValue, channel);
-					}
-				
-				// CHORD MEMORY
-				for(uint8_t i = 1; i < options.thruChordMemorySize; i++)  // Yes, I see the *1*.  We aren't playing the bottom note a second time
-					{
-					uint8_t note = options.thruChordMemory[i] - options.thruChordMemory[0] + itemNumber;  // can't overflow, it'll only go to 254 (127 + 127).
-					if (note <= 127)
-						sendNoteOn(note, itemValue, channel);
-					}
-				}
-			else
-				{
-				// Filter out, but we're pressing again, so:
-				local.thru.debounceState = DEBOUNCE_STATE_FIRST_NOTE_DOWN;
-				}
+            if (options.thruDebounceMilliseconds == 0)          // if debounce is off, don't do any debounce stuff!
+                {
+                performThruNoteOn(itemNumber, itemValue, channel);
+                }
+            else if (itemNumber != local.thru.debounceNote ||
+                local.thru.debounceState == DEBOUNCE_STATE_OFF ||
+                    ((local.thru.debounceState == DEBOUNCE_STATE_FIRST_NOTE_UP_IGNORED) &&
+                    local.thru.debounceTime + ((uint32_t)options.thruDebounceMilliseconds) * 1000 <= currentTime))
+                {
+                if (itemNumber != local.thru.debounceNote && local.thru.debounceState == DEBOUNCE_STATE_FIRST_NOTE_UP_IGNORED)  // new note, kill the old one
+                    {
+                    performThruNoteOff(local.thru.debounceNote, itemValue, channel);
+                    }
+                        
+                if (options.thruDebounceMilliseconds != 0)
+                    {
+                    // set up state machine
+                    local.thru.debounceState = DEBOUNCE_STATE_FIRST_NOTE_DOWN;
+                    local.thru.debounceTime = currentTime;
+                    local.thru.debounceNote = itemNumber;
+                    }
+
+                performThruNoteOn(itemNumber, itemValue, channel);
+                }
+            else
+                {
+                // Filter out, but we're pressing again, so:
+                local.thru.debounceState = DEBOUNCE_STATE_FIRST_NOTE_DOWN;
+                }
             }
         else if (itemType == MIDI_NOTE_OFF)
             {
             // If the note is too short, and it's what we're holding down, hold off and wait
-            if (local.thru.debounceState == DEBOUNCE_STATE_FIRST_NOTE_DOWN && 
-            	local.thru.debounceNote == itemNumber)
-            	{
-            	if (local.thru.debounceTime + ((uint32_t)options.thruDebounceMilliseconds) * 1000 >= currentTime)            			
-					{
-					local.thru.debounceState = DEBOUNCE_STATE_FIRST_NOTE_UP_IGNORED;
-					local.thru.debounceTime = currentTime;
-					}
-				else
-					{
-					performThruNoteOff(itemNumber, itemValue, channel);
-					local.thru.debounceState = DEBOUNCE_STATE_OFF;
-					
-					// if we instead do the below behavior, then a rapid note-down after a long
-					// note down and a note up will be ignored.  This might be good for sudden
-					// drops in holding down the note, but I think it's better to just debounce
-					// at the very beginning
-					
-					//local.thru.debounceState = DEBOUNCE_STATE_FIRST_NOTE_UP;
-					//local.thru.debounceTime = currentTime;
-					}
-				}
-			else		// we don't care about this one
-				{
-				performThruNoteOff(itemNumber, itemValue, channel);
-				}
-			}
+            if (options.thruDebounceMilliseconds > 0 &&
+                local.thru.debounceState == DEBOUNCE_STATE_FIRST_NOTE_DOWN && 
+                local.thru.debounceNote == itemNumber)
+                {
+                if (local.thru.debounceTime + ((uint32_t)options.thruDebounceMilliseconds) * 1000 >= currentTime)                               
+                    {
+                    local.thru.debounceState = DEBOUNCE_STATE_FIRST_NOTE_UP_IGNORED;
+                    local.thru.debounceTime = currentTime;
+                    }
+                else
+                    {
+                    performThruNoteOff(itemNumber, itemValue, channel);
+                    local.thru.debounceState = DEBOUNCE_STATE_OFF;
+                    }
+                }
+            else            // we don't care about this one
+                {
+                performThruNoteOff(itemNumber, itemValue, channel);
+                }
+            }
         else if (itemType == MIDI_AFTERTOUCH_POLY)
             {
-            // We note here that although a NOTE ON can be filtered out, 
-            // its corresponding NOTE OFF will not, nor will any POLYPHONIC AFTERTOUCH.
-            // I had considered storing the note on that was being filtered so
-            // as to also filter out the later note off, but this has downsides,
-            // namely if you have a bounce that gets filtered, but the note off hasn't
-            // happened yet, then you get ANOTHER BOUNCE, it can't get filtered :-(
-
-			// NOTE DISTRIBUTION OVER MULTIPLE CHANNELS
-			if (options.thruNumDistributionChannels > 0)
-				{
-				// change ALL instances of this note on ALL channels
-				for(uint8_t i = 0; i <= options.thruNumDistributionChannels; i++)
-					{
-					if (local.thru.distributionNotes[i] == itemNumber)
-						{
-						channel = (options.channelOut + i - 1) % NUM_MIDI_CHANNELS + 1;
-						for(uint8_t i = 0; i <= options.thruExtraNotes; i++)            // do at least once
-							{
-							sendPolyPressure(itemNumber, itemValue, channel);
-							}
-						}
-					}
-				}
-			else
-				{
-				// NOTE REPLICATION
-				for(uint8_t i = 0; i <= options.thruExtraNotes; i++)            // do at least once
-					{
-					sendPolyPressure(itemNumber, itemValue, channel);
-					}
-				}
-
-			// CHORD MEMORY
-			for(uint8_t i = 1; i < options.thruChordMemorySize; i++)  // Yes, I see the *1*.  We aren't playing the bottom note a second time
-				{
-				uint8_t note = options.thruChordMemory[i] - options.thruChordMemory[0] + itemNumber;  // can't overflow, it'll only go to 254 (127 + 127).
-				if (note <= 127)
-					sendPolyPressure(note, itemValue, channel);
-				}
-			}
+            performThruPolyAftertouch(itemNumber, itemValue, channel);
+            }
+        else if ((itemType == MIDI_AFTERTOUCH) ||
+            (itemType >= MIDI_PROGRAM_CHANGE && itemType <= MIDI_RPN_DECREMENT))
+            {
+            // Yes, I realize this is largely a copy of Control.sendControllerCommand()
+            // but I can't modify that function without going over the Uno's memory limit,
+            // so I'm unable to use it because I can't pass a channel in.  Maybe later if
+            // we jettison the Uno.
+                        
+            // this includes raw CC, note
+                        
+            // CC->NRPN Mapping.  We just retag CC as if it was NRPN here.
+            if (options.thruCCToNRPN && (itemType == MIDI_CC_7_BIT || itemType == MIDI_CC_14_BIT))
+                {
+                itemType = MIDI_NRPN_14_BIT;
+                }
+                        
+            for(uint8_t i = 0; i <= options.thruNumDistributionChannels; i++)
+                {
+                channel = (options.channelOut + i - 1) % NUM_MIDI_CHANNELS + 1;
+                switch(itemType)
+                    {
+                    case MIDI_AFTERTOUCH:
+                        {
+                        MIDI.sendAfterTouch(itemValue, channel);
+                        }
+                    break;
+                    case MIDI_PROGRAM_CHANGE:
+                        {
+                        MIDI.sendProgramChange(itemNumber, channel);
+                        }
+                    break;
+                    case MIDI_PITCH_BEND:
+                        {
+                        MIDI.sendPitchBend((int)itemValue, channel);
+                        }
+                    break;
+                    case MIDI_CC_7_BIT:
+                        {
+                        MIDI.sendControlChange(itemNumber, itemValue, channel);
+                        }
+                    break;
+                    case MIDI_CC_14_BIT:
+                        {
+                        MIDI.sendControlChange(itemNumber, (uint8_t)(itemValue >> 7), channel);                 // MSB
+                        if ((itemValue & 127) != 0)
+                            MIDI.sendControlChange(itemNumber + 32, (uint8_t)(itemValue & 127), channel);  // LSB
+                        }
+                    break;
+                    case MIDI_NRPN_14_BIT:
+                        {
+                        MIDI.sendControlChange(99, itemNumber >> 7, channel);
+                        MIDI.sendControlChange(98, itemNumber & 127, channel);
+                        MIDI.sendControlChange(6, (uint8_t)(itemValue >> 7), channel);  // MSB
+                        if ((itemValue & 127) != 0)
+                            MIDI.sendControlChange(38, (uint8_t)(itemValue & 127), channel);  // LSB
+                        MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
+                        MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command
+                        }
+                    break;
+                    case MIDI_RPN_14_BIT:
+                        {
+                        MIDI.sendControlChange(101, itemNumber >> 7, channel);
+                        MIDI.sendControlChange(100, itemNumber & 127, channel);
+                        MIDI.sendControlChange(6, (uint8_t)(itemValue >> 7), channel);  // MSB
+                        if ((itemValue & 127) != 0)
+                            MIDI.sendControlChange(38, (uint8_t)(itemValue & 127), channel);  // LSB
+                        MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
+                        MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command
+                        }
+                    break;
+                    case MIDI_NRPN_INCREMENT:
+                        {
+                        MIDI.sendControlChange(99, itemNumber >> 7, channel);
+                        MIDI.sendControlChange(98, itemNumber & 127, channel);
+                        MIDI.sendControlChange(96, 1, channel);
+                        MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
+                        MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command
+                        }
+                    break;
+                    case MIDI_RPN_INCREMENT:
+                        {
+                        MIDI.sendControlChange(101, itemNumber >> 7, channel);
+                        MIDI.sendControlChange(100, itemNumber & 127, channel);
+                        MIDI.sendControlChange(96, 1, channel);
+                        MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
+                        MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command
+                        }
+                    break;
+                    case MIDI_NRPN_DECREMENT:
+                        {
+                        MIDI.sendControlChange(99, itemNumber >> 7, channel);
+                        MIDI.sendControlChange(98, itemNumber & 127, channel);
+                        MIDI.sendControlChange(97, 1, channel);
+                        MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
+                        MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command
+                        }
+                    break;
+                    case MIDI_RPN_DECREMENT:
+                        {
+                        MIDI.sendControlChange(101, itemNumber >> 7, channel);
+                        MIDI.sendControlChange(100, itemNumber & 127, channel);
+                        MIDI.sendControlChange(97, 2, channel);
+                        MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
+                        MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command
+                        }
+                    break;
+                    }
+                }
+            TOGGLE_OUT_LED(); 
+            }
         }
     }
-        
 
-#endif // defined(__MEGA__)
+#endif
 

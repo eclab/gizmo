@@ -75,11 +75,12 @@ extern uint32_t targetNextTickTime;
 /// The number of TICKS so far
 extern uint32_t tickCount;
 
+///// UPDATE TICKS AND WAIT
+///// Called only by loop().  This does a delay the proper amount of time
+///// in order sleep to the next tick, then updates the tick.
+void updateTicksAndWait();
 
 
-
-///// How fast is our tempo?
-#define MAXIMUM_BPM 999
 
 
 
@@ -99,6 +100,15 @@ extern  uint32_t pulseCount;
 
 // Is a PULSE presently underway this TICK?
 extern  uint8_t pulse;
+
+///// How fast is our tempo?
+#define MAXIMUM_BPM 999
+
+///// SET PULSE RATE
+///// Given a tempo in Beats Per Minute, sets the global variables such that the system issues
+///// a PULSE at that rate.
+void setPulseRate(uint16_t bpm);
+
 
 
 
@@ -125,6 +135,13 @@ extern uint8_t swingToggle;
 // how much time should we delay?
 extern uint32_t swingTime;
 
+///// SET NOTE PULSE RATE
+///// Given a note speed type (various NOTE_SPEED_* values defined in LEDDisplay.h), sets up
+///// the global variables such that the system issues a NOTE PULSE at that rate.
+void setNotePulseRate(uint8_t _noteSpeedType);
+
+
+
 
 
 //// BEATS
@@ -142,47 +159,47 @@ extern uint8_t beat;
 
 
 
-///// UPDATE TICKS AND WAIT
-///// Called only by loop().  This does a delay the proper amount of time
-///// in order sleep to the next tick, then updates the tick.
-void updateTicksAndWait();
 
-///// FIRE PULSE
-///// This sets up global variables to alert everyone that a pulse has just arrived, either
-///// internally or externally via a MIDI clock
-void firePulse();
+//// THE CLOCK
 
-///// RESET PULSES
-///// Resets the pulses to zero, and likewise resets note pulses and beats.  This occurs when
-///// the MIDI clock issues a START or when we change our MIDI Clock options
-void resetPulses();
-
-///// SET PULSE RATE
-///// Given a tempo in Beats Per Minute, sets the global variables such that the system issues
-///// a PULSE at that rate.
-void setPulseRate(uint16_t bpm);
-
-///// SET NOTE PULSE RATE
-///// Given a note speed type (various NOTE_SPEED_* values defined in LEDDisplay.h), sets up
-///// the global variables such that the system issues a NOTE PULSE at that rate.
-void setNotePulseRate(uint8_t _noteSpeedType);
-
+//// These functions are called to start, stop, and continue the clock, and
+//// also to pulse it.  FROMBUTTON means whether this method is being called
+//// from an application or a user pressing a button, and can be ignored when
+//// appropriate, as opposed to the method being called internally or via MIDI
+//// clock (if we're listening to MIDI clock), which should not be ignored.
 
 void pulseClock(uint8_t fromButton);	// note that fromButton is ignored.  It's just here so pulseClock looks the same as the others so we can call it as a function pointer
 uint8_t stopClock(uint8_t fromButton);
 uint8_t startClock(uint8_t fromButton);
 uint8_t continueClock(uint8_t fromButton);
 
-#if defined(__MEGA__)
-void sendDividedClock();
-void resetDividedClock();
-#endif
+// This is a private-ish function but needs to be used in two different
+// modules hence its definition here.
+// Sends a start, stop, continue, or clock pulse signal out MIDI
+// ONLY IF bypass is OFF and one of the following things is true:
+// 1. IGNORE_MIDI_CLOCK or USE_MIDI_CLOCK and !fromButton
+// 2. GENERATE_MIDI_CLOCK
+// See Timing.cpp implementation for more details and reasoning
+// behind this function.
+void sendClock(midi::MidiType signal, uint8_t fromButton);
+
 
 #define CLOCK_STOPPED   0       
 #define CLOCK_RUNNING   1
 
+//// Returns the current clock state, one of CLOCK_STOPPED and CLOCK_RUNNING
 uint8_t getClockState();
 
+
+#ifdef INCLUDE_OPTIONS_MIDI_CLOCK_DIVIDE
+
+void sendDividedClock();
+void resetDividedClock();
+#endif
+
+
+//// Called by go() every iteration to update pulse, note pulse, and beat variables and trigger
+//// stuff.  Does so considering swing and note division.
 void updateTimers();
 
 #endif

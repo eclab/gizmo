@@ -7,10 +7,14 @@ struct _measureLocal
 	uint16_t beatsSoFar;
 	uint8_t running;
 	uint8_t displayElapsedTime;
+	uint8_t resetCounter;
 	};
+	
+#define MEASURE_COUNTER_MAX		(3)
 
 void stateMeasure();
 void playMeasure();
-void measureMenu();
+void stateMeasureMenu();
+void resetMeasure();
 
 #endif

@@ -77,6 +77,11 @@
 //                              Middle Button Long Press:       STATE_SPLIT_CHANNEL
 //                              Play a note: it's routed appropriately
 
+struct _splitLocal
+	{
+	uint8_t lastMixVelocity;
+	uint8_t playing;
+	};
 
 
 #define SPLIT_CONTROLS_RIGHT    0               // this is the default, see options

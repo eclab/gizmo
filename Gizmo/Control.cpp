@@ -5,6 +5,9 @@
 #include "All.h"
 
 
+
+#ifdef INCLUDE_CONTROLLER
+
 // stateControllerPlay() and stateController() have been inlined into the state machine to save space
 
 
@@ -60,7 +63,7 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t
             // command number is 0...31.  The first kind are messages > 31.
             
             MIDI.sendControlChange(commandNumber, msb, options.channelOut);
-            if (commandNumber < 32)             // send optional lsb if appropriate
+            if (commandNumber < 32 && lsb != 0)             // send optional lsb if appropriate
                 {
                 MIDI.sendControlChange(commandNumber + 32, lsb, options.channelOut);
                 }
@@ -83,7 +86,8 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t
             else
                 {
                 MIDI.sendControlChange(6, msb, options.channelOut);  // MSB
-                MIDI.sendControlChange(38, lsb, options.channelOut);  // LSB
+                if (lsb != 0)
+                    MIDI.sendControlChange(38, lsb, options.channelOut);  // LSB
                 }
             MIDI.sendControlChange(101, 127, options.channelOut);  // MSB of NULL command
             MIDI.sendControlChange(100, 127, options.channelOut);  // LSB of NULL command
@@ -106,7 +110,8 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t
             else
                 {
                 MIDI.sendControlChange(6, msb, options.channelOut);  // MSB
-                MIDI.sendControlChange(38, lsb, options.channelOut);  // LSB
+                if (lsb != 0)
+                    MIDI.sendControlChange(38, lsb, options.channelOut);  // LSB
                 }
             MIDI.sendControlChange(101, 127, options.channelOut);  // MSB of NULL command
             MIDI.sendControlChange(100, 127, options.channelOut);  // LSB of NULL command
@@ -120,28 +125,27 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t
             TOGGLE_OUT_LED(); 
             }
         break;
-#if defined(__MEGA__)        
-		case CONTROL_TYPE_PITCH_BEND:
-			{
-			// move from 0...16k to -8k...8k
-			MIDI.sendPitchBend(((int)fullValue) - MIDI_PITCHBEND_MIN, options.channelOut);
-			}
-		break;
-		case CONTROL_TYPE_AFTERTOUCH:
-			{
-			MIDI.sendAfterTouch(msb, options.channelOut);
-			}
-		break;
+        
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+        case CONTROL_TYPE_PITCH_BEND:
+            {
+            // move from 0...16k to -8k...8k
+            MIDI.sendPitchBend(((int)fullValue) - MIDI_PITCHBEND_MIN, options.channelOut);
+            }
+        break;
+        case CONTROL_TYPE_AFTERTOUCH:
+            {
+            MIDI.sendAfterTouch(msb, options.channelOut);
+            }
+        break;
         case CONTROL_TYPE_VOLTAGE_A:
             {
             setValue(DAC_A, fullValue >> 2);
-            //setPot(DAC_A, value);
             }
         break;
         case CONTROL_TYPE_VOLTAGE_B:
             {
             setValue(DAC_B, fullValue >> 2);
-            //setPot(DAC_B, value);
             }
         break;
 #endif
@@ -162,9 +166,9 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
         {
         backupOptions = options; 
         }
-#if defined(__MEGA__)
-	const char* menuItems[9] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC"), PSTR("BEND"), PSTR("AFTERTOUCH"), PSTR("A VOLTAGE"), PSTR("B VOLTAGE")};
-	result = doMenuDisplay(menuItems, 9, STATE_NONE,  STATE_NONE, 1);
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+    const char* menuItems[9] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC"), PSTR("BEND"), PSTR("AFTERTOUCH"), PSTR("A VOLTAGE"), PSTR("B VOLTAGE")};
+    result = doMenuDisplay(menuItems, 9, STATE_NONE,  STATE_NONE, 1);
 #else
     const char* menuItems[5] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC")};
     result = doMenuDisplay(menuItems, 5, STATE_NONE, STATE_NONE, 1);
@@ -183,7 +187,7 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
                 saveOptions();
                 goUpState(STATE_CONTROLLER);
                 }
-#if defined(__MEGA__)
+#ifdef INCLUDE_EXTENDED_CONTROLLER
             else if ((type == CONTROL_TYPE_PC || type == CONTROL_TYPE_VOLTAGE_A || type == CONTROL_TYPE_VOLTAGE_B || type == CONTROL_TYPE_PITCH_BEND || type == CONTROL_TYPE_AFTERTOUCH))
 #else
             else if (type == CONTROL_TYPE_PC)
@@ -266,13 +270,13 @@ void setControllerButtonOnOff(uint16_t &onOff, int8_t nextState)
         // note that if it's the MIDDLE BUTTON we do decrement, else we do increment
         result = doNumericalDisplay(-1, CONTROL_VALUE_INCREMENT, ((int16_t)onOff) - 1, true, 
             (((&onOff) == (&options.middleButtonControlOn)) || ((&onOff) == (&options.middleButtonControlOff))) ? OTHER_DECREMENT: OTHER_INCREMENT);
-#if defined(__MEGA__) 
-    else if (	
-    			((((&onOff) == (&options.middleButtonControlOn)) || ((&onOff) == (&options.middleButtonControlOff))) &&
-    		 		(options.middleButtonControlType == CONTROL_TYPE_PITCH_BEND)) ||
-    			((((&onOff) == (&options.selectButtonControlOn)) || ((&onOff) == (&options.selectButtonControlOff))) &&
-    		 		(options.selectButtonControlType == CONTROL_TYPE_PITCH_BEND))
-    		 )  // ugh, all this work just to determine if we're doing pitch bend YUCK
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+    else if (   
+            ((((&onOff) == (&options.middleButtonControlOn)) || ((&onOff) == (&options.middleButtonControlOff))) &&
+            (options.middleButtonControlType == CONTROL_TYPE_PITCH_BEND)) ||
+            ((((&onOff) == (&options.selectButtonControlOn)) || ((&onOff) == (&options.selectButtonControlOff))) &&
+            (options.selectButtonControlType == CONTROL_TYPE_PITCH_BEND))
+        )  // ugh, all this work just to determine if we're doing pitch bend YUCK
         result = doNumericalDisplay(MIDI_PITCHBEND_MIN - 1, MIDI_PITCHBEND_MAX, 0, true, OTHER_NONE);
 #endif
     else
@@ -282,24 +286,24 @@ void setControllerButtonOnOff(uint16_t &onOff, int8_t nextState)
         {
         case NO_MENU_SELECTED:
             {
-#if defined(__MEGA__) 
+#ifdef INCLUDE_EXTENDED_CONTROLLER
             if (
-            		((((&onOff) == (&options.middleButtonControlOn)) || ((&onOff) == (&options.middleButtonControlOff))) &&
-    		 			(options.middleButtonControlType == CONTROL_TYPE_PITCH_BEND)) ||
-    				((((&onOff) == (&options.selectButtonControlOn)) || ((&onOff) == (&options.selectButtonControlOff))) &&
-    		 			(options.selectButtonControlType == CONTROL_TYPE_PITCH_BEND))
-	    		 )  // ugh, all this work just to determine if we're doing pitch bend YUCK
-            	{
-            	if (currentDisplay == MIDI_PITCHBEND_MIN - 1)
-            		onOff = 0;
-            	else
-	            	onOff = (uint16_t) (currentDisplay - MIDI_PITCHBEND_MIN) + 1;
-            	}
+                    ((((&onOff) == (&options.middleButtonControlOn)) || ((&onOff) == (&options.middleButtonControlOff))) &&
+                    (options.middleButtonControlType == CONTROL_TYPE_PITCH_BEND)) ||
+                    ((((&onOff) == (&options.selectButtonControlOn)) || ((&onOff) == (&options.selectButtonControlOff))) &&
+                    (options.selectButtonControlType == CONTROL_TYPE_PITCH_BEND))
+                )  // ugh, all this work just to determine if we're doing pitch bend YUCK
+                {
+                if (currentDisplay == MIDI_PITCHBEND_MIN - 1)
+                    onOff = 0;
+                else
+                    onOff = (uint16_t) (currentDisplay - MIDI_PITCHBEND_MIN) + 1;
+                }
             else
 #endif
-            	{
-	            onOff = (uint8_t) (currentDisplay + 1);
-	            }
+                {
+                onOff = (uint8_t) (currentDisplay + 1);
+                }
             }
         break;
         case MENU_SELECTED:
@@ -323,11 +327,13 @@ void setControllerButtonOnOff(uint16_t &onOff, int8_t nextState)
 
 /*** LFOS AND ENVELOPES
 
-2 LFOs, tied to the BUTTON VALUES: Max is BUTTON ON, Min is BUTTON OFF, if either button is OFF, nothing is done?
-	- RATE
-	- WAVE
-	- RESET ON NOTE ON
+     2 LFOs, tied to the BUTTON VALUES: Max is BUTTON ON, Min is BUTTON OFF, if either button is OFF, nothing is done?
+     - RATE
+     - WAVE
+     - RESET ON NOTE ON
 
-2 ENVs, tied to the KNOB VALUES: Max is KNOB 
+     2 ENVs, tied to the KNOB VALUES: Max is KNOB 
 
 */
+
+#endif

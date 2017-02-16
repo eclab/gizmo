@@ -155,6 +155,7 @@ void goDownStateWithBackup(uint8_t _nextState)
 
 
 
+#ifdef INCLUDE_STEP_SEQUENCER
         
 // Starting at position pos, distributes the bits of the given byte among the high bytes >= pos
 void distributeByte(uint16_t pos, uint8_t byte)
@@ -185,7 +186,7 @@ void stripHighBits()
         data.slot.data.stepSequencer.buffer[i] = (127 & data.slot.data.stepSequencer.buffer[i]);
     }
 
-
+#endif
 
 
 
@@ -230,6 +231,7 @@ void stateSave(uint8_t backState)
             data.slot.type = slotTypeForApplication(application);
             switch(application)
                 {
+#ifdef INCLUDE_STEP_SEQUENCER
                 case STATE_STEP_SEQUENCER:
                     {
                     uint8_t len = GET_TRACK_LENGTH();
@@ -255,13 +257,14 @@ void stateSave(uint8_t backState)
                     stripHighBits();                        
                     }
                 break;
+#endif
+#ifdef INCLUDE_RECORDER
                 case STATE_RECORDER:
                     {
-#ifndef NO_RECORDER
                     saveSlot(currentDisplay);
-#endif
                     }
                 break;
+#endif
                 }
                                         
             goUpState(backState);
@@ -300,11 +303,12 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                 else
                     {
                     state = selectedState;
+#ifdef INCLUDE_STEP_SEQUENCER
                     if (application == STATE_STEP_SEQUENCER)
                         {
-            			// FIXME: did I fix the issue of synchronizing the beats with the sequencer notes?
-            			local.stepSequencer.currentPlayPosition = 
-                			div12((24 - beatCountdown) * notePulseRate) >> 1;   // get in sync with beats
+                        // FIXME: did I fix the issue of synchronizing the beats with the sequencer notes?
+                        local.stepSequencer.currentPlayPosition = 
+                            div12((24 - beatCountdown) * notePulseRate) >> 1;   // get in sync with beats
 
                         uint8_t len = GET_TRACK_LENGTH();
                         uint8_t num = GET_NUM_TRACKS();
@@ -331,6 +335,7 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                         stripHighBits();
                         stopStepSequencer();
                         }
+#endif
                     }
                 }
                 
@@ -392,7 +397,7 @@ uint8_t incrementAndWrap(uint8_t n, uint8_t max)
     return n;
     }
 
-	
+        
 GLOBAL uint8_t stateEnterNoteVelocity;
 
 uint8_t stateEnterNote(uint8_t backState)
@@ -427,7 +432,7 @@ uint8_t stateEnterNote(uint8_t backState)
     }
 
 
-#if defined(__MEGA__)
+#ifdef INCLUDE_ENTER_CHORD
 
 GLOBAL uint8_t chordCount;
 
@@ -454,59 +459,59 @@ uint8_t stateEnterChord(uint8_t* chord, uint8_t maxChordNotes, uint8_t backState
     isUpdated(MIDDLE_BUTTON, RELEASED);
         
     if (newItem == NEW_ITEM && chordCount < maxChordNotes)
-    	{
-    	if (itemType == MIDI_NOTE_ON)
-			{
-			for(uint8_t i = 0; i < chordCount; i++)
-				{
-				if ((chord[i] & 127) == itemNumber)
-					return NO_NOTE;  // already have that one
-				}
-		
-			// okay, so it's a new note
-			chord[chordCount] = (itemNumber | 128);
-			chordCount++;
-			stateEnterNoteVelocity = itemValue;  // velocity
-			}
-    	else if (itemType == MIDI_NOTE_OFF)
-    		{
-    		// first mark the note as up
-    		
-			for(uint8_t i = 0; i < chordCount; i++)
-				{
-				if ((chord[i] & 127) == itemNumber)
-					{
-					chord[i] = itemNumber;  // move off of +128 if it's already there
-					break;
-					}
-				}
-			
-			// next check to see if any notes are still down
-			// (this could easily be done with a count, but we only have a few notes, so no biggie)
-			for(uint8_t i = 0; i < chordCount; i++)
-				{
-				if (chord[i] >= 128)  // something's being held down
-					return NO_NOTE;
-				}
-			
-			// at this point nothing is held down.  Insertion Sort FTW!
-            uint8_t j;
+        {
+        if (itemType == MIDI_NOTE_ON)
+            {
+            for(uint8_t i = 0; i < chordCount; i++)
+                {
+                if ((chord[i] & 127) == itemNumber)
+                    return NO_NOTE;  // already have that one
+                }
+                
+            // okay, so it's a new note
+            chord[chordCount] = (itemNumber | 128);
+            chordCount++;
+            stateEnterNoteVelocity = itemValue;  // velocity
+            }
+        else if (itemType == MIDI_NOTE_OFF)
+            {
+            // first mark the note as up
+                
+            for(uint8_t i = 0; i < chordCount; i++)
+                {
+                if ((chord[i] & 127) == itemNumber)
+                    {
+                    chord[i] = itemNumber;  // move off of +128 if it's already there
+                    break;
+                    }
+                }
+                        
+            // next check to see if any notes are still down
+            // (this could easily be done with a count, but we only have a few notes, so no biggie)
+            for(uint8_t i = 0; i < chordCount; i++)
+                {
+                if (chord[i] >= 128)  // something's being held down
+                    return NO_NOTE;
+                }
+
+            // at this point nothing is held down.  Insertion Sort FTW!
+            int8_t j;  // j goes negative so we have to be signed
             for(uint8_t i = 1; i < chordCount; i++)
-				{
-				uint8_t val = chord[i];
-				j = i - 1;
-				while((j >= 0) && (chord[j] > val))
-					{
-					chord[j + 1] = chord[j];
-					j = j - 1;
-					}
-				chord[j + 1] = val;
-				}
-			
-			// return the count
-			return chordCount;
-    		}
-    	}
+                {
+                uint8_t val = chord[i];
+                j = i - 1;
+                while((j >= 0) && (chord[j] > val))
+                    {
+                    chord[j + 1] = chord[j];
+                    j = j - 1;
+                    }
+                chord[j + 1] = val;
+                }
+
+            // return the count
+            return chordCount;
+            }
+        }
         
     return NO_NOTE;
     }
@@ -518,21 +523,27 @@ void playApplication()
     {
     switch(optionsReturnState)
         {
+#ifdef INCLUDE_ARPEGGIATOR
         case STATE_ARPEGGIATOR_MENU:
             playArpeggio();          
             break; 
+#endif
+#ifdef INCLUDE_STEP_SEQUENCER
         case STATE_STEP_SEQUENCER_MENU:
             playStepSequencer();
             break;
+#endif
+#ifdef INCLUDE_RECORDER
         case STATE_RECORDER_PLAY:  // note not MENU: we go directly to options from PLAY
             // This is a dummy function, which we include to keep the switch statement from growing by 100 bytes (!)
             // Because we do NOT want to play the recorder in the background ever.
             playRecorder();
             break; 
-#if defined(__MEGA__)
-         case STATE_MEASURE:
-        	playMeasure();
-        	break;
+#endif
+#ifdef INCLUDE_MEASURE
+        case STATE_MEASURE:
+            playMeasure();
+            break;
 #endif
         }
     }
@@ -556,11 +567,11 @@ void clearScreen()
 
 
 GLOBAL static uint8_t glyphTable[
-#if defined(__MEGA__)
-    18
+#ifdef INCLUDE_EXTENDED_GLYPH_TABLE
+    19
 #else
     15
-#endif // defined(__MEGA__)
+#endif
     ][4] = 
     {
     // These first: ----, ALLC, DFLT, DECR, and INCR, must be the FIRST ones
@@ -580,11 +591,13 @@ GLOBAL static uint8_t glyphTable[
     {GLYPH_3x5_C, GLYPH_3x5_O, GLYPH_3x5_N, GLYPH_3x5_T},   // CONT
     {GLYPH_3x5_S, GLYPH_3x5_T, GLYPH_3x5_O, GLYPH_3x5_P},   // STOP
     {GLYPH_3x5_R, GLYPH_3x5_S, GLYPH_3x5_E, GLYPH_3x5_T},   // RSET
-#if defined(__MEGA__)
+    
+#ifdef INCLUDE_EXTENDED_GLYPH_TABLE
     {GLYPH_3x5_F, GLYPH_3x5_A, GLYPH_3x5_D, GLYPH_3x5_E},   // FADE
     {GLYPH_3x5_P, GLYPH_3x5_L, GLYPH_3x5_A, GLYPH_3x5_Y},   // PLAY
     {GLYPH_3x5_C, GLYPH_3x5_H, GLYPH_3x5_R, GLYPH_3x5_D},   // CHRD
-#endif // defined(__MEGA__)
+    {GLYPH_3x5_H, GLYPH_3x5_I, GLYPH_3x5_G, GLYPH_3x5_H},       // HIGH
+#endif
 
     };
 
@@ -646,7 +659,7 @@ void doClick()
 
 
 
-#if defined(__MEGA__)
+#ifdef INCLUDE_OPTIONS_MENU_DELAY
 ///// SCROLL DELAY
 ///// 
 
@@ -666,4 +679,4 @@ void setMenuDelay(uint8_t index)
     if (index > 10) index = 5;
     setScrollDelays(menuDelays[index], DEFAULT_SHORT_DELAY);
     }
-#endif // defined(__MEGA__)
+#endif

@@ -181,7 +181,7 @@ struct _stepSequencerLocal
     uint8_t fader[MAX_STEP_SEQUENCER_TRACKS];               // Per-track fader, values from 0...100
     uint32_t offTime[MAX_STEP_SEQUENCER_TRACKS];    // When do we turn off?  Note it's uint16, not uint32.  It's a delta from the lastTime
     uint8_t noteOff[MAX_STEP_SEQUENCER_TRACKS];
-#if defined(__MEGA__)        
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
     uint8_t dontPlay[MAX_STEP_SEQUENCER_TRACKS];
 #endif      
     uint8_t solo;
@@ -200,7 +200,7 @@ struct _stepSequencerLocal
 #define STEP_SEQUENCER_FORMAT_16x12_ 0
 #define STEP_SEQUENCER_FORMAT_24x8_ 1
 #define STEP_SEQUENCER_FORMAT_32x6_ 2
-#if defined(__MEGA__) 
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
 #define STEP_SEQUENCER_FORMAT_48x4_ 3
 #define STEP_SEQUENCER_FORMAT_64x3_ 4
 #endif
@@ -217,7 +217,7 @@ struct _stepSequencer
     };
 
 
-#if defined(__MEGA__) 
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
 // Used by GET_TRACK_LENGTH to return the length of tracks in the current format
 extern uint8_t _trackLength[5];
 // Used by GET_NUM_TRACKS to return the number of tracks in the current format

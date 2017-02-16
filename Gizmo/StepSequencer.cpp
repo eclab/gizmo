@@ -3,8 +3,10 @@
 
 #include "All.h"
 
+#ifdef INCLUDE_STEP_SEQUENCER
 
-#if defined(__MEGA__) 
+
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
 // Used by GET_TRACK_LENGTH to return the length of tracks in the current format
 GLOBAL uint8_t _trackLength[5] = {16, 24, 32, 48, 64};
 // Used by GET_NUM_TRACKS to return the number of tracks in the current format
@@ -43,14 +45,14 @@ void blinkOrSetPoint(unsigned char* led, uint8_t x, uint8_t y, uint8_t isCursor)
 
     
 uint8_t shouldMuteTrack(uint8_t track)
-	{
-	return 
-		(
-		// We're muted if solo is on and we're not the current track
-		(local.stepSequencer.solo && track != local.stepSequencer.currentTrack) ||
-		// We're muted if solo is NOT on and our mute is on
-		(!local.stepSequencer.solo && local.stepSequencer.muted[track]));
-	}
+    {
+    return 
+        (
+        // We're muted if solo is on and we're not the current track
+        (local.stepSequencer.solo && track != local.stepSequencer.currentTrack) ||
+        // We're muted if solo is NOT on and our mute is on
+        (!local.stepSequencer.solo && local.stepSequencer.muted[track]));
+    }
 
 // Draws the sequence with the given track length, number of tracks, and skip size
 void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
@@ -63,21 +65,13 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
     // this code is designed to allow the user to move down to about the middle of the screen,
     // at which point the cursor stays there and the screen scrolls instead.
     uint8_t firstTrack = local.stepSequencer.currentTrack;
-//#if defined(__MEGA__) 
     uint8_t fourskip =  4 / skip;
-//#else
-//    uint8_t fourskip = (4 >> (skip - 1));  // 4 >> (skip - 1) is a fancy way of saying 4 / skip for skip = 1 or 2.  We want to move to the middle of the screen, and only then start scrolling
-//#endif
     if (firstTrack < fourskip)  
         firstTrack = 0;
     else firstTrack = firstTrack - fourskip + 1;
     
     uint8_t lastTrack = numTracks;          // lastTrack is 1+ the final track we'll be drawing
-//#if defined(__MEGA__) 
     uint8_t sixskip = 6 / skip;
-//#else
-//    uint8_t sixskip = (6 >> (skip - 1));
-//#endif
     lastTrack = bound(lastTrack, 0, firstTrack + sixskip);
 
     // Now we start drawing each of the tracks.  We will make blinky lights for beats or for the cursor
@@ -94,7 +88,6 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
         for (uint8_t d = 0; d < trackLen; d++)
             {
             uint8_t shouldDrawMuted = shouldMuteTrack(t);
-//            uint8_t weAreNotSolo = (local.stepSequencer.solo && t != local.stepSequencer.currentTrack);
             uint16_t pos = (t * (uint16_t) trackLen + d) * 2;
             uint8_t vel = data.slot.data.stepSequencer.buffer[pos + 1];
             // check for tie
@@ -117,56 +110,56 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
 
             if (vel || blink)
                 {       
-// <8 <16 <24 <32 <40 <48 <56 <64
-				if (d < 32)				// only relevant for Mega
-					{
-					if (d < 16)
-						{
-						if (d < 8)
-							{
-                        	blinkOrSetPoint(led2, d, y, blink);
-							}
-						else // < 16
-							{
-                        	blinkOrSetPoint(led, d-8, y, blink);
-							}
-						}
-					else
-						{
-						if (d < 24)
-							{
-                        	blinkOrSetPoint(led2, d-16, y-1, blink);
-							}
-						else  // < 32
-							{
-                        	blinkOrSetPoint(led, d-24, y-1, blink);
-							}
-						}
-					}
-				else
-					{
-					if (d < 48)
-						{
-						if (d < 40)
-							{
-                        	blinkOrSetPoint(led2, d - 32, y-2, blink);
-							}
-						else // < 48
-							{
-                        	blinkOrSetPoint(led, d-8 -32, y-2, blink);
-							}
-						}
-					else
-						{
-						if (d < 56)
-							{
-                        	blinkOrSetPoint(led2, d-16 - 32, y-3, blink);
-							}
-						else  // < 64
-							{
-                        	blinkOrSetPoint(led, d-24 - 32, y-3, blink);
-							}
-						}
+                // <8 <16 <24 <32 <40 <48 <56 <64
+                if (d < 32)                             // only relevant for Mega
+                    {
+                    if (d < 16)
+                        {
+                        if (d < 8)
+                            {
+                            blinkOrSetPoint(led2, d, y, blink);
+                            }
+                        else // < 16
+                            {
+                            blinkOrSetPoint(led, d-8, y, blink);
+                            }
+                        }
+                    else
+                        {
+                        if (d < 24)
+                            {
+                            blinkOrSetPoint(led2, d-16, y-1, blink);
+                            }
+                        else  // < 32
+                            {
+                            blinkOrSetPoint(led, d-24, y-1, blink);
+                            }
+                        }
+                    }
+                else
+                    {
+                    if (d < 48)
+                        {
+                        if (d < 40)
+                            {
+                            blinkOrSetPoint(led2, d - 32, y-2, blink);
+                            }
+                        else // < 48
+                            {
+                            blinkOrSetPoint(led, d-8 -32, y-2, blink);
+                            }
+                        }
+                    else
+                        {
+                        if (d < 56)
+                            {
+                            blinkOrSetPoint(led2, d-16 - 32, y-3, blink);
+                            }
+                        else  // < 64
+                            {
+                            blinkOrSetPoint(led, d-24 - 32, y-3, blink);
+                            }
+                        }
                     }
                 }
             }
@@ -181,7 +174,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
         (local.stepSequencer.outMIDI[local.stepSequencer.currentTrack] == MIDI_OUT_DEFAULT) ?
         options.channelOut : local.stepSequencer.outMIDI[local.stepSequencer.currentTrack]);
 
-#if defined(__MEGA__) 
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
     // Are we locked?
     if (data.slot.data.stepSequencer.locked)
         setPoint(led, 4, 1);
@@ -208,7 +201,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
 void stateStepSequencerFormat()
     {
     uint8_t result;
-#if defined(__MEGA__) 
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
     const char* menuItems[5] = {  PSTR("16 NOTES"), PSTR("24 NOTES"), PSTR("32 NOTES"), PSTR("48 NOTES"), PSTR("64 NOTES") };
     result = doMenuDisplay(menuItems, 5, STATE_NONE, 0, 1);
 #else
@@ -270,7 +263,7 @@ void sendTrackNote(uint8_t note, uint8_t velocity, uint8_t track)
     if (out == MIDI_OUT_DEFAULT) 
         out = options.channelOut;
     if (out != NO_MIDI_OUT)
-    	{
+        {
         if (note < 128) sendNoteOn(note, velocity, out);
         else sendNoteOff(note - 128, velocity, out);
         }
@@ -286,7 +279,7 @@ void loadBuffer(uint8_t position, uint8_t note, uint8_t velocity)
 
 
 
-#if defined(__MEGA__)
+#ifdef INCLUDE_BUFFERED_CURSOR_X_POS
 
 // I'd prefer the following code as it creates a bit of a buffer so scrolling to position 0 doesn't go straight
 // into play position mode.  Or perhaps we should change things so that you scroll to the far RIGHT edge, dunno.
@@ -294,12 +287,12 @@ void loadBuffer(uint8_t position, uint8_t note, uint8_t velocity)
 #define CURSOR_LEFT_MARGIN (4)
 
 int16_t getNewCursorXPos(uint8_t trackLen)
-	{
-	int16_t val = ((int16_t)(((pot[RIGHT_POT] >> 1) * (trackLen + CURSOR_LEFT_MARGIN)) >> 9)) - CURSOR_LEFT_MARGIN;
-	if ((val < 0) && (val > -CURSOR_LEFT_MARGIN))
-		val = 0;
-	return val;
-	}
+    {
+    int16_t val = ((int16_t)(((pot[RIGHT_POT] >> 1) * (trackLen + CURSOR_LEFT_MARGIN)) >> 9)) - CURSOR_LEFT_MARGIN;
+    if ((val < 0) && (val > -CURSOR_LEFT_MARGIN))
+        val = 0;
+    return val;
+    }
 
 #else
 
@@ -337,19 +330,15 @@ void stateStepSequencerPlay()
     uint8_t trackLen = GET_TRACK_LENGTH();
     uint8_t numTracks = GET_NUM_TRACKS();
     
-//#if defined(__MEGA__) 
-	// this little function correctly maps:
-	// 8 -> 1
-	// 12 -> 1
-	// 16 -> 1
-	// 24 -> 2
-	// 32 -> 2
-	// 48 -> 3
-	// 64 -> 4    
-    uint8_t skip = ((trackLen + 15) >> 4);	// that is, trackLen / 16
-//#else
-//    uint8_t skip = (trackLen > 16 ? 2 : 1);
-//#endif
+    // this little function correctly maps:
+    // 8 -> 1
+    // 12 -> 1
+    // 16 -> 1
+    // 24 -> 2
+    // 32 -> 2
+    // 48 -> 3
+    // 64 -> 4    
+    uint8_t skip = ((trackLen + 15) >> 4);      // that is, trackLen / 16
 
     if (entry)
         {
@@ -357,15 +346,15 @@ void stateStepSequencerPlay()
         local.stepSequencer.currentRightPot = -1;
         
 /*
-        // The vaguaries of the compiler tell me that if I remove this
-        // code, the bytes go UP!!!!  A lot!  But I need to remove it, it's
-        // wrong.  So I'm putting in dummy code which fools the compiler just enough.
+// The vaguaries of the compiler tell me that if I remove this
+// code, the bytes go UP!!!!  A lot!  But I need to remove it, it's
+// wrong.  So I'm putting in dummy code which fools the compiler just enough.
 
-        for(uint8_t i = 0; i < numTracks; i++)
-            {
-            //  (GET_TRACK_LENGTH() >> 8)   --->    0   but the compiler can't figure that out
-            local.stepSequencer.noteOff[i] = local.stepSequencer.noteOff[i + (GET_TRACK_LENGTH() >> 8)];
-            }
+for(uint8_t i = 0; i < numTracks; i++)
+{
+//  (GET_TRACK_LENGTH() >> 8)   --->    0   but the compiler can't figure that out
+local.stepSequencer.noteOff[i] = local.stepSequencer.noteOff[i + (GET_TRACK_LENGTH() >> 8)];
+}
 */
         
         /*
@@ -404,7 +393,7 @@ void stateStepSequencerPlay()
             // (2) the note AFTER is NOT another tie (to prevent us from making a full line of ties)
             // These two positions (before and after) are p and p2 
             uint8_t p = local.stepSequencer.currentEditPosition - 1;
-            if (p == 255) p = trackLen - 1;		// we wrapped around from 0
+            if (p == 255) p = trackLen - 1;             // we wrapped around from 0
             uint8_t p2 = p + 2;
             if (p2 >= trackLen) p2 = 0;
             
@@ -426,37 +415,37 @@ void stateStepSequencerPlay()
                 }
             }
         else 
-#if defined(__MEGA__) 
-        if (!data.slot.data.stepSequencer.locked)
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+            if (!data.slot.data.stepSequencer.locked)
 #endif
-            {
-            // do a "light" clear, not a full reset
-            memset(data.slot.data.stepSequencer.buffer + trackLen * local.stepSequencer.currentTrack * 2, 0, trackLen * 2);
-            }
+                {
+                // do a "light" clear, not a full reset
+                memset(data.slot.data.stepSequencer.buffer + trackLen * local.stepSequencer.currentTrack * 2, 0, trackLen * 2);
+                }
         }
     else if (isUpdated(SELECT_BUTTON, RELEASED))
         {
-#if defined(__MEGA__)
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
         if (options.stepSequencerSendClock)
-        	{
-        	// we always stop the clock just in case, even if we're immediately restarting it
-        	stopClock(true);
-        	}
+            {
+            // we always stop the clock just in case, even if we're immediately restarting it
+            stopClock(true);
+            }
 #endif
         switch(local.stepSequencer.playState)
             {
             case PLAY_STATE_STOPPED:
                 {
                 local.stepSequencer.playState = PLAY_STATE_WAITING;
-#if defined(__MEGA__)
-				if (options.stepSequencerSendClock)
-					{
-					// Possible bug condition:
-					// The MIDI spec says that there "should" be at least 1 ms between
-					// starting the clock and the first clock pulse.  I don't know if that
-					// will happen here consistently.
-					startClock(true);
-					}
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+                if (options.stepSequencerSendClock)
+                    {
+                    // Possible bug condition:
+                    // The MIDI spec says that there "should" be at least 1 ms between
+                    // starting the clock and the first clock pulse.  I don't know if that
+                    // will happen here consistently.
+                    startClock(true);
+                    }
 #endif                
                 }
             break;
@@ -495,10 +484,10 @@ void stateStepSequencerPlay()
             }
         }
     else if (newItem && (itemType == MIDI_NOTE_ON) //// there is a note played
-#if defined(__MEGA__) 
-			&& !data.slot.data.stepSequencer.locked  
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+        && !data.slot.data.stepSequencer.locked  
 #endif
-	)
+        )
         {
         TOGGLE_IN_LED();
         uint8_t note = itemNumber;
@@ -521,26 +510,26 @@ void stateStepSequencerPlay()
             local.stepSequencer.currentEditPosition = incrementAndWrap(local.stepSequencer.currentEditPosition, trackLen);
             }
         else 
-        	{
-#if defined(__MEGA__)        
-        	local.stepSequencer.dontPlay[local.stepSequencer.currentTrack] = 1;
-        	if (!options.stepSequencerNoEcho)          // only play if we're echoing
-        	    {
-        	    sendTrackNote(note, velocity, local.stepSequencer.currentTrack);
-        	    }
+            {
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+            local.stepSequencer.dontPlay[local.stepSequencer.currentTrack] = 1;
+            if (!options.stepSequencerNoEcho)          // only play if we're echoing
+                {
+                sendTrackNote(note, velocity, local.stepSequencer.currentTrack);
+                }
 #endif
-			}
-			
+            }
+                        
         local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
         }
     else if (newItem && (itemType == MIDI_NOTE_OFF)
-#if defined(__MEGA__) 
-			&& !data.slot.data.stepSequencer.locked  
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+        && !data.slot.data.stepSequencer.locked  
 #endif
-    )
-    	{
-    	sendTrackNote(itemNumber + 128, itemValue, local.stepSequencer.currentTrack);
-    	}
+        )
+        {
+        sendTrackNote(itemNumber + 128, itemValue, local.stepSequencer.currentTrack);
+        }
         
     playStepSequencer();
     if (updateDisplay)
@@ -557,7 +546,7 @@ void stateStepSequencerPlay()
 #define STEP_SEQUENCER_MENU_VELOCITY 3
 #define STEP_SEQUENCER_MENU_FADER 4
 
-#if defined(__MEGA__)
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
 #define STEP_SEQUENCER_MENU_RESET 5
 #define STEP_SEQUENCER_MENU_SAVE 6
 #define STEP_SEQUENCER_MENU_SEND_CLOCK 7
@@ -567,8 +556,7 @@ void stateStepSequencerPlay()
 #else
 #define STEP_SEQUENCER_MENU_RESET 5
 #define STEP_SEQUENCER_MENU_SAVE 6
-#define STEP_SEQUENCER_MENU_LOCK 7
-#define STEP_SEQUENCER_MENU_OPTIONS 8
+#define STEP_SEQUENCER_MENU_OPTIONS 7
 #endif
 
 
@@ -578,7 +566,7 @@ void stateStepSequencerMenu()
     {
     uint8_t result;
 
-#if defined(__MEGA__)    
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
     const char* menuItems[11] = {    
         (local.stepSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),
         PSTR("LENGTH (TRACK)"),
@@ -649,7 +637,6 @@ void stateStepSequencerMenu()
                 break;
                 case STEP_SEQUENCER_MENU_RESET:
                     {
-                    uint8_t trackLen = GET_TRACK_LENGTH();
                     resetTrack(local.stepSequencer.currentTrack);
                     break;
                     }
@@ -658,10 +645,24 @@ void stateStepSequencerMenu()
                     state = STATE_STEP_SEQUENCER_SAVE;
                     }
                 break;
-#if defined(__MEGA__)    
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
                 case STEP_SEQUENCER_MENU_SEND_CLOCK:
                     {
                     options.stepSequencerSendClock = !options.stepSequencerSendClock;
+                    if (options.stepSequencerSendClock)
+                        {
+                        // the logic here is that if we are suddenly NOW sending the clock,
+                        // we should stop the clock so we're not just constantly sending pulses
+                        // if we're currently playing
+                        stopClock(true);
+                        }
+                    else
+                        {
+                        // the logic here is that if we are suddenly no longer sending the
+                        // clock, we don't want to leave the clock OFF because the user
+                        // has no easy way of turning it on again!
+                        continueClock(true);
+                        }
                     saveOptions();
                     }
                 break;
@@ -773,19 +774,19 @@ void playStepSequencer()
                 local.stepSequencer.noteOff[track] = NO_NOTE;
                 }
             else if (vel != 0 
-#if defined(__MEGA__)        
-            && !local.stepSequencer.dontPlay[track]  // not a rest or tie
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+                && !local.stepSequencer.dontPlay[track]  // not a rest or tie
 #endif
-				)            
+                )            
                 {
                 if (local.stepSequencer.velocity[track] != STEP_SEQUENCER_NO_OVERRIDE_VELOCITY)
                     vel = local.stepSequencer.velocity[track];
 
 // The Atmel compiler optimizer is insane.  If I replace the following two lines with just this:
-// 				if (!shouldMuteTrack(track))
+//                              if (!shouldMuteTrack(track))
 // ... then I go UP by 8 bytes!
-                if ((!local.stepSequencer.solo && !local.stepSequencer.muted[track]) ||			// If solo is off AND we're not muted......  OR...
-                	(local.stepSequencer.solo && track == local.stepSequencer.currentTrack))	// Solo is turned on we're the current track regardless of mute
+                if ((!local.stepSequencer.solo && !local.stepSequencer.muted[track]) ||                 // If solo is off AND we're not muted......  OR...
+                    (local.stepSequencer.solo && track == local.stepSequencer.currentTrack))        // Solo is turned on we're the current track regardless of mute
                     {
                     uint16_t newvel = (vel * (uint16_t)(local.stepSequencer.fader[track])) >> 5;
                     if (newvel > 127) 
@@ -796,7 +797,7 @@ void playStepSequencer()
                 local.stepSequencer.noteOff[track] = note;
                 }
             }
-#if defined(__MEGA__)                    
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
         // clear the dontPlay flags
         memset(local.stepSequencer.dontPlay, 0, numTracks);
 #endif
@@ -807,4 +808,5 @@ void playStepSequencer()
     }
         
         
+#endif
 

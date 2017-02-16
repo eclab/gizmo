@@ -8,11 +8,14 @@
 //////
 ////// This is just distributing #include file.  Everyone #includes All.h
 
-
 // This little dance allows me to test for Uno code while on a Mega, in case I don't
 // have an Uno around, simply by by commenting out the #define __MEGA__ line
 #if defined (__AVR_ATmega2560__)
 #define __MEGA__
+#endif
+
+#if defined (__AVR_ATmega328P__)
+#define __UNO__
 #endif
 
 
@@ -35,12 +38,150 @@
 // without ever touching the knobs or buttons (which you might not have).
 //#define HEADLESS
 
-// If you want to do some development on the Arduino Uno (which has some space), you can remove
-// the Note Recorder.  Here's a quick hack that will do the job.  You'll see "RECORDER" in the
-// top level menu but it won't do anything and the Recorder code will have been removed, freeing up
-// about 1.5K.  Not much but certainly enough to do something small.
-// Don't do this on the Mega (plus its not particularly useful there)
-//#define NO_RECORDER
+
+
+/////// SETTABLE APPLICATIONS AND FEATURES
+///
+/// The following applications, options, and additional features can be turned on or off depending
+/// on your space needs.  However in order to modify the applications and options you will ALSO need
+/// to modify certain menu arrays so they match properly.
+
+
+// -- APPLICATIONS --
+// Note that if you include or exclude certain of these you must also take care to set up the menuItems array
+// correctly in STATE_ROOT (see roughly lines 1023--1029 of TopLevel.cpp)
+// WARNING: If you include the extended controller, this automatically includes VOLTAGE so you have to
+// modify the state options array in this case (see next).
+// 
+// INCLUDE_ARPEGGIATOR				Include the Arpeggiator application
+// INCLUDE_STEP_SEQUENCER			Include the "basic" Step Sequencer application (the one which appears in the Uno)
+// INCLUDE_EXTENDED_STEP_SEQUENCER	Include the "full" Step Sequencer application (the one which appears in the Mega)
+// INCLUDE_RECORDER					Include the "basic" note recorder application (the one which appears in the Uno)
+// INCLUDE_EXTENDED_RECORDER		Include the "full" note recorder application (the one which appears in the Mega)
+// INCLUDE_GAUGE					Include the "basic" MIDI Gauge application
+// INCLUDE_EXTENDED_GAUGE			Include the "full" MIDI Gauge application, with the Raw CC option
+// INCLUDE_CONTROLLER				Include the "basic" Controller application (the one which appears in the Uno)
+// INCLUDE_EXTENDED_CONTROLLER		Include the "full" Controller application (the one which appears in the Mega)
+// INCLUDE_SPLIT					Include the Keyboard Split application
+// INCLUDE_THRU						Include the Thru application
+// INCLUDE_MEASURE					Include the Measure Counter application
+
+
+// -- ADDITIONAL OPTIONS MENU CHOICES --
+// Note that if you include or exclude certain of these you must also take care to set up the menuItems array
+// correctly in STATE_OPTIONS (see roughly lines 1349--1366 of TopLevel.cpp)
+// WARNING: If you include the extended controller, this automatically includes VOLTAGE so you have to
+// modify the state options array anyway in this case.
+//
+// INCLUDE_OPTIONS_TRANSPOSE_AND_VOLUME		Include transpose and volume on MIDI Out
+// INCLUDE_OPTIONS_MIDI_CLOCK_DIVIDE		Include clock division
+// INCLUDE_OPTIONS_MENU_DELAY				Include the menu delay option
+// INCLUDE_VOLTAGE							Include control Voltage
+
+
+// -- ADDITIONAL FEATURES --
+// NOTE that INCLUDE_THRU automatically turns on INCLUDE_ENTER_CHORD
+// NOTE that INCLUDE_THRU, INCLUDE_SPLIT, and INCLUDE_ENTER_CHORD automatically turn on INCLUDE_EXTENDED_GLYPH_TABLE
+// NOTE that INCLUDE_WAVES automatically turns on INCLUDE_EXTENDED_FONT
+// NOTE that INCLUDE_EXTENDED_GAUGE automatically turns on INCLUDE_PROVIDE_RAW_CC
+//
+// You can turn these on manually yourself
+// INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU	When in menus, does the middle button increment through them?
+// INCLUDE_CLOCK_IN_OPTIONS					When in the options menu, can I manipulate the clock via buttons?
+// INCLUDE_CC_CONTROL						Can you control Gizmo via CC in addition to NRPN?
+//
+// These are turned on as a consequence of other features -- they're probably not useful to turn on yourself.
+// INCLUDE_ENTER_CHORD						Should the stateEnterChord() function (Utility.h) be made available?
+// INCLUDE_PROVIDE_RAW_CC					When an application such as Gauge, can you optionally gauge raw CC rather than cooked (for NRPN etc.)?
+// INCLUDE_EXTENDED_GLYPH_TABLE				Should the extended glyph table be made available? 
+// INCLUDE_EXTENDED_FONT					Should the extended font be made available?
+
+
+// -- EXPERIMENTAL JUNK --
+// INCLUDE_WAVES							[In development] Should we include LFO waves?  Don't turn this on yet.
+
+
+/// Here are the standard values for the MEGA and for the UNO
+
+#if defined(__MEGA__)
+#define INCLUDE_ARPEGGIATOR
+#define INCLUDE_EXTENDED_STEP_SEQUENCER
+#define INCLUDE_EXTENDED_RECORDER
+#define INCLUDE_EXTENDED_GAUGE
+#define INCLUDE_EXTENDED_CONTROLLER
+#define INCLUDE_SPLIT
+#define INCLUDE_THRU
+#define INCLUDE_MEASURE
+
+#define INCLUDE_OPTIONS_TRANSPOSE_AND_VOLUME
+#define INCLUDE_OPTIONS_MIDI_CLOCK_DIVIDE		// interestingly, cutting this out *increases* memory usage
+#define INCLUDE_OPTIONS_MENU_DELAY
+#define INCLUDE_VOLTAGE
+
+#define INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU
+#define INCLUDE_CLOCK_CONTINUE_IN_OPTIONS
+#define INCLUDE_PROVIDE_RAW_CC
+#define INCLUDE_CC_CONTROL
+#define INCLUDE_CLOCK_IN_OPTIONS
+#define INCLUDE_RESET_NOTE_PULSE_TOGGLE
+#define INCLUDE_BUFFERED_CURSOR_X_POS
+#endif
+
+
+
+#if defined(__UNO__)	// Standard collection for the Uno
+#define INCLUDE_ARPEGGIATOR
+#define INCLUDE_STEP_SEQUENCER
+#define INCLUDE_RECORDER
+#define INCLUDE_GAUGE
+#define INCLUDE_CONTROLLER
+#define INCLUDE_RESET_NOTE_PULSE_TOGGLE
+#define INCLUDE_BUFFERED_CURSOR_X_POS
+#endif
+
+
+
+
+// Below are dependencies
+
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+#define INCLUDE_STEP_SEQUENCER
+#endif
+
+#ifdef INCLUDE_EXTENDED_RECORDER
+#define INCLUDE_RECORDER
+#endif
+
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+#define INCLUDE_CONTROLLER
+#define INCLUDE_VOLTAGE
+#endif
+
+#ifdef INCLUDE_EXTENDED_GAUGE
+#define INCLUDE_GAUGE
+#define INCLUDE_PROVIDE_RAW_CC
+#endif
+
+#ifdef INCLUDE_THRU
+#define INCLUDE_ENTER_CHORD
+#define INCLUDE_EXTENDED_GLYPH_TABLE  // for GLYPH_PLAY
+#endif
+
+#ifdef INCLUDE_SPLIT
+#define INCLUDE_EXTENDED_GLYPH_TABLE  // for GLYPH_FADE
+#endif
+
+#ifdef INCLUDE_ENTER_CHORD
+#define INCLUDE_EXTENDED_GLYPH_TABLE // for GLYPH_CHORD
+#endif
+
+#ifdef INCLUDE_WAVES
+#define INCLUDE_EXTENDED_FONT
+#endif
+
+
+
+
 
 
 #include <Arduino.h>
@@ -48,6 +189,7 @@
 #include <MIDI.h>
 #include <SoftReset.h>
 #include "DAC.h"
+#include "MidiInterface.h"
 #include "Utility.h"
 #include "TopLevel.h"
 #include "MidiShield.h"

@@ -3,11 +3,16 @@
 
 #include "All.h"
 
-#if defined(__MEGA__)
+#ifdef INCLUDE_SPLIT
 
 void stateSplit()
     {
-    entry = false;
+    if (entry)
+        {
+        local.split.lastMixVelocity = NO_NOTE;
+        local.split.playing = true;
+        entry = false;
+        }
 
     // despite the select button release ignoring, we occasionally get button
     // bounces on the select button so I'm moving the main stuff to the middle button
@@ -29,11 +34,16 @@ void stateSplit()
         {
         options.splitControls++;
         if (options.splitControls > SPLIT_MIX)
+            {
+            local.split.lastMixVelocity = NO_NOTE;
             options.splitControls = SPLIT_CONTROLS_RIGHT;
+            }
         saveOptions();
         }
     else if (isUpdated(BACK_BUTTON, RELEASED))
         {
+        local.split.playing = false;
+        sendAllNotesOff();
         goUpState(STATE_ROOT);
         }
     else if (updateDisplay)
@@ -42,7 +52,10 @@ void stateSplit()
                   
         if (options.splitControls == SPLIT_MIX)
             {
-            write3x5Glyphs(GLYPH_FADE);
+            if (local.split.lastMixVelocity == NO_NOTE)
+                write3x5Glyphs(GLYPH_FADE);
+            else
+                writeNumber(led, led2, local.split.lastMixVelocity);
             }
         else
             {
@@ -101,5 +114,5 @@ void stateSplitLayerNote()
             }
         }
     }
-        
-#endif // defined(__MEGA__)
+
+#endif

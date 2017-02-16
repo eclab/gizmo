@@ -53,10 +53,9 @@
 
 #define MAX_CHORD_MEMORY_NOTES (8)
 
-#define DEBOUNCE_STATE_OFF 0
-#define DEBOUNCE_STATE_FIRST_NOTE_DOWN 1
-#define DEBOUNCE_STATE_FIRST_NOTE_UP_IGNORED 2
-#define DEBOUNCE_STATE_FIRST_NOTE_UP 3
+#define DEBOUNCE_STATE_OFF 0						// No note is being played
+#define DEBOUNCE_STATE_FIRST_NOTE_DOWN 1			// A note is being played
+#define DEBOUNCE_STATE_FIRST_NOTE_UP_IGNORED 2		// A note was let up too soon, we're still playing it for a bit
 
 struct _thruLocal
     {

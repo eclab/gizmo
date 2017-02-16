@@ -20,14 +20,12 @@
 
 // Address of Digital Pin which goes LOW when Gate is opened (a note is played)
 #define VOLTAGE_GATE  (8)
+extern uint8_t VOLTAGE_GATE_mask;
+extern volatile uint8_t *port_VOLTAGE_GATE;
 
 // Sets the value of a DAC.  Legal DAC values range from 0...4095
 // Values outside this range will silently fail.
 void setValue(uint8_t dacI2C, uint16_t value);
-
-// Sets the value of a DAC to a value corresponding to a potentiometer ranging from 0...1023
-// Values outside this range will silently fail.
-void setPot(uint8_t dacI2C, uint16_t value);
 
 // Sets the value of a DAC to a value corresponding to a note.  Typically octaves are 1V each.
 // Our DAC is 5B, meaning that we may have a range of 60 notes.  We assume that middle C 

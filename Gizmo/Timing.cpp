@@ -3,6 +3,14 @@
 
 #include "All.h"
 
+
+
+
+
+
+
+
+
 //// TIME
 
 /// The current TIME in microseconds.  It's updated every tick.
@@ -110,9 +118,9 @@ void updateTicksAndWait()
 // in response to a button press, internal pulse, or 
 uint8_t shouldEmitClockMessages()
     {
-    return 	!bypass &
-    		(options.clock == GENERATE_MIDI_CLOCK ||
-    		 options.clock == USE_MIDI_CLOCK);
+    return      !bypass &&
+        (options.clock == GENERATE_MIDI_CLOCK ||
+        options.clock == USE_MIDI_CLOCK);
     }
 
 
@@ -147,23 +155,52 @@ void updateExternalClock()
     }
 
 
-#if defined(__MEGA__)
-void sendDividedClock()
-	{
-	if (--dividePulseCountdown == 0)
-		{
-		dividePulseCountdown = options.clockDivisor;
-		MIDI.sendRealTime(MIDIClock);
-		TOGGLE_OUT_LED(); 
-		}
-	}
-	
-void resetDividedClock()
-	{
-	dividePulseCountdown = 1;
-	}
-#endif
 
+/// This function is called in a variety of contexts.
+/// 
+///     1. Directly from handleClockCommand, if starting/stopping/continuing/pulsing,
+///    or if ignoring the clock.  In these cases we want to send it out unless bypass
+///    is on.
+/// 2. From pulseClock or from sendDivided clock.  Here we want to send it out unless bypass
+///    is on.
+/// 3. From startClock, stopClock, or continueClock.  Here the clock could be started due to
+///    the user manually pressing the button or due to some application; alternatively it
+///    could be as result of external control.  If we're USING an external clock, we want
+///    to send it on if it's not a button (because we're on external control).  If  we're
+///    GENERATING a clock, we want to send it always.  If
+///    we're BLOCKING, or CONSUMING the clock, we don't want to send it on.  If we're IGNORING
+///    the clock, we may get called here by handleClockComand or by handleClockCommand->sendDividedClock,
+///        where they're hoping we'll pass it through (so we do so).
+
+void sendClock(midi::MidiType signal, uint8_t fromButton)
+    {
+    if (!bypass &&                                                                                                      // don't send if I'm bypassed
+            (       (options.clock == IGNORE_MIDI_CLOCK && !fromButton) ||  // allow a send if I'm IGNORING -- ignore calls this to pass it through
+            (options.clock == USE_MIDI_CLOCK && !fromButton) ||             // allow a send if I'm USING (and passing through) but NOT if the button was pressed
+            (options.clock == GENERATE_MIDI_CLOCK)))        // allow a send if I'm GENERATING AND a button was pressed
+        {
+        MIDI.sendRealTime(signal);
+        TOGGLE_OUT_LED();
+        }
+    }
+
+
+
+#ifdef INCLUDE_OPTIONS_MIDI_CLOCK_DIVIDE
+void sendDividedClock()
+    {
+    if (--dividePulseCountdown == 0)
+        {
+        dividePulseCountdown = options.clockDivisor;
+        sendClock(MIDIClock, false);
+        }
+    }
+        
+void resetDividedClock()
+    {
+    dividePulseCountdown = 1;
+    }
+#endif
 
 // This method is called whenever we get an internal or external pulse.
 // The fromButton parameter is ALWAYS false.
@@ -181,17 +218,12 @@ void pulseClock(uint8_t fromButton)
     if (USING_EXTERNAL_CLOCK())
         updateExternalClock(); 
 
-#if defined(__MEGA__)
+#ifdef INCLUDE_OPTIONS_MIDI_CLOCK_DIVIDE
+    // do nothing
 #else
-	if (options.clock == USE_MIDI_CLOCK ||
-		options.clock == GENERATE_MIDI_CLOCK)
-		{
-		//debug(13);
-		MIDI.sendRealTime(MIDIClock); 
-		TOGGLE_OUT_LED();
-		}
+    sendClock(MIDIClock, fromButton);  // fromButton should always be FALSE
 #endif
-		
+                
     pulse = 1;
     pulseCount++;
     }
@@ -199,9 +231,9 @@ void pulseClock(uint8_t fromButton)
 
 
 // This method is only called when a user presses a BUTTON
-// or when an external MIDI comes in and we're dong USE or CONSUME.
+// or when an external MIDI comes in and we're doing USE or CONSUME.
 //
-// If we're dong USE or CONSUME and a button is pressed, ignore it entirely.
+// If we're doing USE or CONSUME and a button is pressed, ignore it entirely.
 // Otherwise, respond to it.
 //
 // If we're doing USE and it's not a button, *or* if we're doing
@@ -212,19 +244,15 @@ uint8_t stopClock(uint8_t fromButton)
     if (fromButton && (USING_EXTERNAL_CLOCK() || clockState == CLOCK_STOPPED))
         return 0;
         
-    if ((options.clock == USE_MIDI_CLOCK && !fromButton) ||
-    	(options.clock == GENERATE_MIDI_CLOCK && fromButton))
-        { 
-        MIDI.sendRealTime(MIDIStop); 
-        TOGGLE_OUT_LED();
-        }
+    sendClock(MIDIStop, fromButton);
 
     lastExternalPulseTime = 0;
     externalMicrosecsPerPulse = 0;
     clockState = CLOCK_STOPPED;
 
     // if we stop the clock some notes may be playing.  We reset them here.
-    sendAllNotesOff();
+    if (options.clock == GENERATE_MIDI_CLOCK)
+        sendAllNotesOff();
 
     return 1;
     }
@@ -247,13 +275,7 @@ uint8_t startClock(uint8_t fromButton)
     if (fromButton && (USING_EXTERNAL_CLOCK() || clockState != CLOCK_STOPPED))
         return 0;
         
-    if ((options.clock == USE_MIDI_CLOCK && !fromButton) ||
-    	(options.clock == GENERATE_MIDI_CLOCK && fromButton))
-        {
-        //debug(10);
-        MIDI.sendRealTime(MIDIStart); 
-        TOGGLE_OUT_LED();
-        }
+    sendClock(MIDIStart, fromButton);
 
     dividePulseCountdown = 1;
     notePulseCountdown = 1;
@@ -269,19 +291,26 @@ uint8_t startClock(uint8_t fromButton)
     // I think the user should "arm" the applications by starting them manually but in the
     // situation where the system clock is currently stopped.  Then he can control them via
     // the system clock like this. 
-    if (application == STATE_STEP_SEQUENCER)
+    switch(application)
         {
-        // reset the step sequencer
-        resetStepSequencer();
-        }       
-#ifndef NO_RECORDER
-    else if (application == STATE_RECORDER)
-        {
-        // reset the recorder
-        resetRecorder();
-        }
+#ifdef INCLUDE_STEP_SEQUENCER
+        case STATE_STEP_SEQUENCER:
+            {
+            // reset the step sequencer
+            resetStepSequencer();
+            }
+        break;
+#endif
+#ifdef INCLUDE_RECORDER
+        case STATE_RECORDER:
+            {
+            // reset the recorder
+            resetRecorder();
+            }
+        break;
 #endif
 
+        }
     return 1;
     }
 
@@ -302,15 +331,9 @@ uint8_t continueClock(uint8_t fromButton)
 
     if (clockState != CLOCK_STOPPED)
         return 0;
-        
-    if ((options.clock == USE_MIDI_CLOCK && !fromButton) ||
-    	(options.clock == GENERATE_MIDI_CLOCK && fromButton))
-        { 
-        //debug(11);
-        MIDI.sendRealTime(MIDIContinue); 
-        TOGGLE_OUT_LED();
-        }
 
+    sendClock(MIDIContinue, fromButton);
+        
     clockState = CLOCK_RUNNING;
 
     return 1;
@@ -354,10 +377,7 @@ void setNotePulseRate(uint8_t noteSpeedType)
     {
     notePulseRate = notePulseRateTable[noteSpeedType];
     notePulseCountdown = ((uint8_t)(pulseCount % notePulseRate)) + 1;
-#if defined(__MEGA__)
-     drawNotePulseToggle = (uint8_t)((pulseCount / notePulseRate) % 2);
-#endif
-// Not enough space to do this for the Uno.  :-(  So we could get off-sync.
+    drawNotePulseToggle = (uint8_t)((pulseCount / notePulseRate) & 1);          // that is, %2
     }
 
 uint32_t getMicrosecsPerPulse()
@@ -377,7 +397,7 @@ void updateTimers()
         if (currentTime > targetNextPulseTime)
             {
             targetNextPulseTime += microsecsPerPulse;
-            pulseClock(false);	// note that the 'false' is ignored
+            pulseClock(false);  // note that the 'false' is ignored
             }
         }
 
@@ -422,12 +442,10 @@ void updateTimers()
             beatCountdown = PULSES_PER_BEAT;
             }
             
-#if defined(__MEGA__)
-	if (options.clock == USE_MIDI_CLOCK ||
-		options.clock == GENERATE_MIDI_CLOCK)
-        sendDividedClock();
+#ifdef INCLUDE_OPTIONS_MIDI_CLOCK_DIVIDE
+        if (options.clock == USE_MIDI_CLOCK ||
+            options.clock == GENERATE_MIDI_CLOCK)
+            sendDividedClock();
 #endif
-      }
+        }
     }
-
-

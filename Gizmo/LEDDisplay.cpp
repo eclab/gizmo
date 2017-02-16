@@ -496,12 +496,12 @@ const char PROGMEM font_5x5[5][5] = {
 /////   isn't normally drawn using writeNumber
 
 const char PROGMEM font_8x5[
-#if defined(__MEGA__)        
-38
+#ifdef INCLUDE_EXTENDED_FONT        
+    38
 #else
-26
+    26
 #endif
-][8] = {
+    ][8] = {
         { // 1/96 note (eighth-triplet) [1 MIDI clock beat]
         A10000A,
         A11111A,
@@ -512,262 +512,274 @@ const char PROGMEM font_8x5[
         A11111A,
         A11111A,
         },
-        { // 1/48 note (quarter-triplet) [2 MIDI clock beats]
-        A10000A,
-        A11111A,
-        A00111A,
-        A10111A,
-        A11111A,
-        A00111A,
-        A10111A,
-        A11111A,
-        },
-        { // 1/32 note [3 MIDI clock beats]
-        A00000A,
-        A10000A,
-        A11111A,
-        A00111A,
-        A00111A,
-        A10111A,
-        A11111A,
-        A00000A,
-        },
-        { // 1/24 note (half-triplet) [4 MIDI clock beats]
-        A10000A,
-        A11111A,
-        A00101A,
-        A10101A,
-        A11111A,
-        A00101A,
-        A10101A,
-        A11111A,
-        },
-        { // 1/16 note  [6 MIDI clock beats]
-        A00000A,
-        A10000A,
-        A11111A,
-        A00101A,
-        A00101A,
-        A10101A,
-        A11111A,
-        A00000A,
-        },
-        { // 1/12 note (triplet)  [8 MIDI clock beats]
-        A11000A,
-        A11111A,
-        A00011A,
-        A11011A,
-        A11111A,
-        A00011A,
-        A11011A,
-        A11111A,
-        },
-        { // 1/8   [12 MIDI beats]
-        A00000A,
-        A11000A,
-        A11111A,
-        A00011A,
-        A00011A,
-        A11011A,
-        A11111A,
-        A00000A,
-        },
-        { // 1/4   [24 MIDI beats]
-        A11000A,
-        A11000A,
-        A11111A,
-        A00000A,
-        A00000A,
-        A00000A,
-        A00000A,
-        A00000A,
-        },
-        { // 1/4 tied to triplet (32 MIDI beats)
-        A11000A,
-        A11000A,
-        A11111A,
-        A00000A,
-        A10000A,
-        A00001A,
-        A00111A,
-        A00001A,
-        },
-        { // Dotted 1/4 note (36 MIDI beats)
-        A11000A,
-        A11000A,
-        A11111A,
-        A00000A,
-        A10000A,
-        A00000A,
-        A00000A,
-        A00000A,
-        },
-        { // Half note (48 MIDI beats)
-        A11100A,
-        A10100A,
-        A11111A,
-        A00000A,
-        A00000A,
-        A00000A,
-        A00000A,
-        A00000A,
-        },
-        { // 1/2 tied to two triplets (60 MIDI beats)
-        A11100A,
-        A10100A,
-        A11111A,
-        A00000A,
-        A10000A,
-        A00001A,
-        A00111A,
-        A00001A,
-        },
-        { // Dotted half note (72 MIDI beats)
-        A11100A,
-        A10100A,
-        A11111A,
-        A00000A,
-        A10000A,
-        A00000A,
-        A00000A,
-        A00000A,
-        },
-        { // Whole note (96 MIDI beats)
-        A11100A,
-        A10100A,
-        A10100A,
-        A11100A,
-        A00000A,
-        A00000A,
-        A00000A,
-        A00000A,
-        },
-        { // Dotted whole note (144 MIDI beats)
-        A11100A,
-        A10100A,
-        A10100A,
-        A11100A,
-        A00000A,
-        A10000A,
-        A00000A,
-        A00000A,
-        },
-        { // Double whole note (198 MIDI beats)
-        A11100A,
-        A00000A,
-        A11100A,
-        A10100A,
-        A10100A,
-        A11100A,
-        A00000A,
-        A11100A,
-        },
-        { // Infinity
-        A00000A,
-        A00100A,
-        A01010A,
-        A01010A,
-        A00100A,
-        A01010A,
-        A01010A,
-        A00100A
-        },
-        { // 1/8
-        A11111A,
-        A00000A,
-        A11100A,
-        A00111A,
-        A00000A,
-        A11111A,
-        A10101A,
-        A11111A
-        },
-        { // 1/6
-        A11111A,
-        A00000A,
-        A11100A,
-        A00111A,
-        A00000A,
-        A11111A,
-        A10101A,
-        A11101A,
-        },
-        { // 1/4
-        A11111A,
-        A00000A,
-        A11100A,
-        A00111A,
-        A00000A,
-        A00111A,
-        A00100A,
-        A11111A
-        },
-        { // 1/3
-        A11111A,
-        A00000A,
-        A11100A,
-        A00111A,
-        A00000A,
-        A10101A,
-        A10101A,
-        A11111A
-        },
-        { // 1/2
-        A11111A,
-        A00000A,
-        A11100A,
-        A00111A,
-        A00000A,
-        A11001A,
-        A10101A,
-        A10010A
-        },
-        { // SURE? pt 1
-        A10111A,
-        A11101A,
-        A00000A,
-        A11111A,
-        A10000A,
-        A11111A,
-        A00000A,
-        A11111A
-        },
-        { // SURE? pt 2
-        A00101A,
-        A11010A,
-        A00000A,
-        A11111A,
-        A10101A,
-        A00000A,
-        A10101A,
-        A00011A
-        },
+            { // 1/48 note (quarter-triplet) [2 MIDI clock beats]
+            A10000A,
+            A11111A,
+            A00111A,
+            A10111A,
+            A11111A,
+            A00111A,
+            A10111A,
+            A11111A,
+            },
+            { // 1/32 note [3 MIDI clock beats]
+            A00000A,
+            A10000A,
+            A11111A,
+            A00111A,
+            A00111A,
+            A10111A,
+            A11111A,
+            A00000A,
+            },
+            { // 1/24 note (half-triplet) [4 MIDI clock beats]
+            A10000A,
+            A11111A,
+            A00101A,
+            A10101A,
+            A11111A,
+            A00101A,
+            A10101A,
+            A11111A,
+            },
+            { // 1/16 note  [6 MIDI clock beats]
+            A00000A,
+            A10000A,
+            A11111A,
+            A00101A,
+            A00101A,
+            A10101A,
+            A11111A,
+            A00000A,
+            },
+            { // 1/12 note (triplet)  [8 MIDI clock beats]
+            A11000A,
+            A11111A,
+            A00011A,
+            A11011A,
+            A11111A,
+            A00011A,
+            A11011A,
+            A11111A,
+            },
+            { // 1/8   [12 MIDI beats]
+            A00000A,
+            A11000A,
+            A11111A,
+            A00011A,
+            A00011A,
+            A11011A,
+            A11111A,
+            A00000A,
+            },
+            { // 1/4   [24 MIDI beats]
+            A11000A,
+            A11000A,
+            A11111A,
+            A00000A,
+            A00000A,
+            A00000A,
+            A00000A,
+            A00000A,
+            },
+            { // 1/4 tied to triplet (32 MIDI beats)
+            A11000A,
+            A11000A,
+            A11111A,
+            A00000A,
+            A10000A,
+            A00001A,
+            A00111A,
+            A00001A,
+            },
+            { // Dotted 1/4 note (36 MIDI beats)
+            A11000A,
+            A11000A,
+            A11111A,
+            A00000A,
+            A10000A,
+            A00000A,
+            A00000A,
+            A00000A,
+            },
+            { // Half note (48 MIDI beats)
+            A11100A,
+            A10100A,
+            A11111A,
+            A00000A,
+            A00000A,
+            A00000A,
+            A00000A,
+            A00000A,
+            },
+            { // 1/2 tied to two triplets (60 MIDI beats)
+            A11100A,
+            A10100A,
+            A11111A,
+            A00000A,
+            A10000A,
+            A00001A,
+            A00111A,
+            A00001A,
+            },
+            { // Dotted half note (72 MIDI beats)
+            A11100A,
+            A10100A,
+            A11111A,
+            A00000A,
+            A10000A,
+            A00000A,
+            A00000A,
+            A00000A,
+            },
+            { // Whole note (96 MIDI beats)
+            A11100A,
+            A10100A,
+            A10100A,
+            A11100A,
+            A00000A,
+            A00000A,
+            A00000A,
+            A00000A,
+            },
+            { // Dotted whole note (144 MIDI beats)
+            A11100A,
+            A10100A,
+            A10100A,
+            A11100A,
+            A00000A,
+            A10000A,
+            A00000A,
+            A00000A,
+            },
+            { // Double whole note (198 MIDI beats)
+            A11100A,
+            A00000A,
+            A11100A,
+            A10100A,
+            A10100A,
+            A11100A,
+            A00000A,
+            A11100A,
+            },
+            { // Infinity
+            A00000A,
+            A00100A,
+            A01010A,
+            A01010A,
+            A00100A,
+            A01010A,
+            A01010A,
+            A00100A
+            },
+            { // 1/8
+            A11111A,
+            A00000A,
+            A11100A,
+            A00111A,
+            A00000A,
+            A11111A,
+            A10101A,
+            A11111A
+            },
+            { // 1/6
+            A11111A,
+            A00000A,
+            A11100A,
+            A00111A,
+            A00000A,
+            A11111A,
+            A10101A,
+            A11101A,
+            },
+            { // 1/4
+            A11111A,
+            A00000A,
+            A11100A,
+            A00111A,
+            A00000A,
+            A00111A,
+            A00100A,
+            A11111A
+            },
+            { // 1/3
+            A11111A,
+            A00000A,
+            A11100A,
+            A00111A,
+            A00000A,
+            A10101A,
+            A10101A,
+            A11111A
+            },
+            { // 1/2
+            A11111A,
+            A00000A,
+            A11100A,
+            A00111A,
+            A00000A,
+            A11001A,
+            A10101A,
+            A10010A
+            },
+            { // SURE? pt 1
+            A10111A,
+            A11101A,
+            A00000A,
+            A11111A,
+            A10000A,
+            A11111A,
+            A00000A,
+            A11111A
+            },
+            { // SURE? pt 2
+            A00101A,
+            A11010A,
+            A00000A,
+            A11111A,
+            A10101A,
+            A00000A,
+            A10101A,
+            A00011A
+            },
 
-    // NOTE we're using gcc's 0b.... syntax.
-    // This is not portable of course, but who cares.
-    // It's also, for our purposes, *backwards*.
-    // So note that the strings should be flipped
-    // horizontally to make much sense of them.
-        { // GIZMO VERSION 1... pt 1
-        0b01100111,
-        0b10010100,
-        0b10110010,
-        0b00000100,
-        0b11110111,
-        0b00000000,
-        0b10010111,
-        0b10110101,
-        },
-        { // GIZMO VERSION 2 pt 2
-        0b11010101,
-        0b10010111,
-        0b00000000,
-        0b00000000,
-        0b01001100,
-        0b01010100,
-        0b00100100,
-        0b00000000,
-        },
+        // NOTE we're using gcc's 0b.... syntax.
+        // This is not portable of course, but who cares.
+        // It's also, for our purposes, *backwards*.
+        // So note that the strings should be flipped
+        // horizontally to make much sense of them.
+            { // GIZMO VERSION x... pt 1
+            0b01100111,
+            0b10010100,
+            0b10110010,
+            0b00000100,
+            0b11110111,
+            0b00000000,
+            0b10010111,
+            0b10110101,
+            },
+        
+            { // GIZMO VERSION 3 pt 2
+            0b11010101,
+            0b10010111,
+            0b00000000,
+            0b00000000,
+            0b01000100,
+            0b01010100,
+            0b01111100,
+            0b00000000,
+            },
+
+//        { // GIZMO VERSION 2 pt 2
+//        0b11010101,
+//        0b10010111,
+//        0b00000000,
+//        0b00000000,
+//        0b01001100,
+//        0b01010100,
+//        0b00100100,
+//        0b00000000,
+//        },
 
 //        { // GIZMO VERSION 1 pt 2
 //        0b11010101,
@@ -780,129 +792,129 @@ const char PROGMEM font_8x5[
 //        0b00000000,
 //        },
 
-#if defined(__MEGA__)        
-		{
-		A00110A,
-		A00001A,
-		A00001A,
-		A01110A,
-		A10000A,
-		A10000A,
-		A01100A,
-		A00000A
-		},	
-		{
-		A00001A,
-		A00001A,
-		A01110A,
-		A10000A,
-		A10000A,
-		A01110A,
-		A00001A,
-		A00001A,
-		},
-		{
-		A01100A,
-		A10000A,
-		A10000A,
-		A01110A,
-		A00001A,
-		A00001A,
-		A00110A,
-		A00000A
-		},
-		{
-		A10000A,
-		A10000A,
-		A01110A,
-		A00001A,
-		A00001A,
-		A01110A,
-		A10000A,
-		A10000A,
-		},
-		{
-		A00100A,
-		A00010A,
-		A00001A,
-		A00010A,
-		A00100A,	
-		A01000A,
-		A10000A,
-		A01000A,
-		},
-		{
-		A00001A,
-		A00010A,
-		A00100A,
-		A01000A,
-		A10000A,
-		A01000A,
-		A00100A,
-		A00010A,
-		},
-		{
-		A00100A,
-		A01000A,
-		A10000A,
-		A01000A,
-		A00100A,
-		A00010A,
-		A00001A,
-		A00010A,
-		},
-		{
-		A10000A,
-		A01000A,
-		A00100A,
-		A00010A,
-		A00001A,
-		A00010A,
-		A00100A,
-		A01000A,
-		},	
-		{
-		A11111A,
-		A10000A,
-		A01000A,
-		A00100A,
-		A00010A,
-		A00001A,
-		A11111A,
-		A00000A,
-		},
-		{
-		A11111A,
-		A00001A,
-		A00010A,
-		A00100A,
-		A01000A,
-		A10000A,
-		A11111A,
-		A00000A,
-		},
-		{
-		A11111A,
-		A00001A,
-		A00001A,
-		A11111A,
-		A10000A,
-		A10000A,
-		A11111A,
-		A00000A,
-		},
-		{
-		A11111A,
-		A10000A,
-		A10000A,
-		A11111A,
-		A00001A,
-		A00001A,
-		A11111A,
-		A00000A,
-		},
+#ifdef INCLUDE_EXTENDED_FONT        
+            {
+            A00110A,
+            A00001A,
+            A00001A,
+            A01110A,
+            A10000A,
+            A10000A,
+            A01100A,
+            A00000A
+            },      
+            {
+            A00001A,
+            A00001A,
+            A01110A,
+            A10000A,
+            A10000A,
+            A01110A,
+            A00001A,
+            A00001A,
+            },
+            {
+            A01100A,
+            A10000A,
+            A10000A,
+            A01110A,
+            A00001A,
+            A00001A,
+            A00110A,
+            A00000A
+            },
+            {
+            A10000A,
+            A10000A,
+            A01110A,
+            A00001A,
+            A00001A,
+            A01110A,
+            A10000A,
+            A10000A,
+            },
+            {
+            A00100A,
+            A00010A,
+            A00001A,
+            A00010A,
+            A00100A,        
+            A01000A,
+            A10000A,
+            A01000A,
+            },
+            {
+            A00001A,
+            A00010A,
+            A00100A,
+            A01000A,
+            A10000A,
+            A01000A,
+            A00100A,
+            A00010A,
+            },
+            {
+            A00100A,
+            A01000A,
+            A10000A,
+            A01000A,
+            A00100A,
+            A00010A,
+            A00001A,
+            A00010A,
+            },
+            {
+            A10000A,
+            A01000A,
+            A00100A,
+            A00010A,
+            A00001A,
+            A00010A,
+            A00100A,
+            A01000A,
+            },      
+            {
+            A11111A,
+            A10000A,
+            A01000A,
+            A00100A,
+            A00010A,
+            A00001A,
+            A11111A,
+            A00000A,
+            },
+            {
+            A11111A,
+            A00001A,
+            A00010A,
+            A00100A,
+            A01000A,
+            A10000A,
+            A11111A,
+            A00000A,
+            },
+            {
+            A11111A,
+            A00001A,
+            A00001A,
+            A11111A,
+            A10000A,
+            A10000A,
+            A11111A,
+            A00000A,
+            },
+            {
+            A11111A,
+            A10000A,
+            A10000A,
+            A11111A,
+            A00001A,
+            A00001A,
+            A11111A,
+            A00000A,
+            },
 #endif
-	};
+    };
 
 
 
@@ -955,7 +967,7 @@ static void sendByte(unsigned char address, unsigned char data)
     for(uint8_t i = 0; i < 8; i ++)
         {     
         *led_CLK &= ~led_CLK_mask;      // drop CLK
-        if (address & 0x80 == 0)
+        if ((address & 0x80) == 0)
             {
             *led_DIN &= ~led_DIN_mask;  // drop DIN 
             }
@@ -971,7 +983,7 @@ static void sendByte(unsigned char address, unsigned char data)
     for(uint8_t i = 0; i < 8; i ++)
         {  
         *led_CLK &= ~led_CLK_mask;              // drop CLK
-        if (data & 0x80 == 0)
+        if ((data & 0x80) == 0)
             {
             *led_DIN &= ~led_DIN_mask;          // drop DIN
             }
@@ -996,7 +1008,7 @@ void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
         for(uint8_t i = 0; i < 8; i ++)
             {  
             *led_CLK &= ~led_CLK_mask;          // drop CLK
-            if (address & 0x80 == 0)
+            if ((address & 0x80) == 0)
                 {
                 *led_DIN &= ~led_DIN_mask;      // drop DIN
                 }
@@ -1013,7 +1025,7 @@ void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
         for(uint8_t i = 0; i < 8; i ++)
             {     
             *led_CLK &= ~led_CLK_mask;          // drop CLK
-            if (data & 0x80 == 0)
+            if ((data & 0x80) == 0)
                 {
                 *led_DIN &= ~led_DIN_mask;      // drop DIN
                 }
@@ -1248,12 +1260,12 @@ void setPoint(unsigned char* mat, uint8_t x, uint8_t y)
     }
 
 void setOrClearPoint(unsigned char* mat, uint8_t x, uint8_t y, uint8_t val)
-	{
-	if (val) 
-		mat[x] |= (0x01 << y);
-	else
-		mat[x] &= ~(0x01 << y);
-	}
+    {
+    if (val) 
+        mat[x] |= (0x01 << y);
+    else
+        mat[x] &= ~(0x01 << y);
+    }
 
 // Clears a vertical line (sets it to unlit)
 void clearVerticalLine(unsigned char* mat, uint8_t x, unsigned char line)
@@ -1478,9 +1490,9 @@ void numberToString(char* buffer, int16_t val)
         if (d1 > 0 || zerofill)
             {
             if (!drewMinus)  // need to add a minus
-                { buffer[3] = '-' ; drewMinus = 1; }
+                { buffer[3] = '-' ; }   // no need for this: // drewMinus = 1; }
             buffer[4] = d1 + '0';
-            zerofill = 1;
+            // zerofill = 1;    // no need for this
             }
         }
     }
@@ -1507,12 +1519,12 @@ void writeNumber(unsigned char* mat1, unsigned char* mat2, int16_t val)
     if (b[2] >= '0' && b[2] <= '9')
         memcpy_P(mat2 + 5, font_3x5[GLYPH_3x5_0 + b[2] - '0'], 3);
     else if (b[2] == '-')
-        { memcpy_P(mat2 + 5, font_3x5[GLYPH_3x5_MINUS], 3); neg = 1; }
+        { memcpy_P(mat2 + 5, font_3x5[GLYPH_3x5_MINUS], 3); } // neg = 1; } // no need for this
 
     if (b[3] >= '0' && b[3] <= '9')
         memcpy_P(mat1 + 1, font_3x5[GLYPH_3x5_0 + b[3] - '0'], 3);
     else if (b[3] == '-')
-        { memcpy_P(mat1 + 1, font_3x5[GLYPH_3x5_MINUS], 3); neg = 1; }
+        { memcpy_P(mat1 + 1, font_3x5[GLYPH_3x5_MINUS], 3); }   // no need for this: // neg = 1; }
 
     memcpy_P(mat1 + 5, font_3x5[GLYPH_3x5_0 + b[4] - '0'], 3);
     }
@@ -1540,7 +1552,7 @@ void writeFlat(unsigned char* mat)
 // Notes are written left justified.
 void writeNote(unsigned char* mat, unsigned char note)
     {
-    if (note < NOTE_C || note > NOTE_B) return;
+    if (note > NOTE_B) return;
     
     switch(note)
         {

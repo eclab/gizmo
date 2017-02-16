@@ -7,6 +7,20 @@ modification can be found (along with hardware build instructions) in the manual
 which is located in ../docs/Gizmo.pdf
 
 
+MODULARITY
+
+Much (but not all) of Gizmo is modular and can be removed or added as you like.  The 
+file All.h contains the modules in question, plus two defines (__MEGA__) and (__UNO__)
+which define the standard modules for the Arduino Mega and Arduino Uno.  Note that if you
+change the applications or options in the Mega or the Uno, you will also probably need
+to change certain arrays in TopLevel.cpp which define the menus which lead to those
+applications or options (search for "__MEGA__" or "__Uno__" in TopLevel.cpp)
+
+If you define a new kind of board, you'll need to make your own definition in All.h.
+Note how __MEGA__ and __UNO__ are defined in terms of the processor, so if your board
+uses the same processor you may need to redefine them there also.
+
+
 
 A FEW CODE NOTES
 
@@ -53,8 +67,8 @@ The files are in certain categories:
 	CORE CODE
 	Timing.h/cpp		Internal and external clocks, notes, pulses, beats
 	TopLevel.h/cpp		The core.  Contains various important functions, the
-				state machine, MIDI callbacks, some MIDI wrapper
-				functions.  This file should be broken out more.
+				state machine.
+	MidiInterface.h/cpp	MIDI callbacks, MIDI wrapper functions
 	Utility.h/cpp		Utility functions used by various applications
 	Storage.h/cpp		Slot (file) storage in Flash
 	Options.h/cpp		Storage of global and application-specific options
@@ -90,44 +104,69 @@ The files are in certain categories:
 
 MAKING AN APPLICATION
 
+The first step is to create a #define that allows the developer to include (or not) your application in
+his package.  Let's say your application is called FOO.  In All.h, add an application define called (say):
+
+// INCLUDE_FOO			// This will include the Foo application
+
+Now let's say that your application is targeting the Arduino Mega.  In All.h there's an area where the
+define __MEGA__ turns on various other applications.  In that region, add your own application here:
+
+#define INCLUDE_FOO
+
 The state machine is for the moment just a bunch of #defines located in TopLevel.h.  If you'd like to add
 an application, typically you'd add the TOP LEVEL APPLICATION STATE and then add the SUBSIDIARY STATES.
-A top-level application state would replace the first STATE_UNDEFINED_* state (presently STATE_UNDEFINED_3
-on the Mega).  Just replace it with your own named state, perhaps STATE_FOO
+To add the top-level application state, you'll include your unique state (let's call it STATE_FOO).  First
+we need to include it as a state.  In the file TopLevel.h, just before the line
+	STATE_OPTIONS,
+add the following:
 
-Additional states would typically get tacked onto the end of the #define list and be called stuff like
-STATE_FOO_EDIT or STATE_FOO_WHATEVER.  The critical part here is to make sure that the #defines are
-continguous -- no gaps between the numbers -- so the switch works efficiently.
+#ifdef INCLUDE_FOO
+	#define STATE_FOO,
+#endif
 
-Next you need to add a state.  Let's add STATE_FOO.  In TopLevel.cpp, find the STATE_UNDEFINED_3 case
-(or whatever was appropriate) and rename it STATE_FOO.  At the moment it just says:
+Now that you have a state, you can add the code for it.  In the file TopLevel.cpp, just before the line
+        case STATE_OPTIONS:
+add the following:
 
-        case STATE_UNDEFINED_3:
-            // FALL THRU
+#ifdef INCLUDE_FOO
+        case STATE_FOO:
+        	{
+        	stateFoo();
+        	}
+        break;
+#endif
 
-Instead you should change it to:
+This adds a state which, when called, will call the stateFoo() method.  Additional states would typically 
+get tacked onto the end of the #define list and be called stuff like STATE_FOO_EDIT or STATE_FOO_WHATEVER.  
+The critical item here is that you #defines in TopLevel.h and TopLevel.cpp must be in the same position,
+so the switch statement stays contiguous and can remain a jump table.
 
-		case STATE_FOO:
-			{
-			stateFoo();
-			}
-
- Now, create a Foo.h and Foo.cpp files, and add Foo.h to All.h as an #include.
+Now, create a Foo.h and Foo.cpp files, and add Foo.h to All.h as an #include.
  
  Your Foo.h file should look like this:
  
 #ifndef __FOO_H__
 #define __FOO_H__ 
+#ifdef INCLUDE_FOO
+
 void stateFoo();
+
 #endif
+#endif
+
 
 Your Foo.cpp file should look like this:
 
 #include "All.h"
+#ifdef INCLUDE_FOO
 
 void stateFoo()
 	{
 	}
+
+#endif
+
 
 Now what goes in your function?   First you need to understand some global variables.
 

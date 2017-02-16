@@ -46,11 +46,19 @@ uint8_t getSlotType(uint8_t index)
 
 uint8_t slotTypeForApplication(uint8_t application)
     {
-    if (application == STATE_STEP_SEQUENCER)
-        return SLOT_TYPE_STEP_SEQUENCER;
-    else if (application == STATE_RECORDER)
-        return SLOT_TYPE_RECORDER;
-    else return SLOT_TYPE_EMPTY;
+    switch(application)
+        {
+#ifdef INCLUDE_STEP_SEQUENCER
+        case STATE_STEP_SEQUENCER:
+            return SLOT_TYPE_STEP_SEQUENCER;
+#endif
+#ifdef INCLUDE_RECORDER
+        case STATE_RECORDER:
+            return SLOT_TYPE_RECORDER;
+#endif
+        default:
+            return SLOT_TYPE_EMPTY;
+        }
     }
         
 

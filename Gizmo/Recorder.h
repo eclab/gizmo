@@ -151,7 +151,9 @@ void resetRecorder();
 // Utility.playApplication() increases by 100 bytes.  :-(
 void playRecorder();
 
-
+#ifdef INCLUDE_EXTENDED_RECORDER
+void stateRecorderMenu();
+#endif
 
 #endif
 
