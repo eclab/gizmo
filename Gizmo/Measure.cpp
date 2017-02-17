@@ -148,10 +148,10 @@ void stateMeasure()
                 }
             else
                 {
-                writeShortNumber(led2, phrases, true);
+                writeShortNumber(led2, phrases + 1, true);
                 }
                                 
-            writeShortNumber(led, measures, false);
+            writeShortNumber(led, measures + 1, false);
             drawRange(led2, 0, 0, 16, beats);
             setPoint(led, 6, 1);
             }

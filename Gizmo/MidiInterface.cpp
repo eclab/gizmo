@@ -171,10 +171,7 @@ void handleStart()
 #ifdef INCLUDE_MEASURE
     if (application == STATE_MEASURE)
         {
-        if (++local.measure.resetCounter >= MEASURE_COUNTER_MAX)
-            {
-            resetMeasure();
-            }
+        local.measure.resetCounter = 0;
         }
 #endif
     }
@@ -189,7 +186,10 @@ void handleStop()
 #ifdef INCLUDE_MEASURE
     if (application == STATE_MEASURE)
         {
-        local.measure.resetCounter = 0;
+        if (++local.measure.resetCounter >= MEASURE_COUNTER_MAX)
+            {
+            resetMeasure();
+            }
         }
 #endif
     }

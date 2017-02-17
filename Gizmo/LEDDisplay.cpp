@@ -1349,7 +1349,7 @@ void write8x5Glyph(unsigned char* mat, uint8_t glyph)
     }
 
 
-// Prints a number from -99 to 127 inclusive to the matrix.
+// Prints a number from -99 to 129 inclusive to the matrix.
 // If the number is outside this range, nothing will be printed and this
 // function will silently fail.
 //
@@ -1358,7 +1358,7 @@ void write8x5Glyph(unsigned char* mat, uint8_t glyph)
 // this number and the number to its right if we're writing two numbers.
 void writeShortNumber(unsigned char* mat1, int8_t val, uint8_t leftJustify)
     {
-    if (val > 127 || val < -99) return;
+    if (val > 129 || val < -99) return;
 
     uint8_t neg = 0;
     if (val < 0)
