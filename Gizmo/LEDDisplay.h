@@ -320,6 +320,8 @@ void write8x5Glyph(unsigned char* mat, uint8_t glyph);
 void blink3x5Glyph(unsigned char* mat, uint8_t glyph, uint8_t x);
 
 // Prints a number from -99 to 129 inclusive to the matrix.
+// The values 128 and 129 are represented as -128 and -127
+// respectively.
 // If the number is outside this range, nothing will be printed and this
 // function will silently fail.
 //
