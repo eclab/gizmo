@@ -67,7 +67,7 @@ void resetMeasure()
     {
     local.measure.initialTime = currentTime;
     local.measure.beatsSoFar = 0;
-    local.measure.resetCounter = 0;
+//    local.measure.resetCounter = 0;
     }
         
 void playMeasure()
@@ -88,22 +88,27 @@ void stateMeasure()
         entry = false;
         }
 
+/*
     if (newItem && USING_EXTERNAL_CLOCK())
         {
         if (itemType == MIDI_STOP)
             {
+            debug(100);
             local.measure.running = false;
             }
         else if (itemType == MIDI_START)
             {
+            debug(101);
             local.measure.running = true;
             local.measure.beatsSoFar = 0;
             }
         else if (itemType == MIDI_CONTINUE)
             {
+            debug(102);
             local.measure.running = true;
             }
         }
+*/
                 
     playMeasure();
         
@@ -133,13 +138,21 @@ void stateMeasure()
             drawRange(led2, 0, 0, 16, eighths);                     // This will use the whole width I think
             setPoint(led, 7, 1);
             }
-        else
+        else if (local.measure.beatsSoFar == 0)
+			{
+			write3x5Glyphs(GLYPH_NONE);
+			}
+		else
             {
+            // we adjust things so that the first "beat" is *0*
+            uint16_t beatsSoFar = local.measure.beatsSoFar - 1;
+            
             // this is going to be quite costly, but it's simple
-            uint16_t measuresSoFar = local.measure.beatsSoFar / options.measureBeatsPerBar;
-            uint16_t beats = local.measure.beatsSoFar % options.measureBeatsPerBar;
+            uint16_t measuresSoFar = beatsSoFar / options.measureBeatsPerBar;
+            uint16_t beats = beatsSoFar % options.measureBeatsPerBar;
             uint16_t phrases = measuresSoFar / options.measureBarsPerPhrase;
             uint16_t measures = (uint8_t)(measuresSoFar % options.measureBarsPerPhrase);
+            
             if (phrases > 127) // can't display it
                 {
                 // Write "HI" on led2
@@ -152,6 +165,8 @@ void stateMeasure()
                 }
                                 
             writeShortNumber(led, measures + 1, false);
+
+            // the idea here is to rotate things so as draw an EMPTY RANGE when we're on BEAT ZERO
             drawRange(led2, 0, 0, 16, beats);
             setPoint(led, 6, 1);
             }

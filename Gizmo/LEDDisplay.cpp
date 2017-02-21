@@ -1634,7 +1634,7 @@ void writeNote(unsigned char* mat, unsigned char note)
 /// 1:  XX..
 /// 2:  XXX.
 /// 3:  XXXX
-///     4:      .XXX
+/// 4:      .XXX
 /// 5:  ..XX
 /// 6:  ...X
 /// 7:  ....
@@ -1650,7 +1650,7 @@ void drawRange(uint8_t *mat, uint8_t x, uint8_t y, uint8_t total, uint8_t val)
         }
     else
         {
-        for(uint8_t i = val - halftotal; i < halftotal; i++)
+        for(uint8_t i = val - halftotal + 1; i < halftotal; i++)
             setPoint(mat, i + x, y);
         } 
     }
