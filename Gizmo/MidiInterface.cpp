@@ -171,7 +171,6 @@ void handleStart()
 #ifdef INCLUDE_MEASURE
     if (application == STATE_MEASURE)
         {
-//        local.measure.resetCounter = 0;
 		local.measure.running = true;
 		resetMeasure();
         }
@@ -191,16 +190,6 @@ void handleStop()
 		local.measure.running = false;
 		}
 #endif
-
-//#ifdef INCLUDE_MEASURE
-//    if (application == STATE_MEASURE)
-//        {
-//        if (++local.measure.resetCounter >= MEASURE_COUNTER_MAX)
-//            {
-//            resetMeasure();
-//            }
-//        }
-//#endif
     }
 
 void handleContinue()
@@ -216,13 +205,6 @@ void handleContinue()
 		local.measure.running = true;
 		}
 #endif
-
-//#ifdef INCLUDE_MEASURE
-//    if (application == STATE_MEASURE)
-//        {
-//        local.measure.resetCounter = 0;
-//        }
-//#endif
     }
   
 void handleClock()
