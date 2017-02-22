@@ -868,12 +868,20 @@ I might add more unusual transformers later.  Anyway, here are your options:
 	
 	To change what a measure (bar) or phrase means, long-press the Select button to bring up the Menu.  Here you can choose the {\bf Beats Per Bar} (a value from 1...16)\footnote{Why not 32, like Bars Per Phrase uses?  Because \(32 \times 32 \times 128 > 2^{16}\).  So basically for the same reason as Footnote \ref{footnotetenths}.} and the {\bf Bars per Phrase} (1...32), and as usual, call up the {\bf Options Menu} to change the {\bf Tempo}, etc.
 	
+\begin{wrapfigure}{r}{2in}
+\vspace{-1em}\includegraphics[width=2in]{measurebeats}
+\vspace{-2em}\caption{\small Beats or 1/8 Second Ticks}\vspace{-3em}
+\label{midichannelvalues}
+\end{wrapfigure}
+
+
 	Pressing the Middle Button starts and and restarts the stopwatch.  Long-pressing the Middle Button pauses the stopwatch (pressing the Middle Button afterwards will continue).  Additionally, external MIDI Start, Stop, and Continue commands will affect the stopwatch: Stop will pause it, Continue will continue from last pause, and Start will reset the stopwatch and start it fresh.
 
 	Normally the measure counter shows beats, measures, and phrases.  But if you press the Select button, Measure will instead start displaying elapsed time, so it's basically a stopwatch.  More specifically, rather than counting beats, measures (bars), and phrases, Measure will count eighths of a second, seconds, and minutes.  The response to buttons is the same, as is the response to MIDI clock directives.
-	
-	You can also restart the stopwatch by sending Gizmo three MIDI (clock) Stop commands in succession even if Gizmo is not responding to external MIDI Clock commands.
-	
+
+	You can also control the Measure Counter via MIDI: if you send a MIDI Play, it will reset the Measure Counter.  Note that if you send a MIDI Stop, and Gizmo is listening to external MIDI clock, then the Measure Counter will be halted (and MIDI Continue will continue the Counter).  However sending a MIDI Stop will not presently halt the stopwatch.
+
+		
 \section {Options}
 \label{options}
 
@@ -885,10 +893,10 @@ I might add more unusual transformers later.  Anyway, here are your options:
 	\item{\bf Tempo}\\
 	If Gizmo is following its own internal clock rather than relying on an external MIDI clock , this specifies how fast a quarter note is.  (See {\bf Options\(\boldsymbol\rightarrow\)MIDI~Clock}).  When not in {\bf Bypass Mode}, the tempo is shown by the pulsing on/off of the {\bf Beat / Bypass Light} (see Figure~\ref{HighLevelGizmoLayout}). 
 	
-		\begin{description}
+\begin{description}
 		\item{\bf \textit{Choose}}: 1 ... 999 Beats Per Minute.  Note that this is a large number, and so may require you to choose it with the left potentiometer, then fine-tune it with the right potentiometer.\footnote{Gizmo can go lots faster than 999: in theory it could go clear to 31200 or so.  But then your synthesizer would explode and we wouldn't want that.}
 		\item{\bf \textit{Alternatively}}: Tap the Middle Button.  The BPM will be set to the rate you tap.
-		\item{\bf \textit{Note}} At the borders (near 1 or 999) you may find it harder to precisely set the BPM due to anti-potentiometer noise code in Gizmo. Just use the right knob to fine-tune your value. 
+   		\item{\bf \textit{Note}} At the borders (near 1 or 999) you may find it harder to precisely set the BPM due to anti-potentiometer noise code in Gizmo. Just use the right knob to fine-tune your value. 
 		\end{description}
 		
 	\item{\bf Note Speed}\\
@@ -977,16 +985,16 @@ I might add more unusual transformers later.  Anyway, here are your options:
 		
 		The default\footnote{If you need to change these parameters, see constants (such as \texttt{CC\_LEFT\_POT\_PARAMETER}) in the file \texttt{MidiInterface.h}.  Remember, you'll want the Pot parameters to be 14-bit.} CC and NRPN Messages are (note that CC 14 and 15 are 14-bit: their LSB are sent with 46 and 47):
 		
-		\noindent\begin{tabular}{@{}rr|lllp{2.4in}@{}}
+		\noindent\hspace{-1.5em}\begin{tabular}{@{}rr|lllp{2.4in}@{}}
 		\multicolumn{2}{c}{\it Parameter}\\
 		{\it CC}&{\it \hspace{-0.8em} NRPN}&{\it Min  Value}&{\it Max Value}&{\it MSB/LSB}&{\it Description}\\[0.1em]
 		\hline\\[-0.9em]
 		14&0	&0	& 1023 & MSB + LSB (46)& Turn the Left Potentiometer\\
 		15&1	&0	& 1023 & MSB + LSB (47) & Turn the Right Potentiometer\\
-		102&2	&0 (released)	&1 (pressed) & MSB& Press/Release the Back Button\\
-		103&3	&0 (released)	&1 (pressed) & MSB & Press/Release the Middle Button\\
-		104&4	&0 (released)	&1 (pressed) & MSB & Press/Release the Select Button\\
-		105&5	&0 (un-bypass)	&1 (bypass) & MSB& Toggle Bypass\\
+		102&2	&0 (released)	&Not 0 (pressed) & MSB& Press/Release the Back Button\\
+		103&3	&0 (released)	&Not 0  (pressed) & MSB & Press/Release the Middle Button\\
+		104&4	&0 (released)	&Not 0 (pressed) & MSB & Press/Release the Select Button\\
+		105&5	&Any Value	&Any Value & MSB& Toggle Bypass\\
 		106&6	& Any Value &Any Value & MSB& Unlock Potentiometers.  When an NRPN message is received, normally the on-board potentiometers are locked so that turning them has no effect.  Pressing an on-board button unlocks them: so does sending this NRPN message.\\
 		107&7	&	Any Value &Any Value & MSB& Start Clock.  If Gizmo's clock is stopped, resets and starts it.  When appropriate, sends a MIDI START message.\\
 		108&8	& Any Value	&Any Value & MSB& Stop Clock.  If Gizmo's clock is playing, stops it.  When appropriate, sends a MIDI STOP message.\\
