@@ -98,6 +98,7 @@
 
 
 // -- EXPERIMENTAL JUNK --
+// INCLUDE_CONTROL_BY_NOTE					[In development] Should we allow control of Gizmo by playing notes on the Control channel?
 // INCLUDE_WAVES							[In development] Should we include LFO waves?  Don't turn this on yet.
 
 

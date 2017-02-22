@@ -216,6 +216,34 @@ void handleClock()
 
 void handleNoteOff(byte channel, byte note, byte velocity)
     {
+#ifdef INCLUDE_CONTROL_BY_NOTE
+    if (channel == options.channelControl)  // options.channelControl can be zero remember
+        {
+        lockoutPots = 1;
+
+		switch (number)
+		{
+		case CC_BACK_BUTTON_PARAMETER:
+			{
+			buttonState[BACK_BUTTON] = 0;
+			updateButtons(buttonState); 
+			}
+		break;
+		case CC_MIDDLE_BUTTON_PARAMETER:
+			{
+			buttonState[MIDDLE_BUTTON] = 0;
+			updateButtons(buttonState); 
+			}
+		break;
+		case CC_SELECT_BUTTON_PARAMETER:
+			{
+			buttonState[SELECT_BUTTON] = 0;
+			updateButtons(buttonState); 
+			}
+		break;
+		}
+	else
+#endif
     // is data coming in the default channel?
     if (updateMIDI(channel, MIDI_NOTE_OFF, note, velocity))
         {
@@ -286,6 +314,59 @@ void handleNoteOff(byte channel, byte note, byte velocity)
 
 void handleNoteOn(byte channel, byte note, byte velocity)
     {
+#ifdef INCLUDE_CONTROL_BY_NOTE
+    if (channel == options.channelControl)  // options.channelControl can be zero remember
+        {
+        lockoutPots = 1;
+
+		switch (number)
+		{
+		case CC_BACK_BUTTON_PARAMETER:
+			{
+			buttonState[BACK_BUTTON] = 1;
+			updateButtons(buttonState); 
+			}
+		break;
+		case CC_MIDDLE_BUTTON_PARAMETER:
+			{
+			buttonState[MIDDLE_BUTTON] = 1;
+			updateButtons(buttonState); 
+			}
+		break;
+		case CC_SELECT_BUTTON_PARAMETER:
+			{
+			buttonState[SELECT_BUTTON] = 1;
+			updateButtons(buttonState); 
+			}
+		break;
+		case CC_BYPASS_PARAMETER:
+			{
+			toggleBypass();
+			}
+		break;
+		case CC_UNLOCK_PARAMETER:
+			{
+			lockoutPots = 0;
+			}
+		break;
+		case CC_START_PARAMETER:
+			{
+			startClock(true);
+			}
+		break;
+		case CC_STOP_PARAMETER:
+			{
+			stopClock(true);
+			}
+		break;
+		case CC_CONTINUE_PARAMETER:
+			{
+			continueClock(true);
+			}
+		break;
+		}
+	else
+#endif
     // is data coming in the default channel?
     if (updateMIDI(channel, MIDI_NOTE_ON, note, velocity))
         {

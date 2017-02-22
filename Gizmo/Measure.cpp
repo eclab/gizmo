@@ -96,7 +96,8 @@ void stateMeasure()
             {
             if (local.measure.beatsSoFar == 0)
 				{
-//				write3x5Glyphs(GLYPH_NONE);
+				writeShortNumber(led2, 0, true);
+				writeShortNumber(led, 0, false);
 				}
 			else
 				{            	
@@ -127,7 +128,8 @@ void stateMeasure()
             {
             if (local.measure.beatsSoFar == 0)
 				{
-//				write3x5Glyphs(GLYPH_NONE);
+				writeShortNumber(led2, 1, true);
+				writeShortNumber(led, 1, false);
 				}
 			else
 				{            	
