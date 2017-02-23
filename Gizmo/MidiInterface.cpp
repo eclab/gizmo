@@ -2,8 +2,6 @@
 ////// Licensed under the Apache 2.0 License
 
 
-#define INCLUDE_CONTROL_BY_NOTE
-
 #include "All.h"
 
 
