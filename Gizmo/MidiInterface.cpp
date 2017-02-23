@@ -2,6 +2,7 @@
 ////// Licensed under the Apache 2.0 License
 
 
+#define INCLUDE_CONTROL_BY_NOTE
 
 #include "All.h"
 
@@ -211,6 +212,12 @@ void handleClock()
     {
     handleClockCommand(pulseClock, MIDIClock);
     }
+    
+    
+    
+// These are button states sent to use via NRPN messages
+GLOBAL uint8_t buttonState[3] = { 0, 0, 0 };
+
 
 
 
@@ -221,26 +228,27 @@ void handleNoteOff(byte channel, byte note, byte velocity)
         {
         lockoutPots = 1;
 
-		switch (number)
-		{
-		case CC_BACK_BUTTON_PARAMETER:
+		switch (note)
 			{
-			buttonState[BACK_BUTTON] = 0;
-			updateButtons(buttonState); 
+			case CC_BACK_BUTTON_PARAMETER:
+				{
+				buttonState[BACK_BUTTON] = 0;
+				updateButtons(buttonState); 
+				}
+			break;
+			case CC_MIDDLE_BUTTON_PARAMETER:
+				{
+				buttonState[MIDDLE_BUTTON] = 0;
+				updateButtons(buttonState); 
+				}
+			break;
+			case CC_SELECT_BUTTON_PARAMETER:
+				{
+				buttonState[SELECT_BUTTON] = 0;
+				updateButtons(buttonState); 
+				}
+			break;
 			}
-		break;
-		case CC_MIDDLE_BUTTON_PARAMETER:
-			{
-			buttonState[MIDDLE_BUTTON] = 0;
-			updateButtons(buttonState); 
-			}
-		break;
-		case CC_SELECT_BUTTON_PARAMETER:
-			{
-			buttonState[SELECT_BUTTON] = 0;
-			updateButtons(buttonState); 
-			}
-		break;
 		}
 	else
 #endif
@@ -319,51 +327,52 @@ void handleNoteOn(byte channel, byte note, byte velocity)
         {
         lockoutPots = 1;
 
-		switch (number)
-		{
-		case CC_BACK_BUTTON_PARAMETER:
+		switch (note)
 			{
-			buttonState[BACK_BUTTON] = 1;
-			updateButtons(buttonState); 
+			case CC_BACK_BUTTON_PARAMETER:
+				{
+				buttonState[BACK_BUTTON] = 1;
+				updateButtons(buttonState); 
+				}
+			break;
+			case CC_MIDDLE_BUTTON_PARAMETER:
+				{
+				buttonState[MIDDLE_BUTTON] = 1;
+				updateButtons(buttonState); 
+				}
+			break;
+			case CC_SELECT_BUTTON_PARAMETER:
+				{
+				buttonState[SELECT_BUTTON] = 1;
+				updateButtons(buttonState); 
+				}
+			break;
+			case CC_BYPASS_PARAMETER:
+				{
+				toggleBypass();
+				}
+			break;
+			case CC_UNLOCK_PARAMETER:
+				{
+				lockoutPots = 0;
+				}
+			break;
+			case CC_START_PARAMETER:
+				{
+				startClock(true);
+				}
+			break;
+			case CC_STOP_PARAMETER:
+				{
+				stopClock(true);
+				}
+			break;
+			case CC_CONTINUE_PARAMETER:
+				{
+				continueClock(true);
+				}
+			break;
 			}
-		break;
-		case CC_MIDDLE_BUTTON_PARAMETER:
-			{
-			buttonState[MIDDLE_BUTTON] = 1;
-			updateButtons(buttonState); 
-			}
-		break;
-		case CC_SELECT_BUTTON_PARAMETER:
-			{
-			buttonState[SELECT_BUTTON] = 1;
-			updateButtons(buttonState); 
-			}
-		break;
-		case CC_BYPASS_PARAMETER:
-			{
-			toggleBypass();
-			}
-		break;
-		case CC_UNLOCK_PARAMETER:
-			{
-			lockoutPots = 0;
-			}
-		break;
-		case CC_START_PARAMETER:
-			{
-			startClock(true);
-			}
-		break;
-		case CC_STOP_PARAMETER:
-			{
-			stopClock(true);
-			}
-		break;
-		case CC_CONTINUE_PARAMETER:
-			{
-			continueClock(true);
-			}
-		break;
 		}
 	else
 #endif
@@ -530,11 +539,6 @@ void handleAfterTouchPoly(byte channel, byte note, byte pressure)
 #define INCREMENT 2
 #define DECREMENT 3
 #define VALUE_7_BIT_ONLY 4  // this is last so we have a contiguous switch for NRPN and RPN handlers, which don't use this
-
-
-// These are button states sent to use via NRPN messages
-GLOBAL uint8_t buttonState[3] = { 0, 0, 0 };
-
 
 
 void handleControlChange(byte channel, byte number, uint16_t value, byte type)
