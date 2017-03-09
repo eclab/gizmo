@@ -305,10 +305,10 @@ void stateThruPlay()
                     case MIDI_RPN_14_BIT:
                         {
                         sendControllerCommand(CONTROL_TYPE_RPN, itemNumber, itemValue, channel);
- //                       MIDI.sendControlChange(101, itemNumber >> 7, channel);
- //                       MIDI.sendControlChange(100, itemNumber & 127, channel);
-  //                      MIDI.sendControlChange(6, (uint8_t)(itemValue >> 7), channel);  // MSB
-  //                      if ((itemValue & 127) != 0)
+                        //                       MIDI.sendControlChange(101, itemNumber >> 7, channel);
+                        //                       MIDI.sendControlChange(100, itemNumber & 127, channel);
+                        //                      MIDI.sendControlChange(6, (uint8_t)(itemValue >> 7), channel);  // MSB
+                        //                      if ((itemValue & 127) != 0)
 //                            MIDI.sendControlChange(38, (uint8_t)(itemValue & 127), channel);  // LSB
 //                        MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
 //                        MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command

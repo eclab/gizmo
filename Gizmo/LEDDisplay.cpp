@@ -1363,8 +1363,8 @@ void writeShortNumber(unsigned char* mat1, int8_t val, uint8_t leftJustify)
     if (val > 129 || (val < -99 && val > -127)) return;
 
     uint8_t neg = 0;
-    uint8_t val2 = val;				// note that -128 will convert to 128 and 
-    if (val2 > 129)					// implies that val is a negative number
+    uint8_t val2 = val;                         // note that -128 will convert to 128 and 
+    if (val2 > 129)                                     // implies that val is a negative number
         {
         val2 = -val;
         neg = 1;

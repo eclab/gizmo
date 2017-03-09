@@ -182,34 +182,34 @@ void setControllerButtonOnOff(uint16_t &onOff, int8_t nextState)
     }
 
 /***
-	LFO1: 	Same Function as Knob 1
-	ENV1:	Same Function as Knob 2
-	LFO2:	Same Function as Button 1
-	ENV2:	Same Function as Button 2
-	
-	Middle button: swap LFO / ENV
-	 
-	LFO Control			[NO SINE]		Random, Saw Up, Saw Down, Square (PWM?), Triangle
-	Left Knob: Rate / PWM
-	Right Knob: Amplitude / Wave Shape
-	Right Button: Toggle Knob Function
-	Middle Button Long: Off / Constant / Start on any Note On / Stop on All Notes Off
-	
-	For Saw Up/Down and Triangle, "PWM" means how long the wave is fully ON or fully OFF.
-	For example, PWM of 25% for Saw Up means that we stay at 0 for 25% of the wave, then
-	start moving up to the top for the remaining 75%.  PWM of 75% means that we start moving
-	up to the top for 75%, then for 25% we stay at the top.
-	
-	For Random, "PWM" means how random we are -- the jump distance.  PWM of 1% means we choose
-	between (say) +1 or -1 from the current value.  PWM of 10% means we choose a value between
-	+13 and -13 away from the current value.  PWM of 100% means we choose a value between +127
-	and -127 away from the currenrt value.  If the value is out of range, we select a new one.
-			
-	Env Control
-	Left knob: Attack / Sustain / Delay
-	Right knob: Decay / Release / Amplitude
-	Right Button: Toggle Knob Function
-	Right Button Long: Off / Start on any Note On / Stop on All Notes Off
+    LFO1:   Same Function as Knob 1
+    ENV1:   Same Function as Knob 2
+    LFO2:   Same Function as Button 1
+    ENV2:   Same Function as Button 2
+        
+    Middle button: swap LFO / ENV
+         
+    LFO Control                     [NO SINE]               Random, Saw Up, Saw Down, Square (PWM?), Triangle
+    Left Knob: Rate / PWM
+    Right Knob: Amplitude / Wave Shape
+    Right Button: Toggle Knob Function
+    Middle Button Long: Off / Constant / Start on any Note On / Stop on All Notes Off
+        
+    For Saw Up/Down and Triangle, "PWM" means how long the wave is fully ON or fully OFF.
+    For example, PWM of 25% for Saw Up means that we stay at 0 for 25% of the wave, then
+    start moving up to the top for the remaining 75%.  PWM of 75% means that we start moving
+    up to the top for 75%, then for 25% we stay at the top.
+        
+    For Random, "PWM" means how random we are -- the jump distance.  PWM of 1% means we choose
+    between (say) +1 or -1 from the current value.  PWM of 10% means we choose a value between
+    +13 and -13 away from the current value.  PWM of 100% means we choose a value between +127
+    and -127 away from the currenrt value.  If the value is out of range, we select a new one.
+                        
+    Env Control
+    Left knob: Attack / Sustain / Delay
+    Right knob: Decay / Release / Amplitude
+    Right Button: Toggle Knob Function
+    Right Button Long: Off / Start on any Note On / Stop on All Notes Off
 */
 
 #endif

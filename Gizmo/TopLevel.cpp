@@ -1058,12 +1058,12 @@ void go()
 #ifdef INCLUDE_STEP_SEQUENCER
         case STATE_STEP_SEQUENCER:
             {
-			if (entry)		// we do this because this state is entered just before we exit the entire step sequencer
-				{
+            if (entry)              // we do this because this state is entered just before we exit the entire step sequencer
+                {
 #ifdef INCLUDE_PROVIDE_RAW_CC
-				setParseRawCC(false);
+                setParseRawCC(false);
 #endif
-				}
+                }
             stateLoad(STATE_STEP_SEQUENCER_PLAY, STATE_STEP_SEQUENCER_FORMAT, STATE_ROOT, STATE_STEP_SEQUENCER);
             }
         break;
@@ -1085,7 +1085,7 @@ void go()
                 clearBuffer();
                 memset(local.gauge.fastMidi, 0, 3);
 #ifdef INCLUDE_PROVIDE_RAW_CC
-				setParseRawCC(options.gaugeMidiInProvideRawCC);
+                setParseRawCC(options.gaugeMidiInProvideRawCC);
 #endif
                 entry = false; 
                 }
@@ -1381,7 +1381,7 @@ void go()
             if (isUpdated(BACK_BUTTON, RELEASED))
                 {
 #ifdef INCLUDE_PROVIDE_RAW_CC
-				setParseRawCC(false);
+                setParseRawCC(false);
 #endif
                 goUpStateWithBackup(STATE_ROOT);
                 }

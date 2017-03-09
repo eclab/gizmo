@@ -95,68 +95,68 @@ void stateMeasure()
         if (local.measure.displayElapsedTime)
             {
             if (local.measure.beatsSoFar == 0)
-				{
-				writeShortNumber(led2, 0, true);
-				writeShortNumber(led, 0, false);
-				}
-			else
-				{            	
-				uint16_t eighthsSoFar = (uint16_t)((currentTime - local.measure.initialTime) / 100000);
-				uint16_t secondsSoFar = eighthsSoFar / 8;
-				uint16_t eighths = eighthsSoFar % 8;
-				uint16_t minutes = secondsSoFar / 60;
-				uint16_t seconds = secondsSoFar % 60;
-						
-				if (minutes > 127)              // this cannot possibly happen since time is only 72 minutes long!
-					{
-					// Write "HI" on led2
-					write3x5Glyph(led2, GLYPH_3x5_H, 0);
-					write3x5Glyph(led2, GLYPH_3x5_I, 4);
-					}
-				else
-					{
-					writeShortNumber(led2, minutes, true);
-					}
-						
-				writeShortNumber(led, seconds, false);
-				drawRange(led2, 0, 0, 16, eighths);                     // This will use the whole width I think
-				}
-				
+                {
+                writeShortNumber(led2, 0, true);
+                writeShortNumber(led, 0, false);
+                }
+            else
+                {               
+                uint16_t eighthsSoFar = (uint16_t)((currentTime - local.measure.initialTime) / 100000);
+                uint16_t secondsSoFar = eighthsSoFar / 8;
+                uint16_t eighths = eighthsSoFar % 8;
+                uint16_t minutes = secondsSoFar / 60;
+                uint16_t seconds = secondsSoFar % 60;
+                                                
+                if (minutes > 127)              // this cannot possibly happen since time is only 72 minutes long!
+                    {
+                    // Write "HI" on led2
+                    write3x5Glyph(led2, GLYPH_3x5_H, 0);
+                    write3x5Glyph(led2, GLYPH_3x5_I, 4);
+                    }
+                else
+                    {
+                    writeShortNumber(led2, minutes, true);
+                    }
+                                                
+                writeShortNumber(led, seconds, false);
+                drawRange(led2, 0, 0, 16, eighths);                     // This will use the whole width I think
+                }
+                                
             setPoint(led, 7, 1);
             }
-		else
+        else
             {
             if (local.measure.beatsSoFar == 0)
-				{
-				writeShortNumber(led2, 1, true);
-				writeShortNumber(led, 1, false);
-				}
-			else
-				{            	
-				// we adjust things so that the first "beat" is *0*
-				uint16_t beatsSoFar = local.measure.beatsSoFar - 1;
-			
-				// this is going to be quite costly, but it's simple
-				uint16_t measuresSoFar = beatsSoFar / options.measureBeatsPerBar;
-				uint16_t beats = beatsSoFar % options.measureBeatsPerBar;
-				uint16_t phrases = measuresSoFar / options.measureBarsPerPhrase;
-				uint16_t measures = (uint8_t)(measuresSoFar % options.measureBarsPerPhrase);
-			
-				if (phrases > 127) // can't display it
-					{
-					// Write "HI" on led2
-					write3x5Glyph(led2, GLYPH_3x5_H, 0);
-					write3x5Glyph(led2, GLYPH_3x5_I, 4);
-					}
-				else
-					{
-					writeShortNumber(led2, phrases + 1, true);
-					}
-								
-				writeShortNumber(led, measures + 1, false);
-				// the idea here is to rotate things so as draw an EMPTY RANGE when we're on BEAT ZERO
-				drawRange(led2, 0, 0, 16, beats);
-				}
+                {
+                writeShortNumber(led2, 1, true);
+                writeShortNumber(led, 1, false);
+                }
+            else
+                {               
+                // we adjust things so that the first "beat" is *0*
+                uint16_t beatsSoFar = local.measure.beatsSoFar - 1;
+                        
+                // this is going to be quite costly, but it's simple
+                uint16_t measuresSoFar = beatsSoFar / options.measureBeatsPerBar;
+                uint16_t beats = beatsSoFar % options.measureBeatsPerBar;
+                uint16_t phrases = measuresSoFar / options.measureBarsPerPhrase;
+                uint16_t measures = (uint8_t)(measuresSoFar % options.measureBarsPerPhrase);
+                        
+                if (phrases > 127) // can't display it
+                    {
+                    // Write "HI" on led2
+                    write3x5Glyph(led2, GLYPH_3x5_H, 0);
+                    write3x5Glyph(led2, GLYPH_3x5_I, 4);
+                    }
+                else
+                    {
+                    writeShortNumber(led2, phrases + 1, true);
+                    }
+                                                                
+                writeShortNumber(led, measures + 1, false);
+                // the idea here is to rotate things so as draw an EMPTY RANGE when we're on BEAT ZERO
+                drawRange(led2, 0, 0, 16, beats);
+                }
             
             setPoint(led, 6, 1);
             }
