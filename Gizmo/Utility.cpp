@@ -264,7 +264,7 @@ void stateSave(uint8_t backState)
                             {
                             distributeByte(pos, 1 << 7);  // Control data is a 1
                                 
-                            ////     3 bits: CC, NRPN, RPN, PC, BEND, AFTERTOUCH, VOLTAGE A, VOLTAGE B
+                            ////     3 bits: CC, NRPN, RPN, PC, BEND, AFTERTOUCH, INTERNAL
                             ////     14 bits Parameter
                             ////     5 bits MIDI out channel
 
@@ -384,11 +384,6 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                                 local.stepSequencer.noteLength[i] = (gatherByte(pos + 4) >> 5);
                                 local.stepSequencer.velocity[i] = (gatherByte(pos + 11) >> 5);
                                 local.stepSequencer.outMIDI[i] = (gatherByte(pos + 18) >> 5);
-
-                                distributeByte(pos + 1, local.stepSequencer.data[i] << 4);
-                                distributeByte(pos + 4, local.stepSequencer.noteLength[i] << 1);                // MSB of Control Parameter
-                                distributeByte(pos + 11, local.stepSequencer.velocity[i] << 1);                 // LSB of Control Parameter
-                                distributeByte(pos + 18, local.stepSequencer.outMIDI[i] << 3);
                                 }
 #else
                             //// 1 bit mute

@@ -727,7 +727,11 @@ void stateArpeggiatorCreateEdit()
                 for(uint8_t i = 0; i < data.arp.length; i++)    
                     {
                     uint8_t notei = ARP_NOTEX(i);
-                    if (notei != ARP_REST)
+                    if (notei != ARP_REST
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+						&& notei != ARP_TIE
+#endif
+                    )
                         {
                         uint8_t note = backupChordNotes[notei];
                                         
