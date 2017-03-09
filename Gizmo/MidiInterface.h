@@ -29,7 +29,29 @@
 #define USING_EXTERNAL_CLOCK() (options.clock <= CONSUME_MIDI_CLOCK)	// are we using any external clock?
 
 
+// These are the values that can be used in:
+// options.middleButtonControlOn, options.middleButtonControlOff
+// options.selectButtonControlOn, options.selectButtonControlOff
+// options.leftKnobControlType
+// options.rightKnobControlType
 
+#define CONTROL_TYPE_OFF 0
+#define CONTROL_TYPE_CC 1
+#define CONTROL_TYPE_NRPN 2
+#define CONTROL_TYPE_RPN 3
+#define CONTROL_TYPE_PC 4
+#ifdef INCLUDE_EXTENDED_CONTROL_SIGNALS
+#define CONTROL_TYPE_PITCH_BEND 5
+#define CONTROL_TYPE_AFTERTOUCH 6
+#endif
+#ifdef INCLUDE_VOLTAGE
+#define CONTROL_TYPE_VOLTAGE_A 7
+#define CONTROL_TYPE_VOLTAGE_B 8
+#endif
+
+
+#define CONTROL_VALUE_INCREMENT 128
+#define CONTROL_VALUE_DECREMENT 129
 
 // in midi_Defs.h there is an enum with various MIDI commands. 
 // I have to use a few of them to pass in clock commands, but I 
@@ -113,11 +135,6 @@ extern uint16_t itemNumber;             // Note on/off/poly aftertouch use this 
 extern uint16_t itemValue;              // Note on/off use this for NOTE VELOCITY, poly and channel aftertouch uses this for PRESSURE, otherwise it's the value for PC/CC/NRPN/RPN/PITCH BEND
 extern uint8_t itemChannel;				// Channel of the incoming item.  One of 1...16
 
-#ifdef INCLUDE_PROVIDE_RAW_CC
-	extern uint8_t midiInProvideRawCC;
-#endif
-
-
 
 
 //// REMOTE CONTROL VIA NRPN or CC
@@ -189,5 +206,61 @@ void setSecondaryVoltage(uint8_t voltage);
 void turnOffVoltage();
 
 
-#endif __MIDI__
+// SEND CONTROLLER COMMAND
+// Sends a controller command, one of:
+// CC, NRPN, RPN, PC
+// [Only if INCLUDE_EXTENDED_CONTROL_SIGNALS]: Pitch Bend, Aftertouch
+// [Only if INCLUDE_VOLTAGE]: Voltage A, Voltage B
+//
+// These are defined by the CONTROL_TYPE_* constants defined elsewhere
+//
+// Some commands (CC, NRPN, RPN) have COMMAND NUMBERS.  The others ignore the provided number.
+//
+// Each command is associated with a VALUE.  All values are 14 bits and take the form
+// of an MSB (the high 7 bits) and an LSB (the low 7 bits).  Some data expects lower
+// resolution numbers than that -- in this case you must shift your data so it's zero-
+// padded on the right.  For example, if you want to pass in a 7-bit
+// number (for PC, some CC values, or AFTERTOUCH) you should do so as (myval << 7).
+// If you want to pass in a signed PITCH BEND value (an int16_t from -8192...8191), you
+// should do so as (uint16_t myval + MIDI_PITCHBEND_MIN).  If you want to pass in a 12-bit
+// value because VOLTAGE_A and VOLTAGE_B are actually only 12-bit you can do so as
+// (myval << 2), though you might as well send in a full 14-bit value.
+//
+// It's good practice to send a NULL RPN after sending an RPN or NRPN, but it's 50% more data
+// in an already slow command.  So Gizmo doesn't do it by default.  You can make Gizmo do it
+// with #define INCLUDE_SEND_NULL_RPN   [I'd set that somewhere in All.h]
+//
+// Here are the valid numbers and values for different commands:
+//
+// COMMAND	NUMBERS    	VALUES		NOTES
+// OFF		[everything is ignored, this is just a NOP]
+// CC		0-31		0-16383		1. If you send 7-bit data (zero-padded, shifted << 7) then the LSB will not be sent.
+// CC		32-127		0-127		1. Zero-pad your 7-bit data (shift it << 7).
+//									2. Some numbers are meant for special functions.  Unless you know what you're doing,
+//									   it'd be wise not to send on numbers 6, 32--63, 96--101, or 120--127
+// NRPN/RPN	0-16383		0-16383		1. If you send 7-bit data (zero-padded) then the LSB will not be sent.
+//									2. The NULL RPN terminator will only be sent if #define INCLUDE_SEND_NULL_RPN is on.
+//									   By default it's off.  See the end of http://www.philrees.co.uk/nrpnq.htm
+//									3. You can also send in an RPN/NRPN DATA INCREMENT or DECREMENT.  To do this, pass in the
+//									   value CONTROL_VALUE_INCREMENT [or DECREMENT] * 128 + DELTA.  A DELTA of 0 is the 
+//									   same as 1 and is the most common usage.
+// PC		[ignored]	0-127		1. Zero-pad your 7-bit data (shift it << 7)
+// BEND		[ignored]	0-16383		1. BEND is normally signed (-8192...8191).  If you have the value as a signed int16_t,
+//									   pass it in as (uint16_t) (myval + MIDI_PITCHBEND_MIN)
+// AFTERTOUCH [ignored]	0-127		1. Zero-pad your 7-bit data (shift it << 7)
+// VOLTAGE_A [ignored]	0-16383		1. Resolution is actually 12-bit (0-4095), but you should pass it in as 14-bit,
+//									   zero-padded.  So if you have a number from 0-4095, pass it in as (myval << 2)
+// VOLTAGE_B [ignored]	0-16383		1. Resolution is actually 12-bit (0-4095), but you should pass it in as 14-bit,
+//									   zero-padded.  So if you have a number from 0-4095, pass it in as (myval << 2)
+
+void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t fullValue, uint8_t channel);
+
+
+#ifdef INCLUDE_PROVIDE_RAW_CC
+void setParseRawCC(uint8_t val);
+#endif
+
+
+
+#endif __MIDI_INTERFACE__
 

@@ -4,6 +4,7 @@
 
 
 
+
 #ifndef __ARPEGGIATOR_H__
 #define __ARPEGGIATOR_H__
 
@@ -144,7 +145,9 @@
 #define EDIT_CURSOR_START 254
 #define NO_EDIT_CURSOR 255
 
-
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+#define ARP_POT_SLOP (32)
+#endif
 
 //// LOCAL 
 
@@ -152,8 +155,8 @@ struct _arpLocal
     {
     uint32_t offTime;                                                   // When should we send the next noteOff?
     uint8_t noteOff;                                                    // What note should be given a noteOff?
-    uint8_t steadyNoteOff;                                                                                              // doesn't get erased by a NOTE OFF
-    uint8_t number;                                                             // The arpeggio number.  0...4 are ARPEGGIATOR_NUMBER_UP...ARPEGGIATOR_NUMBER_RANDOM, 
+    uint8_t steadyNoteOff;                                              // doesn't get erased by a NOTE OFF
+    uint8_t number;                                                     // The arpeggio number.  0...4 are ARPEGGIATOR_NUMBER_UP...ARPEGGIATOR_NUMBER_RANDOM, 
     // then we have arpeggios 0..9, then we have ARPEGGIATOR_NUMBER_CREATE
     int8_t currentPosition;                                             // Which note in the arpeggio is being played or edited?  Note that this is signed.  
     // ARP_POSITION_START (-1) indicates "at beginning".
@@ -163,7 +166,11 @@ struct _arpLocal
     uint8_t goingDown;                                                  // Are we descending in the up/down arpeggio style?
     uint8_t playing;                                                    // Am I in a state where adding/removing notes is reasonable?
     uint8_t lastVelocity;                                               // Stores the most recent velocity with which a note was entered during editing, so when we scroll back we have a reasonable velocity to play
-    uint8_t currentRightPot;                                        // What is the most recent right pot value for editing (-1 ... 32 or so).  
+    uint8_t currentRightPot;                                        	// What is the most recent right pot value for editing (-1 ... 32 or so).  
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+	uint16_t oldLeftPot;
+	uint16_t oldRightPot;
+#endif
     // We have to jump by at least 2 to start scrolling -- this is an anti-noise measure
     };
         
@@ -174,9 +181,12 @@ struct _arpLocal
 // Maximum length of an arpeggio
 #define MAX_ARP_NOTES 32
 
-// There are 15 unique notes in an arpeggio.  Rests are note 15. 
+// There are 14 unique notes in an arpeggio.  Rests are note 15, and ties are note 14.
 #define ARP_REST        15
-
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+#define ARP_TIE        	14
+#endif
+	
 // Notes are packed 2 to a byte.  This gets the first one
 #define ARP_NOTE0(note)   ((note) & 15)
 // This gets the second one

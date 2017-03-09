@@ -138,28 +138,8 @@
 #include "TopLevel.h"
 #include <Arduino.h>
 
-// These are the values that can be used in:
-// options.middleButtonControlOn, options.middleButtonControlOff
-// options.selectButtonControlOn, options.selectButtonControlOff
-// options.leftKnobControlType
-// options.rightKnobControlType
-
-#define CONTROL_TYPE_OFF 0
-#define CONTROL_TYPE_CC 1
-#define CONTROL_TYPE_NRPN 2
-#define CONTROL_TYPE_RPN 3
-#define CONTROL_TYPE_PC 4
-
-#ifdef INCLUDE_EXTENDED_CONTROLLER
-#define CONTROL_TYPE_PITCH_BEND 5
-#define CONTROL_TYPE_AFTERTOUCH 6
-#define CONTROL_TYPE_VOLTAGE_A 7
-#define CONTROL_TYPE_VOLTAGE_B 8
-#endif
 
 // numerical value that means a button isn't sending a value but is rather incrementing 
-#define CONTROL_VALUE_INCREMENT 128
-#define CONTROL_VALUE_DECREMENT 129
 #define MAXIMUM_PC_VALUE 127
 
 struct _controlLocal
@@ -171,15 +151,6 @@ struct _controlLocal
     uint8_t displayType;
     };
 
-
-// SEND CONTROLLER COMMAND
-/// Sends a controller command when the user modifies a button or pot.  Command types can be any
-/// of the CONTROL_TYPE_* constants above.  RPN and NRPN send 14-bit, so if you're sending a 
-// 7-bit value, shift it left by 7 first.  RPN and NRPN have 14-bit command numbers of course.
-// CC permits command numbers 0...119.  PC has no command number.  PC and CC have command values 
-// 0...127.   Also sending to VOLTAGE assumes you're providing a value 0...1023, and the command 
-// number is ignored.
-void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t fullValue);
 
 // SET CONTROLLER TYPE
 // Lets the user set a controller type.   This is stored in &type.  When the user is finished

@@ -16,16 +16,28 @@ void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len)
     clearMatrix(mat);
 
     uint8_t maxNote = 0;  // it's okay that this isn't -1 I think
-    uint8_t minNote = ARP_REST;
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+     uint8_t minNote = ARP_TIE;
+#else
+	uint8_t minNote = ARP_REST;
+#endif
     for(uint8_t i = 0; i < data.arp.length; i++)
         {
         uint8_t n = ARP_NOTEX(i);
-        if (n == ARP_REST) continue;  // don't count rests are part of this
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+        if (n == ARP_TIE) continue;  // don't count rests or ties as part of this
+#else
+		if (n == ARP_REST) continue;  // don't count rests as part of this
+#endif
         if (n > maxNote) maxNote = n;
         if (n < minNote) minNote = n;
         }
     
-    if (minNote != ARP_REST) // it's not all rests (or empty)
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+    if (minNote < ARP_TIE) // it's not all rests or ties (or empty)  -- actually it'd be impossible for it to be all ties or a mix of rests and ties...
+#else
+    if (minNote < ARP_REST) // it's not all rests (or empty)
+#endif
         {
         uint8_t interval = maxNote - minNote + 1;
 
@@ -40,7 +52,15 @@ void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len)
             uint8_t n = ARP_NOTEX(i);
             if (n == ARP_REST)
                 continue;
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+			else if (n == ARP_TIE)
+				{
+                setPoint(mat, j, 7);
+				}
+            else if (interval > 7)
+#else
             else if (interval > 8)
+#endif
                 {
                 setPoint(mat, j, n >> 1);
                 if ((n & 1) == 1)  // it's odd, add another point
@@ -69,6 +89,13 @@ void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len)
                 
 
 
+void updateNoteOffTime()
+	{
+    // this will be costly but maybe it's better than / for 32-bit?
+    local.arp.offTime = currentTime + div100(notePulseRate * getMicrosecsPerPulse() * options.noteLength);
+	}
+
+
 // Plays a note, multiplied by the given octave, and registers
 // the timestamp for it to be turned off.
 void playArpeggiatorNote(uint16_t note)
@@ -81,11 +108,10 @@ void playArpeggiatorNote(uint16_t note)
         vel = local.arp.velocity;
 
     sendNoteOn(local.arp.steadyNoteOff = local.arp.noteOff = (uint8_t) note, vel, options.channelOut);
-                
-    // this will be costly but maybe it's better than / for 32-bit?
-    local.arp.offTime = currentTime + div100(notePulseRate * getMicrosecsPerPulse() * options.noteLength);
-    } 
-
+    
+    updateNoteOffTime();     
+    }
+    
 
 
 // Continue to play the arpeggio
@@ -98,7 +124,14 @@ void playArpeggio()
     //
     // The last condition is because if the note length is 100% we want to NEVER turn off unless there's
     // a note pulse, even if the off time is exceeded, because we're doing fully legato.
-    if (local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || (currentTime >= local.arp.offTime && options.noteLength < 100)))
+    if (local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || (currentTime >= local.arp.offTime && options.noteLength < 100))
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+	// we don't want to turn off the note if the next note is a tie
+		&& !(																												// it's NOT the case that....
+			(local.arp.number > ARPEGGIATOR_NUMBER_CHORD_REPEAT &&															// we're doing a custom arpeggio AND
+		   	ARP_NOTEX(local.arp.currentPosition + 1 >= data.arp.length ? 0 : local.arp.currentPosition + 1) == ARP_TIE))  	// the next note is a TIE
+#endif
+		)
         {
         if (local.arp.number == ARPEGGIATOR_NUMBER_CHORD_REPEAT)
             {
@@ -209,7 +242,7 @@ void playArpeggio()
                 }
             else
                 {
-                // we are using local.arp.currentPosition for another purposes here -- to
+                // we are using local.arp.currentPosition for another purpose here -- to
                 // be the index into the notes array
                 if (data.arp.length != 0)
                     {
@@ -219,6 +252,13 @@ void playArpeggio()
 
                     int8_t octave = 0;  // note that this is signed
                     int8_t notei = ARP_NOTEX(local.arp.currentPosition);
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+					if (notei == ARP_TIE)
+						{
+						updateNoteOffTime();		// push note off to next timestep
+						}
+					else
+#endif
                     if (notei != ARP_REST)
                         {
                         // this computes the interval between the largest and smallest notes, and rounds up to the nearest
@@ -390,12 +430,17 @@ void stateArpeggiatorPlay()
             
     if (entry)
         {
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+        local.arp.oldLeftPot = pot[LEFT_POT];
+        local.arp.oldRightPot = pot[RIGHT_POT]; 
+#endif
         local.arp.playing = 1;
         // Load the arpeggiator data
         if (local.arp.number > ARPEGGIATOR_NUMBER_CHORD_REPEAT)
             {
             LOAD_ARPEGGIO(local.arp.number - ARPEGGIATOR_NUMBER_CHORD_REPEAT - 1);
             }
+        entry = false;
         }
     
     if (updateDisplay)
@@ -437,7 +482,22 @@ void stateArpeggiatorPlay()
         saveOptions();
         //local.arp.numChordNotes = 0;  // reset
         }
-
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+    else if (potUpdated[LEFT_POT] && 
+    		 ((pot[LEFT_POT] > local.arp.oldLeftPot && pot[LEFT_POT] - local.arp.oldLeftPot > ARP_POT_SLOP) ||
+    		  (local.arp.oldLeftPot > pot[LEFT_POT] && local.arp.oldLeftPot - pot[LEFT_POT] > ARP_POT_SLOP)))
+    	{
+        optionsReturnState = STATE_ARPEGGIATOR_PLAY;
+    	goDownState(STATE_OPTIONS_PLAY_LENGTH);
+    	}
+    else if (potUpdated[RIGHT_POT] &&
+    		 ((pot[RIGHT_POT] > local.arp.oldRightPot && pot[RIGHT_POT] - local.arp.oldRightPot > ARP_POT_SLOP) ||
+    		  (local.arp.oldRightPot > pot[RIGHT_POT] && local.arp.oldRightPot - pot[RIGHT_POT] > ARP_POT_SLOP)))
+    	{
+        optionsReturnState = STATE_ARPEGGIATOR_PLAY;
+    	goDownState(STATE_OPTIONS_TEMPO);
+    	}
+#endif
     playArpeggio();          
     }
 
@@ -565,7 +625,11 @@ void stateArpeggiatorCreateEdit()
         state = STATE_ARPEGGIATOR_CREATE_SAVE;
         entry = true;
         }
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+    else if (isUpdated(MIDDLE_BUTTON, RELEASED))
+#else
     else if (isUpdated(MIDDLE_BUTTON, PRESSED))
+#endif
         {
         local.arp.currentRightPot = (uint8_t) ((pot[RIGHT_POT] * ((uint16_t) data.arp.length + 1)) >> 10);  //  / 1024);
 
@@ -580,6 +644,26 @@ void stateArpeggiatorCreateEdit()
             data.arp.length = local.arp.currentPosition;
             }
         }
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+    else if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG) && 
+    		 local.arp.currentPosition > 0 &&								// tie can't be the first thing
+    		 ARP_NOTEX(local.arp.currentPosition - 1) != ARP_REST		// can't have ties after rests.  Though this probably doesn't matter.
+    		 )
+        {
+        local.arp.currentRightPot = (uint8_t) ((pot[RIGHT_POT] * ((uint16_t) data.arp.length + 1)) >> 10);  //  / 1024);
+
+        //sendAllNotesOff();
+        if (local.arp.currentPosition < MAX_ARP_NOTES)
+            {
+            garbageCollectNotes();
+                
+            // add a tie
+            SET_ARP_NOTEX(local.arp.currentPosition, ARP_TIE);
+            local.arp.currentPosition++;
+            data.arp.length = local.arp.currentPosition;
+            }
+        }
+#endif
     else if (newItem == NEW_ITEM && itemType == MIDI_NOTE_ON)
         {
         local.arp.currentRightPot = (uint8_t) ((pot[RIGHT_POT] * ((uint16_t) data.arp.length + 1)) >> 10);  //  / 1024);
@@ -710,6 +794,12 @@ void stateArpeggiatorCreateEdit()
                 {
                 write3x5Glyph(led, GLYPH_3x5_R, 1);
                 }
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+			else if (val == ARP_TIE)
+				{
+				write3x5Glyph(led, GLYPH_3x5_T, 1);
+				}
+#endif
             else
                 {
                 writeNotePitch(led, local.arp.chordNotes[val]);
@@ -763,7 +853,8 @@ void stateArpeggiatorCreateSave()
         break;
         case MENU_CANCELLED:
             {
-            goDownState(STATE_ARPEGGIATOR_CREATE_EDIT);
+            //goDownState(STATE_ARPEGGIATOR_CREATE_EDIT);
+            state = STATE_ARPEGGIATOR_CREATE_EDIT;		// we don't do goDownState because that sets entry=true, which erases the arpeggio
             }
         break;
         }

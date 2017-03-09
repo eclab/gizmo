@@ -32,9 +32,9 @@ Gizmo comes built-in with the following applications and other capabilities:
 
 \paragraph{Applications}
 \begin{itemize}
-\item {\bf Arpeggiator.}\quad Gizmo's arpeggiator has built-in up, down, up/down, repeated chord, note-assign, and random arpeggios spanning one to three octaves.  Additionally, you can define up to ten additional arpeggiator patterns, each up to 32 notes long, involving up to 15 different chord notes, plus rests.  Arpeggios can be {\it latched} (or not), meaning that they may continue to play even after you have released the keys.  You can specify  the note value relative to the tempo (ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), whether or not the velocity is fixed, the output MIDI channel, and the degree of swing (syncopation).  Gizmo will show the arpeggio on-screen.
+\item {\bf Arpeggiator.}\quad Gizmo's arpeggiator has built-in up, down, up/down, repeated chord, note-assign, and random arpeggios spanning one to three octaves.  Additionally, you can define up to ten additional arpeggiator patterns, each up to 32 notes long, involving up to 14 different chord notes, plus rests and ties.  Arpeggios can be {\it latched} (or not), meaning that they may continue to play even after you have released the keys.  You can specify  the note value relative to the tempo (ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), whether or not the velocity is fixed, the output MIDI channel, and the degree of swing (syncopation).  Gizmo will show the arpeggio on-screen.
 
-\item {\bf Step Sequencer.}\quad Gizmo's step sequencer can be organized as 12 16-note tracks, 8 24-note tracks, or 6 32-note tracks.  Each note in a track can have its own unique pitch and velocity, or be a rest, or continue (lengthen, tie) the previous note.  You can also fix the velocity for an entire track, mute tracks, fade their volume, specify their independent output MIDI channels, specify the note value relative to the tempo (again ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), and the degree of swing (syncopation).    The step sequencer lets you edit in two modes: either by triggering independent steps like a classic drum sequencer, or by playing a sequence of notes.  The Arduino Uno can store up to two sequences in its slots (shared with the Recorder, discussed next).  Gizmo will show and edit sequences on-screen.  {\bf Extended Version on the Mega:} The extended version also permits 4 48-note tracks or 3 64-note tracks.  You can lock a sequence so that playing along with it won't modify it.  You can stipulate whether starting/stopping the sequencer will also start/stop the MIDI clock.  You can also have the Sequencer avoid playing notes out as they are entered.  The Mega can store up to nine sequences.
+\item {\bf Step Sequencer.}\quad Gizmo's step sequencer can be organized as 12 16-note tracks, 8 24-note tracks, or 6 32-note tracks.  Each note in a track can have its own unique pitch and velocity, or be a rest, or continue (lengthen, tie) the previous note.  You can also fix the velocity for an entire track, mute tracks, fade their volume, specify their independent output MIDI channels, specify the note value relative to the tempo (again ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), and the degree of swing (syncopation).   In addition to note data, you can sequence CC, RPN/NRPN, Pitch Bend, Aftertouch, or PC data.  The step sequencer lets you edit in two modes: either by triggering independent steps like a classic drum sequencer, or by playing a sequence of notes.  The Arduino Uno can store up to two sequences in its slots (shared with the Recorder, discussed next).  Gizmo will show and edit sequences on-screen.  {\bf Extended Version on the Mega:} The extended version also permits 4 48-note tracks or 3 64-note tracks.  You can lock a sequence so that playing along with it won't modify it.  You can stipulate whether starting/stopping the sequencer will also start/stop the MIDI clock.  You can also have the Sequencer avoid playing notes out as they are entered.  The Mega can store up to nine sequences.
 
 \item {\bf Recorder.}\quad The Arduino doesn't have a lot of memory, but we provide a note recorder which records and plays back up to 64 notes (pitch and velocity) played over 21 measures. The recorder has 16-voice polyphony.   It's enough to record a very short ditty.  You can also set the recorder to loop the recording while playing, and to provide a click track.  The Arduino Uno can store up to two recordings in its slots (shared with the Step Sequencer).   {\bf Extended Version on the Mega:}  The extended recorder gives you the option of auto-repeating a recording or stopping when it is finished.  The Mega can store up to nine recordings.
 
@@ -363,7 +363,7 @@ Ascending Notes\\in Dense Mode\\
 \label{arpeggioediting}
 \end{wrapfigure}
 
-By default the key velocity\footnote{By velocity we mean in the MIDI sense: how fast the key is struck; this basically translates to loudness.} that {\it all} notes in the track will use (as a value 0...127).  If you would instead prefer that each note in the track use its own indepof an arpeggio is determined by the {\bf first note} you press when you hold down a chord.  This strategy usually works well, but if you can instead fix the velocity to a specific value by (once again) calling up the menu by Long-Pressing the Select button, then choosing {\bf Velocity}.  At the far highest end of the velocity options is \texttt{FREE}, which means that the velocity is determined by your fingers again (this is the default).
+By default the key velocity\footnote{By velocity we mean in the MIDI sense: how fast the key is struck; this basically translates to loudness.} that {\it all} notes in the track will use (as a value 0...127) is determined by the {\bf first note} you press when you hold down a chord.  This strategy usually works well, but if you can instead fix the velocity to a specific value by (once again) calling up the menu by Long-Pressing the Select button, then choosing {\bf Velocity}.  At the far highest end of the velocity options is \texttt{FREE}, which means that the velocity is determined by your fingers again (this is the default).
 
 \paragraph{Creating an Arpeggio}
 
@@ -380,6 +380,14 @@ If you don't like the latest portion of your arpeggio, you can scroll the cursor
 An {\bf important note regarding the scrolling.}  The cursor is always located at the position where new notes will be entered.  But as you scroll back and forth, you'll hear the notes of your arpeggio.  When you scroll and hear a note, that note is the note {\it immediately before} the cursor position.  It's the last note in the arpeggio before you start adding new notes. It is {\it not} the note that you'll replace when you start entering notes. 
 
 Anyway, when you are satisfied with your arpeggio, Long-Press the Select button to save.  You'll be asked for a slot to save in, and after that, you'll be back in the main Arpeggiator menu.
+
+\begin{wrapfigure}{r}{3.5in}
+\begin{center}
+\vspace{-2.5em}\includegraphics[width=3.5in]{arpeggionotes.pdf}\\
+\end{center}
+\vspace{-1em}\caption{Displayed arpeggio notes.  If you have entered more than 7 unique notes, the arpeggio will switch to ``dense mode'' to display them.}
+\label{arpeggionotes}
+\end{wrapfigure}
 
 \paragraph{Playing a User-Created Arpeggio}
 
@@ -398,16 +406,19 @@ Also, because they are fixed in size, user-created arpeggios do not respond to t
 
 In addition to Octaves, the arpeggiator menu (Long-Press the select button) also includes the Options Menu as a submenu.\footnote{Recall that the Options Menu is for options shared among several applications: that's why it's a separate menu.  That and code space issues.}  See Section \ref{options} for detailed information on each of the options.  The Arpeggiator responds to the following options:
 
-\vspace{1em}
+\vspace{0.75em}
 \begin{tabular}{lllll}
 Tempo& Note Speed& Swing & Note Length&Transpose (on Mega)\\
 In MIDI& Out MIDI&Control MIDI&MIDI Clock&Volume (on Mega)\\
 \end{tabular}
 
-\vspace{1em}
+\vspace{0.75em}
 Of particular interest to you may be Length and Tempo.  And Swing!
 
 One note regarding the {\bf Note Length} option.  If the Note Length is set to 100 (and {\it only} 100), the Arpeggiator behaves specially: each note will extend until the next note (or rest) is played, regardless of how long that is.  Thus if you have Swing turned on, notes will extend until the next syncopated (delayed) note even if their time is up. This provides a fully legato feel.
+
+
+\paragraph{The Left and Right Knobs}  When playing an arpeggio, turning the left knob will transport you directly to the Tempo menu option, so you can easily change the note tempo.  Similarly, turning the right knob will send you to the Note Length menu option.  You'll have to turn a lot to get this to happen (as a safety precaution).\footnote{{\it What about Arpeggio Key Velocity?  Swing?  Note Speed? Velocity or Transpose?}\qquad Arpeggio Key Velocity's easy: just press the select button twice.  For the others you'll have to go through the options menu, sorry.  Though it's easy to modify Gizmo to change this.}
 
 \clearpage
 
@@ -460,7 +471,7 @@ Pressing the Select button will toggle whether the Step Sequencer is playing.  W
 If you turn the right knob fully to the left, you will find that the cursor scrolls right off the left side of the screen.  At this point you are in {\bf play position mode}.  Here, if you press a key, it is entered at the play position cursor.
 
 \begin{wrapfigure}{r}{1.25in}
-\hspace{\fill}\includegraphics[width=0.7in]{playpositionmode}\hspace{\fill}%
+\vspace{-1em}\hspace{\fill}\includegraphics[width=0.7in]{playpositionmode}\hspace{\fill}%
 \vspace{-1em}
 \caption{\small The Play Position Mode Cursor.  The current track is marked by the two dots.}\vspace{-1em}
 \label{playpositionmode}
@@ -472,6 +483,12 @@ In play position mode, the function of the Middle Button changes.  Now if you pr
 You can tell you're in play position mode because the play position cursor has changed to include two dots which indicate the current track, as shown in Figure~\ref{playpositionmode}.
 
 Play position mode isn't all that easy to enter notes, particularly if there is any degree of swing: I'd stick with the normal mode.  You can get out of play position mode just by turning the right knob so that the edit cursor is once again on-screen.
+
+\paragraph{Other Types of Track Data}  A track can store and sequence other kinds of data besides Note-On and Note-Off.  Specifically, you can set a given track to store and replay any one of (raw) CC, 14 Bit CC, NRPN, RPN, Pitch Bend, Channel Aftertouch, or Program Change commands by choosing {\bf Type} from the menu (see {\bf Menu Options} below).  If you select (raw) CC, 14 Bit CC, NRPN, or RPN, you will be further prompted to specify which parameter number you'd like to sequence (for example, CC\# 42 or NRPN\# 12312).
+
+Non-note data is entered differently than note data.  To enter non-note events, send an event to the MIDI In Channel, then press the {\bf middle button}: the most recent sent event will then be recorded at the current position.  You can erase data at the current position (essentially send a rest) by long-pressing the middle button.\footnote{This may be confusing as rests are entered by simply {\it pressing} the middle button for note data, but I figured entering data was more important than entering rests in the non-note case.  Sorry.}
+
+Some notes.  First, if you sent a Polyphonic Aftertouch event (on any key) it will be recorded instead as Channel Aftertouch.  Second, if your track is configured for (raw) CC, then you can send {\it any} raw CC value to it (all 127 parameter numbers), and it will also emit the same; but if your track is configured for 14-bit CC, then only the first 31 parameter numbers may be used.  Third, any Pitch Bend value can be stored except for 8191 (the high value).  Fourth, any 14 Bit CC, RPN, or NRPN value can be stored except for 16383 (again, the high value).  
 
 \paragraph{Menu Options}
 
@@ -485,6 +502,7 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 \item {\bf Fader}\quad This lets you specify a volume modifier which is multiplied against the velocities of the notes in the track.  Possible values are 0...127, where 0 completely hushes the notes, and 127 lets them play at their specified velocities. 
 \item {\bf Reset Track}\quad This wipes out and resets the track.  Unlike Long-Pressing the Middle Button while in Play Position mode, this doesn't just clear the track: it also resets all of its settings to their defaults.
 \item {\bf Save} \quad This saves the sequence. You then choose the slot to save in.  Slots are displayed by number, plus an \texttt{S} (for Save), plus optionally an \texttt{R} or \texttt{S} (for Recorder or Step Sequencer) if the slot is already used by that application.  This letter {\bf blinks} if the file isn't the type of your current application to warn you that you will be overwriting the other application's slot.
+\item {\bf Type} (Mega only) \quad Lets you specify the type of data stored in this track.  See {\bf Other Types of Track Data} above.
 \item {\bf Clock Control} (or {\bf No Clock Control}) (Mega only) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note regardless of the setting of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.
 \item {\bf Lock} (or {\bf Unlock}) (Mega only) \quad This toggles {\it locked mode}.  Here, playing a note will not enter it into the sequence, nor will you be able to enter a rest or clear the track.  You will be able to reset the track and perform any other operation.  This makes it easy to play along with a sequence without altering it.  Note that track locks must be saved with your sequence: if you lock (or unlock) a sequence, but don't save, then next time the sequence will be back in its previous unlocked (or locked) state.
 \item {\bf No Echo} (or {\bf Echo}) (Mega only) \quad This toggles {\it no-echo mode}.  Normally when you enter a note, it's automatically played so you get some feedback.  But in some circumstances this isn't desirable: for example, if you're entering {\it and} playing notes from the same keyboard, then this default behavior will cause two notes to be played whenever you enter a note.  {\bf No Echo} will turn this off.\footnote{The Mega also has another closely related feature: if you're in play position mode and you have entered a note slightly before its time, Gizmo won't play it (the first time) when its time comes up, because you just played it yourself.  This isn't the case on the Uno: you'll hear a double-played note the first time.  There's not enough space on the Uno to add this feature, sorry.}
@@ -506,6 +524,7 @@ In MIDI& Out MIDI&Control MIDI&MIDI Clock&Volume (on Mega)\\
 Of particular use are Tempo, Note Speed, Swing, and especially Click.
 
 
+\clearpage
 
 \section {The Note Recorder}
 
@@ -573,7 +592,6 @@ The Recorder records nothing but MIDI NOTE ON and NOTE OFF messages.  It present
 \vspace{-3em}\end{figure}
 
 
-\clearpage
 \section {The MIDI Gauge}
 
 
@@ -641,8 +659,8 @@ Messages that are associated with a MIDI channel will have their channel number 
 Note messages are displayed with both the {\bf pitch} (at left) and the {\bf velocity} (at right) of the note value, plus the particular kind of message in question: {\bf Note On, Note Off,} and {\bf Polyphonic Aftertouch}.
 
 \begin{wrapfigure}{r}{1.8in}
-\vspace{-2.5em}\includegraphics[width=1.8in]{octave.pdf}
-\vspace{-2em}\caption{\small Octave Values.  Three common octave numbering schemes shown: Yamaha, SPN (so-called {\it Scientific Pitch Notation}), and MIDI.  SPN is the most common on keyboards.}\vspace{-4em}
+\includegraphics[width=1.8in]{octave.pdf}
+\vspace{-2em}\caption{\small Octave Values.  Three common octave numbering schemes shown: Yamaha, SPN (so-called {\it Scientific Pitch Notation}), and MIDI.  SPN is the most common on keyboards.}\vspace{-5em}
 \label{octave}
 \end{wrapfigure}
 
@@ -662,7 +680,6 @@ Note pitches are displayed by showing the note (such as B$\flat$), with the octa
 \item {\bf MIDI Time Code}
 \item {\bf MIDI Clock}
 \end{itemize}
-
 
 
 \section {The Controller}
@@ -704,6 +721,11 @@ Optional control voltage is sent out one of two Digital-to-Analog Converters or 
 
 		\item{\bf \textit{Note}} At the borders of 14-bit values (near 0 or 16383) you may find it harder to precisely set the BPM due to anti-potentiometer noise code in Gizmo. Just use the right knob to fine-tune your value. 
 	\end{description}
+	
+\paragraph{Warning} Gizmo could {\it theoretically} react to knob changes every 4 MIDI bytes read at full MIDI speed.  However an RPN/NRPN command will take up to 12 bytes (or 18 if \texttt{INCLUDE\_SEND\_NULL\_RPN} is turned on in the code), and a CC command could take up to 6 bytes.  This means that turning a knob may cause Gizmo to generate RPN/RPN/CC messages faster than it can send them.  Eventually the Arduino's write-buffer will fill with unwritten messages and the Arduino will pause until it's sent stuff out.  This could cause Gizmo to miss an incoming MIDI byte.  So if you're sending control commands while (say) at the same time passing data through, this may be an issue: though I have never had it happen to me.
+
+
+\clearpage
 
 \section {The Keyboard Splitter}
 \label{splitter}
@@ -731,7 +753,7 @@ The two MIDI channels in question are the Default MIDI Out Channel (defined in t
 \end{itemize}
 
 \begin{wrapfigure}{r}{1.5in}
-\includegraphics[width=1.5in]{Fade}
+\vspace{-3em}\includegraphics[width=1.5in]{Fade}
 \vspace{-2em}\caption{\small Cumulative Velocity the MIDI Out Channels when fading.  Default is {\color{red}red}, and Alternative is {\color{blue} blue}.}
 \vspace{-3em}
 \label{splitter}
@@ -753,12 +775,12 @@ As you play notes in the fader, their velocity will appear on-screen.
 
 If you press the Select Button, you'll be asked to enter a note.  This note will be Split Note A.  By default this note is Middle C.  You can back out if you don't want to enter the note.
 
+If you press the Middle Button you'll be asked to enter a note.  This note will be Split Note B.  By default this note is off.  You can back out if you don't want to enter the note.  You can also turn Split Note B off again by once again pressing the Middle Button, at which point you'll be presented with \texttt{-~-~-~-}.  You can also back out if you don't want remove Split Note B.
+
 \begin{wrapfigure}{r}{1in}
 \vspace{-1em}\includegraphics[width=1in]{none}
 \vspace{-2em}
 \end{wrapfigure}
-
-If you press the Middle Button you'll be asked to enter a note.  This note will be Split Note B.  By default this note is off.  You can back out if you don't want to enter the note.  You can also turn Split Note B off again by once again pressing the Middle Button, at which point you'll be presented with \texttt{-~-~-~-}.  You can also back out if you don't want remove Split Note B.
 
 You define the Alternative MIDI Out channel by Long-Pressing the Select Button.  The Alternative MIDI Channel must be a value 1--16 (you can't choose Off).
 
@@ -770,12 +792,12 @@ Long-pressing the Middle Button cycles through three options:
 \begin{itemize}
 \item Split/Layer the Keyboard, and route all CC, PC, Channel Aftertouch, and NRPN/RPN to the {\it right} (upper) split channel, that is, to the Default MIDI Out channel.  Pitch Bend is also routed to the right channel if you're doing a simple split, but if you're layering, it's routed to both channels.  Polyphonic Aftertouch is always routed to the channel handling the note in question, as are all Note On and Note Off messages.  The screen will show the Split A note, and will light the ``left'' LED (see Figure \ref{splitter})..
 \item Split/Layer the Keyboard, and route all CC, PC, Channel Aftertouch, and NRPN/RPN to the {\it left} (upper) split channel, that is, to the alternative MIDI Out Channel.  Pitch Bend is also routed to the left channel if you're doing a simple split, but if you're layering, it's routed to both channels.  Polyphonic Aftertouch is always routed to the channel handling the note in question, as are all Note On and Note Off messages.  The screen will show the Split A note at left and the Split B note at right, and will light the ``left'' LED (see Figure \ref{splitter}).
-\item Fade/Balance the Keyboard.  All CC, PC, Channel Aftertouch, and NRPN/RPN if routed to the alternative MIDI Out Channel.  Pitch Bend is routed to both channels, as is Polyphonic Aftertouch and all Note On and Note Off messages (though with inverted velocities as discussed earlier).  The screen will display \texttt{FADE}.
+\item Fade/Balance the Keyboard.  CC, PC, Channel Aftertouch, and NRPN/RPN is routed to the alternative MIDI Out Channel.  Pitch Bend, Polyphonic Aftertouch, all Note On and Note Off messages (though with inverted velocities as discussed earlier) are routed to both channels.  The screen will display \texttt{FADE}.
 \end{itemize}
 
 
-\begin{figure}[t]
-\includegraphics[width=6.5in]{thru.pdf}
+\begin{figure}[h!]
+\vspace{-1em}\includegraphics[width=6.5in]{thru.pdf}
 \vspace{-1.25em}
 \caption{Flow graph of the Thru Facility.}
 \vspace{-0.5em}

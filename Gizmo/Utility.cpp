@@ -240,18 +240,55 @@ void stateSave(uint8_t backState)
                     // pack the high-bit parts
                     for(uint8_t i = 0; i < num; i++)
                         {
-                        //// 1 bit mute
-                        //// 5 bits MIDI out channel (including "use default")
-                        //// 7 bits length
-                        //// 8 bits velocity (including "use per-note velocity")
-                        //// 7 bits fader
-
                         uint16_t pos = i * len * 2;
-                        distributeByte(pos, local.stepSequencer.muted[i] << 7);
-                        distributeByte(pos + 1, local.stepSequencer.outMIDI[i] << 3);
-                        distributeByte(pos + 6, local.stepSequencer.noteLength[i] << 1);
-                        distributeByte(pos + 13, local.stepSequencer.velocity[i]);
-                        distributeByte(pos + 21, local.stepSequencer.fader[i] << 1);
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+
+                        //// 1 bit type of data
+                        if (local.stepSequencer.data[i] == STEP_SEQUENCER_DATA_NOTE)
+                        	{
+                        	distributeByte(pos, 0 << 7);  // Note data is a 0
+                        	
+	                        //// 1 bit mute
+	                        //// 5 bits MIDI out channel (including "use default")
+	                        //// 7 bits length
+	                        //// 8 bits velocity (including "use per-note velocity")
+	                        //// 7 bits fader
+	
+	                        distributeByte(pos + 1, local.stepSequencer.muted[i] << 7);
+	                        distributeByte(pos + 2, local.stepSequencer.outMIDI[i] << 3);
+	                        distributeByte(pos + 7, local.stepSequencer.noteLength[i] << 1);
+	                        distributeByte(pos + 14, local.stepSequencer.velocity[i]);	
+	                        distributeByte(pos + 22, local.stepSequencer.fader[i] << 1);
+	                        }
+	                    else
+	                    	{
+                        	distributeByte(pos, 1 << 7);  // Control data is a 1
+                        	
+							////     3 bits: CC, NRPN, RPN, PC, BEND, AFTERTOUCH, VOLTAGE A, VOLTAGE B
+							////     14 bits Parameter
+							////     5 bits MIDI out channel
+
+							uint8_t controlDataType = local.stepSequencer.data[i] - 1;
+	                        distributeByte(pos + 1, controlDataType << 4);
+	                        distributeByte(pos + 4, local.stepSequencer.noteLength[i] << 1);		// MSB of Control Parameter
+	                        distributeByte(pos + 11, local.stepSequencer.velocity[i] << 1);			// LSB of Control Parameter
+	                        distributeByte(pos + 18, local.stepSequencer.outMIDI[i] << 3);
+	                    	}
+#else
+	                        //// 1 bit mute
+	                        //// 5 bits MIDI out channel (including "use default")
+	                        //// 7 bits length
+	                        //// 8 bits velocity (including "use per-note velocity")
+	                        //// 7 bits fader
+	
+	                        distributeByte(pos, local.stepSequencer.muted[i] << 7);
+	                        distributeByte(pos + 1, local.stepSequencer.outMIDI[i] << 3);
+	                        distributeByte(pos + 6, local.stepSequencer.noteLength[i] << 1);
+	                        distributeByte(pos + 13, local.stepSequencer.velocity[i]);	
+	                        distributeByte(pos + 21, local.stepSequencer.fader[i] << 1);
+#endif
+
+
                         }
                     saveSlot(currentDisplay);
                     stripHighBits();                        
@@ -316,28 +353,73 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                         // unpack the high-bit info
                         for(uint8_t i = 0; i < num; i++)
                             {
-//// 1 bit mute
-//// 5 bits MIDI out channel (including "use default")
-//// 7 bits length
-//// 8 bits velocity (including "use per-note velocity")
-//// 7 bits fader
                             uint16_t pos = i * len * 2;
+
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+
+                        //// 1 bit type of data
+                        if (gatherByte(pos) >> 7 == 0)	// It's a note
+                        	{
+	                        //// 1 bit mute
+	                        //// 5 bits MIDI out channel (including "use default")
+	                        //// 7 bits length
+	                        //// 8 bits velocity (including "use per-note velocity")
+	                        //// 7 bits fader
+	                        local.stepSequencer.data[i] = STEP_SEQUENCER_DATA_NOTE;
+	                        
+                            local.stepSequencer.muted[i] = (gatherByte(pos + 1) >> 7); // first bit
+                            local.stepSequencer.outMIDI[i] = (gatherByte(pos + 2) >> 3);  // top 5 bits moved down 3
+                            local.stepSequencer.noteLength[i] = (gatherByte(pos + 7) >> 1); // top 7 bits moved down 1
+                            local.stepSequencer.velocity[i] = (gatherByte(pos + 14)); // all 8 bits
+                            local.stepSequencer.fader[i] = (gatherByte(pos + 22) >> 1);  // top 7 bits moved down 1
+	                        }
+	                    else			// It's a control sequence
+	                    	{                        	
+							////     3 bits: CC, NRPN, RPN, PC, BEND, AFTERTOUCH, VOLTAGE A, VOLTAGE B
+							////     14 bits Parameter
+							////     5 bits MIDI out channel
+
+	                        uint8_t controlDataType = (gatherByte(pos + 1) >> 5);
+	                        local.stepSequencer.data[i] = controlDataType + 1;
+	                        local.stepSequencer.noteLength[i] = (gatherByte(pos + 4) >> 5);
+	                        local.stepSequencer.velocity[i] = (gatherByte(pos + 11) >> 5);
+	                        local.stepSequencer.outMIDI[i] = (gatherByte(pos + 18) >> 5);
+
+	                        distributeByte(pos + 1, local.stepSequencer.data[i] << 4);
+	                        distributeByte(pos + 4, local.stepSequencer.noteLength[i] << 1);		// MSB of Control Parameter
+	                        distributeByte(pos + 11, local.stepSequencer.velocity[i] << 1);			// LSB of Control Parameter
+	                        distributeByte(pos + 18, local.stepSequencer.outMIDI[i] << 3);
+	                    	}
+#else
+							//// 1 bit mute
+							//// 5 bits MIDI out channel (including "use default")
+							//// 7 bits length
+							//// 8 bits velocity (including "use per-note velocity")
+							//// 7 bits fader
                             local.stepSequencer.muted[i] = (gatherByte(pos) >> 7); // first bit
                             local.stepSequencer.outMIDI[i] = (gatherByte(pos + 1) >> 3);  // top 5 bits moved down 3
                             local.stepSequencer.noteLength[i] = (gatherByte(pos + 6) >> 1); // top 7 bits moved down 1
                             local.stepSequencer.velocity[i] = (gatherByte(pos + 13)); // all 8 bits
                             local.stepSequencer.fader[i] = (gatherByte(pos + 21) >> 1);  // top 7 bits moved down 1
+#endif
                             }
-                                
-                        local.stepSequencer.solo = 0;
-                        local.stepSequencer.currentTrack = 0;
-                        local.stepSequencer.currentEditPosition = 0;
+                            
                         stripHighBits();
-                        stopStepSequencer();
                         }
 #endif
                     }
                 }
+
+#ifdef INCLUDE_STEP_SEQUENCER
+                                
+                        local.stepSequencer.solo = 0;
+                        local.stepSequencer.currentTrack = 0;
+#ifdef INCLUDE_PROVIDE_RAW_CC
+						setParseRawCC(local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_CC);
+#endif
+                        local.stepSequencer.currentEditPosition = 0;
+                        stopStepSequencer();
+#endif
                 
             defaultState = STATE_NONE;
             entry = true;
@@ -525,6 +607,7 @@ void playApplication()
         {
 #ifdef INCLUDE_ARPEGGIATOR
         case STATE_ARPEGGIATOR_MENU:
+        case STATE_ARPEGGIATOR_PLAY:
             playArpeggio();          
             break; 
 #endif

@@ -116,8 +116,10 @@ struct _options
 	uint8_t recorderRepeat;
 #endif
 
+#ifdef INCLUDE_GAUGE
 #ifdef INCLUDE_PROVIDE_RAW_CC
-	uint8_t midiInProvideRawCC;
+	uint8_t gaugeMidiInProvideRawCC;
+#endif
 #endif
     };
 

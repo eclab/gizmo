@@ -53,7 +53,8 @@
 // WARNING: If you include the extended controller, this automatically includes VOLTAGE so you have to
 // modify the state options array in this case (see next).
 // 
-// INCLUDE_ARPEGGIATOR				Include the Arpeggiator application
+// INCLUDE_ARPEGGIATOR				Include the "basic" Arpeggiator application (the one which appears in the Uno)
+// INCLUDE_EXTENDED_ARPEGGIATOR		Include the "full" Arpeggiator application (the one which appears in the Mega)
 // INCLUDE_STEP_SEQUENCER			Include the "basic" Step Sequencer application (the one which appears in the Uno)
 // INCLUDE_EXTENDED_STEP_SEQUENCER	Include the "full" Step Sequencer application (the one which appears in the Mega)
 // INCLUDE_RECORDER					Include the "basic" note recorder application (the one which appears in the Uno)
@@ -95,7 +96,7 @@
 // INCLUDE_PROVIDE_RAW_CC					When an application such as Gauge, can you optionally gauge raw CC rather than cooked (for NRPN etc.)?
 // INCLUDE_EXTENDED_GLYPH_TABLE				Should the extended glyph table be made available? 
 // INCLUDE_EXTENDED_FONT					Should the extended font be made available?
-
+// INCLUDE_SEND_NULL_RPN					Should we terminate NRPN/RPN messages with two additional CCs?  Better but slower.
 
 // -- EXPERIMENTAL JUNK --
 // INCLUDE_CONTROL_BY_NOTE					[In development] Should we allow control of Gizmo by playing notes on the Control channel?
@@ -105,7 +106,7 @@
 /// Here are the standard values for the MEGA and for the UNO
 
 #if defined(__MEGA__)
-#define INCLUDE_ARPEGGIATOR
+#define INCLUDE_EXTENDED_ARPEGGIATOR
 #define INCLUDE_EXTENDED_STEP_SEQUENCER
 #define INCLUDE_EXTENDED_RECORDER
 #define INCLUDE_EXTENDED_GAUGE
@@ -129,8 +130,7 @@
 #endif
 
 
-
-#if defined(__UNO__)	// Standard collection for the Uno
+#if defined(__UNO__)
 #define INCLUDE_ARPEGGIATOR
 #define INCLUDE_STEP_SEQUENCER
 #define INCLUDE_RECORDER
@@ -145,8 +145,14 @@
 
 // Below are dependencies
 
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+#define INCLUDE_ARPEGGIATOR
+#endif
+
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
 #define INCLUDE_STEP_SEQUENCER
+#define INCLUDE_VOLTAGE
+#define INCLUDE_EXTENDED_CONTROL_SIGNALS
 #endif
 
 #ifdef INCLUDE_EXTENDED_RECORDER
@@ -156,6 +162,7 @@
 #ifdef INCLUDE_EXTENDED_CONTROLLER
 #define INCLUDE_CONTROLLER
 #define INCLUDE_VOLTAGE
+#define INCLUDE_EXTENDED_CONTROL_SIGNALS
 #endif
 
 #ifdef INCLUDE_EXTENDED_GAUGE

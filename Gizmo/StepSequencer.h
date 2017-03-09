@@ -43,18 +43,29 @@
 // the PITCH and the VELOCITY of each note, which are 7 bits each, in two bytes, for a total of 192 x 2 = 384 bytes.
 // Additionally a REST is defined as having a pitch of 0 and a velocity of 0.  A TIE has a pitch of 1 and a velocity of 0.
 //
+// If we're storing CONTROL data rather than NOTE data, then 14-bits represent MSB + LSB, or (the value 2^14 - 1) "Nothing".
+// Yes, this means you can't enter 2^14-1 as a sequence value, oh well.
+//
 // A step sequence has a one-byte FORMAT, 16 bytes that are presently UNUSED, and a 384 byte BUFFER holding the notes.  
 //
 // Embedded in each track is some per-track data.  This data is stored in the 1 unused bit in each byte in the buffer
 // [recall that MIDI pitch and velocity are only 7 bits each].  Tracks can have as little as 32 bytes (16 notes x 2 bytes per note),
 // so we have 32 bits to pack stuff into.  The data is (in order):
 //
-//// 1 bit mute
-//// 5 bits MIDI out channel (including "use default", which is 17, and "no MIDI out", which is 0)
-//// 7 bits length
-//// 8 bits velocity (including "use per-note velocity", which is 128)
-//// 7 bits fader
-//// 4 bits unused
+//// 1 bit NOTE vs CONTROL
+//// If NOTE:
+////     1 bit mute
+////     5 bits MIDI out channel (including "use default", which is 17, and "no MIDI out", which is 0)
+////     7 bits length
+////     8 bits velocity (including "use per-note velocity", which is 128)
+////     7 bits fader
+////     3 bits unused
+//// If CONTROL:
+////     3 bits: CC MSB, NRPN MSB, RPN MSB, PC, BEND MSB, AFTERTOUCH, VOLTAGE A, VOLTAGE B
+////     14 bits Parameter
+////     5 bits MIDI out channel
+////     9 bits unused
+
 //
 // This extra data is packed and unpacked in Utilities.stateSave and Utilities.stateLoad, using the private functions
 // distributeByte and gatherByte (and stripHighBits).
@@ -162,8 +173,18 @@
 
 /// LOCAL
 
+#define STEP_SEQUENCER_DATA_NOTE	0
+#define STEP_SEQUENCER_DATA_CC		1		// raw CC, all 127 parameter numbers
+#define STEP_SEQUENCER_DATA_14_BIT_CC	2	// cooked 14-bit, only 31 parameter numbers
+#define STEP_SEQUENCER_DATA_NRPN	3
+#define STEP_SEQUENCER_DATA_RPN	4
+#define STEP_SEQUENCER_DATA_PC	5
+#define STEP_SEQUENCER_DATA_BEND	6
+#define STEP_SEQUENCER_DATA_AFTERTOUCH	7
 
-#define NO_TRACK 255
+#define MAX_CONTROL_VALUE (16383)
+
+#define NO_TRACK (255)
 
 struct _stepSequencerLocal
     {
@@ -174,6 +195,7 @@ struct _stepSequencerLocal
     // You'd think that the right way to do this would be to make a struct with each of these variables
     // and then just have an array of structs, one per track.  But it adds 400 bytes to the total code size.  :-(
         
+    uint8_t data[MAX_STEP_SEQUENCER_TRACKS];
     uint8_t outMIDI[MAX_STEP_SEQUENCER_TRACKS];             // Per-track MIDI out.  Can also be CHANNEL_DEFAULT
     uint8_t noteLength[MAX_STEP_SEQUENCER_TRACKS];  // Per-track note length, from 0...100, or PLAY_LENGTH_USE_DEFAULT
     uint8_t muted[MAX_STEP_SEQUENCER_TRACKS];               // Per-track mute toggle
@@ -183,6 +205,9 @@ struct _stepSequencerLocal
     uint8_t noteOff[MAX_STEP_SEQUENCER_TRACKS];
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
     uint8_t dontPlay[MAX_STEP_SEQUENCER_TRACKS];
+	uint16_t controlParameter[MAX_STEP_SEQUENCER_TRACKS];
+    uint16_t lastControlValue[MAX_STEP_SEQUENCER_TRACKS];
+    uint8_t newData;		// a temporary variable.  comes in from STATE_STEP_SEQUENCER_MENU_TYPE, used in STATE_STEP_SEQUENCER_MENU_TYPE_PARAMETER
 #endif      
     uint8_t solo;
     uint8_t currentTrack;                                                   // which track are we editing?
@@ -252,6 +277,8 @@ void playStepSequencer();
 
 // Gives other options
 void stateStepSequencerMenu();
+void stateStepSequencerMenuType();
+void stateStepSequencerMenuTypeParameter();
 
 void stopStepSequencer();
 

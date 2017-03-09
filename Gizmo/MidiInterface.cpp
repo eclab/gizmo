@@ -946,15 +946,26 @@ struct _controlParser
     // The controllerValueMSB is either a valid MSB or it is 
     // NO_MSB (128).
     uint8_t controllerValueMSB;
+    
+#ifdef INCLUDE_PROVIDE_RAW_CC
+    uint8_t parseRawCC = false;
+#endif
     };
         
-
 
 
 // We have two parsers: one for MIDI IN messages, and one for MIDI CONTROL messages
 GLOBAL struct _controlParser midiInParser;
 GLOBAL struct _controlParser midiControlParser;
-    
+
+
+
+void setParseRawCC(uint8_t val)
+	{
+	midiInParser.parseRawCC = val;
+	}
+
+
 
 void parse(_controlParser* parser, byte channel, byte number, byte value)
     {
@@ -962,7 +973,7 @@ void parse(_controlParser* parser, byte channel, byte number, byte value)
     // BEGIN PARSER
     
 #ifdef INCLUDE_PROVIDE_RAW_CC
-    if (options.midiInProvideRawCC && parser == &midiInParser)
+    if (parser == &midiInParser && parser->parseRawCC )
         {
         parser->status = INVALID;
         handleControlChange(channel, number, value, VALUE_7_BIT_ONLY);
@@ -1552,6 +1563,179 @@ void sendAllNotesOff()
 #endif
         }
     }
+
+
+
+// SEND CONTROLLER COMMAND
+// Sends a controller command, one of:
+// CC, NRPN, RPN, PC
+// [Only if INCLUDE_EXTENDED_CONTROL_SIGNALS]: Pitch Bend, Aftertouch
+// [Only if INCLUDE_VOLTAGE]: Voltage A, Voltage B
+//
+// These are defined by the CONTROL_TYPE_* constants defined elsewhere
+//
+// Some commands (CC, NRPN, RPN) have COMMAND NUMBERS.  The others ignore the provided number.
+//
+// Each command is associated with a VALUE.  All values are 14 bits and take the form
+// of an MSB (the high 7 bits) and an LSB (the low 7 bits).  Some data expects lower
+// resolution numbers than that -- in this case you must shift your data so it's zero-
+// padded on the right.  For example, if you want to pass in a 7-bit
+// number (for PC, some CC values, or AFTERTOUCH) you should do so as (myval << 7).
+// If you want to pass in a signed PITCH BEND value (an int16_t from -8192...8191), you
+// should do so as (uint16_t myval + MIDI_PITCHBEND_MIN).  If you want to pass in a 12-bit
+// value because VOLTAGE_A and VOLTAGE_B are actually only 12-bit you can do so as
+// (myval << 2), though you might as well send in a full 14-bit value.
+//
+// It's good practice to send a NULL RPN after sending an RPN or NRPN, but it's 50% more data
+// in an already slow command.  So Gizmo doesn't do it by default.  You can make Gizmo do it
+// with #define INCLUDE_SEND_NULL_RPN   [I'd set that somewhere in All.h]
+//
+// Here are the valid numbers and values for different commands:
+//
+// COMMAND	NUMBERS    	VALUES		NOTES
+// OFF		[everything is ignored, this is just a NOP]
+// CC		0-31		0-16383		1. If you send 7-bit data (zero-padded, shifted << 7) then the LSB will not be sent.
+// CC		32-127		0-127		1. Zero-pad your 7-bit data (shift it << 7).
+//									2. Some numbers are meant for special functions.  Unless you know what you're doing,
+//									   it'd be wise not to send on numbers 6, 32--63, 96--101, or 120--127
+// NRPN/RPN	0-16383		0-16383		1. If you send 7-bit data (zero-padded) then the LSB will not be sent.
+//									2. The NULL RPN terminator will only be sent if #define INCLUDE_SEND_NULL_RPN is on.
+//									   By default it's off.  See the end of http://www.philrees.co.uk/nrpnq.htm
+//									3. You can also send in an RPN/NRPN DATA INCREMENT or DECREMENT.  To do this, pass in the
+//									   value CONTROL_VALUE_INCREMENT [or DECREMENT] * 128 + DELTA.  A DELTA of 0 is the 
+//									   same as 1 and is the most common usage.
+// PC		[ignored]	0-127		1. Zero-pad your 7-bit data (shift it << 7)
+// BEND		[ignored]	0-16383		1. BEND is normally signed (-8192...8191).  If you have the value as a signed int16_t,
+//									   pass it in as (uint16_t) (myval + MIDI_PITCHBEND_MIN)
+// AFTERTOUCH [ignored]	0-127		1. Zero-pad your 7-bit data (shift it << 7)
+// VOLTAGE_A [ignored]	0-16383		1. Resolution is actually 12-bit (0-4095), but you should pass it in as 14-bit,
+//									   zero-padded.  So if you have a number from 0-4095, pass it in as (myval << 2)
+// VOLTAGE_B [ignored]	0-16383		1. Resolution is actually 12-bit (0-4095), but you should pass it in as 14-bit,
+//									   zero-padded.  So if you have a number from 0-4095, pass it in as (myval << 2)
+
+
+void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t fullValue, uint8_t channel)
+    {
+    uint8_t msb = fullValue >> 7;
+    uint8_t lsb = fullValue & 127;
+    
+    // amazingly, putting this here reduces the code by 4 bytes.  Though it could
+    // easily be removed as the switch below handles it!
+    if (commandType == CONTROL_TYPE_OFF)
+        return;
+    
+    if (channel == 0)                // we do not output
+        return;
+    
+    switch(commandType)
+        {
+        case CONTROL_TYPE_OFF:
+            {
+            // do nothing
+            }
+        break;
+        case CONTROL_TYPE_CC:
+            {
+            // There are two kinds of CC messages: ones with an MSB only,
+            // and ones with an MSB + [optional] LSB.  The second kind are messages whose
+            // command number is 0...31.  The first kind are messages > 31.
+            
+            MIDI.sendControlChange(commandNumber, msb, channel);
+            if (commandNumber < 32 && lsb != 0)             // send optional lsb if appropriate
+                {
+                MIDI.sendControlChange(commandNumber + 32, lsb, channel);
+                }
+            TOGGLE_OUT_LED(); 
+            }
+        break;
+        case CONTROL_TYPE_NRPN:
+            {
+            // Send 99 for NRPN, or 101 for RPN
+            MIDI.sendControlChange(99, commandNumber >> 7, channel);
+            MIDI.sendControlChange(98, commandNumber & 127, channel);  // LSB
+            if (msb == CONTROL_VALUE_INCREMENT)
+                {
+                MIDI.sendControlChange(96, lsb, channel);
+                }
+            else if (msb == CONTROL_VALUE_DECREMENT)
+                {
+                MIDI.sendControlChange(97, lsb, channel);
+                }
+            else
+                {
+                MIDI.sendControlChange(6, msb, channel);  // MSB
+                if (lsb != 0)
+                    MIDI.sendControlChange(38, lsb, channel);  // LSB
+                }
+#ifdef INCLUDE_SEND_NULL_RPN
+            MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
+            MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command
+#endif
+            TOGGLE_OUT_LED(); 
+            }
+        break;
+        // note merging these actually loses bytes.  I tried.
+        case CONTROL_TYPE_RPN:
+            {
+            MIDI.sendControlChange(101, commandNumber >> 7, channel);
+            MIDI.sendControlChange(100, commandNumber & 127, channel);  // LSB
+            if (msb == CONTROL_VALUE_INCREMENT)
+                {
+                MIDI.sendControlChange(96, lsb, channel);
+                }
+            else if (msb == CONTROL_VALUE_DECREMENT)
+                {
+                MIDI.sendControlChange(97, lsb, channel);
+                }
+            else
+                {
+                MIDI.sendControlChange(6, msb, channel);  // MSB
+                if (lsb != 0)
+                    MIDI.sendControlChange(38, lsb, channel);  // LSB
+                }
+#ifdef INCLUDE_SEND_NULL_RPN
+            MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
+            MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command
+#endif
+            TOGGLE_OUT_LED(); 
+            }
+        break;
+        case CONTROL_TYPE_PC:
+            {
+            if (msb <= MAXIMUM_PC_VALUE)
+                MIDI.sendProgramChange(msb, channel);
+            TOGGLE_OUT_LED(); 
+            }
+        break;
+        
+#ifdef INCLUDE_EXTENDED_CONTROL_SIGNALS
+        case CONTROL_TYPE_PITCH_BEND:
+            {
+            // move from 0...16k to -8k...8k
+            MIDI.sendPitchBend(((int)fullValue) - MIDI_PITCHBEND_MIN, channel);
+            }
+        break;
+        case CONTROL_TYPE_AFTERTOUCH:
+            {
+            MIDI.sendAfterTouch(msb, channel);
+            }
+        break;
+#endif
+#ifdef INCLUDE_VOLTAGE
+        case CONTROL_TYPE_VOLTAGE_A:
+            {
+            setValue(DAC_A, fullValue >> 2);
+            }
+        break;
+        case CONTROL_TYPE_VOLTAGE_B:
+            {
+            setValue(DAC_B, fullValue >> 2);
+            }
+        break;
+#endif
+        }
+    }
+
 
 
 

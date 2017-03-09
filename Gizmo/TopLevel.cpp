@@ -1058,6 +1058,12 @@ void go()
 #ifdef INCLUDE_STEP_SEQUENCER
         case STATE_STEP_SEQUENCER:
             {
+			if (entry)		// we do this because this state is entered just before we exit the entire step sequencer
+				{
+#ifdef INCLUDE_PROVIDE_RAW_CC
+				setParseRawCC(false);
+#endif
+				}
             stateLoad(STATE_STEP_SEQUENCER_PLAY, STATE_STEP_SEQUENCER_FORMAT, STATE_ROOT, STATE_STEP_SEQUENCER);
             }
         break;
@@ -1078,6 +1084,9 @@ void go()
                 clearScreen();
                 clearBuffer();
                 memset(local.gauge.fastMidi, 0, 3);
+#ifdef INCLUDE_PROVIDE_RAW_CC
+				setParseRawCC(options.gaugeMidiInProvideRawCC);
+#endif
                 entry = false; 
                 }
             else
@@ -1101,7 +1110,7 @@ void go()
 #ifdef INCLUDE_EXTENDED_GAUGE
                 if (isUpdated(SELECT_BUTTON, RELEASED))
                     {
-                    options.midiInProvideRawCC = !options.midiInProvideRawCC;
+                    setParseRawCC(options.gaugeMidiInProvideRawCC = !options.gaugeMidiInProvideRawCC);
                     saveOptions();
                     }
 #endif
@@ -1156,7 +1165,7 @@ void go()
                             case MIDI_CC_7_BIT:
                                 {
 #ifdef INCLUDE_EXTENDED_GAUGE
-                                if (options.midiInProvideRawCC)
+                                if (options.gaugeMidiInProvideRawCC)
                                     {
                                     clearBuffer(); // so we stop scrolling
                                     writeShortNumber(led2, (uint8_t) itemNumber, true);
@@ -1355,7 +1364,7 @@ void go()
                 drawMIDIChannel(itemChannel);
 
 #ifdef INCLUDE_EXTENDED_GAUGE
-                if (options.midiInProvideRawCC)
+                if (options.gaugeMidiInProvideRawCC)
                     setPoint(led, 5, 1);
                 else
                     clearPoint(led, 5, 1);
@@ -1371,6 +1380,9 @@ void go()
 
             if (isUpdated(BACK_BUTTON, RELEASED))
                 {
+#ifdef INCLUDE_PROVIDE_RAW_CC
+				setParseRawCC(false);
+#endif
                 goUpStateWithBackup(STATE_ROOT);
                 }
             }
@@ -1597,7 +1609,20 @@ void go()
             }
         break;
 #endif
-        
+
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+        case STATE_STEP_SEQUENCER_MENU_TYPE:
+            {
+            stateStepSequencerMenuType();
+            }
+        break;
+        case STATE_STEP_SEQUENCER_MENU_TYPE_PARAMETER:
+            {
+            stateStepSequencerMenuTypeParameter();
+            }
+        break;
+#endif
+       
 #ifdef INCLUDE_RECORDER
         case STATE_RECORDER_FORMAT:
             {
@@ -1684,7 +1709,7 @@ void go()
                                 // Now move to MSB+LSB
                                 local.control.displayValue = local.control.displayValue << 7;
                                                                 
-                                sendControllerCommand( local.control.displayType = options.middleButtonControlType, options.middleButtonControlNumber, local.control.displayValue);
+                                sendControllerCommand( local.control.displayType = options.middleButtonControlType, options.middleButtonControlNumber, local.control.displayValue, options.channelOut);
                                                         
                                 }
                             else
@@ -1725,7 +1750,7 @@ void go()
                                 // Now move to MSB+LSB
                                 local.control.displayValue = local.control.displayValue << 7;
                                                                 
-                                sendControllerCommand( local.control.displayType = options.selectButtonControlType, options.selectButtonControlNumber, local.control.displayValue); 
+                                sendControllerCommand( local.control.displayType = options.selectButtonControlType, options.selectButtonControlNumber, local.control.displayValue, options.channelOut); 
                                 }
                             else
                                 local.control.displayType = CONTROL_TYPE_OFF;
@@ -1742,7 +1767,7 @@ void go()
                     // Now move to MSB+LSB
                     local.control.displayValue = local.control.displayValue << 4;
                                 
-                    sendControllerCommand( local.control.displayType = options.leftKnobControlType, options.leftKnobControlNumber, local.control.displayValue);
+                    sendControllerCommand( local.control.displayType = options.leftKnobControlType, options.leftKnobControlNumber, local.control.displayValue, options.channelOut);
                     }
           
                 if (potUpdated[RIGHT_POT] && (options.rightKnobControlType != CONTROL_TYPE_OFF))
@@ -1753,7 +1778,7 @@ void go()
                     // Now move to MSB+LSB
                     local.control.displayValue = local.control.displayValue << 4;
                     
-                    sendControllerCommand( local.control.displayType = options.rightKnobControlType, options.rightKnobControlNumber, local.control.displayValue); 
+                    sendControllerCommand( local.control.displayType = options.rightKnobControlType, options.rightKnobControlNumber, local.control.displayValue, options.channelOut); 
                     }
                 }
    
