@@ -958,14 +958,12 @@ struct _controlParser
 GLOBAL struct _controlParser midiInParser;
 GLOBAL struct _controlParser midiControlParser;
 
-
-
+#ifdef INCLUDE_PROVIDE_RAW_CC
 void setParseRawCC(uint8_t val)
     {
     midiInParser.parseRawCC = val;
     }
-
-
+#endif
 
 void parse(_controlParser* parser, byte channel, byte number, byte value)
     {
