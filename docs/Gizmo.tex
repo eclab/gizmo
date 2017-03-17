@@ -69,7 +69,7 @@ Gizmo applications can also be set with a {\it note value} (or {\it note speed})
 
 \item {\bf  \textit{Mega Only} Control Voltage / Gate.}\quad You can configure Gizmo to output control voltage (CV) values from 0--5V, as well as trigger a 5V gate, and output 0--5V in response to another signal, either velocity or aftertouch, all in response to notes being played. 
 
-\item {\bf \textit{Mega Only}\quad Transposition and Volume Control.}\footnote{{\it Didn't this used to be available for the Uno?\quad}Yeah.  Ran out of space fixing bugs.}\quad You can transpose all of Gizmo's MIDI output pitch by anywhere from \(-60...60\) steps.  Additionally you can multiply the MIDI output velocity (volume) by multiples of two ranging from \(1/8\) to \(8\).
+\item {\bf \textit{Mega Only}\quad Transposition and Volume Control.}\quad You can transpose all of Gizmo's MIDI output pitch by anywhere from \(-60...60\) steps.  Additionally you can multiply the MIDI output velocity (volume) by multiples of two ranging from \(1/8\) to \(8\).
 
 \item {\bf \textit{Mega Only}\quad Menu Delay.}\quad Many of Gizmo's menus display the first few letters of a menu item, then pause for some interval of time before they start scrolling the full item.  You can change this interval.
 
@@ -92,7 +92,7 @@ Hopefully there'll be more than this.  Message filtering?  A MIDIPal-style CC LF
 
 \begin{enumerate}
 
-\item {\bf Assemble the Hardware}\quad Gizmo consists of an Arduino Uno or Arduino Mega, a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898}, and an Adafruit 16x8 LED Matrix\footnote{This matrix comes in various colors LED shapes (round, square), and matrix sizes (0.8 inch, 1.2 inch).  I personally use a 1.2 inch round red matrix.  The URL for my model is https:/\!/www.adafruit.com/products/2037} attached via four wires (I2C).  The SparkFun MIDI Shield does not come with headers to plug into the Arduino, and you'll need to get those too: it's assumed you'll either use plain headers, or use stackable headers.  I use stackable headers as it makes it easy for me to plug my four test wires into it.  See Section \ref{debouncing} for a warning about the low-quality buttons supplied with the MIDI Shield and what to do about it.
+\item {\bf Assemble the Hardware}\quad Gizmo consists of an Arduino Uno or Arduino Mega, a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898}, and an Adafruit 16x8 LED Matrix\footnote{This matrix comes in various colors LED shapes (round, square), and matrix sizes (0.8 inch, 1.2 inch).  I personally use a 1.2 inch round red matrix.  The URL for my model is https:/\!/www.adafruit.com/products/2037} attached via four wires (I2C).  The SparkFun MIDI Shield does not come with headers to plug into the Arduino, and you'll need to get those too: it's assumed you'll either use plain headers, or use stackable headers.  I use stackable headers as it makes it easy for me to plug my four I2C wires into it.  See Section \ref{debouncing} for a warning about the low-quality buttons supplied with the MIDI Shield and what to do about it.
 
 Attach the four wires for SDA, SCL, 5V (VCC), and GND between the MIDI Shield and the LED Matrix.  
 
@@ -159,11 +159,30 @@ This procedure initializes the memory, options, and files in the device.  Now yo
 
 \end{enumerate}
 
+\subsection{Customizing Your Arduino}
+
+Gizmo is fairly modular: you can choose which applications you want to have on your device, as well as various features.  This allows us to (for example) have more applications and features on the Mega than on the Uno.  If you want to port to a device with a somewhat tighter memory footprint (such as the Arduino Mini), or want to make room on the Uno for your own application, you just need to change which options are installed.  See the file \texttt{All.h}
+
+\section{Initializing Gizmo}
+
+Gizmo must be initialized before it can be used.  You can do a factory reset on Gizmo with this procedure:
+
+\begin{enumerate}
+\item Hold down all three buttons
+\item Press the reset button
+\item Continue to hold down all three buttons until both on-board LEDs have lit.
+\item Let go of the buttons.
+\end{enumerate}
+
+Gizmo will reset all of its flash RAM and reboot.  This means that all options will be set to their default state, and all file storage (including arpeggios) will be emptied.
+
+\paragraph{Note} Different Gizmo configurations arrange the options memory region differently, so whenever you load new Gizmo software, you should reinitialize it or strange things will happen.  However a full factory reset also erases your saved files (sequences, arpeggios, recordings).  If you want to preserve these but reset the options, just hold down the left and right buttons instead of all three (don't hold down the middle button).
+
 \subsection{Starting Gizmo Headless}
 
 Gizmo normally targets the SparkFun MIDI Shield, but you might be able to use its code with some other MIDI shield, as long as the shield just intercepts Serial to do its MIDI and doesn't interfere with I2C.  Such MIDI shields are unlikely to have the button, pots, or LEDs that the SparkFun shield has.  But that's okay, you can control the buttons and pots virtually via NRPN, and just do without the two LEDs.
 
-To do this you'll need to reset Gizmo's options without needing to press any buttons (as you won't have any).  You can do it like this:
+To do this you'll need to clear Gizmo's options and files without needing to press any buttons (as you won't have any).  You can do it like this:
 
 \begin{enumerate}
 \item In the \texttt{All.h} file, change the line 
@@ -206,9 +225,28 @@ Now you need to modify Gizmo's code to run headless, so it doesn't bother lighti
 
 I make no guarantees that this will work: but it might.
 
-\subsection{Customizing Your Arduino}
+\section{Starting Gizmo}
 
-Gizmo is fairly modular: you can choose which applications you want to have on your device, as well as various features.  This allows us to (for example) have more applications and features on the Mega than on the Uno.  If you want to port to a device with a somewhat tighter memory footprint (such as the Arduino Mini), or want to make room on the Uno for your own application, you just need to change which options are installed.  See the file \texttt{All.h}
+\begin{wrapfigure}{r}{2in}
+\vspace{-1.5em}\includegraphics[width=2in]{Gizmo1.pdf}
+\vspace{-2em}\caption{\small Boot Screen}\vspace{-2em}
+\label{BootScreen}
+\end{wrapfigure}
+
+If you power up Gizmo, or press its reset button, it will display its {\bf boot screen}, which includes the version number (at right, the version number is ``1'').
+
+Gizmo will then show the {\bf root menu}.  Use the left potentiometer to scroll to any of the following applications, and use the select button to select an application.  Available applications are:
+
+\subsection{A Bootloader Bug on the Arduino Mega}
+
+Many current versions of the Arduino Mega have an error in their bootloader which may cause the Arduino to hang if you've got a MIDI device cables plugged into MIDI IN when you power Gizmo up.  The issue is simple: if on bootup the Mega hears data coming in on MIDI IN (which is its serial port), the bootloader assumes that you're trying to download a new program and immediately goes into program-load mode.    But in fact it's probably just MIDI Clock or Active Sensing commands from a chatty synthesizer.  You have four options:
+
+\begin{itemize}
+\item Turn on Gizmo without anything plugged into MIDI IN, then plug the cable in
+\item Turn off the synthesizer, turn on Gizmo, then turn the synthesizer back on.
+\item Turn on Gizmo with its switch set to ``Prog'', then when it's running, switch it over to ``Run''.  I suggest this one.
+\item Permanently fix the issue by burning a new bootloader.  This is an involved process, and I don't suggest it.  See https:/\!/github.com/arduino/Arduino/issues/2101
+\end{itemize}
 
 
 \clearpage
@@ -279,31 +317,8 @@ Gizmo listens for certain kinds of incoming MIDI data, then hands it to an {\bf 
 
 \vspace{-0.5em}\paragraph{Controlling Gizmo} One incoming channel can be defined as the {\bf default MIDI Control Channel}.  Data on this channel is used only to manipulate Gizmo (via NRPN or CC), for example, changing a parameter.
 
-\section{Initializing Gizmo}
 
-Gizmo must be initialized before it can be used.  You can also do a factory reset on Gizmo with this procedure:
-
-\begin{enumerate}
-\item Hold down all three buttons
-\item Press the reset button
-\item Continue to hold down all three buttons until both on-board LEDs have lit.
-\item Let go of the buttons.
-\end{enumerate}
-
-Gizmo will reset all of its flash RAM and reboot.  This means that all options will be set to their default state, and all file storage (including arpeggios) will be emptied.
-
-\section{Starting Gizmo}
-
-\begin{wrapfigure}{r}{2in}
-\vspace{-1.5em}\includegraphics[width=2in]{Gizmo1.pdf}
-\vspace{-2em}\caption{\small Boot Screen}\vspace{-2em}
-\label{BootScreen}
-\end{wrapfigure}
-
-If you power up Gizmo, or press its reset button, it will display its {\bf boot screen}, which includes the version number (at right, the version number is ``1'').
-
-Gizmo will then show the {\bf root menu}.  Use the left potentiometer to scroll to any of the following applications, and use the select button to select an application.  Available applications are:
-
+\clearpage
 \section {The Arpeggiator}
 
 \begin{wrapfigure}{r}{3in}
@@ -349,29 +364,41 @@ As you play a preset arpeggio, the notes played by the arpeggio will appear at r
 
 While playing a preset arpeggio, you can select the number of octaves by choosing calling up the menu by Long-Pressing the Select button, then choosing {\bf Octaves}.  If you have an octaves value \(\geq 0\), then when the arpeggiator exhausts its notes, it will repeat them again one octave higher, then another octave higher, and so on, up to the number of octaves chosen. You an select any value from 0--6 octaves.\footnote{Note that this means that if your chord is larger than one octave, you may not get what you expected.  For example, if you are playing UP with C5 E5 G5 D6, and with octaves\(=\)1, then the arpeggiator will play C5 E5 G5 D6 C6 E6 G6 D7.  Note that C6 is played after D6 is played.  That's the current behavior right now anyway.}
 
-\begin{wrapfigure}{r}{1.6in}
-\begin{center}
-\vspace{-2em}\includegraphics[width=1in]{arpeggioexample.pdf}\\
-Example Arpeggio\\[2em]
-\vspace{-1.5em}\includegraphics[width=1in]{arpeggioup.pdf}\\
-Ascending Notes\\in Sparse Mode\\[2em]
-\vspace{-1.5em}\includegraphics[width=1in]{arpeggiodoubleup.pdf}\\
-Ascending Notes\\in Dense Mode\\
-\end{center}
-\vspace{-1em}\caption{\small Example Arpeggio Editing Displays}
-\vspace{-3em}
-\label{arpeggioediting}
-\end{wrapfigure}
-
 By default the key velocity\footnote{By velocity we mean in the MIDI sense: how fast the key is struck; this basically translates to loudness.} that {\it all} notes in the track will use (as a value 0...127) is determined by the {\bf first note} you press when you hold down a chord.  This strategy usually works well, but if you can instead fix the velocity to a specific value by (once again) calling up the menu by Long-Pressing the Select button, then choosing {\bf Velocity}.  At the far highest end of the velocity options is \texttt{FREE}, which means that the velocity is determined by your fingers again (this is the default).
 
 \paragraph{Creating an Arpeggio}
 
 The last menu option in the top-level Arpeggiator menu is {\bf Create}.  If you choose this, you can create an Arpeggio.  To do this you enter notes one by one.  These won't be the {\it actual} notes that are played when you hold down a chord.  Rather, after you save the result, the Arpeggiator will compact these notes into a sequence of consecutive numbers.  For example, if you play C3 E3 G3 E3 G2, then the Arpeggiator will compact these into 2 3 4 3 1.  Then when you play this as an arpeggio, the Arpeggiator will assign each of these numbers, in order, to the notes in your chord. 
 
+\begin{wrapfigure}{r}{1.6in}
+\begin{center}
+\vspace{-2em}
+\includegraphics[width=1in]{arpeggioexample.pdf}\\
+Example Arpeggio\\[2em]
+%\vspace{-1.5em}\includegraphics[width=1in]{arpeggioup.pdf}\\
+%Ascending Notes\\in Sparse Mode\\[2em]
+%\vspace{-1.5em}\includegraphics[width=1in]{arpeggiodoubleup.pdf}\\
+%Ascending Notes\\in Dense Mode\\
+\end{center}
+%\vspace{-1em}\caption{\small Example Arpeggio Editing Displays}
+\vspace{-2em}
+\label{arpeggioediting}
+\end{wrapfigure}
+
 The first question you will be asked is \texttt{NOTE}: the Arpeggiator is asking you to specify the note in your arpeggio pattern which will correspond to the root (lowest) note in a played chord.  This allows you to make a pattern which plays notes both above and below the played chord.  For example, if the Root is C3, then the above pattern will instruct the Arpeggiator to play its final note {\it below} the chord root.
 
 After you have entered the root, the Arpeggiator will wait for you to start playing notes.  You can enter a sequence of up to 32 notes, including 15 unique notes.  You can also enter rests by pressing the Middle button.  If you enter more than 15 unique notes, or more than 32 notes in total, the Arpeggiator will simply refuse to accept the next note.
+
+\begin{wrapfigure}{r}{3.5in}
+\begin{center}
+%\vspace{-2.5em}
+\includegraphics[width=3.5in]{arpeggionotes.pdf}\\
+\end{center}
+\vspace{-1em}\caption{Displayed arpeggio notes.  If you have entered more than 7 unique notes, the arpeggio will switch to ``dense mode'' to display them.}
+\vspace{-2em}
+\label{arpeggionotes}
+\end{wrapfigure}
+
 
 As you enter notes, they are displayed in the left half of the LED, and the latest note pitch is displayed in the right half. Figure~\ref{arpeggioediting} shows different arpeggio patterns.  If you have eight or fewer unique notes in your pattern, then they will be displayed in {\it sparse mode} as shown at right.  If you have over eight notes, they will be displayed in {\it dense mode} in order to show all of the notes.  The LEDs don't show the notes per se, but rather the consecutive numbers that the notes represent.  For example, the ascending notes shown at right could be C, D, E, F, G, A, B, C, or they could be C, C\(\sharp\), D, D\(\sharp\), E, F, F\(\sharp\), B.
 
@@ -380,14 +407,6 @@ If you don't like the latest portion of your arpeggio, you can scroll the cursor
 An {\bf important note regarding the scrolling.}  The cursor is always located at the position where new notes will be entered.  But as you scroll back and forth, you'll hear the notes of your arpeggio.  When you scroll and hear a note, that note is the note {\it immediately before} the cursor position.  It's the last note in the arpeggio before you start adding new notes. It is {\it not} the note that you'll replace when you start entering notes. 
 
 Anyway, when you are satisfied with your arpeggio, Long-Press the Select button to save.  You'll be asked for a slot to save in, and after that, you'll be back in the main Arpeggiator menu.
-
-\begin{wrapfigure}{r}{3.5in}
-\begin{center}
-\vspace{-2.5em}\includegraphics[width=3.5in]{arpeggionotes.pdf}\\
-\end{center}
-\vspace{-1em}\caption{Displayed arpeggio notes.  If you have entered more than 7 unique notes, the arpeggio will switch to ``dense mode'' to display them.}
-\label{arpeggionotes}
-\end{wrapfigure}
 
 \paragraph{Playing a User-Created Arpeggio}
 
