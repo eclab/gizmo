@@ -42,9 +42,9 @@ GLOBAL const char* options_p;  // = PSTR("OPTIONS");
 GLOBAL uint8_t bypass = 0;                                        // Do we bypass the system entirely and just let MIDI flow through the box?
 
 
-void toggleBypass()
+void toggleBypass(uint8_t channel)
     {
-    sendAllNotesOffDisregardBypass();
+    sendAllNotesOffDisregardBypass(channel);
     if (!bypass) 
         {
         // clear the LEDs
@@ -358,6 +358,16 @@ uint8_t update()
     }
   
 
+// SEMIRESET()  
+// This resets and resaves the options, then reboots the board
+
+void semiReset()
+	{
+    resetOptions();
+    saveOptions();
+    soft_restart();
+	}
+
 
 // FULLRESET()  
 // This resets all the parameters to their default values in the EEPROM,
@@ -365,9 +375,6 @@ uint8_t update()
 
 void fullReset()
     {
-    resetOptions();
-    saveOptions();
-
     for(uint8_t i = 0; i < NUM_SLOTS; i++)
         {
         loadSlot(i);
@@ -382,7 +389,7 @@ void fullReset()
         SAVE_ARPEGGIO(i);
         }
 
-    soft_restart();
+	semiReset();
     }
 
 
@@ -996,7 +1003,9 @@ GLOBAL uint8_t application = FIRST_APPLICATION;           // The top state (the 
 GLOBAL uint8_t entry = 1;  
 GLOBAL uint8_t optionsReturnState;
 GLOBAL uint8_t defaultState = STATE_NONE;
-
+#ifdef INCLUDE_IMMEDIATE_RETURN
+GLOBAL uint8_t immediateReturn = false;
+#endif
 
 ////// GO()
 //
@@ -1026,7 +1035,7 @@ void go()
     
     if (isUpdated(BACK_BUTTON, RELEASED_LONG))
         {
-        toggleBypass();
+        toggleBypass(CHANNEL_OMNI);
         }
 
     // Now do your state-specific thing
@@ -1938,7 +1947,14 @@ void go()
                         saveOptions();
                     // FALL THRU
                 case MENU_CANCELLED:
+#ifdef INCLUDE_IMMEDIATE_RETURN
+      	      	if (immediateReturn)
+           	 		goUpStateWithBackup(optionsReturnState);
+	            else
+    	        	goUpStateWithBackup(STATE_OPTIONS);
+#else
                     goUpStateWithBackup(STATE_OPTIONS);
+#endif
                     setPulseRate(options.tempo);
                     break;
                 }
@@ -2084,7 +2100,12 @@ void go()
 
         case STATE_OPTIONS_PLAY_LENGTH:
             {
+#ifdef INCLUDE_IMMEDIATE_RETURN
+            stateNumerical(0, 100, options.noteLength, backupOptions.noteLength, true, false, OTHER_NONE, 
+            	immediateReturn ? optionsReturnState : STATE_OPTIONS);
+#else
             stateNumerical(0, 100, options.noteLength, backupOptions.noteLength, true, false, OTHER_NONE, STATE_OPTIONS);
+#endif
             playApplication();
             }
         break;

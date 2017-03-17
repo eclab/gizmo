@@ -65,13 +65,22 @@ void setup()
     port_SELECT_BUTTON = portInputRegister(digitalPinToPort(PIN_SELECT_BUTTON));
 
     // All three buttons pressed on startup?  Do a full reset after 5 seconds
-    if (digitalRead(PIN_BACK_BUTTON) == 0 && digitalRead(PIN_MIDDLE_BUTTON) == 0 && digitalRead(PIN_SELECT_BUTTON) == 0)
-	{
-	//digitalWrite(PIN_LED_RED, 0);
-	//digitalWrite(PIN_LED_GREEN, 0);
-	delay(5000);
-	fullReset();
-	}
+    if (digitalRead(PIN_BACK_BUTTON) == 0 && digitalRead(PIN_SELECT_BUTTON) == 0)
+		{
+    	// Turn the board LEDs on
+		digitalWrite(PIN_LED_RED, 0);
+		digitalWrite(PIN_LED_GREEN, 0);
+		delay(5000);
+		
+		if (digitalRead(PIN_MIDDLE_BUTTON) == 0)
+			{
+			fullReset();
+			}
+		else
+			{
+			semiReset();
+			}
+		}
 
     // Turn the board LEDs off
     digitalWrite(PIN_LED_RED, 1);

@@ -17,7 +17,7 @@
 // TODO: Perhaps we should allow high-resolution pitch bend in
 // this as well.  It'd require (1) storing the current note on, and
 // (2) allowing the user to specify the pitch bend range.
-void setPrimaryVoltage(uint8_t voltage, uint8_t on)
+void setPrimaryVoltage(uint8_t note, uint8_t on)
     {
     // should we bail?
     if (options.voltage == NO_VOLTAGE 
@@ -35,9 +35,10 @@ void setPrimaryVoltage(uint8_t voltage, uint8_t on)
         *port_VOLTAGE_GATE &= ~VOLTAGE_GATE_mask;
         }       
 
-    // per setNote(), the only valid notes are MIDI# 36 ... 60, which
-    // will correspond to 0...5V with 1V per octave
-    setNote(DAC_A, voltage); 
+    // The only valid notes are MIDI# 36 ... 60, which will correspond to 0...5V with 1V per octave
+    if (note < 36 || note > 96) return;
+
+    setValue(DAC_A, (4095 * ((uint16_t) note - 36)) / 60);
         
     if (on) 
         {
@@ -347,7 +348,7 @@ void handleNoteOn(byte channel, byte note, byte velocity)
             break;
             case CC_BYPASS_PARAMETER:
                 {
-                toggleBypass();
+                toggleBypass(CHANNEL_OMNI);
                 }
             break;
             case CC_UNLOCK_PARAMETER:
@@ -617,7 +618,7 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
             break;
             case CC_BYPASS_PARAMETER:
                 {
-                toggleBypass();
+                toggleBypass(CHANNEL_OMNI);
                 }
             break;
             case CC_UNLOCK_PARAMETER:
@@ -716,7 +717,7 @@ void handleNRPN(byte channel, uint16_t parameter, uint16_t value, uint8_t valueT
             break;
             case NRPN_BYPASS_PARAMETER:
                 {
-                toggleBypass();
+                toggleBypass(CHANNEL_OMNI);
                 }
             break;
             case NRPN_UNLOCK_PARAMETER:
@@ -1465,15 +1466,20 @@ void sendPolyPressure(uint8_t note, uint8_t pressure, uint8_t channel)
 #endif
     TOGGLE_OUT_LED();
     }
+    
+
 
 /// Sets voltage to 0 on both DACs, which (I presume) means "Note off"
 /// Perhaps this should be revisited.  This function is a helper function
 /// for the functions below.
 #ifdef INCLUDE_VOLTAGE
+uint8_t lastVoltageNote = NO_NOTE;
+
 void turnOffVoltage()
     {
     setPrimaryVoltage(0, 0);
     setSecondaryVoltage(0);
+    lastVoltageNote = NO_NOTE;
     }
 #endif
         
@@ -1503,11 +1509,11 @@ void sendNoteOn(uint8_t note, uint8_t velocity, uint8_t channel)
         {
         setPrimaryVoltage(note, 1);
         setSecondaryVoltage(velocity);
+        lastVoltageNote = note;
         }  
 #endif
     TOGGLE_OUT_LED();
     }
-
 
 /// Sends a note off, transposing as appropriate, and turning off the voltage
 void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel)
@@ -1525,7 +1531,7 @@ void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel)
     // the LED ON and OFF for a noteoff/noteon pair and you can't see the LED
 
 #ifdef INCLUDE_VOLTAGE
-    if (channel == options.channelOut)
+    if (channel == options.channelOut && note == lastVoltageNote)
         {
         turnOffVoltage();
         }
@@ -1536,12 +1542,19 @@ void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel)
          
 /// Sends an all notes off on ALL channels, regardless of whether bypass is turned on or not.
 /// Also turns off voltage.
-void sendAllNotesOffDisregardBypass()
+void sendAllNotesOffDisregardBypass(uint8_t channel)
     {
-    for(uint8_t i = LOWEST_MIDI_CHANNEL; i <= HIGHEST_MIDI_CHANNEL; i++)
-        {
-        MIDI.sendControlChange(123, 0, i);
+    if (channel == CHANNEL_OMNI)
+	    {
+	    for(uint8_t i = LOWEST_MIDI_CHANNEL; i <= HIGHEST_MIDI_CHANNEL; i++)
+        	{
+        	MIDI.sendControlChange(123, 0, i);
+        	}
         }
+    else
+    	{
+        MIDI.sendControlChange(123, 0, channel);
+    	}
 #ifdef INCLUDE_VOLTAGE
     turnOffVoltage();
 #endif
@@ -1553,7 +1566,7 @@ void sendAllNotesOffDisregardBypass()
 void sendAllNotesOff()
     {
     if (!bypass) 
-        sendAllNotesOffDisregardBypass();
+        sendAllNotesOffDisregardBypass(CHANNEL_OMNI);
     else
         {
 #ifdef INCLUDE_VOLTAGE

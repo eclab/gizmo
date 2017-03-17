@@ -185,6 +185,9 @@ extern uint8_t application;               // The top-level non-root state (the a
 extern uint8_t optionsReturnState;        // If we're in STATE_OPTIONS and the user presses BACK, where should we go?
 extern uint8_t defaultState;              // If we have just BACKed up into a menu state, what state should be the first one displayed?  This can be STATE_NONE
 extern uint8_t entry;                     // Are we just entering a state?
+#ifdef INCLUDE_IMMEDIATE_RETURN
+extern uint8_t immediateReturn;
+#endif
 
 // top-level state machine
 void go();
@@ -288,10 +291,10 @@ uint8_t isUpdated(uint8_t button, uint8_t val);
 // then reboots the board.
 
 void fullReset();
-
+void semiReset();
 
 //// BYPASS TOGGLE
-void toggleBypass();
+void toggleBypass(uint8_t channel);
 
 ///// THE DISPLAY
 

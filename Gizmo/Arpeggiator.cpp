@@ -7,6 +7,15 @@
 
 #ifdef INCLUDE_ARPEGGIATOR
 
+/*
+void turnAllNotesOff()
+	{
+	for(uint8_t i = 0; i < local.arp.numChordNotes; i++)
+		{
+		sendNoteOff(local.arp.chordNotes[i] & 127, 127, options.channelOut);
+		}
+	}
+*/
 
 // Starting at position pos, draws up to next SEVEN notes of the arpeggio.  
 // We leave a one-column space so as not to interfere with the right LED matrix
@@ -124,7 +133,7 @@ void playArpeggio()
     //
     // The last condition is because if the note length is 100% we want to NEVER turn off unless there's
     // a note pulse, even if the off time is exceeded, because we're doing fully legato.
-    if (local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || (currentTime >= local.arp.offTime && options.noteLength < 100))
+    if (!bypass && local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || (currentTime >= local.arp.offTime && options.noteLength < 100))
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
         // we don't want to turn off the note if the next note is a tie
         && !(                                                                                                                                                                                                                           // it's NOT the case that....
@@ -135,7 +144,8 @@ void playArpeggio()
         {
         if (local.arp.number == ARPEGGIATOR_NUMBER_CHORD_REPEAT)
             {
-            sendAllNotesOff();
+//            turnAllNotesOff();
+			MIDI.sendControlChange(123, 0, options.channelOut);
             }
         else
             {
@@ -442,6 +452,10 @@ void stateArpeggiatorPlay()
             }
         entry = false;
         }
+        
+#ifdef INCLUDE_IMMEDIATE_RETURN
+	immediateReturn = false;
+#endif
     
     if (updateDisplay)
         {    
@@ -469,8 +483,7 @@ void stateArpeggiatorPlay()
         }
     else if (isUpdated(SELECT_BUTTON, RELEASED))
         {
-        sendAllNotesOff();
-        toggleBypass();
+        toggleBypass(options.channelOut);
         }
     else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
         {
@@ -487,6 +500,9 @@ void stateArpeggiatorPlay()
             ((pot[LEFT_POT] > local.arp.oldLeftPot && pot[LEFT_POT] - local.arp.oldLeftPot > ARP_POT_SLOP) ||
             (local.arp.oldLeftPot > pot[LEFT_POT] && local.arp.oldLeftPot - pot[LEFT_POT] > ARP_POT_SLOP)))
         {
+#ifdef INCLUDE_IMMEDIATE_RETURN
+		immediateReturn = true;
+#endif
         optionsReturnState = STATE_ARPEGGIATOR_PLAY;
         goDownState(STATE_OPTIONS_PLAY_LENGTH);
         }
@@ -494,6 +510,9 @@ void stateArpeggiatorPlay()
             ((pot[RIGHT_POT] > local.arp.oldRightPot && pot[RIGHT_POT] - local.arp.oldRightPot > ARP_POT_SLOP) ||
             (local.arp.oldRightPot > pot[RIGHT_POT] && local.arp.oldRightPot - pot[RIGHT_POT] > ARP_POT_SLOP)))
         {
+#ifdef INCLUDE_IMMEDIATE_RETURN
+		immediateReturn = true;
+#endif
         optionsReturnState = STATE_ARPEGGIATOR_PLAY;
         goDownState(STATE_OPTIONS_TEMPO);
         }
