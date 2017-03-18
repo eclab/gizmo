@@ -250,10 +250,28 @@ uint8_t stopClock(uint8_t fromButton)
     externalMicrosecsPerPulse = 0;
     clockState = CLOCK_STOPPED;
 
-    // if we stop the clock some notes may be playing.  We reset them here.
-    if (options.clock == GENERATE_MIDI_CLOCK)
-        sendAllNotesOff();
+#ifdef INCLUDE_ARPEGGIATOR
+	if (application == STATE_ARPEGGIATOR)
+		{
+		MIDI.sendControlChange(123, 0, options.channelOut);
+		}
+	else
+#endif
 
+#ifdef INCLUDE_RECORDER
+	if (application == STATE_RECORDER)
+		{
+		MIDI.sendControlChange(123, 0, options.channelOut);
+		}
+#endif
+
+#ifdef INCLUDE_STEP_SEQUENCER
+	if (application == STATE_STEP_SEQUENCER)
+		{
+		sendAllNotesOff();
+		}
+#endif
+	
     return 1;
     }
 

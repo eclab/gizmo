@@ -7,16 +7,6 @@
 
 #ifdef INCLUDE_ARPEGGIATOR
 
-/*
-void turnAllNotesOff()
-	{
-	for(uint8_t i = 0; i < local.arp.numChordNotes; i++)
-		{
-		sendNoteOff(local.arp.chordNotes[i] & 127, 127, options.channelOut);
-		}
-	}
-*/
-
 // Starting at position pos, draws up to next SEVEN notes of the arpeggio.  
 // We leave a one-column space so as not to interfere with the right LED matrix
 //void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len = 7)
@@ -144,7 +134,6 @@ void playArpeggio()
         {
         if (local.arp.number == ARPEGGIATOR_NUMBER_CHORD_REPEAT)
             {
-//            turnAllNotesOff();
 			MIDI.sendControlChange(123, 0, options.channelOut);
             }
         else

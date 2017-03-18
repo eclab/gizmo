@@ -127,7 +127,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
             if (vel || blink)
                 {       
                 // <8 <16 <24 <32 <40 <48 <56 <64
-                if (d < 32)                             // only relevant for Mega
+                if (d < 32)                             // for reasons only known to ATMEL, if I don't have this line on the UNO it's much bigger.  But it's irrelevant!
                     {
                     if (d < 16)
                         {
@@ -152,6 +152,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
                             }
                         }
                     }
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
                 else
                     {
                     if (d < 48)
@@ -177,6 +178,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
                             }
                         }
                     }
+#endif
                 }
             }
         y -= skip;
