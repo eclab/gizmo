@@ -46,6 +46,10 @@ typedef enum _State: uint8_t
 	STATE_THRU,
 #endif
 
+#ifdef INCLUDE_SYNTH
+	STATE_SYNTH,
+#endif
+
 #ifdef INCLUDE_MEASURE
 	STATE_MEASURE,
 #endif
@@ -174,6 +178,22 @@ typedef enum _State: uint8_t
 	STATE_MEASURE_BEATS_PER_BAR,
 	STATE_MEASURE_BARS_PER_PHRASE,
 #endif
+
+#ifdef INCLUDE_SYNTH_WALDORF_BLOFELD
+	STATE_SYNTH_WALDORF_BLOFELD,
+#endif
+#ifdef INCLUDE_SYNTH_KAWAI_K4
+	STATE_SYNTH_KAWAI_K4,
+#endif
+#ifdef INCLUDE_SYNTH_OBERHEIM_MATRIX_1000
+	STATE_SYNTH_OBERHEIM_MATRIX_1000,
+#endif
+#ifdef INCLUDE_SYNTH_KORG_MICROSAMPLER
+	STATE_SYNTH_KORG_MICROSAMPLER,
+#endif
+#ifdef INCLUDE_SYNTH_YAMAHA_TX81Z
+	STATE_SYNTH_YAMAHA_TX81Z,
+#endif INCLUDE_SYNTH_YAMAHA_TX81Z
 	} State;
 
 
@@ -229,6 +249,7 @@ union _local
     struct _controlLocal control;
     struct _measureLocal measure;
     struct _splitLocal split;
+    struct _synthLocal synth;
     };
         
 extern _local local;

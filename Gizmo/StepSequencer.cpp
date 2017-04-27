@@ -274,7 +274,7 @@ void removeSuccessiveTies(uint8_t p, uint8_t trackLen)
         }
                         
     // we gotta do this because we just deleted some notes :-(
-    sendAllNotesOff();
+    sendAllSoundsOff();
     }
                                                 
 
@@ -340,7 +340,7 @@ void stopStepSequencer()
     {
     resetStepSequencer();
     local.stepSequencer.playState = PLAY_STATE_STOPPED;
-    sendAllNotesOff();
+    sendAllSoundsOff();
     }
 
 
@@ -575,6 +575,15 @@ local.stepSequencer.noteOff[i] = local.stepSequencer.noteOff[i + (GET_TRACK_LENG
                         
         local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
         }
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+
+#define MIDDLE_C (60)
+    else if (newItem && (itemType == MIDI_NOTE_ON) && data.slot.data.stepSequencer.locked)
+        {
+        TOGGLE_IN_LED();
+        local.stepSequencer.transpose = ((int8_t)itemNumber) - (int8_t) MIDDLE_C;  // this can only range -60 ... 67
+        }
+#endif
     else if (newItem && (itemType == MIDI_NOTE_OFF)
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
         && !data.slot.data.stepSequencer.locked  
@@ -1010,6 +1019,15 @@ void playStepSequencer()
                         uint16_t newvel = (vel * (uint16_t)(local.stepSequencer.fader[track])) >> 5;
                         if (newvel > 127) 
                             newvel = 127;
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+                        // transpose can only go -60 ... 67, so
+                        // newNote can only go -60 ... 67 + 127
+                        int16_t newNote = local.stepSequencer.transpose + (int16_t) note;
+                        if (newNote >= 0 && newNote <= 127)
+                            {
+                            note = (uint8_t) newNote;
+                            }
+#endif
                         sendTrackNote(note, (uint8_t)newvel, track);         // >> 5 is / FADER_IDENTITY_VALUE, that is, / 32
                         }
                     local.stepSequencer.offTime[track] = currentTime + (div100(notePulseRate * getMicrosecsPerPulse() * noteLength));

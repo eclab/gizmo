@@ -10,6 +10,28 @@
 
 // stateControllerPlay() and stateController() have been inlined into the state machine to save space
 
+/*
+  void stateControllerLearn()
+  {
+  if (isUpdated(BACK_BUTTON, RELEASED))
+  goDownState(STATE_CONTROLLER);
+  else if (isUpdated(SELECT_BUTTON, PRESSED))
+  {
+  }
+  else if (newItem == NEW_ITEM)
+  {
+  if (itemType == AFTERTOUCH || itemType == MIDI_AFTERTOUCH_POLY)
+  {
+  }
+  else if (itemType == MIDI_PITCH_BEND)
+  {
+  }
+  else if (itemType == MIDI_CC_7_BIT || itemType == MIDI_CC_14_BIT)
+  {
+  }
+  }
+  }
+*/
 
 
 // SET CONTROLLER TYPE
@@ -23,7 +45,7 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
         backupOptions = options; 
         }
 #ifdef INCLUDE_EXTENDED_CONTROLLER
-    const char* menuItems[10] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC"), PSTR("BEND"), PSTR("AFTERTOUCH"), PSTR("A VOLTAGE"), PSTR("B VOLTAGE")};
+    const char* menuItems[9] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC"), PSTR("BEND"), PSTR("AFTERTOUCH"), PSTR("A VOLTAGE"), PSTR("B VOLTAGE")};
     result = doMenuDisplay(menuItems, 9, STATE_NONE,  STATE_NONE, 1);
 #else
     const char* menuItems[5] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC")};
@@ -38,6 +60,12 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
         break;
         case MENU_SELECTED:
             {
+/*
+  if (type == CONTROL_TYPE_LEARN)
+  {
+  goDownState(STATE_CONTROLLER_LEARN);
+  }
+*/
             if (type == CONTROL_TYPE_OFF)
                 {
                 saveOptions();
@@ -75,7 +103,7 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
 
 
 // SET CONTROLLER NUMBER
-// Lets the user set a controller number for the given conroller type.   
+// Lets the user set a controller number for the given controller type.   
 // This is stored in &number.  The user can cancel everything and the type and
 // number will be reset.
 void setControllerNumber(uint8_t type, uint16_t &number, uint8_t backupType, uint16_t backupNumber, uint8_t nextState)

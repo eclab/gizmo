@@ -44,7 +44,7 @@ GLOBAL uint8_t bypass = 0;                                        // Do we bypas
 
 void toggleBypass(uint8_t channel)
     {
-    sendAllNotesOffDisregardBypass(channel);
+    sendAllSoundsOffDisregardBypass(channel);
     if (!bypass) 
         {
         // clear the LEDs
@@ -362,11 +362,11 @@ uint8_t update()
 // This resets and resaves the options, then reboots the board
 
 void semiReset()
-	{
+    {
     resetOptions();
     saveOptions();
     soft_restart();
-	}
+    }
 
 
 // FULLRESET()  
@@ -389,7 +389,7 @@ void fullReset()
         SAVE_ARPEGGIO(i);
         }
 
-	semiReset();
+    semiReset();
     }
 
 
@@ -1048,8 +1048,8 @@ void go()
                 optionsReturnState = STATE_ROOT;
                 }
 #if defined(__MEGA__)
-            const char* menuItems[9] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), PSTR("MEASURE"), options_p };
-            doMenuDisplay(menuItems, 9, FIRST_APPLICATION, STATE_ROOT, 1);
+            const char* menuItems[10] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), options_p };
+            doMenuDisplay(menuItems, 10, FIRST_APPLICATION, STATE_ROOT, 1);
 #endif
 #if defined(__UNO__)
             const char* menuItems[6] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), options_p };
@@ -1400,6 +1400,8 @@ void go()
 #ifdef INCLUDE_CONTROLLER
         case STATE_CONTROLLER:
             {
+            if (entry)
+                MIDI.sendRealTime(MIDIClock);
             const char* menuItems[5] = { PSTR("GO"), PSTR("L KNOB"), PSTR("R KNOB"), PSTR("M BUTTON"), PSTR("R BUTTON") };
             doMenuDisplay(menuItems, 5, STATE_CONTROLLER_PLAY, STATE_ROOT, 1);
             }
@@ -1415,8 +1417,32 @@ void go()
 #ifdef INCLUDE_THRU
         case STATE_THRU:
             {
-            const char* menuItems[8] = { PSTR("GO"), PSTR("EXTRA NOTES"), PSTR("DISTRIBUTE NOTES"), options.thruChordMemorySize == 0 ? PSTR("CHORD MEMORY") : PSTR("NO CHORD MEMORY"), PSTR("DEBOUNCE"), PSTR("MERGE CHANNEL"), options.thruCCToNRPN ? PSTR("NO CC-NRPN") : PSTR("CC-NRPN") , options.thruBlockOtherChannels ? PSTR("UNBLOCK OTHERS") :  PSTR("BLOCK OTHERS") };
-            doMenuDisplay(menuItems, 8, STATE_THRU_PLAY, STATE_ROOT, 1);
+            const char* menuItems[7] = { PSTR("GO"), PSTR("EXTRA NOTES"), PSTR("DISTRIBUTE NOTES"), options.thruChordMemorySize == 0 ? PSTR("CHORD MEMORY") : PSTR("NO CHORD MEMORY"), PSTR("DEBOUNCE"), PSTR("MERGE CHANNEL"), /* options.thruCCToNRPN ? PSTR("NO CC-NRPN") : PSTR("CC-NRPN") ,*/ options.thruBlockOtherChannels ? PSTR("UNBLOCK OTHERS") :  PSTR("BLOCK OTHERS") };
+            doMenuDisplay(menuItems, 7, STATE_THRU_PLAY, STATE_ROOT, 1);
+            }
+        break;
+#endif
+#ifdef INCLUDE_SYNTH
+        case STATE_SYNTH:
+            {
+            const char* menuItems[5] = { 
+#ifdef INCLUDE_SYNTH_WALDORF_BLOFELD
+                PSTR("WALDORF BLOFELD"),
+#endif INCLUDE_SYNTH_WALDORF_BLOFELD
+#ifdef INCLUDE_SYNTH_KAWAI_K4
+                PSTR("KAWAI K4"),
+#endif INCLUDE_SYNTH_KAWAI_K4
+#ifdef INCLUDE_SYNTH_OBERHEIM_MATRIX_1000
+                PSTR("OBERHEIM MATRIX 1000"),
+#endif INCLUDE_SYNTH_OBERHEIM_MATRIX_1000
+#ifdef INCLUDE_SYNTH_KORG_MICROSAMPLER
+                PSTR("KORG MICROSAMPLER"),
+#endif INCLUDE_SYNTH_KORG_MICROSAMPLER
+#ifdef INCLUDE_SYNTH_YAMAHA_TX81Z
+                PSTR("YAMAHA TX81Z"),
+#endif INCLUDE_SYNTH_YAMAHA_TX81Z
+                };
+            doMenuDisplay(menuItems, 4, STATE_SYNTH_WALDORF_BLOFELD, STATE_ROOT, 1);
             }
         break;
 #endif
@@ -1581,7 +1607,7 @@ void go()
             // 17 represents DEFAULT channel
             uint8_t val = stateNumerical(0, 17, local.stepSequencer.outMIDI[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, true, OTHER_DEFAULT, STATE_STEP_SEQUENCER_MENU);
             if (val != NO_STATE_NUMERICAL_CHANGE)
-                sendAllNotesOff();
+                sendAllSoundsOff();
             playStepSequencer();
             }
         break;
@@ -1948,10 +1974,10 @@ void go()
                     // FALL THRU
                 case MENU_CANCELLED:
 #ifdef INCLUDE_IMMEDIATE_RETURN
-      	      	if (immediateReturn)
-           	 		goUpStateWithBackup(optionsReturnState);
-	            else
-    	        	goUpStateWithBackup(STATE_OPTIONS);
+                    if (immediateReturn)
+                        goUpStateWithBackup(optionsReturnState);
+                    else
+                        goUpStateWithBackup(STATE_OPTIONS);
 #else
                     goUpStateWithBackup(STATE_OPTIONS);
 #endif
@@ -2041,7 +2067,7 @@ void go()
                     if (options.transpose != currentDisplay)
                         {
                         options.transpose = currentDisplay; 
-                        sendAllNotesOff();  // we must have this because if we've changed things we may never get a note off
+                        sendAllSoundsOff();  // we must have this because if we've changed things we may never get a note off
                         }
                     }
                 break;
@@ -2054,7 +2080,7 @@ void go()
                 case MENU_CANCELLED:
                     {
                     goUpStateWithBackup(STATE_OPTIONS);
-                    sendAllNotesOff();  // we must have this because if we've changed things we may never get a note off
+                    sendAllSoundsOff();  // we must have this because if we've changed things we may never get a note off
                     }
                 break;
                 }
@@ -2102,7 +2128,7 @@ void go()
             {
 #ifdef INCLUDE_IMMEDIATE_RETURN
             stateNumerical(0, 100, options.noteLength, backupOptions.noteLength, true, false, OTHER_NONE, 
-            	immediateReturn ? optionsReturnState : STATE_OPTIONS);
+                immediateReturn ? optionsReturnState : STATE_OPTIONS);
 #else
             stateNumerical(0, 100, options.noteLength, backupOptions.noteLength, true, false, OTHER_NONE, STATE_OPTIONS);
 #endif
@@ -2118,7 +2144,7 @@ void go()
             {
             uint8_t val = stateNumerical(CHANNEL_OFF, HIGHEST_MIDI_CHANNEL, options.channelOut, backupOptions.channelOut, true, true, OTHER_NONE, STATE_OPTIONS);
             if (val != NO_STATE_NUMERICAL_CHANGE)
-                sendAllNotesOff();
+                sendAllSoundsOff();
             }
         break;
         case STATE_OPTIONS_MIDI_CHANNEL_CONTROL:
@@ -2147,7 +2173,7 @@ void go()
                     {
                     // this hopefully clears up notes that sometimes get stuck when we change the clock mode
                     if (options.clock != currentDisplay)
-                        sendAllNotesOff();
+                        sendAllSoundsOff();
                     options.clock = currentDisplay;
                     }
                 break;
@@ -2391,13 +2417,15 @@ void go()
             }
         break;
 
-        case STATE_THRU_CC_NRPN:
-            {
-            options.thruCCToNRPN = !options.thruCCToNRPN;
-            saveOptions();
-            goUpState(STATE_THRU);
-            }
-        break;
+/*
+  case STATE_THRU_CC_NRPN:
+  {
+  options.thruCCToNRPN = !options.thruCCToNRPN;
+  saveOptions();
+  goUpState(STATE_THRU);
+  }
+  break;
+*/
         case STATE_THRU_BLOCK_OTHER_CHANNELS:
             {
             options.thruBlockOtherChannels = !options.thruBlockOtherChannels;
@@ -2427,8 +2455,50 @@ void go()
             playApplication();
             }
         break;
+        
+        
+
+//// SYNTHS
+
+#ifdef INCLUDE_SYNTH_WALDORF_BLOFELD
+        case STATE_SYNTH_WALDORF_BLOFELD:
+            {
+            stateSynthWaldorfBlofeld();
+            }
+        break;
+#endif INCLUDE_SYNTH_WALDORF_BLOFELD
+#ifdef INCLUDE_SYNTH_KAWAI_K4
+        case STATE_SYNTH_KAWAI_K4:
+            {
+            stateSynthKawaiK4();
+            }
+        break;
+#endif INCLUDE_SYNTH_KAWAI_K4
+#ifdef INCLUDE_SYNTH_OBERHEIM_MATRIX_1000
+        case STATE_SYNTH_OBERHEIM_MATRIX_1000:
+            {
+            stateSynthOberheimMatrix1000();
+            }
+        break;
+#endif INCLUDE_SYNTH_OBERHEIM_MATRIX_1000
+#ifdef INCLUDE_SYNTH_KORG_MICROSAMPLER
+        case STATE_SYNTH_KORG_MICROSAMPLER:
+            {
+            stateSynthKorgMicrosampler();
+            }
+        break;
+#endif INCLUDE_SYNTH_KORG_MICROSAMPLER
+#ifdef INCLUDE_SYNTH_YAMAHA_TX81Z
+        case STATE_SYNTH_YAMAHA_TX81Z:
+            {
+            stateSynthYamahaTX81Z();
+            }
+        break;
+#endif INCLUDE_SYNTH_YAMAHA_TX81Z
+        
+        
+        
 #endif
-     
         // END SWITCH       
         }
         

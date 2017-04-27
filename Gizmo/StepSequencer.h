@@ -208,6 +208,7 @@ struct _stepSequencerLocal
 	uint16_t controlParameter[MAX_STEP_SEQUENCER_TRACKS];
     uint16_t lastControlValue[MAX_STEP_SEQUENCER_TRACKS];
     uint8_t newData;		// a temporary variable.  comes in from STATE_STEP_SEQUENCER_MENU_TYPE, used in STATE_STEP_SEQUENCER_MENU_TYPE_PARAMETER
+	int8_t transpose;
 #endif      
     uint8_t solo;
     uint8_t currentTrack;                                                   // which track are we editing?

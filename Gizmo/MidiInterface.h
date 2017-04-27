@@ -196,8 +196,8 @@ void handleSystemReset();
 void sendNoteOn(uint8_t note, uint8_t velocity, uint8_t channel);
 void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel);
 void sendPolyPressure(uint8_t note, uint8_t pressure, uint8_t channel);
-void sendAllNotesOffDisregardBypass(uint8_t channel);
-void sendAllNotesOff();
+void sendAllSoundsOffDisregardBypass(uint8_t channel);
+void sendAllSoundsOff();
 
 
 //// SENDING VOLTAGE

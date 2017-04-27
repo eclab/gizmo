@@ -151,7 +151,7 @@ void stateThruPlay()
     {
     if (entry)
         {
-        sendAllNotesOff();
+        sendAllSoundsOff();
         resetDistributionNotes();
         local.thru.debounceState = DEBOUNCE_STATE_OFF;
         entry = false;
@@ -174,7 +174,7 @@ void stateThruPlay()
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
         goUpState(STATE_THRU);
-        sendAllNotesOff();
+        sendAllSoundsOff();
         }
         
     else if (!bypass && newItem && options.channelOut != CHANNEL_OFF && 
@@ -251,11 +251,13 @@ void stateThruPlay()
                         
             // this includes raw CC, note
                         
-            // CC->NRPN Mapping.  We just retag CC as if it was NRPN here.
-            if (options.thruCCToNRPN && (itemType == MIDI_CC_7_BIT || itemType == MIDI_CC_14_BIT))
-                {
-                itemType = MIDI_NRPN_14_BIT;
-                }
+/*
+// CC->NRPN Mapping.  We just retag CC as if it was NRPN here.
+if (options.thruCCToNRPN && (itemType == MIDI_CC_7_BIT || itemType == MIDI_CC_14_BIT))
+{
+itemType = MIDI_NRPN_14_BIT;
+}
+*/
                         
             for(uint8_t i = 0; i <= options.thruNumDistributionChannels; i++)
                 {

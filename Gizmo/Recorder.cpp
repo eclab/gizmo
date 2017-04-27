@@ -139,7 +139,7 @@ void stateRecorderPlay()
         local.recorder.tickoff = 0;
         data.slot.type = SLOT_TYPE_RECORDER;
         // send ALL NOTES OFF
-        sendAllNotesOff();
+        sendAllSoundsOff();
         }
     
     // the select button stops everything and calls save
@@ -337,7 +337,7 @@ void stateRecorderPlay()
     if (ended)
         {
         resetRecorder();
-        sendAllNotesOff();
+        sendAllSoundsOff();
         if (ended == ENDED)
             local.recorder.status = RECORDER_STOPPED;
         else 
@@ -387,7 +387,7 @@ void stateRecorderMenu()
     if (entry)
         {
         resetRecorder();
-        sendAllNotesOff();
+        sendAllSoundsOff();
         local.recorder.status = RECORDER_STOPPED;
         }
                 

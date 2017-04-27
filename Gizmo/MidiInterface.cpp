@@ -87,20 +87,29 @@ void setSecondaryVoltage(uint8_t voltage)
 uint8_t updateMIDI(byte channel, uint8_t _itemType, uint16_t _itemNumber, uint16_t _itemValue)
     {
     TOGGLE_IN_LED();
-    if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
-        {
-        newItem = NEW_ITEM;
-        itemType = _itemType;
-        itemNumber = _itemNumber;
-        itemValue = _itemValue;
-        itemChannel = channel;
-        return 1;
-        }
-    else 
+#ifdef INCLUDE_SYNTH
+    if (application == STATE_SYNTH &&
+        local.synth.passMIDIData[_itemType])            // pass it through as instructed
         {
         newItem = NO_NEW_ITEM;
         return 0;
         }
+    else 
+#endif
+        if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
+            {
+            newItem = NEW_ITEM;
+            itemType = _itemType;
+            itemNumber = _itemNumber;
+            itemValue = _itemValue;
+            itemChannel = channel;
+            return 1;
+            }
+        else 
+            {
+            newItem = NO_NEW_ITEM;
+            return 0;
+            }
     }
 
 
@@ -580,7 +589,7 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
         }
 
 #ifdef INCLUDE_CC_CONTROL
-    if (channel == options.channelControl)  // options.channelControl can be zero remember
+    else if (channel == options.channelControl)  // options.channelControl can be zero remember
         {
         lockoutPots = 1;
                         
@@ -645,6 +654,23 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
         }
 #endif
 
+#if defined(INCLUDE_THRU) || defined(INCLUDE_SYNTH)
+    else
+        {
+#ifdef INCLUDE_THRU
+        if (state != STATE_THRU_PLAY || !options.thruBlockOtherChannels)
+#endif
+            {
+            if (type == VALUE_7_BIT_ONLY)
+                sendControllerCommand(CONTROL_TYPE_CC, number, value << 7, channel);
+            else 
+                {
+                sendControllerCommand(CONTROL_TYPE_CC, number, value, channel);
+                }
+            TOGGLE_OUT_LED();
+            }
+        }
+#endif
     } 
         
         
@@ -679,7 +705,7 @@ void handleNRPN(byte channel, uint16_t parameter, uint16_t value, uint8_t valueT
             }
         }
 
-    if (channel == options.channelControl)  // options.channelControl can be zero remember
+    else if (channel == options.channelControl)  // options.channelControl can be zero remember
         {
         lockoutPots = 1;
                         
@@ -742,6 +768,25 @@ void handleNRPN(byte channel, uint16_t parameter, uint16_t value, uint8_t valueT
             break;
             }
         }
+#if defined(INCLUDE_THRU) || defined(INCLUDE_SYNTH)
+    else
+        {
+#ifdef INCLUDE_THRU
+        if (state != STATE_THRU_PLAY || !options.thruBlockOtherChannels)
+#endif
+            {
+            if (valueType == CONTROL_VALUE_INCREMENT)
+                sendControllerCommand(CONTROL_TYPE_NRPN, parameter, (CONTROL_VALUE_INCREMENT << 7) + value, channel);
+            else if (valueType == CONTROL_VALUE_DECREMENT)
+                sendControllerCommand(CONTROL_TYPE_NRPN, parameter, (CONTROL_VALUE_DECREMENT << 7) + value, channel);
+            else 
+                {
+                sendControllerCommand(CONTROL_TYPE_NRPN, parameter, value, channel);
+                }
+            TOGGLE_OUT_LED();
+            }
+        }
+#endif
     }
 
 void handleRPN(byte channel, uint16_t parameter, uint16_t value, uint8_t valueType)
@@ -773,7 +818,25 @@ void handleRPN(byte channel, uint16_t parameter, uint16_t value, uint8_t valueTy
             break;
             }
         }
-
+#if defined(INCLUDE_THRU) || defined(INCLUDE_SYNTH)
+    else
+        {
+#ifdef INCLUDE_THRU
+        if (state != STATE_THRU_PLAY || !options.thruBlockOtherChannels)
+#endif
+            {
+            if (valueType == CONTROL_VALUE_INCREMENT)
+                sendControllerCommand(CONTROL_TYPE_RPN, parameter, (CONTROL_VALUE_INCREMENT << 7) + value, channel);
+            else if (valueType == CONTROL_VALUE_DECREMENT)
+                sendControllerCommand(CONTROL_TYPE_RPN, parameter, (CONTROL_VALUE_DECREMENT << 7) + value, channel);
+            else 
+                {
+                sendControllerCommand(CONTROL_TYPE_RPN, parameter, value, channel);
+                }
+            TOGGLE_OUT_LED();
+            }
+        }
+#endif
     }    
     
     
@@ -787,135 +850,97 @@ void handleRPN(byte channel, uint16_t parameter, uint16_t value, uint8_t valueTy
 ///// 1. number >=64 and < 96 or >= 102 and < 120, with value
 /////           -> handleControlChange(channel, number, value, VALUE_7_BIT_ONLY)
 /////
-///// Potentially 7-bit CC messages:
+///// Potentially 7-bit CC messages, with MSB:
 ///// 1. number >= 0 and < 32, other than 6, with value
-/////           -> handleControlChange(channel, number, value, VALUE_MSB_ONLY)
+/////           -> handleControlChange(channel, number, value * 128 + 0, VALUE_MSB_ONLY)
 /////
-///// 14-bit CC messages:
+///// Full 14-bit CC messages:
 ///// 1. number >= 0 and < 32, other than 6, with MSB
 ///// 2. same number + 32, with LSB
-/////           -> handleControlChange(channel, number, value, VALUE)
+/////           -> handleControlChange(channel, number, MSB * 128 + LSB, VALUE)
 /////    NOTE: this means that a 14-bit CC message will have TWO handleControlChange calls.
 /////          There's not much we can do about this, as we simply don't know if the LSB will arrive.  
 /////
 ///// Continuing 14-bit CC messages:
-///// 1. same number again + 32, with LSB
-/////           -> handleControlChange(channel, number, revised value, VALUE)
-/////           It's not clear if this is valid but I think it is
+///// 1. number >= 32 and < 64, other than 38, with LSB, where number is 32 more than the last MSB.
+/////           -> handleControlChange(channel, number, former MSB * 128 + LSB, VALUE)
 /////
-///// Potentially 7-bit NRPN messages:
+///// Lonely 14-bit CC messages (LSB only)
+///// 1. number >= 32 and < 64, other than 38, with LSB, where number is NOT 32 more than the last MSB.
+/////           -> handleControlChange(channel, number, 0 + LSB, VALUE)
+/////           
+/////
+///// NRPN Messages:
+///// All NRPN Messages start with:
 ///// 1. number == 99, with MSB of NRPN parameter
 ///// 2. number == 98, with LSB of NRPN parameter
-///// 3. number == 6, with value
-/////           -> handleNRPN(channel, parameter, value, VALUE_MSB_ONLY)
+/////           At this point NRPN MSB is set to 0
 /////
-///// 14-bit NRPN messages:
-///// 1. number == 99, with MSB of NRPN parameter
-///// 2. number == 98, with LSB of NRPN parameter
-///// 3. number == 6, with MSB of value
-///// 4. number == 38, with LSB of value
-/////           -> handleNRPN(channel, parameter, value, VALUE)
-/////    NOTE: this means that a 14-bit NRPN message will have TWO handleNRPN calls.
-/////          There's not much we can do about this, as we simply don't know if the LSB will arrive.  
-/////
-///// Continuing 7-bit NRPN messages:
-///// 4. number == 38 again, with value
-/////           -> handleNRPN(channel, number, revised value, VALUE_MSB_ONLY)
-/////
-///// Continuing 14-bit NRPN messages A:
-///// 3. number == 6 again, with MSB of value
-/////           -> handleNRPN(channel, number, revised value, VALUE)
-/////
-///// Continuing 14-bit NRPN messages C:
-///// 3. number == 6 again, with MSB of value
-///// 4. number == 38 again, with LSB of value
-/////           -> handleNRPN(channel, number, revised value, VALUE)
-/////    NOTE: this means that a continuing 14-bit NRPN message will have TWO handleNRPN calls.
-/////          There's not much we can do about this, as we simply don't know if the LSB will arrive.  
-/////
-///// Incrementing NRPN messages:
-///// 1. number == 99, with MSB of NRPN parameter
-///// 2. number == 98, with LSB of NRPN parameter
-///// 3. number == 96, with value
+///// NRPN Messages then may have any sequence of:
+///// 3.1 number == 6, with value   (MSB)
+/////           -> handleNRPN(channel, parameter, value * 128 + 0, VALUE_MSB_ONLY)
+/////                           At this point we set the NRPN MSB
+///// 3.2 number == 38, with value   (LSB)
+/////           -> handleNRPN(channel, parameter, current NRPN MSB * 128 + value, VALUE_MSB_ONLY)
+///// 3.3 number == 96, with value   (Increment)
 /////       If value == 0
 /////                   -> handleNRPN(channel, parameter, 1, INCREMENT)
 /////       Else
 /////                   -> handleNRPN(channel, parameter, value, INCREMENT)
-/////
-///// Decrementing NRPN messages:
-///// 1. number == 99, with MSB of NRPN parameter
-///// 2. number == 98, with LSB of NRPN parameter
-///// 3. number == 97, with value
+/////       Also reset current NRPN MSB to 0
+///// 3.4 number == 97, with value
 /////       If value == 0
 /////                   -> handleNRPN(channel, parameter, 1, DECREMENT)
 /////       Else
 /////                   -> handleNRPN(channel, parameter, value, DECREMENT)
+/////       Also reset current NRPN MSB to 0
 /////
-///// Potentially 7-bit RPN messages:
-///// 1. number == 101, with MSB of RPN parameter other than 127
-///// 2. number == 100, with LSB of RPN parameter other than 127
-///// 3. number == 6, with value
-/////           -> handleNRPN(channel, parameter, value, VALUE_MSB_ONLY)
 /////
-///// 14-bit RPN messages:
-///// 1. number == 101, with MSB of RPN parameter other than 127
-///// 2. number == 100, with LSB of RPN parameter other than 127
-///// 3. number == 6, with MSB of value
-///// 4. number == 38, with LSB of value
-/////           -> handleNRPN(channel, parameter, value, VALUE)
-/////    NOTE: this means that a 14-bit NRPN message will have TWO handleNRPN calls.
-/////          There's not much we can do about this, as we simply don't know if the LSB will arrive.  
+///// RPN Messages:
+///// All RPN Messages start with:
+///// 1. number == 99, with MSB of RPN parameter
+///// 2. number == 98, with LSB of RPN parameter
+/////           At this point RPN MSB is set to 0
 /////
-///// Continuing 7-bit RPN messages A:
-///// 3. number == 6 again, with value
-/////           -> handleRPN(channel, number, revised value, VALUE_MSB_ONLY)
-/////
-///// Continuing 14-bit RPN messages A:
-///// 4. number == 38 again, with new LSB of value
-/////           -> handleRPN(channel, number, revised value, VALUE)
-/////
-///// Continuing 14-bit RPN messages B:
-///// 3. number == 6 again, with MSB of value
-///// 4. number == 38 again, with LSB of value
-/////           -> handleRPN(channel, number, revised value, VALUE)
-/////    NOTE: this means that a continuing 14-bit RPN message will have TWO handleRPN calls.
-/////          There's not much we can do about this, as we simply don't know if the LSB will arrive.  
-/////
-///// Incrementing RPN messages:
-///// 1. number == 101, with MSB of RPN parameter other than 127
-///// 2. number == 100, with LSB of RPN parameter other than 127
-///// 3. number == 96, with value
+///// RPN Messages then may have any sequence of:
+///// 3.1 number == 6, with value   (MSB)
+/////           -> handleRPN(channel, parameter, value * 128 + 0, VALUE_MSB_ONLY)
+/////                           At this point we set the RPN MSB
+///// 3.2 number == 38, with value   (LSB)
+/////           -> handleRPN(channel, parameter, current RPN MSB * 128 + value, VALUE_MSB_ONLY)
+///// 3.3 number == 96, with value   (Increment)
 /////       If value == 0
-/////                   -> handleNRPN(channel, parameter, 1, INCREMENT)
+/////                   -> handleRPN(channel, parameter, 1, INCREMENT)
 /////       Else
-/////                   -> handleNRPN(channel, parameter, value, INCREMENT)
-/////
-///// Decrementing NRPN messages:
-///// 1. number == 101, with MSB of RPN parameter other than 127
-///// 2. number == 100, with LSB of RPN parameter other than 127
-///// 3. number == 97, with value
+/////                   -> handleRPN(channel, parameter, value, INCREMENT)
+/////       Also reset current RPN MSB to 0
+///// 3.4 number == 97, with value
 /////       If value == 0
-/////                   -> handleNRPN(channel, parameter, 1, DECREMENT)
+/////                   -> handleRPN(channel, parameter, 1, DECREMENT)
 /////       Else
-/////                   -> handleNRPN(channel, parameter, value, DECREMENT)
+/////                   -> handleRPN(channel, parameter, value, DECREMENT)
+/////       Also reset current RPN MSB to 0
 /////
-///// NULL messages:
+
+///// NULL messages:            [RPN 127 with value of 127]
 ///// 1. number == 101, value = 127
 ///// 2. number == 100, value = 127
 /////           [nothing happens, but parser resets]
 /////
 /////
-///// The big problem we have is that the MIDI spec got the MSB and LSB backwards for their data
-///// entry values, so we don't now if the LSB is coming and have to either ignore it when it comes
-///// in or send two messages, one MSB-only and one MSB+LSB.  This happens for CC, RPN, and NRPN.
+///// The big problem we have is that the MIDI spec allows a bare MSB or LSB to arrive and that's it!
+///// We don't know if another one is coming.  If a bare LSB arrives we're supposed to assume the MSB is 0.
+///// But if the bare MSB comes we don't know if the LSB is next.  So we either have to ignore it when it
+///// comes in (bad bad bad) or send two messages, one MSB-only and one MSB+LSB.  
+///// This happens for CC, RPN, and NRPN.
 /////
 /////
 ///// Our parser maintains four bytes in a struct called _controlParser:
 /////
 ///// 0. status.  This is one of:
 /////             INVALID: the struct holds junk.  CC: the struct is building a CC.  
-/////                     RPN_START, RPN_END, RPN_MSB, RPN_INCREMENT_DECREMENT: the struct is building an RPN.
-/////                     NRPN_START, NRPN_END, NRPN_MSB, NRPN_INCREMENT_DECREMENT: the struct is building an NRPN.
+/////                     RPN_START, RPN_END: the struct is building an RPN.
+/////                     NRPN_START, NRPN_END: the struct is building an NRPN.
 ///// 1. controllerNumberMSB.  In the low 7 bits.
 ///// 2. controllerNumberLSB.  In the low 7 bits.
 ///// 3. controllerValueMSB.  In the low 7 bits. This holds the previous MSB for potential "continuing" messages.
@@ -925,12 +950,8 @@ void handleRPN(byte channel, uint16_t parameter, uint16_t value, uint8_t valueTy
 #define CC 1
 #define NRPN_START 2
 #define NRPN_END 3
-#define NRPN_MSB 4
-#define NRPN_INCREMENT_DECREMENT 5
-#define RPN_START 6
-#define RPN_END 7
-#define RPN_MSB 8
-#define RPN_INCREMENT_DECREMENT 9
+#define RPN_START 4
+#define RPN_END 5
 
 struct _controlParser
     {
@@ -968,7 +989,6 @@ void setParseRawCC(uint8_t val)
 
 void parse(_controlParser* parser, byte channel, byte number, byte value)
     {
-
     // BEGIN PARSER
     
 #ifdef INCLUDE_PROVIDE_RAW_CC
@@ -980,18 +1000,27 @@ void parse(_controlParser* parser, byte channel, byte number, byte value)
     else
 #endif
     
-        // potentially 14-bit CC messages
+        // potentially 14-bit CC messages: the MSB was sent
         if (number < 6 || 
             (number > 6 && number < 32))
             {
             parser->status = CC;
             parser->controllerValueMSB = value;
+            parser->controllerNumberMSB = number;
             handleControlChange(channel, number, value << 7, VALUE_MSB_ONLY);
             }
                 
     // LSB for 14-bit CC messages, including continuation
         else if (number >= 32 && number < 64 && number != 38)
             {
+            if (parser->status != CC || parser->controllerNumberMSB + 32 != number)  // need to reset
+                {
+                parser->status = CC;
+                parser->controllerValueMSB = 0;
+                }
+            
+            // okay we're ready to go now       
+            
             if (parser->status == CC)
                 {
                 handleControlChange(channel, number, (((uint16_t)parser->controllerValueMSB) << 7) | value, VALUE);
@@ -1017,6 +1046,7 @@ void parse(_controlParser* parser, byte channel, byte number, byte value)
     // End of NRPN
         else if (number == 98)
             {
+            parser->controllerValueMSB = 0;
             if (parser->status == NRPN_START)
                 {
                 parser->status = NRPN_END;
@@ -1042,6 +1072,7 @@ void parse(_controlParser* parser, byte channel, byte number, byte value)
     // End of RPN or NULL
         else if (number == 100)
             {
+            parser->controllerValueMSB = 0;
             if (value == 127)  // this is the NULL termination tradition, see for example http://www.philrees.co.uk/nrpnq.htm
                 {
                 parser->status = INVALID;
@@ -1053,73 +1084,68 @@ void parse(_controlParser* parser, byte channel, byte number, byte value)
                 }
             }
 
-    // Data Entry MSB for NRPN and RPN
-        else 
+        else   // we're currently parsing NRPN or RPN
             {
             uint16_t controllerNumber =  (((uint16_t) parser->controllerNumberMSB) << 7) | parser->controllerNumberLSB ;
-            if (number == 6)
+            
+            if (parser->status == NRPN_END)
                 {
-                if (parser->status == NRPN_END || parser->status == NRPN_MSB || parser->status == NRPN_INCREMENT_DECREMENT)
+                if (number == 6)
                     {
                     parser->controllerValueMSB = value;
                     handleNRPN(channel, controllerNumber, ((uint16_t)value) << 7, VALUE_MSB_ONLY);
-                    parser->status = NRPN_MSB;
                     }
-                else if (parser->status == RPN_END || parser->status == RPN_MSB || parser->status == RPN_INCREMENT_DECREMENT)
-                    {
-                    parser->controllerValueMSB = value;
-                    handleRPN(channel, controllerNumber, ((uint16_t)value) << 7, VALUE_MSB_ONLY);
-                    parser->status = RPN_MSB;
-                    }
-                else parser->status = INVALID;
-                }
-                
-            // Data Entry LSB for RPN, NRPN
-            else if (number == 38)
-                {
-                if (parser->status == NRPN_MSB)
+                                
+                // Data Entry LSB for RPN, NRPN
+                else if (number == 38)
                     {
                     handleNRPN(channel, controllerNumber, (((uint16_t)parser->controllerValueMSB) << 7) | value, VALUE);
                     }
-                else if (parser->status == RPN_MSB)
+                                
+                // Data Increment for RPN, NRPN
+                else if (number == 96)
+                    {
+                    parser->controllerValueMSB = 0;
+                    handleNRPN(channel, controllerNumber , (value ? value : 1), INCREMENT);
+                    }
+
+                // Data Decrement for RPN, NRPN
+                else if (number == 97)
+                    {
+                    parser->controllerValueMSB = 0;
+                    handleNRPN(channel, controllerNumber, (value ? value : 1), DECREMENT);
+                    }
+                else parser->status = INVALID;
+                }
+            else if (parser->status == RPN_END)
+                {
+                if (number == 6)
+                    {
+                    parser->controllerValueMSB = value;
+                    handleRPN(channel, controllerNumber, ((uint16_t)value) << 7, VALUE_MSB_ONLY);
+                    }
+                                
+                // Data Entry LSB for RPN, NRPN
+                else if (number == 38)
                     {
                     handleRPN(channel, controllerNumber, (((uint16_t)parser->controllerValueMSB) << 7) | value, VALUE);
                     }
-                else parser->status = INVALID;
-                }
-                
-            // Data Increment for RPN, NRPN
-            else if (number == 96)
-                {
-                if (parser->status == NRPN_END || parser->status == NRPN_MSB || parser->status == NRPN_INCREMENT_DECREMENT)
+                                
+                // Data Increment for RPN, NRPN
+                else if (number == 96)
                     {
-                    handleNRPN(channel, controllerNumber , (value ? value : 1), INCREMENT);
-                    parser->status = NRPN_INCREMENT_DECREMENT;
-                    }
-                else if (parser->status == RPN_END || parser->status == RPN_MSB || parser->status == RPN_INCREMENT_DECREMENT)
-                    {
+                    parser->controllerValueMSB = 0;
                     handleRPN(channel, controllerNumber, (value ? value : 1), INCREMENT);
-                    parser->status = RPN_INCREMENT_DECREMENT;
                     }
-                else parser->status = INVALID;
-                }
 
-            // Data Decrement for RPN, NRPN
-            else if (number == 97)
-                {
-                if (parser->status == NRPN_END || parser->status == NRPN_MSB || parser->status == NRPN_INCREMENT_DECREMENT)
+                // Data Decrement for RPN, NRPN
+                else if (number == 97)
                     {
-                    handleNRPN(channel, controllerNumber, (value ? value : 1), DECREMENT);
-                    parser->status = NRPN_INCREMENT_DECREMENT;
-                    }
-                else if (parser->status == RPN_END || parser->status == RPN_MSB || parser->status == RPN_INCREMENT_DECREMENT)
-                    {
+                    parser->controllerValueMSB = 0;
                     handleRPN(channel, controllerNumber, (value ? value : 1), DECREMENT);
-                    parser->status = RPN_INCREMENT_DECREMENT;
                     }
                 else parser->status = INVALID;
                 }
-        
             // Can only be 120...127, which should never appear here
             else parser->status = INVALID;
             }
@@ -1542,19 +1568,27 @@ void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel)
          
 /// Sends an all notes off on ALL channels, regardless of whether bypass is turned on or not.
 /// Also turns off voltage.
-void sendAllNotesOffDisregardBypass(uint8_t channel)
+void sendAllSoundsOffDisregardBypass(uint8_t channel)
     {
     if (channel == CHANNEL_OMNI)
-	    {
-	    for(uint8_t i = LOWEST_MIDI_CHANNEL; i <= HIGHEST_MIDI_CHANNEL; i++)
-        	{
-        	MIDI.sendControlChange(123, 0, i);
-        	}
+        {
+        for(uint8_t i = LOWEST_MIDI_CHANNEL; i <= HIGHEST_MIDI_CHANNEL; i++)
+            {
+#ifdef USE_ALL_NOTES_OFF
+            MIDI.sendControlChange(123, 0, i);          // All Notes Off
+#else
+            MIDI.sendControlChange(120, 0, i);              // All Sound Off
+#endif
+            }
         }
     else
-    	{
-        MIDI.sendControlChange(123, 0, channel);
-    	}
+        {
+#ifdef USE_ALL_NOTES_OFF
+        MIDI.sendControlChange(123, 0, channel);        // All Notes Off
+#else
+        MIDI.sendControlChange(120, 0, channel);        // All Sound Off
+#endif
+        }
 #ifdef INCLUDE_VOLTAGE
     turnOffVoltage();
 #endif
@@ -1563,10 +1597,10 @@ void sendAllNotesOffDisregardBypass(uint8_t channel)
 
 /// Sends an all notes off on ALL channels, but only if bypass is off.
 /// Also turns off voltage.
-void sendAllNotesOff()
+void sendAllSoundsOff()
     {
     if (!bypass) 
-        sendAllNotesOffDisregardBypass(CHANNEL_OMNI);
+        sendAllSoundsOffDisregardBypass(CHANNEL_OMNI);
     else
         {
 #ifdef INCLUDE_VOLTAGE

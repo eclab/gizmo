@@ -1,0 +1,546 @@
+KORG MICROSAMPLER SYSEX INFORMATION
+Based on data from user "horvath" (2009), with bugfixes
+See http://www.korgforums.com/forum/phpBB2/viewtopic.php?t=55884
+Revised by Sean Luke (sean@cs.gmu.edu) in 2017
+
+The Microsampler only responds to sysex.  Below (Table 1) I list all 
+known sysex strings for the Microsampler. Gizmo converts NRPN parameters 
+into Sysex for the Microsampler.  Thus each sysex string has an 
+associated NRPN parameter shown to its left.
+
+Note that many sysex strings require two variables.  For example, Sample 
+Decay requires both a SAMPLE NUMBER (SN) and a DATA VALUE (DV).  
+Obviously this can't be done in NRPN, which can only set one value.  You 
+have two choices here:
+
+1. First set NRPN 51 to the SAMPLE NUMBER (1...36),
+   Then set Sample Decay (NRPN 23) to the Sample Decay value for that 
+       sample number.
+   [You can continue to set other kinds of parameters for that sample number]
+
+OR
+
+2. Set NRPN (23 + 100 * SAMPLE NUMBER) to the value.
+
+
+Similarly, the Pattern parameters require a PATTERN NUMBER (PN) and a 
+DATA VALUE (DV).  You set them in exactly the same way (note NRPN 50 
+rather than 51):
+
+1. First set NRPN 50 to the PATTERN NUMBER (1...16),
+   Then set (say) Pattern Length (NRPN 10) to the Pattern Length value 
+        for that pattern number.
+   [You can continue to set other kinds of parameters for that pattern 
+        number]
+
+OR
+
+2. Set NRPN (10 + 100 * PATTERN NUMBER) to the value.
+
+
+FX parameters also have two variables (FX PARAMETER NUMBER (FP) and DATA 
+VALUE (DV).  But they have a twist: they only effect the current FX 
+Type, which is specified via NRPN 31.  So in some sense there are three 
+variables which must be set, though one of them is modal.  Your two 
+choices are slightly differen there (note use of NRPN 52 rather than 50 
+or 51):
+
+1. First set the FX TYPE via NRPN 31 (0...21)
+   Then set NRPN 52 to the FX PARAMETER NUMBER (0...19),
+   Then set a desired FX PARAMETER VALUE (NRPN 34) for that pattern 
+       number and FX type.
+   [You can continue to set other kinds of parameter values for that 
+       pattern number and FX type]
+
+OR
+
+2. First set the FX TYPE via NRPN 31 (0...21)
+   Then set NRPN (34 + 100 * (FX PARAMETER NUMBER + 1)) to the value desired 
+       value.
+   [You can continue to set other kinds of parameter values for that 
+       particular FX type]
+
+
+Table 2 shows the three special NRPN values (50, 51, 52), plus the 
+additional per-sample, per-pattern, and per-fx-parameter NRPN values.
+
+Table 3 gives a full list of all FX types, the patterns for each type, 
+and which patterns are available to the Control 1 and Control 2 knobs.
+
+
+Caveat.  You might notice that while Sample Numbers are 1-based (1...36) 
+and Patterns are also one-based (1...16), FX Parameter Numbers and FX 
+Types are 0-based (0...21 and 0...19 respectively).  This discrepency is 
+largely so that Gizmo's NRPN scheme can be consistent with various 
+Microsampler sysex decisions.
+
+
+
+
+
+TABLE 1.   SETTABLE PARAMETERS AND SYSEX STRINGS
+
+
+GIZMO
+NRPN	SYSEX STRING (F0...F7)	PARAMETER		DETAILS
+[NOTE: ASCII values map to a broader array of glyphs than is obtainable via the controls
+on the Microsampler, including some odd shaped ones which appear to be perfectly legal]
+
+-- Bank parameters --
+0	42 32 7F 41 00 00 00 00 DV 00	Bank Name Letter 1	DV maps to ASCII
+1	42 32 7F 41 00 00 01 00 DV 00	Bank Name Letter 2	DV maps to ASCII
+2	42 32 7F 41 00 00 02 00 DV 00	Bank Name Letter 3	DV maps to ASCII
+3	42 32 7F 41 00 00 03 00 DV 00	Bank Name Letter 4	DV maps to ASCII
+4	42 32 7F 41 00 00 04 00 DV 00	Bank Name Letter 5	DV maps to ASCII
+5	42 32 7F 41 00 00 05 00 DV 00	Bank Name Letter 6	DV maps to ASCII
+6	42 32 7F 41 00 00 06 00 DV 00	Bank Name Letter 7	DV maps to ASCII
+7	42 32 7F 41 00 00 07 00 DV 00	Bank Name Letter 8	DV maps to ASCII
+8	42 32 7F 41 00 00 10 00 LSB MSB	Bank BPM		200...3000 in 7-bit LSB/MSB (20.0 BPM to 300.0 BPM)
+9	42 32 7F 41 00 00 12 00 DV 00	Bank Audio In FXSW	0...1
+
+-- Pattern parameters --
+[In NRPN you set the pattern number first (1...16), via NRPN 51 ]
+10	42 32 7F 41 62 00 PN 00 DV 00	Pattern Length		1...99, PN = Pattern Number (1...16)
+11	42 32 7F 41 62 00 PN 00 DV 00	Pattern Keyboard Sample	0...35, PN = Pattern Number + 16 (17...32), yes I notice that sample is zero-based
+
+-- Sample parameters --
+[SN is the Sample Number + 15 (16...51)
+[In NRPN you set the sample number first (1...36), via NRPN 50 ]
+12	42 32 7F 41 SN 00 00 00 DV 00	Sample Name Letter 1	DV maps to ASCII
+13	42 32 7F 41 SN 00 01 00 DV 00	Sample Name Letter 2	DV maps to ASCII
+14	42 32 7F 41 SN 00 02 00 DV 00	Sample Name Letter 3	DV maps to ASCII
+15	42 32 7F 41 SN 00 03 00 DV 00	Sample Name Letter 4	DV maps to ASCII
+16	42 32 7F 41 SN 00 04 00 DV 00	Sample Name Letter 5	DV maps to ASCII
+17	42 32 7F 41 SN 00 05 00 DV 00	Sample Name Letter 6	DV maps to ASCII
+18	42 32 7F 41 SN 00 06 00 DV 00	Sample Name Letter 7	DV maps to ASCII
+19	42 32 7F 41 SN 00 07 00 DV 00	Sample Name Letter 8	DV maps to ASCII
+20	42 32 7F 41 SN 00 10 00 DV 00	Sample Play Type Loop	0...1
+21	42 32 7F 41 SN 00 11 00 DV 00	Sample BPM Sync		0...2 (Off, Timestretch, Pitchchg)
+22	42 32 7F 41 SN 00 12 00 DV 00	Sample Reverse		0...1
+23	42 32 7F 41 SN 00 15 00 DV 00	Sample Decay		0...127
+24	42 32 7F 41 SN 00 16 00 DV 00	Sample Release		0...127
+25	42 32 7F 41 SN 00 1B 00 DV 00	Sample Semitone		-24...24 (signed 7-bit: 104...127, then 0...24)
+26	42 32 7F 41 SN 00 1C 00 DV 00	Sample Tune		0...127 (center 64).  Tune is nonlinear -99...99 cents
+27	42 32 7F 41 SN 00 18 00 DV 00	Sample Level		0...127 (center 101).  Level is nonlinear -INF...120 dB
+28	42 32 7F 41 SN 00 1D 00 DV 00	Sample Vel. Int.	-63...63 (signed 7-bit: 65...127, then 0...63)
+29	42 32 7F 41 SN 00 19 00 DV 00	Sample Pan		1...127 (center 64)  Low values are LEFT, high values are RIGHT
+30	42 32 7F 41 SN 00 1A 00 DV 00	Sample FX SW		0...1
+
+-- FX parameters --
+[In NRPN you set the FX Type, and also set the FX Parameter number first (0...19), via NRPN 52]
+31	42 32 7F 41 50 00 01 00 DV 00	FX Type			0...21, zero based.  See TABLE 3 below.
+32	42 32 7F 41 50 00 02 00 DV 00	FX Parameter Control 1	0...19, zero based.  See TABLE 3 below.
+33	42 32 7F 41 50 00 03 00 DV 00	FX Parameter Control 2  0...19, zero based.  See TABLE 3 below.
+34	42 32 7F 41 50 00 FP 00 DV 00	FX Parameter Value	0...127, FP = FX Parameter Number + 16 (16...35, depending on FX type, see TABLE 3)
+
+
+
+
+
+
+
+
+TABLE 2.   ADDITIONAL NRPN VALUES
+
+50		Pattern			1...16
+51		Sample			1...36
+52		FX Parameter		0...19
+
+Basic NRPN	Revised NRPN
+10, 11		MSB PATTERN NUMBER, LSB (10, 11) to directly control a given pattern parameter feature
+12...30		MSB SAMPLE NUMBER, LSB (12...30) to directly control a given sample parameter feature
+34		MSB (FX PARAMETER NUMBER + 1), LSB 34 to directly control a given FX parameter
+
+
+
+
+
+
+
+
+
+
+TABLE 3.  FX TYPES AND ASSOCIATED PARAMETERS
+The FX type number is shown in [brackets]
+The assopciated parameter numbers are then shown below.
+The standard parameters available for Controls 1 and 2 are shown with asterisks*
+
+
+[0] 	No FX
+
+
+[1]	Compressor
+0*	Dry/Wet (0...100, 00...64)
+1	Envelope (LR indiv, LR mix)
+2*	Sensivity
+3*	Attack (0.001...0.5 ms)
+4	Output level
+
+
+
+
+[2]	Filter
+0*	Dry/Wet (0...100, 00...64)
+1	Type (LPF24, LPF18, LPF12, HPF12, BPF12)
+2*	Cutoff
+3*	Resonanse
+4	Trim
+5*	Mod depth (+/- 3F)
+6*	Mod response
+7	LFO Tempo sync (off, on)
+8	LFO Freq (0.01...100 Hz)
+9*	LFO Sync note (8/1...1/64, 00...10)
+10	LFO Wave (Saw, Square, Triangle, Sine, S&H)
+11	LFO Shape (+/- 3F)
+12	LFO Key Sync (off, on)
+13	LFO Init phase (0...180 deg, 00...12)
+
+
+
+
+[3]	4-band EQ
+0*	Dry/Wet (0...100, 00...64)
+1	Trim
+2	B1 Type (peaking, shelving low)
+3	B1 Freq (20Hz...20kHz, 00...3A)
+4	B1 Q (0.5...10, 00...5F)
+5*	B1 Gain (-18...18 dB, +/- 24)
+6	B2 Freq
+7	B2 Q
+8*	B2 Gain
+9	B3 Freq
+10	B3 Q
+11*	B3 Gain
+12	B4 Type (peaking, shelving low)
+13	B4 Freq
+14	B4 Q
+15* 	B4 Gain
+
+
+
+
+[4]	Distortion
+0*	Dry/Wet (0...100, 00...64)
+1*	Gain
+2	Pre EQ Freq (20Hz...20kHz, 00...3A)
+3	Pre EQ Q (0.5...10, 00...5F)
+4*	Pre EQ Gain (-18...18 dB, +/- 24)
+5	B1 Freq
+6	B1 Q
+7*	B1 Gain
+8	B2 Freq
+9	B2 Q
+10*	B2 Gain
+11*	B3 Freq
+12	B3 Q
+13	B3 Gain
+14	Output Level
+
+
+
+
+
+[5]	Decimator
+0*	Dry/Wet (0...100, 00...64)
+1	Pre LPF (off, on)
+2	High damp (0...100%, 00...64)
+3*	FS (1...48 kHz, 00...5E)
+4*	Bit (4...24 bit, 00...14)
+5	Output Level
+6*	FS Mod intensity (+/- 3F)
+7	LFO Tempo sync (off, on)
+8*	LFO Freq (0.01...100 Hz)
+9	LFO Sync note (8/1...1/64, 00...10)
+10	LFO Wave (Saw, Square, Triangle, Sine, S&H)
+11	LFO Shape (+/- 3F)
+12	LFO Key Sync (off, on)
+13	LFO Init phase (0...180 deg, 00...12)
+
+
+
+
+
+[6]	Reverb
+0*	Dry/Wet (0...100, 00...64)
+1	Type (Hall, Smooth hall, Wet plate, Dry plate, Room, Bright room)
+2*	Time (0.1...10 s, 00...63)
+3	Time (20...3000 ms, 00...63)
+4	High damp (0...100%, 00...64)
+5	Low damp
+6	Pre delay (0...70 ms, 00...46)
+7	Trim
+
+
+
+
+[7]	Delay
+0*	Dry/Wet (0...100, 00...64)
+1	Type (stereo, cross)
+2	Time tempo sync (off, on)
+3*	Time ratio (0.5...400%)
+4	L Delay (0...1400 ms)
+5	R Delay
+6	Time ratio (12.5...400%, 00...0E)
+7	L Delay (1/64...1/1, 00...0D)
+8	R Delay
+9*	Feedback
+10	High damp (0...100%, 00...64)
+11	Trim
+12	Spread
+
+
+
+
+[8]	L/C/R delay
+0*	Dry/Wet (0...100, 00...64)
+1	Time tempo sync (off, on)
+2*	Time ratio (0.5...400%)
+3	L Delay (0...1400 ms)
+4	C Delay
+5	R Delay
+6	Time ratio (12.5...400%, 00...0E)
+7	L Delay (1/64...1/1, 00...0D)
+8	C Delay
+9	R Delay
+10	L Level
+11	C Level
+12	R Level
+13*	C Feedback
+14	Trim
+15	Spread
+
+
+
+
+[9]	Auto panning delay
+0*	Dry/Wet (0...100, 00...64)
+1	Time tempo sync (off, on)
+2*	Time ratio (0.5...400%)
+3	L Delay (0...1400 ms)
+4	R Delay
+5	Time ratio (12.5...400%, 00...0E)
+6	L Delay (1/64...1/1, 00...0D)
+7	R Delay
+8*	Feedback
+9*	Mod depth
+10	LFO Tempo sync (off, on)
+11*	LFO Freq (0.01...100 Hz)
+12	LFO Sync note (8/1...1/64, 00...10)
+13	LFO Wave (Saw, Square, Triangle, Sine, S&H)
+14	LFO Shape (+/- 3F)
+15	LFO Key Sync (off, on)
+16	LFO Init phase (0...180 deg, 00...12)
+17	LFO Spread (-180...180 deg, +/- 12)
+18	High damp (0...100%, 00...64)
+19	Trim
+
+
+
+
+[10]	Modulation delay
+0*	Dry/Wet (0...100, 00...64)
+1	Time tempo sync (off, on)
+2*	Time ratio (0.5...400%)
+3	L Delay (0...1400 ms)
+4	R Delay
+5	Time ratio (12.5...400%, 00...0E)
+6	L Delay (1/64...1/1, 00...0D)
+7	R Delay
+8*	Feedback
+9*	Mod depth
+10*	LFO Freq (0.01...100 Hz)
+11	LFO Spread (-180...180 deg, +/- 12)
+
+
+
+
+[11]	Tape echo
+0*	Dry/Wet (0...100, 00...64)
+1	Time tempo sync (off, on)
+2*	Time ratio (0.5...400%)
+3	Tap1 Delay (0...1400 ms)
+4	Tap2 Delay
+5	Time ratio (12.5...400%, 00...0E)
+6	Tap1 Delay (1/64...1/1, 00...0D)
+7	Tap2 Delay
+8*	Tap1 Level
+9*	Tap2 Level
+10*	Feedback
+11	High damp (0...100%, 00...64)
+12	Low damp
+13	Trim
+14*	Saturation
+15	Wow Freq (0.01...100 Hz)
+16	Wow Depth
+17	Pre tone
+18	Spread
+
+
+
+
+[12]	Chorus
+0*	Dry/Wet (0...100, 00...64)
+1*	Mod depth
+2*	LFO Freq (0.01...100 Hz)
+3	LFO Spread (-180...180 deg, +/- 12)
+4	Pre delay L (0...50 ms, 00...77)
+5	Pre delay R
+6	Trim
+7	Hi EQ Gain (-15...15 dB, +/- 1E)
+
+
+
+
+[13]	Flanger
+0*	Dry/Wet (0...100, 00...64)
+1*	Delay (0...30ms, 00...71)
+2*	Mod depth
+3*	Feedback
+4	Phase (+, -)
+5	LFO Tempo sync (off, on)
+6	LFO Freq (0.01...100 Hz)
+7*	LFO Sync note (8/1...1/64, 00...10)
+8	LFO Wave (Saw, Square, Triangle, Sine, S&H)
+9	LFO Shape (+/- 3F)
+10	LFO Key Sync (off, on)
+11	LFO Init phase (0...180 deg, 00...12)
+12	LFO Spread (-180...180 deg, +/- 12)
+13	High damp (0...100%, 00...64)
+
+
+
+
+[14]	Vibrato
+0*	Dry/Wet (0...100, 00...64)
+1*	Mod depth
+2	LFO Tempo sync (off, on)
+3*	LFO Freq (0.01...100 Hz)
+4	LFO Sync note (8/1...1/64, 00...10)
+5	LFO Wave (Saw, Square, Triangle, Sine, S&H)
+6	LFO Shape (+/- 3F)
+7	LFO Key Sync (off, on)
+8	LFO Init phase (0...180 deg, 00...12)
+9	LFO Spread (-180...180 deg, +/- 12)
+
+
+
+
+[15]	Phaser
+0*	Dry/Wet (0...100, 00...64)
+1	Type (Blue, UV-B)
+2*	Manual
+3*	Mod depth
+4*	Resonance
+5	Phase (+, -)
+6	LFO Tempo sync (off, on)
+7	LFO Freq (0.01...100 Hz)
+8*	LFO Sync note (8/1...1/64, 00...10)
+9	LFO Wave (Saw, Square, Triangle, Sine, S&H)
+10	LFO Shape (+/- 3F)
+11	LFO Key Sync (off, on)
+12	LFO Init phase (0...180 deg, 00...12)
+13	LFO Spread (-180...180 deg, +/- 12)
+14	High damp (0...100%, 00...64)
+
+
+
+
+[16]	Tremolo
+0*	Dry/Wet (0...100, 00...64)
+1*	Mod depth
+2	LFO Tempo sync (off, on)
+3	LFO Freq (0.01...100 Hz)
+4*	LFO Sync note (8/1...1/64, 00...10)
+5	LFO Wave (Saw, Square, Triangle, Sine, S&H)
+6	LFO Shape (+/- 3F)
+7	LFO Key Sync (off, on)
+8	LFO Init phase (0...180 deg, 00...12)
+9	LFO Spread (-180...180 deg, +/- 12)
+
+
+
+
+[17]	Ring modulator
+0*	Dry/Wet (0...100, 00...64)
+1	OSC mode (fixed, note)
+2*	Fixed freq (0...12 kHz)
+3	Note offset (-48...48, +/- 30)
+4	Note fine (-100...100, +/- 32)
+5	OSC wave (Saw, Triangle, Sine)
+6*	LFO Intensity (+/- 3F)
+7	LFO Tempo sync (off, on)
+8*	LFO Freq (0.01...100 Hz)
+9	LFO Sync note (8/1...1/64, 00...10)
+10	LFO Wave (Saw, Square, Triangle, Sine, S&H)
+11	LFO Shape (+/- 3F)
+12	LFO Key Sync (off, on)
+13	LFO Init phase (0...180 deg, 00...12)
+14	Pre LPF
+
+
+
+
+[18]	Grain shifter
+0*	Dry/Wet (0...100, 00...64)
+1	Duration temp sync (off, on)
+2*	Time ratio (0.5...400%)
+3	Duration (0...350 ms)
+4	Time ratio (12.5...400%, 00...0E)
+5	Duration (1/64...1/1, 00...0D)
+6	LFO Tempo sync (off, on)
+7*	LFO Freq (0.01...100 Hz)
+8	LFO Sync note (8/1...1/64, 00...10)
+9	LFO Key Sync (off, on)
+10	LFO Init phase (0...180 deg, 00...12)
+
+
+
+
+[19]	Pitch shifter
+0*	Dry/Wet (0...100, 00...64)
+1*	Pitch (-24...24, +/- 18)
+2	Fine (-100...100, +/- 32)
+3	Delay tempo sync (off, on)
+4	Time ratio (0.5...400%)
+5	Delay (0...500 ms)
+6	Time ratio (12.5...400%, 00...0E)
+7	Delay (1/64...1/1, 00...0D)
+8	Feedback pos (pre, post)
+9	Feedback
+10	Mode (slow, medium, fast)
+11	High damp (0...100%, 00...64)
+12	Trim
+
+
+
+
+[20]	Talk modulator
+0*	Dry/Wet (0...100, 00...64)
+1*	Voice control (+/- 3F)
+2*	Voice top (A, I, U, E, O)
+3*	Voice center (A, I, U, E, O)
+4*	Voice bottom (A, I, U, E, O)
+5*	Resonance
+6*	Drive
+7*	Mod depth (+/- 3F)
+8	Mod response
+9	LFO Tempo sync (off, on)
+10	LFO Freq (0.01...100 Hz)
+11*	LFO Sync note (8/1...1/64, 00...10)
+12	LFO Wave (Saw, Square, Triangle, Sine, S&H)
+13	LFO Shape (+/- 3F)
+14	LFO Key Sync (off, on)
+15	LFO Init phase (0...180 deg, 00...12)
+
+
+
+
+
+[21]	Looper
+0*	Switch (rec, looped play, overdub)
+1*	Length (1/32...4/1, 00...07)
+2*	Speed (-1...16)
+3	Direct (off, on)
+
+
+

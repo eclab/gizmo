@@ -134,7 +134,7 @@ void playArpeggio()
         {
         if (local.arp.number == ARPEGGIATOR_NUMBER_CHORD_REPEAT)
             {
-			MIDI.sendControlChange(123, 0, options.channelOut);
+            MIDI.sendControlChange(123, 0, options.channelOut);
             }
         else
             {
@@ -385,7 +385,7 @@ void stateArpeggiator()
         local.arp.goingDown = 0;  // same reason
         local.arp.playing = 0;  // don't want to add and remove notes right now
         local.arp.steadyNoteOff = local.arp.noteOff = NO_NOTE;
-        sendAllNotesOff();
+        sendAllSoundsOff();
         }
     const char* menuItems[17] = { PSTR(STR_UP), PSTR(STR_DOWN), PSTR(STR_UP_DOWN), PSTR("RANDOM"), PSTR("ASSIGN"), PSTR("CHORD"), PSTR("0"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("CREATE")};
     result = doMenuDisplay(menuItems, 17, STATE_NONE,  STATE_ROOT, 1);
@@ -443,7 +443,7 @@ void stateArpeggiatorPlay()
         }
         
 #ifdef INCLUDE_IMMEDIATE_RETURN
-	immediateReturn = false;
+    immediateReturn = false;
 #endif
     
     if (updateDisplay)
@@ -467,7 +467,7 @@ void stateArpeggiatorPlay()
 
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
-        sendAllNotesOff();
+        sendAllSoundsOff();
         goUpState(STATE_ARPEGGIATOR);
         }
     else if (isUpdated(SELECT_BUTTON, RELEASED))
@@ -490,7 +490,7 @@ void stateArpeggiatorPlay()
             (local.arp.oldLeftPot > pot[LEFT_POT] && local.arp.oldLeftPot - pot[LEFT_POT] > ARP_POT_SLOP)))
         {
 #ifdef INCLUDE_IMMEDIATE_RETURN
-		immediateReturn = true;
+        immediateReturn = true;
 #endif
         optionsReturnState = STATE_ARPEGGIATOR_PLAY;
         goDownState(STATE_OPTIONS_PLAY_LENGTH);
@@ -500,7 +500,7 @@ void stateArpeggiatorPlay()
             (local.arp.oldRightPot > pot[RIGHT_POT] && local.arp.oldRightPot - pot[RIGHT_POT] > ARP_POT_SLOP)))
         {
 #ifdef INCLUDE_IMMEDIATE_RETURN
-		immediateReturn = true;
+        immediateReturn = true;
 #endif
         optionsReturnState = STATE_ARPEGGIATOR_PLAY;
         goDownState(STATE_OPTIONS_TEMPO);
@@ -623,13 +623,13 @@ void stateArpeggiatorCreateEdit()
 
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
-        sendAllNotesOff();
+        sendAllSoundsOff();
         state = STATE_ARPEGGIATOR_CREATE_SURE;
         }
     else if (isUpdated(SELECT_BUTTON, PRESSED))
         {
         // save!
-        sendAllNotesOff();
+        sendAllSoundsOff();
         state = STATE_ARPEGGIATOR_CREATE_SAVE;
         entry = true;
         }
@@ -641,7 +641,7 @@ void stateArpeggiatorCreateEdit()
         {
         local.arp.currentRightPot = (uint8_t) ((pot[RIGHT_POT] * ((uint16_t) data.arp.length + 1)) >> 10);  //  / 1024);
 
-        sendAllNotesOff();
+        sendAllSoundsOff();
         if (local.arp.currentPosition < MAX_ARP_NOTES)
             {
             garbageCollectNotes();
@@ -660,7 +660,7 @@ void stateArpeggiatorCreateEdit()
         {
         local.arp.currentRightPot = (uint8_t) ((pot[RIGHT_POT] * ((uint16_t) data.arp.length + 1)) >> 10);  //  / 1024);
 
-        //sendAllNotesOff();
+        //sendAllSoundsOff();
         if (local.arp.currentPosition < MAX_ARP_NOTES)
             {
             garbageCollectNotes();
@@ -676,7 +676,7 @@ void stateArpeggiatorCreateEdit()
         {
         local.arp.currentRightPot = (uint8_t) ((pot[RIGHT_POT] * ((uint16_t) data.arp.length + 1)) >> 10);  //  / 1024);
 
-        sendAllNotesOff();
+        sendAllSoundsOff();
         if (local.arp.currentPosition < MAX_ARP_NOTES)
             {                       
             garbageCollectNotes();
@@ -737,9 +737,9 @@ void stateArpeggiatorCreateEdit()
                     uint8_t notei = ARP_NOTEX(i);
                     if (notei != ARP_REST
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
-						&& notei != ARP_TIE
+                        && notei != ARP_TIE
 #endif
-                    )
+                        )
                         {
                         uint8_t note = backupChordNotes[notei];
                                         
@@ -777,7 +777,7 @@ void stateArpeggiatorCreateEdit()
                 local.arp.currentPosition = data.arp.length;
             if (oldpos != local.arp.currentPosition)
                 {
-                sendAllNotesOff();
+                sendAllSoundsOff();
                 if (local.arp.currentPosition > 0)
                     sendNoteOn(local.arp.chordNotes[ARP_NOTEX(local.arp.currentPosition - 1)], local.arp.lastVelocity, options.channelOut);
                 }

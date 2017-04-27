@@ -103,6 +103,17 @@
 // INCLUDE_WAVES							[In development] Should we include LFO waves?  Don't turn this on yet.
 
 
+
+// -- OPTIONS --
+// USE_ALL_NOTES_OFF						By default when Gizmo kills all sounds it does so with "All Sounds Off" because some hardware
+//											(like the Blofeld's Arpeggiated sounds) do not respond properly to All Notes Off.  But that's 
+//											harsh: it doesn't allow notes to do their release. If you set this, it will change things to 
+//											ALL NOTES OFF.
+
+// #define USE_ALL_NOTES_OFF
+
+
+
 /// Here are the standard values for the MEGA and for the UNO
 
 #if defined(__MEGA__)
@@ -113,6 +124,7 @@
 #define INCLUDE_EXTENDED_CONTROLLER
 #define INCLUDE_SPLIT
 #define INCLUDE_THRU
+#define INCLUDE_SYNTH
 #define INCLUDE_MEASURE
 
 #define INCLUDE_OPTIONS_TRANSPOSE_AND_VOLUME
@@ -126,6 +138,16 @@
 #define INCLUDE_CC_CONTROL
 #define INCLUDE_CLOCK_IN_OPTIONS
 #define INCLUDE_BUFFERED_CURSOR_X_POS
+
+//// INCLUDED SYNTHS
+//// If you comment these out, be sure to modify the menuItems array
+//// in TopLevel.cpp case STATE_SYNTH to match properly
+#define INCLUDE_SYNTH_WALDORF_BLOFELD
+#define INCLUDE_SYNTH_KAWAI_K4
+#define INCLUDE_SYNTH_OBERHEIM_MATRIX_1000
+#define INCLUDE_SYNTH_KORG_MICROSAMPLER
+#define INCLUDE_SYNTH_YAMAHA_TX81Z
+
 #endif
 
 
@@ -191,6 +213,9 @@
 
 
 
+
+
+
 #include <Arduino.h>
 #include <EEPROM.h>
 #include <MIDI.h>
@@ -213,6 +238,7 @@
 #include "Split.h"
 #include "Thru.h"
 #include "Measure.h"
+#include "Synth.h"
 
 // This lets everyone have access to the MIDI global, not just
 // the .ino file

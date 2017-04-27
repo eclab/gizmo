@@ -43,7 +43,7 @@ void stateSplit()
     else if (isUpdated(BACK_BUTTON, RELEASED))
         {
         local.split.playing = false;
-        sendAllNotesOff();
+        sendAllSoundsOff();
         goUpState(STATE_ROOT);
         }
     else if (updateDisplay)

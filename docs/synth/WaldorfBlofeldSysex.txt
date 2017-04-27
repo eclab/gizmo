@@ -1,0 +1,1481 @@
+Blofeld System Exclusive Specifications,
+Software release 1.04
+[Augmented in Section 3.1 to include a CC Data Column]
+
+
+If you find any documentation bug herein, please mail it to
+bugs@waldorfmusic.de
+
+1. General
+*****************************************************************************
+Sys-Ex Dumps have the following form:
+
+    F0h IDW IDE DEV IDM BB NN --------Data--------- CHK F7h
+
+where
+
+h         : Hex
+IDW       : Waldorf Music MIDI ID = 3Eh
+IDE       : Equipment ID = 13h for Blofeld
+DEV       : Device number, 00h to 7Eh, 7Fh = broadcast
+IDM       : Message ID
+BB        : Location High Byte, can be Program Bank,
+            Parameter Bank, Edit Buffer etc.
+NN        : Location Low Byte, can be Program Number,
+            Parameter Address etc.
+Data      : whatever data bytes, 00h to 7Fh
+CHK       : Sum of all databytes truncated to 7 bits.
+            The addition is done in 8 bit format, the result is    
+            masked to 7 bits (00h to 7Fh). A checksum of 7Fh is
+            always accepted as valid.
+            IMPORTANT: the MIDI status-bytes as well as the 
+            ID's are not used for computing the checksum.
+
+CHK is only sent on Sys-Ex transfers of dump type Dump (xxxD).
+BB is omitted on Sys-Ex transfers of data type Global Data (GLBx).
+Data is only sent on Sys-Ex transfers of dump type Dump (xxxD) and
+Parameter Change (xxxP).
+*****************************************************************************
+
+
+1.1 Message IDs (IDM)
+*****************************************************************************
+Message IDs (IDM) are organized in a matrix where the row defines the
+data type and the column identifies the type of dump.  The data type is
+coded in the four least significant bits of the IDM.  The following data
+types are currently defined:
+
+Label   Value   Description
+--------------------------------------------------
+SNDx    x0h     Sound data type
+GLBx    x4h     Global Data
+--------------------------------------------------
+
+The dump type is coded in the upper three bits of IDM, note that bit
+seven cannot be used.  The following dump types are currently defined:
+
+Label   Value   Description
+--------------------------------------------------
+xxxR    0xh     Request
+xxxD    1xh     Dump
+xxxP    2xh     Parameter Change
+--------------------------------------------------
+
+Not all combinations of dump types and data types are currently
+supported, only those given below:
+
+Request (xxxR = 0x)
+ | Dump (xxxD = 1x)
+ |  | Parameter Change (xxxP = 2x)
+ |  |  | 
+ |  |  |           Data Type
+--------------------------------------------------
+00 10 20           SNDx x0   Sound
+04 14              GLBx x4   Global Data
+--------------------------------------------------
+
+So follwing valid IDM exist:
+
+Label   Value   Description
+--------------------------------------------------
+SNDR    00h     Sound Request
+SNDD    10h     Sound Dump
+SNDP    20h     Sound Parameter Change
+
+GLBR    04h     Global Request
+GLBD    14h     Global Dump
+--------------------------------------------------
+*****************************************************************************
+
+2. Details
+
+
+2.11 SNDR
+*****************************************************************************
+SNDR    00h     Sound Request
+
+Upon reception of a valid sound request the Blofeld will dump the
+selected Sound(s). The location is given in two bytes with the
+following conventions:
+
+BB NN           Location
+--------------------------------------------------
+00 00 .. 00 7F  Locations A001..A128
+01 00 .. 01 7F  Locations B001..B128
+19 00 .. 19 7F  Locations Z001..Z128 (*1)
+40 00           All Sounds
+7F 00           Sound Mode Edit Buffer
+7F 00 .. 7F 0F  Multi Instrument Edit Buffer 1..16
+--------------------------------------------------
+
+So the full format of a SNDR Dump is:
+
+F0h, 3Eh, 13h, DEV, 00h, BB, NN, CHK, F7
+
+where:
+
+Index   Label   Value           Description
+-----------------------------------------------------------
+0       EXC     F0h             Marks Start of SysEx
+1       IDW     3Eh             Waldorf Music ID
+2       IDE     13h             Blofeld ID
+3       DEV                     Device ID               
+4       IDM     00h             here SNDR (Sound request)
+5       BB      see above       Location
+6       NN      see above       Location
+8       EOX     F7h             End of SysEx
+-----------------------------------------------------------
+
+Note that the checksum is omitted here.
+
+*1: Note that the actual number of banks can be lower. Some
+banks are reserved for future extension.
+********************************************************************
+
+
+2.12 SNDD
+*****************************************************************************
+SNDD    10h     Sound Dump
+
+A sound dump is used to transfer sound data from and to the
+Blofeld. The location is given in two bytes with the
+following conventions:
+
+BB NN           Location
+--------------------------------------------------
+00 00 .. 00 7F  Locations A001..A128
+01 00 .. 01 7F  Locations B001..B128
+...
+19 00 .. 19 7F  Locations Z001..Z128 (*1)
+7F 00           Sound Mode Edit Buffer
+7F 00 .. 7F 0F  Multi Instrument Edit Buffer 1..16
+--------------------------------------------------
+
+So the full format of a SNDD Dump is:
+
+F0h, 3Eh, 13h, DEV, 10h, BB, NN, --SDATA--, CHK, F7h
+
+where:
+
+Index   Label   Value           Description
+-----------------------------------------------------------
+0       EXC     F0h             Marks Start of SysEx
+1       IDW     3Eh             Waldorf Music ID
+2       IDE     13h             Blofeld ID
+3       DEV                     Device ID               
+4       IDM     10h             here SNDD (Sound Dump)
+5       BB      see above       Location
+6       NN      see above       Location
+7-389   SDATA   see 3.1         Sound data
+390     CHK     SDATA & 7Fh     Checksum
+391     EOX     F7h             End of SysEx
+-----------------------------------------------------------
+
+Upon reception of a Sound Request SNDR for All Sounds 40h 00h,
+the Blofeld will transmit all its sounds in separate SNDD messages.
+
+*1: Note that the actual number of banks can be lower. Some
+banks are reserved for future extension.
+*****************************************************************************
+
+
+2.13 SNDP
+*****************************************************************************
+SNDP    20h     Sound Parameter Change
+
+Upon reception of a valid Sound Parameter Change Dump, the
+specified parameter will change its value immediately according
+to the given value. The location is given in one byte with the
+following conventions:
+
+LL              Location
+-------------------------------------------------------------
+00h             Sound Mode Edit Buffer or...
+00h..0Fh        Multi Mode Instrument 1..16 Sound Edit Buffer 
+-------------------------------------------------------------
+
+The Parameter index is given in two bytes:
+
+HH  PP          Parameter index
+------------------------------------------------
+00h 00..7Fh     Parameters with indices 0..127
+01h 00..7Fh     Parameters with indices 128..255
+02h 00..7Eh     Parameters with indices 256..382
+------------------------------------------------
+
+See 3.1 for a detailed list of parameters and indices.
+
+
+So the actual Format is:
+
+F0h, 3Eh, 13h, DEV, 20h, LL, HH, PP, XX, F7h
+
+where:
+
+Index   Label   Value           Description
+-----------------------------------------------------------
+0       EXC     F0h             Marks Start of SysEx
+1       IDW     3Eh             Waldorf Music ID
+2       IDE     13h             Blofeld ID
+3       DEV                     Device ID               
+4       IDM     20h             here SNDP (Sound Parameter change)
+5       LL      see above       Location
+6       HH      see above       Parameter index high byte
+7       PP      see above       Parameter index low byte
+8       XX      see 3.1         New Parameter value
+9       EOX     F7h             End of Exclusive
+-----------------------------------------------------------
+
+Note that the checksum is omitted here.
+*****************************************************************************
+
+
+2.51 GLBR
+*****************************************************************************
+GLBR    04h     Global Parameter Request
+
+Upon reception of a valid Global Parameter request, the Blofeld will
+dump the Global Parameters. No location is given.
+
+
+The full format of a GLBR Request is:
+
+Index   Label   Value           Description
+-----------------------------------------------------------
+0       EXC     F0h             Marks Start of SysEx
+1       IDW     3Eh             Waldorf Music ID
+2       IDE     13h             Blofeld ID
+3       DEV                     Device ID               
+4       IDM     04h             here GLBR (Global Parameter request)
+8       EOX     F7h             End of SysEx
+-----------------------------------------------------------
+
+Note that the checksum is omitted here.
+*****************************************************************************
+
+
+2.52 GLBD
+*****************************************************************************
+GLBD    14h     Global Parameter Dump
+
+A Global Parameter dump is used to transfer Global Parameter date
+from and to the Blofeld.
+
+The full format of a GLBD Dump is:
+
+Index   Label   Value           Description
+-----------------------------------------------------------
+0       EXC     F0h             Marks Start of SysEx
+1       IDW     3Eh             Waldorf Music ID
+2       IDE     13h             Blofeld ID
+3       DEV                     Device ID               
+4       IDM     14h             here GLBD (Global Parameter Dump)
+5-59    GDATA   see 3.6         Global Parameter Data
+37      CHK     GDATA&7Fh       Checksum
+38      EOX     F7h             End of SysEx
+-----------------------------------------------------------
+*****************************************************************************
+
+
+3. Data Formats		[Augmented to include CC data]
+
+3.1 SDATA - Sound Data
+*****************************************************************************
+
+Index   CC      Range   Value                   Parameter
+-----------------------------------------------------------------------------
+0               reserved
+1       27      16..112 128'..1/2'              Osc 1 Octave, in steps of 12
+2       28      52..76  -12..+12                Osc 1 Semitone
+3       29      0..127  -64..+63                Osc 1 Detune
+4               40..88  -24..+24                Osc 1 Bend Range
+5               0..127  -200%..+196%            Osc 1 Keytrack
+6               0..11   see 4.2                 Osc 1 FM Source
+7       30      0..127  0..127                  Osc 1 FM Amount
+8       31      0..72   see 4.1                 Osc 1 Shape
+9       33      0..127  0..127                  Osc 1 Pulsewidth
+10              0..30   see 4.7                 Osc 1 PWM Source
+11      34      0..127  -64..+63                Osc 1 PWM Amount
+12              reserved
+13              reserved
+14              0..1    on,off                  Osc 1 Limit WT
+15              reserved
+16              0..127  0..127                  Osc 1 Brilliance
+17      35      16..112 128'..1/2'              Osc 2 Octave, in steps of 12
+18      36      52..76  -12..+12                Osc 2 Semitone
+19      37      0..127  -64..+63                Osc 2 Detune
+20              40..88  -24..+24                Osc 2 Bend Range
+21              0..127  -200%..+196%            Osc 2 Keytrack
+22              0..11   see 4.2                 Osc 2 FM Source
+23      38      0..127  0..127                  Osc 2 FM Amount
+24      39      0..72   see 4.1                 Osc 2 Shape
+25      40      0..127  0..127                  Osc 2 Pulsewidth
+26              0..30   see 4.7                 Osc 2 PWM Source
+27      41      0..127  -64..+63                Osc 2 PWM Amount
+28              reserved
+29              reserved
+30              0..1    on,off                  Osc 2 Limit WT
+31              reserved
+32              0..127  0..127                  Osc 2 Brilliance
+33      42      16..112 128'..1/2'              Osc 3 Octave, in steps of 12
+34      43      52..76  -12..+12                Osc 3 Semitone
+35      44      0..127  -64..+63                Osc 3 Detune
+36              40..88  -24..+24                Osc 3 Bend Range
+37              0..127  -200%..+196%            Osc 3 Keytrack
+38              0..11   see 4.2                 Osc 3 FM Source
+39      45      0..127  0..127                  Osc 3 FM Amount
+40      46      0..4    see 4.1                 Osc 3 Shape
+41      47      0..127  0..127                  Osc 3 Pulsewidth
+42              0..30   see 4.7                 Osc 3 PWM Source
+43      48      0..127  -64..+63                Osc 3 PWM Amount
+44              reserved
+45              reserved
+46              reserved
+47              reserved
+48              0..127  0..127                  Osc 3 Brilliance
+49      49      0..1    off,on                  Osc 2 Sync to O3
+50              0..30   see 4.7                 Osc Pitch Source
+51      50      0..127  -64..+63                Osc Pitch Amount
+52              reserved
+53      65      0..1    off,on                  Glide
+54              reserved
+55              reserved
+56      51      0..3    see 4.3                 Glide Mode
+57              0..127  0..127                  Glide Rate
+58              0..127  see 4.10                Allocation Mode and Unisono
+59              0..127  0..127                  Unisono Uni Detune
+60              reserved
+61      52      0..127  0..127                  Mixer Osc 1 Level
+62      53      0..127  F1 64..F2 63            Mixer Osc 1 Balance
+63      56      0..127  0..127                  Mixer Osc 2 Level
+64      57      0..127  F1 64..F2 63            Mixer Osc 2 Balance
+65      58      0..127  0..127                  Mixer Osc 3 Level
+66      59      0..127  F1 64..F2 63            Mixer Osc 3 Balance
+67      60      0..127  0..127                  Mixer Noise Level
+68      61      0..127  F1 64..F2 63            Mixer Noise Balance
+69      62      0..127  -64..+63                Mixer Noise Colour
+70              reserved
+71      54      0..127  0..127                  Mixer RingMod Level
+72      55      0..127  F1 64..F2 63            Mixer RingMod Balance
+73              reserved
+74              reserved
+75              reserved
+76              reserved
+77      68      0..11   see 4.4                 Filter 1 Type
+78      69      0..127  0..127                  Filter 1 Cutoff
+79              reserved
+80      70      0..127  0..127                  Filter 1 Resonance
+81      71      0..127  0..127                  Filter 1 Drive
+82              0..12   see 4.11                Filter 1 Drive Curve
+83              reserved
+84              reserved
+85              reserved
+86      72      0..127  -200%..+196%            Filter 1 Keytrack
+87      73      0..127  -64..+63                Filter 1 Env Amount
+88      74      0..127  -64..+63                Filter 1 Env Velocity
+89              0..30   see 4.7                 Filter 1 Mod Source
+90      75      0..127  -64..+63                Filter 1 Mod Amount
+91              0..11   see 4.2                 Filter 1 FM Source
+92      76      0..127  off..127                Filter 1 FM Amount
+93      77      0..127  left 64..right 63       Filter 1 Pan
+94              0..30   see 4.7                 Filter 1 Pan Source
+95      78      0..127  -64..+63                Filter 1 Pan Amount
+96              reserved
+97      79      0..11   see 4.4                 Filter 2 Type
+98      80      0..127  0..127                  Filter 2 Cutoff
+99              reserved
+100     81      0..127  0..127                  Filter 2 Resonance
+101     82      0..127  0..127                  Filter 2 Drive
+102             0..12   see 4.11                Filter 2 Drive Curve
+103             reserved
+104             reserved
+105             reserved
+106     83      0..127  -200%..+196%            Filter 2 Keytrack
+107     84      0..127  -64..+63                Filter 2 Env Amount
+108     85      0..127  -64..+63                Filter 2 Env Velocity
+109             0..30   see 4.7                 Filter 2 Mod Source
+110     86      0..127  -64..+63                Filter 2 Mod Amount
+111             0..11   see 4.2                 Filter 2 FM Source
+112     87      0..127  off..127                Filter 2 FM Amount
+113     88      0..127  left 64..right 63       Filter 2 Pan
+114                0..30   see 4.7                 Filter 2 Pan Source
+115     89      0..127  -64..+63                Filter 2 Pan Amount
+116             reserved
+117     67      0..1    parallel,serial         Filter Routing
+118             reserved
+119             reserved
+120             reserved
+121     90      0..127  0..127                  Amplifier Volume
+122     91      0..127  -64..+63                Amplifier Velocity
+123             0..30   see 4.7                 Amplifier Mod Source
+124     92      0..127  -64..+63                Amplifier Mod Amount
+125             reserved
+126             reserved
+127             reserved
+128             0..127  see 5                   Effect 1 Type
+129     93      0..127  0..127                  Effect 1 Mix
+130             0..127  see 5                   Effect 1 Parameter 1
+131             0..127  see 5                   Effect 1 Parameter 2
+132             0..127  see 5                   Effect 1 Parameter 3
+133             0..127  see 5                   Effect 1 Parameter 4
+134             0..127  see 5                   Effect 1 Parameter 5
+135             0..127  see 5                   Effect 1 Parameter 6
+136             0..127  see 5                   Effect 1 Parameter 7
+137             0..127  see 5                   Effect 1 Parameter 8
+138             0..127  see 5                   Effect 1 Parameter 9
+139             0..127       see 5                   Effect 1 Parameter 10
+140             0..127  see 5                   Effect 1 Parameter 11
+141             0..127  see 5                   Effect 1 Parameter 12
+142             0..127  see 5                   Effect 1 Parameter 13
+143             0..127  see 5                   Effect 1 Parameter 14
+144             0..127  see 5                   Effect 2 Type
+145     94      0..127  0..127                  Effect 2 Mix
+146             0..127  see 5                   Effect 2 Parameter 1
+147             0..127  see 5                   Effect 2 Parameter 2
+148             0..127  see 5                   Effect 2 Parameter 3
+149             0..127  see 5                   Effect 2 Parameter 4
+150             0..127  see 5                   Effect 2 Parameter 5
+151             0..127  see 5                   Effect 2 Parameter 6
+152             0..127  see 5                   Effect 2 Parameter 7
+153             0..127  see 5                   Effect 2 Parameter 8
+154             0..127  see 5                   Effect 2 Parameter 9
+155             0..127  see 5                   Effect 2 Parameter 10
+156             0..127  see 5                   Effect 2 Parameter 11
+157             0..127  see 5                   Effect 2 Parameter 12
+158             0..127  see 5                   Effect 2 Parameter 13
+159             0..127  see 5                   Effect 2 Parameter 14
+160     15      0..5    see 4.5                 LFO 1 Shape
+161     16      0..127  see 4.6                 LFO 1 Speed
+162             reserved
+163     17      0..1    off,on                  LFO 1 Sync
+164             0..1    off,on                  LFO 1 Clocked
+165             0..127  free..355 degree        LFO 1 Start Phase
+166     18      0..127  0..127                  LFO 1 Delay
+167             0..127  -64..+63                LFO 1 Fade
+168             reserved
+169             reserved
+170             0..127  -200%..+196%            LFO 1 Keytrack
+171             reserved
+172     19      0..5    see 4.5                 LFO 2 Shape
+173     20      0..127  see 4.6                 LFO 2 Speed
+174             reserved
+175     21      0..1    off,on                  LFO 2 Sync
+176             0..1    off,on                  LFO 2 Clocked
+177             0..127  free..355 degree        LFO 2 Start Phase
+178     22      0..127  0..127                  LFO 2 Delay
+179             0..127  -64..+63                LFO 2 Fade
+180             reserved
+181             reserved
+182             0..127  -200%..+196%            LFO 2 Keytrack
+183             reserved
+184     23      0..5    see 4.5                 LFO 3 Shape
+185     24      0..127  see 4.6                 LFO 3 Speed
+186             reserved
+187     25      0..1    off,on                  LFO 3 Sync
+188             0..1    off,on                  LFO 3 Clocked
+189             0..127  free..355 degree        LFO 3 Start Phase
+190     26      0..127  0..127                  LFO 3 Delay
+191             0..127  -64..+63                LFO 3 Fade
+192             reserved
+193             reserved
+194             0..127  -200%..+196%            LFO 3 Keytrack
+195             reserved
+196             0..4    see 4.12                Filter Envelope Mode
+197             reserved
+198             reserved
+199     95      0..127  0..127                  Filter Envelope Attack
+200             0..127  0..127                  Filter Envelope Attack Level
+201     96      0..127  0..127                  Filter Envelope Decay
+202     97      0..127  0..127                  Filter Envelope Sustain
+203     98      0..127  0..127                  Filter Envelope Decay 2
+204     99      0..127  0..127                  Filter Envelope Sustain 2
+205     100     0..127  0..127                  Filter Envelope Release
+206             reserved
+207             reserved
+208             0..4    see 4.12                Amplifier Envelope Mode
+209             reserved
+210             reserved
+211     101     0..127  0..127                  Amplifier Envelope Attack
+212             0..127  0..127                  Amplifier Envelope Attack Level
+213     102     0..127  0..127                  Amplifier Envelope Decay
+214     103     0..127  0..127                  Amplifier Envelope Sustain
+215     104     0..127  0..127                  Amplifier Envelope Decay 2
+216     105     0..127  0..127                  Amplifier Envelope Sustain 2
+217     106     0..127  0..127                  Amplifier Envelope Release
+218             reserved
+219             reserved
+220             0..4    see 4.12                Envelope 3 Mode
+221             reserved
+222             reserved
+223     107     0..127  0..127                  Envelope 3 Attack
+224             0..127  0..127                  Envelope 3 Attack Level
+225     108     0..127  0..127                  Envelope 3 Decay
+226     109     0..127  0..127                  Envelope 3 Sustain
+227     110     0..127  0..127                  Envelope 3 Decay 2
+228     111     0..127  0..127                  Envelope 3 Sustain 2
+229     112     0..127  0..127                  Envelope 3 Release
+230             reserved
+231             reserved
+232             0..4    see 4.12                Envelope 4 Mode
+233             reserved
+234             reserved
+235     113     0..127  0..127                  Envelope 4 Attack
+236             0..127  0..127                  Envelope 4 Attack Level
+237     114     0..127  0..127                  Envelope 4 Decay
+238     115     0..127  0..127                  Envelope 4 Sustain
+239     116     0..127  0..127                  Envelope 4 Decay 2
+240     117     0..127  0..127                  Envelope 4 Sustain 2
+241     118     0..127  0..127                  Envelope 4 Release
+242             reserved
+243             reserved
+244             reserved
+245             0..30   see 4.7                 Modifier 1 Source A
+246             0..30   see 4.7                 Modifier 1 Source B
+247             0..7    see 4.9                 Modifier 1 Operation
+248             0..127  -64..+63                Modifier 1 Constant
+249             0..30   see 4.7                 Modifier 2 Source A
+250             0..30   see 4.7                 Modifier 2 Source B
+251             0..7    see 4.9                 Modifier 2 Operation
+252             0..127  -64..+63                Modifier 2 Constant
+253             0..30   see 4.7                 Modifier 3 Source A
+254             0..30   see 4.7                 Modifier 3 Source B
+255             0..7    see 4.9                 Modifier 3 Operation
+256             0..127  -64..+63                Modifier 3 Constant
+257             0..30   see 4.7                 Modifier 4 Source A
+258             0..30   see 4.7                 Modifier 4 Source B
+259             0..7    see 4.9                 Modifier 4 Operation
+260             0..127  -64..+63                Modifier 4 Constant
+261             0..30   see 4.7                 Modulation 1 Source
+262             0..53   see 4.8                 Modulation 1 Destination
+263             0..127  -64..+63                Modulation 1 Amount
+264             0..30   see 4.7                 Modulation 2 Source
+265             0..53   see 4.8                 Modulation 2 Destination
+266             0..127  -64..+63                Modulation 2 Amount
+267             0..30   see 4.7                 Modulation 3 Source
+268             0..53   see 4.8                 Modulation 3 Destination
+269             0..127  -64..+63                Modulation 3 Amount
+270             0..30   see 4.7                 Modulation 4 Source
+271             0..53   see 4.8                 Modulation 4 Destination
+272             0..127  -64..+63                Modulation 4 Amount
+273             0..30   see 4.7                 Modulation 5 Source
+274             0..53   see 4.8                 Modulation 5 Destination
+275             0..127  -64..+63                Modulation 5 Amount
+276             0..30   see 4.7                 Modulation 6 Source
+277             0..53   see 4.8                 Modulation 6 Destination
+278             0..127  -64..+63                Modulation 6 Amount
+279             0..30   see 4.7                 Modulation 7 Source
+280             0..53   see 4.8                 Modulation 7 Destination
+281             0..127  -64..+63                Modulation 7 Amount
+282             0..30   see 4.7                 Modulation 8 Source
+283             0..53   see 4.8                 Modulation 8 Destination
+284             0..127  -64..+63                Modulation 8 Amount
+285             0..30   see 4.7                 Modulation 9 Source
+286             0..53   see 4.8                 Modulation 9 Destination
+287             0..127  -64..+63                Modulation 9 Amount
+288             0..30   see 4.7                 Modulation 10 Source
+289             0..53   see 4.8                 Modulation 10 Destination
+290             0..127  -64..+63                Modulation 10 Amount
+291             0..30   see 4.7                 Modulation 11 Source
+292             0..53   see 4.8                 Modulation 11 Destination
+293             0..127  -64..+63                Modulation 11 Amount
+294             0..30   see 4.7                 Modulation 12 Source
+295             0..53   see 4.8                 Modulation 12 Destination
+296             0..127  -64..+63                Modulation 12 Amount
+297             0..30   see 4.7                 Modulation 13 Source
+298             0..53   see 4.8                 Modulation 13 Destination
+299             0..127  -64..+63                Modulation 13 Amount
+300             0..30   see 4.7                 Modulation 14 Source
+301             0..53   see 4.8                 Modulation 14 Destination
+302             0..127  -64..+63                Modulation 14 Amount
+303             0..30   see 4.7                 Modulation 15 Source
+304             0..53   see 4.8                 Modulation 15 Destination
+305             0..127  -64..+63                Modulation 15 Amount
+306             0..30   see 4.7                 Modulation 16 Source
+307             0..53   see 4.8                 Modulation 16 Destination
+308             0..127  -64..+63                Modulation 16 Amount
+309             reserved
+310             reserved
+311     14      0..3    off,on,One Shot,Hold    Arpeggiator Mode
+312             0..16   off..15                 Arpeggiator Pattern
+313             reserved
+314             0..42   see 4.13                Arpeggiator Clock
+315             0..43   1/96..legato            Arpeggiator Length
+316     12      0..9    1..10                   Arpeggiator Octave
+317     13      0..3    Up,Down,Alt Up,Alt Down Arpeggiator Direction
+318             0..5    see 4.14                Arpeggiator Sort Order
+319             0..6    see 4.15                Arpeggiator Velocity
+320             0..127  0..127                  Arpeggiator Timing Factor
+321             reserved
+322             0..1    off,on                  Arpeggiator Ptn Reset
+323             0..15   1..16                   Arpeggiator Ptn Length
+324             reserved
+325             reserved
+326             0..127  40..300                 Arpeggiator Tempo
+327             0..127  0sssgaaa                Arp Pattern Step/Glide/Accent 1
+328             0..127  sss=0: normal           Arp Pattern Step/Glide/Accent 2
+329             0..127  sss=1: pause            Arp Pattern Step/Glide/Accent 3
+330             0..127  sss=2: previous         Arp Pattern Step/Glide/Accent 4
+331             0..127  sss=3: first            Arp Pattern Step/Glide/Accent 5
+332             0..127  sss=4: last             Arp Pattern Step/Glide/Accent 6
+333             0..127  sss=5: first+last       Arp Pattern Step/Glide/Accent 7
+334             0..127  sss=6: chord            Arp Pattern Step/Glide/Accent 8
+335             0..127  sss=7: random           Arp Pattern Step/Glide/Accent 9
+336             0..127  g: glide off, on        Arp Pattern Step/Glide/Accent 10
+337             0..127  aaa=0: silent           Arp Pattern Step/Glide/Accent 11
+338             0..127  aaa>0: accent -96..+96  Arp Pattern Step/Glide/Accent 12
+339             0..127                          Arp Pattern Step/Glide/Accent 13 
+340             0..127                          Arp Pattern Step/Glide/Accent 14 
+341             0..127                          Arp Pattern Step/Glide/Accent 15 
+342             0..127                          Arp Pattern Step/Glide/Accent 16 
+343             0..127  0lll0ttt                Arp Pattern Timing/Length 1
+344             0..127  lll=0: legato           Arp Pattern Timing/Length 2
+345             0..127  lll>0: -3..+3           Arp Pattern Timing/Length 3
+346             0..127  ttt=0: random           Arp Pattern Timing/Length 4
+347             0..127  ttt>0: -3..+3           Arp Pattern Timing/Length 5
+348             0..127                          Arp Pattern Timing/Length 6 
+349             0..127                          Arp Pattern Timing/Length 7 
+350             0..127                          Arp Pattern Timing/Length 8 
+351             0..127                          Arp Pattern Timing/Length 9 
+352             0..127                          Arp Pattern Timing/Length 10 
+353             0..127                          Arp Pattern Timing/Length 11 
+354             0..127                          Arp Pattern Timing/Length 12 
+355             0..127                          Arp Pattern Timing/Length 13 
+356             0..127                          Arp Pattern Timing/Length 14 
+357             0..127                          Arp Pattern Timing/Length 15 
+358             0..127                          Arp Pattern Timing/Length 16 
+359             reserved
+360             reserved
+361             reserved
+362             reserved
+363             32..127 ASCII                   Name Char
+364             32..127 ASCII                   Name Char
+365             32..127 ASCII                   Name Char
+366             32..127 ASCII                   Name Char
+367             32..127 ASCII                   Name Char
+368             32..127 ASCII                   Name Char
+369             32..127 ASCII                   Name Char
+370             32..127 ASCII                   Name Char
+371             32..127 ASCII                   Name Char
+372             32..127 ASCII                   Name Char
+373             32..127 ASCII                   Name Char
+374             32..127 ASCII                   Name Char
+375             32..127 ASCII                   Name Char
+376             32..127 ASCII                   Name Char
+377             32..127 ASCII                   Name Char
+378             32..127 ASCII                   Name Char
+379             0..12   see 4.16                Category
+380             reserved
+381             reserved
+382             reserved
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+3.2 GDATA - Global Data
+*****************************************************************************
+
+Index   Range   Value                   Parameter
+-----------------------------------------------------------------------------
+0       reserved
+1       0..1    off,on                  Multi Mode
+2       0..7    A..H                    Bank
+3       0..127  1..128                  Sound
+4       0..7    A..H                    Bank
+5       0..127  1..128                  Sound
+6       0..7    A..H                    Bank
+7       0..127  1..128                  Sound
+8       0..7    A..H                    Bank
+9       0..127  1..128                  Sound
+10      0..7    A..H                    Bank
+11      0..127  1..128                  Sound
+12      0..7    A..H                    Bank
+13      0..127  1..128                  Sound
+14      0..7    A..H                    Bank
+15      0..127  1..128                  Sound
+16      0..7    A..H                    Bank
+17      0..127  1..128                  Sound
+18      0..7    A..H                    Bank
+19      0..127  1..128                  Sound
+20      0..7    A..H                    Bank
+21      0..127  1..128                  Sound
+22      0..7    A..H                    Bank
+23      0..127  1..128                  Sound
+24      0..7    A..H                    Bank
+25      0..127  1..128                  Sound
+26      0..7    A..H                    Bank
+27      0..127  1..128                  Sound
+28      0..7    A..H                    Bank
+29      0..127  1..128                  Sound
+30      0..7    A..H                    Bank
+31      0..127  1..128                  Sound
+32      0..7    A..H                    Bank
+33      0..127  1..128                  Sound
+34      reserved
+35      0..1    off,on                  Auto Edit
+36      0..16   omni..16                MIDI Channel
+37      0..126  0 (00h)..126 (7Eh)      Device ID
+38      1..127  0.1s..15.5s             Popup Time
+39      0..127  0..127                  Contrast
+40      54..74  430..450                Master Tune
+41      52..76  -12..+12                Transpose
+42      reserved
+43      reserved
+44      0..3    see 4.17                Ctrl Send
+45      0..1    off,on                  Ctrl Receive
+46      reserved
+47      reserved
+48      0..1    Auto,Internal           Clock
+49      reserved
+50      0..8    linear..fix 127         Vel Curve
+51      0..120  0 (00h)..120 (78h)      Control W
+52      0..120  0 (00h)..120 (78h)      Control X
+53      0..120  0 (00h)..120 (78h)      Control Y
+54      0..120  0 (00h)..120 (78h)      Control Z
+55      0..127  0..127                  Volume
+56      0..13   see 4.18                Cat. Filter
+57      reserved
+58      reserved
+59      reserved
+60      reserved
+61      reserved
+62      reserved
+63      reserved
+64      reserved
+65      reserved
+66      reserved
+67      reserved
+68      reserved
+69      reserved
+70      reserved
+71      reserved
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+4. Parameter Values
+
+4.1 Oscillator Shapes and Waves
+*****************************************************************************
+
+Oscillator 3 only features Shapes 0 (off) to 4 (Sine).
+
+Index           Description
+-----------------------------------------------------------------------------
+0               off
+1               Pulse
+2               Saw
+3               Triangle
+4               Sine
+5               Alt 1
+6               Alt 2
+7               Resonant
+8               Resonant2
+9               MalletSyn
+10              Sqr-Sweep
+11              Bellish
+12              Pul-Sweep
+13              Saw-Sweep
+14              MellowSaw
+15              Feedback
+16              Add Harm
+17              Reso 3 HP
+18              Wind Syn
+19              High Harm
+20              Clipper
+21              Organ Syn
+22              SquareSaw
+23              Formant 1
+24              Polated
+25              Transient
+26              ElectricP
+27              Robotic
+28              StrongHrm
+29              PercOrgan
+30              ClipSweep
+31              ResoHarms
+32              2 Echoes
+33              Formant 2
+34              FmntVocal
+35              MicroSync
+36              Micro PWM
+37              Glassy
+38              Square HP
+39              SawSync 1
+40              SawSync 2
+41              SawSync 3
+42              PulSync 1
+43              PulSync 2
+44              PulSync 3
+45              SinSync 1
+46              SinSync 2
+47              SinSync 3
+48              PWM Pulse
+49              PWM Saw
+50              Fuzz Wave
+51              Distorted
+52              HeavyFuzz
+53              Fuzz Sync
+54              K+Strong1
+55              K+Strong2
+56              K+Strong3
+57              1-2-3-4-5
+58              19/twenty
+59              Wavetrip1
+60              Wavetrip2
+61              Wavetrip3
+62              Wavetrip4
+63              MaleVoice
+64              Low Piano
+65              ResoSweep
+66              Xmas Bell
+67              FM Piano
+68              Fat Organ
+69              Vibes
+70              Chorus 2
+71              True PWM
+72              UpperWaves
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+4.2 FM Sources
+*****************************************************************************
+
+Index           Description
+-----------------------------------------------------------------------------
+0               off
+1               Osc 1
+2               Osc 2
+3               Osc 3
+4               Noise
+5               LFO 1
+6               LFO 2
+7               LFO 3
+8               FilterEnv
+9               AmpEnv
+10              Env3
+11              Env4
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+4.3 Glide Modes
+*****************************************************************************
+
+Index           Description
+-----------------------------------------------------------------------------
+0               Portamento
+1               fingered P
+2               Glissando
+3               fingered G
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+4.4 Filter Types
+*****************************************************************************
+
+Index           Description
+-----------------------------------------------------------------------------
+0               Bypass
+1               LP 24dB
+2               LP 12dB
+3               BP 24dB
+4               BP 12dB
+5               HP 24dB
+6               HP 12dB
+7               Notch24dB
+8               Notch12dB
+9               Comb+
+10              Comb-
+11              PPG LP
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+4.5 LFO Shapes
+*****************************************************************************
+
+Index           Description
+-----------------------------------------------------------------------------
+0               Sine
+1               Triangle
+2               Square
+3               Saw
+4               Random
+5               S&H
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+4.6 LFO Clocks
+*****************************************************************************
+
+Index           Description
+-----------------------------------------------------------------------------
+0..1            1280 bars
+2..3            1152 bars
+4..5            1024 bars
+6..7            896 bars
+8..9            768 bars
+10..11          640 bars
+12..13          576 bars
+14..15          512 bars
+16..17          448 bars
+18..19          384 bars
+20..21          320 bars
+22..23          288 bars
+24..25          256 bars
+26..27          224 bars
+28..29          192 bars
+30..31          160 bars
+32..33          144 bars
+34..35          128 bars
+36..37          112 bars
+38..39          96 bars
+40..41          80 bars
+42..43          72 bars
+44..45          64 bars
+46..47          56 bars
+48..49          48 bars
+50..51          40 bars
+52..53          36 bars
+54..55          32 bars
+56..57          28 bars
+58..59          24 bars
+60..61          20 bars
+62..63          18 bars
+64..65          16 bars
+66..67          14 bars
+68..69          12 bars
+70..71          10 bars
+72..73          9 bars
+74..75          8 bars
+76..77          7 bars
+78..79          6 bars
+80..81          5 bars
+82..83          4 bars
+84..85          3.5 bars
+86..87          3 bars
+88..89          2.5 bars
+90..91          2 bars
+92..93          1.5 bars
+94..95          1 bar
+96..97          1/2.
+98..99          1/1T
+100..101        1/2 
+102..103        1/4.
+104..105        1/2T
+106..107        1/4 
+108..109        1/8.
+110..111        1/4T
+112..113        1/8 
+114..115        1/16.
+116..117        1/8T
+118..119        1/16 
+120..121        1/32.
+122..123        1/16T
+124..125        1/32 
+126..127        1/48
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+4.7 Modulation Sources
+*****************************************************************************
+
+Index           Description
+-----------------------------------------------------------------------------
+0               off
+1               LFO 1
+2               LFO1*MW
+3               LFO 2
+4               LFO2*Press
+5               LFO 3
+6               FilterEnv
+7               AmpEnv
+8               Env3
+9               Env4
+10              Keytrack
+11              Velocity
+12              Rel. Velo
+13              Pressure
+14              Poly Press
+15              Pitch Bend
+16              Mod Wheel
+17              Sustain
+18              Foot Ctrl
+19              BreathCtrl
+20              Control W
+21              Control X
+22              Control Y
+23              Control Z
+24              Unisono V.
+25              Modifier 1
+26              Modifier 2
+27              Modifier 3
+28              Modifier 4
+29              minimum
+30              MAXIMUM
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+4.8 Modulation Destinations
+*****************************************************************************
+
+Index           Description
+-----------------------------------------------------------------------------
+0               Pitch
+1               O1 Pitch
+2               O1 FM
+3               O1 PW/Wave
+4               O2 Pitch
+5               O2 FM
+6               O2 PW/Wave
+7               O3 Pitch
+8               O3 FM
+9               O3 PW
+10              O1 Level
+11              O1 Balance
+12              O2 Level
+13              O2 Balance
+14              O3 Level
+15              O3 Balance
+16              RMod Level
+17              RMod Bal.
+18              NoiseLevel
+19              Noise Bal.
+20              F1 Cutoff
+21              F1 Reson.
+22              F1 FM
+23              F1 Drive
+24              F1 Pan
+25              F2 Cutoff
+26              F2 Reson.
+27              F2 FM
+28              F2 Drive
+29              F2 Pan
+30              Volume
+31              LFO1Speed
+32              LFO2Speed
+33              LFO3Speed
+34              FE Attack
+35              FE Decay
+36              FE Sustain
+37              FE Release
+38              AE Attack
+39              AE Decay
+40              AE Sustain
+41              AE Release
+42              E3 Attack
+43              E3 Decay
+44              E3 Sustain
+45              E3 Release
+46              E4 Attack
+47              E4 Decay
+48              E4 Sustain
+49              E4 Release
+50              M1 Amount
+51              M2 Amount
+52              M3 Amount
+53              M4 Amount
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+4.9 Modifier Operators
+*****************************************************************************
+
+Index           Description
+-----------------------------------------------------------------------------
+0               +
+1               -
+2               *
+3               AND
+4               OR
+5               XOR
+6               MAX
+7               min
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+4.10 Allocation and Unisono Modes
+*****************************************************************************
+
+0uuu000a
+
+uuu:
+Index           Description
+-----------------------------------------------------------------------------
+0               off
+1               dual
+2               3
+3               4
+4               5
+5               6
+-----------------------------------------------------------------------------
+
+
+a:
+Index           Description
+-----------------------------------------------------------------------------
+0               Poly
+1               Mono
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+4.11 Drive Curves
+*****************************************************************************
+
+Index           Description
+-----------------------------------------------------------------------------
+0               Clipping
+1               Tube
+2               Hard
+3               Medium
+4               Soft
+5               Pickup 1
+6               Pickup 2
+7               Rectifier
+8               Square
+9               Binary
+10              Overflow
+11              Sine Shaper
+12              Osc 1 Mod
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+4.12 Envelope Modes and Triggers
+*****************************************************************************
+
+0ttmmmmm
+
+tt:
+Index           Description
+-----------------------------------------------------------------------------
+0               normal
+1               single
+-----------------------------------------------------------------------------
+
+
+mmmmm:
+Index           Description
+-----------------------------------------------------------------------------
+0               ADSR
+1               ADS1DS2R
+2               One Shot
+3               Loop S1S2
+4               Loop All
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+4.13 Arpeggiator Clocks
+*****************************************************************************
+
+Index           Description
+-----------------------------------------------------------------------------
+0               1/96
+1               1/48
+2               1/32 
+3               1/16T
+4               1/32.
+5               1/16 
+6               1/8T
+7               1/16.
+8               1/8 
+9               1/4T
+10              1/8.
+11              1/4 
+12              1/2T
+13              1/4.
+14              1/2 
+15              1/1T
+16              1/2.
+17              1 bar
+18              1.5 bars
+19              2 bars
+20              2.5 bars
+21              3 bars
+22              3.5 bars
+23              4 bars
+24              5 bars
+25              6 bars
+26              7 bars
+27              8 bars
+28              9 bars
+29              10 bars
+30              12 bars
+31              14 bars
+32              16 bars
+33              18 bars
+34              20 bars
+35              24 bars
+36              28 bars
+37              32 bars
+38              36 bars
+39              40 bars
+40              48 bars
+41              56 bars
+42              64 bars
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+4.14 Arpeggiator Sort Orders
+*****************************************************************************
+
+Index           Description
+-----------------------------------------------------------------------------
+0               as played
+1               reversed
+2               Key Lo>Hi
+3               Key Hi>Lo
+4               Vel Lo>Hi
+5               Vel Hi>Lo
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+4.15 Arpeggiator Velocity Modes
+*****************************************************************************
+
+Index           Description
+-----------------------------------------------------------------------------
+0               Each Note
+1               First Note
+2               Last Note
+3               fix 32
+4               fix 64
+5               fix 100
+6               fix 127
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+4.16 Categories
+*****************************************************************************
+
+Index           Description
+-----------------------------------------------------------------------------
+0               Init
+1               Arp 
+2               Atmo
+3               Bass
+4               Drum
+5               FX  
+6               Keys
+7               Lead
+8               Mono
+9               Pad 
+10              Perc
+11              Poly
+12              Seq 
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+4.17 Ctrl Send Modes
+*****************************************************************************
+
+Index           Description
+-----------------------------------------------------------------------------
+0               off
+1               Ctrl
+2               SysEx
+3               Ctrl+SysEx
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+4.18 Category Filters
+*****************************************************************************
+
+Index           Description
+-----------------------------------------------------------------------------
+0               off
+1               Init
+2               Arp 
+3               Atmo
+4               Bass
+5               Drum
+6               FX  
+7               Keys
+8               Lead
+9               Mono
+10              Pad 
+11              Perc
+12              Poly
+13              Seq 
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+5. Effects
+*****************************************************************************
+
+The Blofeld has two Effect units per Sound. In a multi-timbral setup, the
+first Effect unit is retained for parts 1-4 while the second Effect unit is
+used from the first part.
+The second Effect unit has Delay and Reverb Effect Types in addition to the
+Effect Types of the first Effect unit.
+*****************************************************************************
+
+5.1 Effect Types
+*****************************************************************************
+
+Value           Description               Availability
+-----------------------------------------------------------------------------
+0               Bypass                    FX1 FX2
+1               Chorus, see 5.2           FX1 FX2
+2               Flanger, see 5.3          FX1 FX2
+3               Phaser, see 5.4           FX1 FX2
+4               Overdrive, see 5.5        FX1 FX2
+5               Triple FX, see 5.6        FX1 FX2
+6*              Delay, see 5.7                FX2
+7*              Clk.Delay, see 5.8            FX2
+8*              Reverb, see 5.9               FX2
+
+*: Values for these effects are likely to change in a future version.
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+5.2 Chorus Effect Parameters
+*****************************************************************************
+
+FX1 FX2   Range   Value                   Parameter
+-----------------------------------------------------------------------------
+130 146   0..127  0..127                  Speed
+131 147   0..127  0..127                  Depth
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+5.3 Flanger Effect Parameters
+*****************************************************************************
+
+FX1 FX2   Range   Value                   Parameter
+-----------------------------------------------------------------------------
+130 146   0..127  0..127                  Speed
+131 147   0..127  0..127                  Depth
+134 150   0..127  0..127                  Feedback
+138 154   0..1    positive,negative       Polarity
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+5.4 Phaser Effect Parameters
+*****************************************************************************
+
+FX1 FX2   Range   Value                   Parameter
+-----------------------------------------------------------------------------
+130 146   0..127  0..127                  Speed
+131 147   0..127  0..127                  Depth
+134 150   0..127  0..127                  Feedback
+135 151   0..127  0..127                  Center
+136 152   0..127  0..127                  Spacing
+138 154   0..1    positive,negative       Polarity
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+5.5 Overdrive Effect Parameters
+*****************************************************************************
+
+FX1 FX2   Range   Value                   Parameter
+-----------------------------------------------------------------------------
+131 147   0..127  0..127                  Drive
+132 148   0..127  0..127                  Post Gain
+135 151   0..127  0..127                  Cutoff
+139 155   0..11   Clipping..Sine Shaper   Curve
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+5.6 Triple FX Effect Parameters
+*****************************************************************************
+
+FX1 FX2   Range   Value                   Parameter
+-----------------------------------------------------------------------------
+130 146   0..127  0..127                  Speed
+131 147   0..127  0..127                  Depth
+133 149   0..127  0..127                  Chorus Mix
+134 150   0..127  0..127                  Sample&Hold
+135 151   0..127  0..127                  Overdrive
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+5.7 Delay Effect Parameters
+*****************************************************************************
+
+Index     Range   Value                   Parameter
+-----------------------------------------------------------------------------
+149       0..127  0..127                  Length
+150       0..127  0..127                  Feedback
+151       0..127  0..127                  Cutoff
+154       0..1    positive,negative       Polarity
+155       0..127  -64..+63                Spread
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+5.8 Clk.Delay Effect Parameters
+*****************************************************************************
+
+Index     Range   Value                   Parameter
+-----------------------------------------------------------------------------
+150       0..127  0..127                  Feedback
+151       0..127  0..127                  Cutoff
+154       0..1    positive,negative       Polarity
+155       0..127  -64..+63                Spread
+156       0..29   1/96..10 bars           Length
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+5.9 Reverb Effect Parameters
+*****************************************************************************
+
+Index     Range   Value                   Parameter
+-----------------------------------------------------------------------------
+146       0..127  0..127                  Size
+147       0..127  0..127                  Shape
+148       0..127  0..127                  Decay
+151       0..127  0..127                  Lowpass
+152       0..127  0..127                  Highpass
+153       0..127  0..127                  Diffusion
+154       0..127  0..127                  Damping
+-----------------------------------------------------------------------------
+*****************************************************************************
+
+
+6. Device Inquiry
+*****************************************************************************
+
+The Blofeld responds to the Universal Device Inquiry message
+F0, 7E, <channel>, 06, 01, F7 if <channel> is set to 7F or if
+<channel> matches the specific Device ID. The Blofeld will
+respond with the following:
+
+        F0,7E,                          Universal Sysex Header
+            <channel>,                      Device ID
+            06,02                           Device Inquiry Dump
+        3E,                             Waldorf Music Manufacturer ID
+        13,00,                          Device family code : Blofeld
+        XX,YY,                          Device family member code, see below
+        VV,VV,VV,VV,                    Software revision, ASCII, e.g. "1.04"
+        F7                              EOX
+
+Device family member codes (XX,YY):
+
+        00,00                           Blofeld Desktop
+
+*****************************************************************************
+
+(C) Copyright 2007-2008 Waldorf Music GmbH. All Rights Reserved.

@@ -103,7 +103,7 @@ const char PROGMEM font_3x5[46][3] = {
         A11111A,
         A00010A,
         },  
-        { // +   PLUS
+        { // +  PLUS
         A00100A,
         A01110A,
         A00100A
@@ -118,12 +118,12 @@ const char PROGMEM font_3x5[46][3] = {
         A00100A,
         A00100A,
         },
-        { //  .   PERIOD
+        { //  . PERIOD
         A00000A,
         A10000A,
         A00000A
         },
-        { // /          UP-DOWN
+        { // /  UP-DOWN
         A01010A,
         A11111A,
         A01010A,
@@ -748,6 +748,8 @@ const char PROGMEM font_8x5[
         // It's also, for our purposes, *backwards*.
         // So note that the strings should be flipped
         // horizontally to make much sense of them.
+
+
             { // GIZMO VERSION x... pt 1
             0b01100111,
             0b10010100,
@@ -759,16 +761,27 @@ const char PROGMEM font_8x5[
             0b10110101,
             },
         
-            { // GIZMO VERSION 3 pt 2
+            { // GIZMO VERSION 4 pt 2
             0b11010101,
             0b10010111,
             0b00000000,
             0b00000000,
-            0b01000100,
-            0b01010100,
+            0b01110000,
+            0b00010000,
             0b01111100,
             0b00000000,
             },
+
+//        { // GIZMO VERSION 3 pt 2
+//        0b11010101,
+//        0b10010111,
+//        0b00000000,
+//        0b00000000,
+//        0b01000100,
+//        0b01010100,
+//        0b01111100,
+//        0b00000000,
+//        },
 
 //        { // GIZMO VERSION 2 pt 2
 //        0b11010101,
@@ -1182,6 +1195,10 @@ void initLED()
 
 
 // Rotates a matrix in the given direction.
+// There are lots of clever rotation code snippets out there, many derived
+// from Hacker's Delight, but they're largely all 16- or 32-bit, and their
+// tricks don't scale down to 8-bit in any speed improvement (that I know 
+// of) over the brute-force approach below.
 void rotateMatrix(unsigned char* in, uint8_t dir)
     {
     unsigned char rotateTemp[LED_WIDTH];

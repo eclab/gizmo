@@ -409,6 +409,9 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                                 
             local.stepSequencer.solo = 0;
             local.stepSequencer.currentTrack = 0;
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+            local.stepSequencer.transpose = 0;
+#endif
 #ifdef INCLUDE_PROVIDE_RAW_CC
             setParseRawCC(local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_CC);
 #endif

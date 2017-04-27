@@ -251,27 +251,27 @@ uint8_t stopClock(uint8_t fromButton)
     clockState = CLOCK_STOPPED;
 
 #ifdef INCLUDE_ARPEGGIATOR
-	if (application == STATE_ARPEGGIATOR)
-		{
-		MIDI.sendControlChange(123, 0, options.channelOut);
-		}
-	else
+    if (application == STATE_ARPEGGIATOR)
+        {
+        MIDI.sendControlChange(123, 0, options.channelOut);
+        }
+    else
 #endif
 
 #ifdef INCLUDE_RECORDER
-	if (application == STATE_RECORDER)
-		{
-		MIDI.sendControlChange(123, 0, options.channelOut);
-		}
+        if (application == STATE_RECORDER)
+            {
+            MIDI.sendControlChange(123, 0, options.channelOut);
+            }
 #endif
 
 #ifdef INCLUDE_STEP_SEQUENCER
-	if (application == STATE_STEP_SEQUENCER)
-		{
-		sendAllNotesOff();
-		}
+    if (application == STATE_STEP_SEQUENCER)
+        {
+        sendAllSoundsOff();
+        }
 #endif
-	
+        
     return 1;
     }
 
