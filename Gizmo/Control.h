@@ -149,7 +149,22 @@ struct _controlLocal
     uint8_t selectButtonToggle;  // perhaps these two could be compressed, they're just booleans
     uint8_t doIncrement; 		// This is set to 1 when we're doing NRPN or RPN, and doing buttons and need to display increment as an option
     uint8_t displayType;
+    uint8_t learning;
+    uint8_t waveEnvelopeIndex;
+    int8_t wavePosition;
+    uint8_t noteOnCount;
+    uint16_t currentWaveControl;
+    uint32_t waveStartTicks;
+    uint32_t waveEndTicks;
+    uint8_t waveCountDown;
+    int8_t lastWavePosition;
     };
+
+
+#define ENVELOPE_MODE_GATED 0
+#define ENVELOPE_MODE_TRIGGERED 1
+#define ENVELOPE_MODE_LOOPED 2
+#define ENVELOPE_MODE_FREE 3
 
 
 // SET CONTROLLER TYPE
@@ -168,6 +183,15 @@ void setControllerNumber(uint8_t type, uint16_t &number, uint8_t backupType, uin
 // Lets the user specify a control value to be sent when the button is pressed on (or off).  This
 // value is stored in onOff and will be restored if the user cancels everything.
 void setControllerButtonOnOff(uint16_t &onOff, int8_t nextState);
+
+
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+#define WAVE_COUNTDOWN (32)
+void setWaveEnvelope();
+void setWaveEnvelopeValue();
+void playWaveEnvelope();
+void stateControllerModulationSetMode();
+#endif
 
 #endif
 

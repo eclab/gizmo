@@ -10,30 +10,6 @@
 
 // stateControllerPlay() and stateController() have been inlined into the state machine to save space
 
-/*
-  void stateControllerLearn()
-  {
-  if (isUpdated(BACK_BUTTON, RELEASED))
-  goDownState(STATE_CONTROLLER);
-  else if (isUpdated(SELECT_BUTTON, PRESSED))
-  {
-  }
-  else if (newItem == NEW_ITEM)
-  {
-  if (itemType == AFTERTOUCH || itemType == MIDI_AFTERTOUCH_POLY)
-  {
-  }
-  else if (itemType == MIDI_PITCH_BEND)
-  {
-  }
-  else if (itemType == MIDI_CC_7_BIT || itemType == MIDI_CC_14_BIT)
-  {
-  }
-  }
-  }
-*/
-
-
 // SET CONTROLLER TYPE
 // Lets the user set a controller type.   This is stored in &type.  When the user is finished
 // this function will go to the provided nextState (typically to set the controller number).
@@ -60,15 +36,14 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
         break;
         case MENU_SELECTED:
             {
-/*
-  if (type == CONTROL_TYPE_LEARN)
-  {
-  goDownState(STATE_CONTROLLER_LEARN);
-  }
-*/
             if (type == CONTROL_TYPE_OFF)
                 {
                 saveOptions();
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+				if (nextState == STATE_CONTROLLER_PLAY_WAVE_NUMBER)
+					goUpState(STATE_CONTROLLER_MODULATION);  // it's the wave envelope
+				else
+#endif
                 goUpState(STATE_CONTROLLER);
                 }
 #ifdef INCLUDE_EXTENDED_CONTROLLER
@@ -84,7 +59,12 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
                 else
                     {
                     saveOptions();
-                    goUpState(STATE_CONTROLLER);
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+					if (nextState == STATE_CONTROLLER_PLAY_WAVE_NUMBER)
+						goUpState(STATE_CONTROLLER_MODULATION);  // it's the wave envelope
+					else
+#endif
+						goUpState(STATE_CONTROLLER);
                     }
                 }
             else // CC, NRPN, or RPN, we need to get a number and maybe button values
@@ -95,7 +75,12 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
         break; 
         case MENU_CANCELLED:
             {
-            goUpStateWithBackup(STATE_CONTROLLER);
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+			if (nextState == STATE_CONTROLLER_PLAY_WAVE_NUMBER)
+				goUpStateWithBackup(STATE_CONTROLLER_MODULATION);  // it's the wave envelope
+			else
+#endif
+				goUpStateWithBackup(STATE_CONTROLLER);
             }
         break;
         }
@@ -119,7 +104,7 @@ void setControllerNumber(uint8_t type, uint16_t &number, uint8_t backupType, uin
         break;
         case MENU_SELECTED:
             {
-            if (nextState == STATE_CONTROLLER)  // we're not doing buttons
+            if (nextState == STATE_CONTROLLER || nextState == STATE_CONTROLLER_MODULATION)  // we're not doing buttons
                 saveOptions();
             else                                                                // we're doing buttons and either NRPN or RPN
                 local.control.doIncrement = (type == CONTROL_TYPE_NRPN || type == CONTROL_TYPE_RPN);
@@ -128,7 +113,12 @@ void setControllerNumber(uint8_t type, uint16_t &number, uint8_t backupType, uin
         break;
         case MENU_CANCELLED:
             {
-            goDownStateWithBackup(STATE_CONTROLLER);
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+            if (nextState == STATE_CONTROLLER_PLAY_WAVE_NUMBER)
+            	goDownStateWithBackup(STATE_CONTROLLER_MODULATION);  // it's the wave envelope
+            else
+#endif
+	            goDownStateWithBackup(STATE_CONTROLLER);
             }
         break;
         }
@@ -208,8 +198,316 @@ void setControllerButtonOnOff(uint16_t &onOff, int8_t nextState)
         break;
         }
     }
+    
+
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+
+void stateControllerModulationSetMode()
+    {
+    if (entry) 
+        {
+        backupOptions = options;
+        }
+
+    const char* menuItems[4] = {  PSTR("GATED"), PSTR("TRIGGERED"), PSTR("LOOPED"), PSTR("FREE") };
+    uint8_t result = doMenuDisplay(menuItems, 4, STATE_NONE, STATE_NONE, 1);
+
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            {
+            // do nothing
+            }
+        break;
+        case MENU_SELECTED:
+            {
+            if (options.envelopeMode != currentDisplay)
+           		{
+           		options.envelopeMode = currentDisplay;
+            	saveOptions();
+            	}
+            }
+        // FALL THRU
+        case MENU_CANCELLED:
+            {
+            goUpStateWithBackup(STATE_CONTROLLER_MODULATION);
+            }
+        break;
+        }
+    }
+
+
+
+// SET WAVE ENVELOPE
+// Lets the user set a controller type.   This is stored in &type.  When the user is finished
+// this function will go to the provided nextState (typically to set the controller number).
+void setWaveEnvelope()
+    {
+    const char* menuItems[16] = { PSTR("1 VALUE"), PSTR("1 LENGTH"), PSTR("2 VALUE"), PSTR("2 LENGTH"), PSTR("3 VALUE"), PSTR("3 LENGTH"), PSTR("4 VALUE"), PSTR("4 LENGTH"), PSTR("5 VALUE"), PSTR("5 LEN"), PSTR("6 VALUE"), PSTR("6 LENGTH"), PSTR("7 VALUE"), PSTR("7 LENGTH"), PSTR("8 VALUE"), PSTR("8 LENGTH") };
+    uint8_t result = doMenuDisplay(menuItems, 16, STATE_NONE, STATE_NONE, 1);
+
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            {
+            }
+        break;
+        case MENU_SELECTED:
+            {
+			local.control.waveEnvelopeIndex = currentDisplay;  // get rid of "GO"
+			goDownState(STATE_CONTROLLER_SET_WAVE_ENVELOPE_VALUE);
+            }
+        break; 
+        case MENU_CANCELLED:
+            {
+            goUpState(STATE_CONTROLLER_MODULATION);
+            }
+        break;
+        }
+    }
+
+#define WAVEVAL(i) (options.waveEnvelope[(i) * 2])
+#define WAVETIME(i) (options.waveEnvelope[(i) * 2 + 1])
+
+uint32_t computeWaveEndTicks(uint8_t index)
+	{
+	if (options.controlModulationClocked)
+		{
+		// Beats are 2 a second at 120bpm.  We have 8 steps a beat, or 
+		// 16 a second.  MIDI clock pulses are 48 a second at 120bpm.  So
+		// our steps are 1 every 3 clock pulses.
+		return local.control.waveStartTicks + WAVETIME(index) * 3;
+		}
+	else
+		{
+		// We want to be approximately the same as 120bpm envelopes.  So we need
+		// 16 steps a second.  Ticks are 3125 a second, we want approximately 195 ticks per step.
+		return local.control.waveStartTicks + WAVETIME(index) * 195;
+		}
+	}
+	
+uint16_t computeWaveValue(uint8_t startindex, uint8_t endindex)
+	{
+	// (currenttime - starttime) / (endtime - starttime) = (currentval - startval) / (endval - startval)
+	// so currentval = (currenttime - starttime) / (endtime - starttime) * (endval - startval) + startval
+	// Note that the vals are 1 off, so that's why we're subtracting 1
+	float _currentWaveControl = (float)((options.controlModulationClocked? pulseCount : tickCount) - local.control.waveStartTicks) / 
+								(float)(local.control.waveEndTicks - local.control.waveStartTicks) * 
+								(float)((WAVEVAL(endindex) << 7) - (WAVEVAL(startindex) << 7)) +
+								(float)(WAVEVAL(startindex) << 7);
+		
+	if (_currentWaveControl < 0) _currentWaveControl = 0;
+	if (_currentWaveControl > 16383) _currentWaveControl = 16383;
+	
+	uint16_t currentWaveControl = (uint16_t) _currentWaveControl;
+	if (options.waveControlType == CONTROL_TYPE_CC || 
+		options.waveControlType == CONTROL_TYPE_PC ||
+		options.waveControlType == CONTROL_TYPE_AFTERTOUCH)  // we're only doing 7 bit, strip off the LSB
+		{
+		currentWaveControl = (currentWaveControl >> 7) << 7;
+		}
+
+	return currentWaveControl;
+	}
+
+
+void resetWaveEnvelope(uint8_t index)
+	{
+	local.control.wavePosition = index;
+	local.control.currentWaveControl = WAVEVAL(local.control.wavePosition) << 7;
+	sendControllerCommand(options.waveControlType, options.waveControlNumber, local.control.currentWaveControl, options.channelOut);
+	local.control.waveCountDown = WAVE_COUNTDOWN;
+	local.control.waveStartTicks = (options.controlModulationClocked? pulseCount : tickCount);
+	local.control.waveEndTicks = computeWaveEndTicks(local.control.wavePosition);
+	}
+
+void playWaveEnvelope()
+	{
+    if (entry) 
+        {
+    	local.control.wavePosition = -1;
+    	local.control.lastWavePosition = -1;
+    	local.control.noteOnCount = 0;
+    	local.control.waveCountDown = WAVE_COUNTDOWN;
+    	entry = false;
+        }
+
+    if (local.control.waveCountDown > 0)
+    	local.control.waveCountDown--;
+    	
+	if (newItem && itemType == MIDI_NOTE_OFF)
+		{
+		MIDI.sendNoteOff(itemNumber, itemValue, itemChannel);
+ 		if (local.control.noteOnCount > 0)
+			{
+			local.control.noteOnCount--;
+			}
+		if ((local.control.noteOnCount == 0) && (options.envelopeMode == ENVELOPE_MODE_GATED || options.envelopeMode == ENVELOPE_MODE_LOOPED))
+			{
+			local.control.wavePosition = -1;
+			}
+		}
+    
+    // If we haven't started yet and got a MIDI_NOTE_ON *or* we're free
+	if (local.control.wavePosition == -1 && ((newItem && itemType == MIDI_NOTE_ON) || (options.envelopeMode == ENVELOPE_MODE_FREE)))
+		{
+		// Note that we've hacked updateMIDI so that we get Note On data but everything
+		// else is passed through.  FIXME -- need a better hack
+		
+		resetWaveEnvelope(0);
+		}
+	else if (local.control.wavePosition >= 0  && local.control.waveCountDown == 0)	// we've begun playing.  Need to update.
+		{
+		if ((options.controlModulationClocked? pulseCount : tickCount) >= local.control.waveEndTicks)   // Have we completed a stage?  
+			{
+			// Move to the next stage
+			local.control.wavePosition++;
+			if ((options.envelopeMode == ENVELOPE_MODE_GATED || options.envelopeMode == ENVELOPE_MODE_TRIGGERED) &&
+				(local.control.wavePosition == 7 || WAVETIME(local.control.wavePosition) == -1))
+				{
+				// we're at the end of one-shot, do one last controller command, sort of a semi reset envelope
+				local.control.currentWaveControl = WAVEVAL(local.control.wavePosition) << 7;
+				sendControllerCommand(options.waveControlType, options.waveControlNumber, local.control.currentWaveControl, options.channelOut);
+				local.control.waveCountDown = WAVE_COUNTDOWN;
+				
+				// now reset
+				local.control.lastWavePosition = local.control.wavePosition;  // so we display it right
+				local.control.wavePosition = -1;
+				}
+			else if ((options.envelopeMode == ENVELOPE_MODE_LOOPED || options.envelopeMode == ENVELOPE_MODE_FREE) &&
+					 (local.control.wavePosition == 8 || WAVETIME(local.control.wavePosition) == -1))
+				{
+				// we're at the end of a loop
+				resetWaveEnvelope(0);
+				}
+			else
+				{
+				// we're just going to the next stage
+				resetWaveEnvelope(local.control.wavePosition);
+				}
+			}
+		else  // we're in the middle of a stage
+			{
+			uint8_t endPos = local.control.wavePosition + 1;
+			if ((options.envelopeMode == ENVELOPE_MODE_LOOPED || options.envelopeMode == ENVELOPE_MODE_FREE) &&			/// we're looping AND
+				(local.control.wavePosition == 7 || WAVETIME(local.control.wavePosition + 1) == -1))					// it's the last wave
+					{
+					endPos = 0;
+					}
+			uint16_t currentWaveControl = computeWaveValue(local.control.wavePosition, endPos);
+			
+			// Is this a different value than before?  If so, we update
+			if (currentWaveControl != local.control.currentWaveControl)
+				{
+				local.control.currentWaveControl = currentWaveControl;
+				sendControllerCommand(options.waveControlType, options.waveControlNumber, local.control.currentWaveControl, options.channelOut);
+				local.control.waveCountDown = WAVE_COUNTDOWN;
+				}
+			}
+		}
+
+		// see hack above
+    	if (newItem && itemType == MIDI_NOTE_ON)
+    		{
+    		MIDI.sendNoteOn(itemNumber, itemValue, itemChannel); 
+    		if (local.control.noteOnCount < 255)
+    			local.control.noteOnCount++;
+			}
+			
+    if (updateDisplay)
+        {
+        if (local.control.wavePosition != -1)
+        	local.control.lastWavePosition = local.control.wavePosition;
+        	
+        clearScreen();
+        if (local.control.lastWavePosition == -1)
+        	{
+        	write3x5Glyphs(GLYPH_NONE);
+        	}
+        else 
+        	{
+        	writeShortNumber(led, local.control.lastWavePosition + 1, false);
+        	writeShortNumber(led2, (uint8_t)(local.control.currentWaveControl >> 7), true);
+        	}
+        }
+        
+    if (isUpdated(BACK_BUTTON, RELEASED))
+        {
+        goUpState(STATE_CONTROLLER_MODULATION);
+        }
+
+	}
+
+
+
+
+// SET WAVE ENVELOPE VALUE
+// Lets the user set a controller type.   This is stored in &type.  When the user is finished
+// this function will go to the provided nextState (typically to set the controller number).
+void setWaveEnvelopeValue()
+    {
+    if (entry) 
+        {
+        backupOptions = options;
+        }
+
+	uint8_t result;
+	if ((local.control.waveEnvelopeIndex & 1) == 0)  // EVEN: value
+		{
+		result = doNumericalDisplay(0, 127, options.waveEnvelope[local.control.waveEnvelopeIndex], false, false);
+		}
+	 else if (local.control.waveEnvelopeIndex == 1)  // first envelope not permitted to be off
+	 	{
+		result = doNumericalDisplay(0, 127, options.waveEnvelope[local.control.waveEnvelopeIndex], false, false);
+	 	}
+	 else // ODD : time
+		{
+		// 0 == STOP HERE
+		// otherwise the value is currentValue - 1
+		result = doNumericalDisplay(-1, 127, options.waveEnvelope[local.control.waveEnvelopeIndex], true, false);
+		}
+	
+	switch (result)
+		{
+		case NO_MENU_SELECTED:
+			{
+			}
+		break;
+		case MENU_SELECTED:
+			{
+			options.waveEnvelope[local.control.waveEnvelopeIndex] = currentDisplay;
+			if (backupOptions.waveEnvelope[local.control.waveEnvelopeIndex] != currentDisplay)
+				saveOptions();  // this also sets backupOptions to options
+			}
+		// FALL THRU
+		case MENU_CANCELLED:
+			{
+			goUpStateWithBackup(STATE_CONTROLLER_SET_WAVE_ENVELOPE);
+			}
+		break;
+		}
+	}
+
+#endif
+    
+    
+
 
 /***
+
+	Types: Saw Up, Triangle, Sawdown
+		   Square
+		   Random
+		   S&H
+	Rate:  Based on Note Pulse
+	Mod:   Saw<->Tri<->SawDown
+		   Square PulseWidth
+		   Random Walk
+		   S&H Walk
+	Range: Button 1 On/Off
+
+	Left Knob: Saw Up, Triangle, Saw Down, Square Up 1/8 1/6 1/4 1/2 Square Down 1/3 1/4 1/6 1/8 Random 1 2 4 8 16 32 64 Infinity
+
     LFO1:   Same Function as Knob 1
     ENV1:   Same Function as Knob 2
     LFO2:   Same Function as Button 1

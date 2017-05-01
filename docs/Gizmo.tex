@@ -47,9 +47,9 @@ Gizmo comes built-in with the following applications and other capabilities:
 \item {\bf \textit{Mega Only}\quad MIDI Thru}\quad Gizmo can do magic with incoming notes.  It can {\it merge} and {\it block} channels%, and can map CC to NRPN
 .  It can also {\it distribute} notes to different MIDI channels as you play: this lets you play multiple mono synths as if they were polyphonic, for example.  Gizmo can also {\it layer} notes: when you play a note, Gizmo will send some \(N>1\) note-on messages instead of one.  This lets you use a polyphonic synthesizer to play a note with more than one voice, making it fatter, but not going all the way to unison.  Gizmo can also perform {\it chord memory}, playing a transposed chord of your choosing starting at a note you are currently playing.  Last, Gizmo can {\it debounce} notes (typically from drum pads), refusing to play a second identical note if it happens to soon after the first one.  You can do all of these simultaneously.
 
-\item {\bf \textit{Mega Only:}\quad Synthesizer Helpers.}\quad Various applications designed to patch over MIDI weaknesses of certain synthesizer devices.
-
 \item {\bf \textit{Mega Only:}\quad Measure Counter.}\quad You can count elapsed beats, measures (bars), and phrases; and alternatively count eighths of a second, seconds, and minutes.  The counter also responds to external MIDI clock directives.
+
+\item {\bf \textit{Mega Only:}\quad Synth MIDI Helpers.}\quad Utilities designed to improve the MIDI of specific synthesizers.  At present Gizmo comes with helpers for the Waldorf Blofeld, Korg Microsampler, Oberheim Matrix 1000 (firmware 1.2) and Yamaha TX81Z.
 
 \end{itemize}
 
@@ -754,12 +754,79 @@ Optional control voltage is sent out one of two Digital-to-Analog Converters or 
 	After you have selected a control type, if you have selected CC, NRPN, or RPN, you will be then asked to select a {\bf controller parameter number}.  (Otherwise ,for PC and OFF, you will go back to the top-level Controller Menu).  CC parameter numbers may range 0 ... 119.  NRPN and RPN parameter numbers may range 0 ... 16383.
 	
 	When you have completed this, you will be then asked to enter the value sent when the button is {\bf pressed}.  This value must be 0...127 (the Controller does not send 14-bit values).  Afterwards, you will be similarly asked to enter the value sent when the button is {\bf pressed again} (the buttons act as toggles).  When you have completed this, you will be sent back to the top-level Controller menu.
+	
+	\item{\bf Wave}
+	
+	This submenu controls the 8-stage Wave Envelope (see Section \ref{waveenvelope} next).
 
 		\item{\bf \textit{Note}} At the borders of 14-bit values (near 0 or 16383) you may find it harder to precisely set the BPM due to anti-potentiometer noise code in Gizmo. Just use the right knob to fine-tune your value. 
 	\end{description}
 	
 \paragraph{Warning} Gizmo could {\it theoretically} react to knob changes every 4 MIDI bytes read at full MIDI speed.  However an RPN/NRPN command will take up to 12 bytes (or 18 if \texttt{INCLUDE\_SEND\_NULL\_RPN} is turned on in the code), and a CC command could take up to 6 bytes.  This means that turning a knob may cause Gizmo to generate RPN/RPN/CC messages faster than it can send them.  Eventually the Arduino's write-buffer will fill with unwritten messages and the Arduino will pause until it's sent stuff out.  This could cause Gizmo to miss an incoming MIDI byte.  So if you're sending control commands while (say) at the same time passing data through, this may be an issue: though I have never had it happen to me.
 
+\subsection{The 8-Stage Wave Envelope}
+\label{waveenvelope}
+
+\textit{[Mega Only]}\qquad The Controller also sports an {\bf 8-stage envelope} to control any single control type (CC, NRPN, RPN, PC, Pitch Bend, Channel Aftertouch, Voltage).  This envelope is modeled after the 8-stage ``Wave Envelope'' found on Waldorf Microwave synthesizers, designed to make cool modulations through a wavetable.  For some reason the Waldorf Blofeld lacks this envelope, and I wrote this for Gizmo to give the Blofeld a rough approximation.  But you may find it useful in other contexts as well!  You can also use this envelope to easily do an LFO with a triangle wave, a sawtooth wave, or a pulse wave, among others.
+
+\begin{wrapfigure}{r}{1in}
+\includegraphics[width=1in]{none.pdf}
+\vspace{-2em}\caption{\small Off}\vspace{-1em}
+\end{wrapfigure}
+
+ This is not an ADSR envelope: there is no sustain and no release.  Rather, the envelope has eight {\it stages}, each with a {\it control value} and a {\it time interval}.  As a key is held down, Gizmo iterates through all of the stages one by one.  Each stage starts at the stage's value and lasts for its time interval, gradually interpolating until it reaches the value of the next stage.  Your envelope doesn't have to have all eight stages: you can cut it short by setting a stage time interval to {\bf off} (\texttt{-~-~-~-}).  This has different effects depending on whether you're looping or doing a one-shot envelope (see below).
+
+
+\begin{figure}[t]
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\includegraphics[height=1.9in]{OneShot.pdf}&
+\includegraphics[height=1.9in]{OneShotShort.pdf}\\
+~(a) Gated/Triggered, 8 stages&
+~(b) Gated/Triggered, 5 stages\\\\
+\includegraphics[height=1.9in]{Looped.pdf}&
+\includegraphics[height=1.9in]{LoopedShort.pdf}\\
+~(c) Looped/Free, 8 stages&
+~(d) Looped/Free, 4 stages
+\end{tabular}
+\end{center}
+\caption{Examples of the 8-Stage Envelope in Action.}
+\end{figure}
+
+\paragraph{Modes}  There are four envelope modes:
+
+\begin{itemize}
+\item {\bf Gated}\quad This is the default.  The envelope will begin at the the stage 1 value when a key is pressed, and then start sweeping.  An envelope has expired when it reaches (not completes) stage 8, or when it reaches a stage whose time interval is ``off''.  When you release all the keys, or when the envelope has expired, then the control value will stay fixed at its current value until restarted.  You restart the envelope by releasing all the keys and then pressing a new one. 
+\item {\bf Triggered}\quad This is like Gated, except that the envelope continues even if you have release all the keys.  You restart the envelope by releasing all the keys and then pressing a new key.  This might be useful for sounds with long releases.
+\item {\bf Looped}\quad The envelope will begin at the the stage 1 value when a key is pressed, and then start sweeping.  An envelope has expired when it {\it completes} stage 8, or when it {\it reaches} (not completes) a stage whose time interval is ``off''.  When an envelope has expired, Gizmo loops to stage 1 again.  If you release all the keys, then the control value will stay fixed at its current value until restarted.  You restart the envelope by releasing all the keys and then pressing a new key.
+\item {\bf Free}\quad This is like Looped, except that envelope is constantly running and looping at all times.  The envelope cannot be stopped or restarted.
+\end{itemize}
+
+Please note that if you're using Gated or Triggered, then the time interval for stage 8 serves no function.  In Looped or Free, it indicates the length of stage 8 before returning to stage 1.  
+
+\paragraph{Values}  All stage values are 0...127.  However the interpolation is 14-bit if you're doing NRPN, RPN, Voltage, and Pitch Bend.  Otherwise the interpolation is 7-bit.
+
+\paragraph{Intervals} A stage time interval can any \(n\) from 0...127 (or {\bf off} as discussed earlier).  The envelope can be {\bf synced} to the MIDI clock (or {\bf unsynced}). When synced, a value of \(n\) is a 32nd note, that is, \(n/8\) of a beat.  So if you want your interval to last a 4-beat measure, set \(n=32\).
+
+When unsynced (the default), \(n\) represents approximately \(n/16\) steps per second, which is roughly the same as what \(n\) is in synced mode when the tempo is 120 BPM.
+
+\paragraph{Display}  If the envelope is expired or hasn't started yet,  \texttt{-~-~-~-} is displayed.  Otherwise it displays two numbers.  The left number is the MSB of the current control value.  The right number is the stage (1...8).
+
+\paragraph{Menu Options}  The menu options in the {\bf Wave} submenu are:
+
+\begin{itemize}
+\item {\bf Go}\quad Start the envelope.
+\item {\bf Control}\quad Specify the envelope control type.  If CC, NRPN, or RPN, additionally specify the parameter number. 
+\item {\bf Envelope}\quad Set the 8 envelope values and time intervals.  Remember that an interval can also be \texttt{-~-~-~-}, which indicates that that is the final stage.
+\item {\bf Mode}\quad Specify the mode (Gated, Triggered, Looped, or Free).
+\item {\bf Sync} {\it or} {\bf Unsync}\quad Sync the envelope to MIDI clock or unsync it.
+\end{itemize}
+
+\paragraph{Hints}  This envelope isn't like the envelopes in your synthesizer: they are per-voice.  This envelope controls all the voices playing at the same time\,---\,after all, it's just manipulating a single control (perhaps a CC parameter).  So if you play a key, then release, and your sound has a long release, then when you play a new key, it'll suddenly change the control value for the old note along with the new one.  Thus this might work best with sounds with fairly short releases.
+
+The envelope updates its interpolated values at no more than 100 times a second, so as not to overwhelm the MIDI stream.  It's possible that your device can't handle changes that fast.  You can change things with the \texttt{WAVE\_COUNTDOWN} constant found in the file \texttt{Control.h}. It's by default set to 32.  Increasing it will slow things down.
+
+If the envelope feels stepped or discretized, changing \texttt{WAVE\_COUNTDOWN} won't help things.  Rather, it's likely the fact that you're doing low-resolution CC (7-bit).  There's little you can do about that, it's the nature of MIDI.
 
 \clearpage
 

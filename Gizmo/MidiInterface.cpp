@@ -96,6 +96,17 @@ uint8_t updateMIDI(byte channel, uint8_t _itemType, uint16_t _itemNumber, uint16
         }
     else 
 #endif
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+    if (state == STATE_CONTROLLER_PLAY_WAVE_ENVELOPE && 
+    	(channel == options.channelIn || options.channelIn == CHANNEL_OMNI) &&
+    	_itemType != MIDI_NOTE_ON &&
+    	_itemType != MIDI_NOTE_OFF)
+        {
+        newItem = NO_NEW_ITEM;
+		return 0;
+        }
+    else 
+#endif
         if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
             {
             newItem = NEW_ITEM;

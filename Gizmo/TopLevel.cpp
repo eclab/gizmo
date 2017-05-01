@@ -1402,8 +1402,13 @@ void go()
             {
             if (entry)
                 MIDI.sendRealTime(MIDIClock);
+#ifdef INCLUDE_EXTENDED_CONTROLLER:
+            const char* menuItems[6] = { PSTR("GO"), PSTR("L KNOB"), PSTR("R KNOB"), PSTR("M BUTTON"), PSTR("R BUTTON"), PSTR("WAVE") };
+            doMenuDisplay(menuItems, 6, STATE_CONTROLLER_PLAY, STATE_ROOT, 1);
+#else
             const char* menuItems[5] = { PSTR("GO"), PSTR("L KNOB"), PSTR("R KNOB"), PSTR("M BUTTON"), PSTR("R BUTTON") };
             doMenuDisplay(menuItems, 5, STATE_CONTROLLER_PLAY, STATE_ROOT, 1);
+#endif
             }
         break;
 #endif
@@ -1880,6 +1885,51 @@ void go()
             setControllerType(options.selectButtonControlType, STATE_CONTROLLER_SET_SELECT_BUTTON_NUMBER, STATE_CONTROLLER_SET_SELECT_BUTTON_VALUE_ON);
             }
         break;
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+        case STATE_CONTROLLER_MODULATION:
+            {
+            const char* menuItems[5] = { PSTR("GO"), PSTR("CONTROL"), PSTR("ENVELOPE"), PSTR("MODE"), options.controlModulationClocked ? PSTR("UNSYNC") : PSTR("SYNC") };
+            doMenuDisplay(menuItems, 5, STATE_CONTROLLER_PLAY_WAVE_ENVELOPE, STATE_CONTROLLER, 1);
+            }
+        break;
+        case STATE_CONTROLLER_PLAY_WAVE_ENVELOPE:
+            {
+            playWaveEnvelope();
+            }
+        break;
+        case STATE_CONTROLLER_SET_WAVE_TYPE:
+            {
+            setControllerType(options.waveControlType, STATE_CONTROLLER_PLAY_WAVE_NUMBER, STATE_NONE);
+            }
+        break;
+        case STATE_CONTROLLER_SET_WAVE_ENVELOPE:
+            {
+            setWaveEnvelope();
+            }
+        break;
+        case STATE_CONTROLLER_MODULATION_SET_MODE:
+            {
+            stateControllerModulationSetMode();
+            }
+        break;
+        case STATE_CONTROLLER_MODULATION_SET_CLOCK:
+            {
+            options.controlModulationClocked = !options.controlModulationClocked;
+            saveOptions();
+            goUpState(STATE_CONTROLLER_MODULATION);
+            }
+        break;
+        case STATE_CONTROLLER_SET_WAVE_ENVELOPE_VALUE:
+            {
+            setWaveEnvelopeValue();
+            }
+        break;
+        case STATE_CONTROLLER_PLAY_WAVE_NUMBER:
+            {
+            setControllerNumber(options.waveControlType, options.waveControlNumber, backupOptions.waveControlType, backupOptions.waveControlNumber, STATE_CONTROLLER_MODULATION);
+            }
+        break;
+#endif
         case STATE_CONTROLLER_SET_LEFT_KNOB_NUMBER:
             {
             setControllerNumber(options.leftKnobControlType, options.leftKnobControlNumber, backupOptions.leftKnobControlType, backupOptions.leftKnobControlNumber, STATE_CONTROLLER);

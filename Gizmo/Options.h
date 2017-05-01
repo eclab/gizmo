@@ -37,6 +37,10 @@ struct _options
     uint16_t selectButtonControlOff ;                           // 0 is off, n is value n+1, and 129 is "increment" (128)
 #endif
 
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+    uint16_t waveControlNumber;
+#endif
+
 /*
 	lfo/env rate
 
@@ -69,6 +73,13 @@ struct _options
     uint8_t rightKnobControlType  ;
     uint8_t middleButtonControlType ;
     uint8_t selectButtonControlType ;
+#endif
+
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+	int8_t waveEnvelope[16];
+	uint8_t envelopeMode;
+	uint8_t controlModulationClocked;
+    uint8_t waveControlType ;
 #endif
 
     uint8_t noteLength;

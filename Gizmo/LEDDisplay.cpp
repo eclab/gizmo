@@ -1424,9 +1424,9 @@ void writeShortNumber(unsigned char* mat1, int8_t val, uint8_t leftJustify)
 // Writes a number (-9999...19999) as a string to the given buffer (which must be 6 in size)
 void numberToString(char* buffer, int16_t val)
     {
-    if (val < -9999 || val > 19999) { buffer[0] = "0"; return; }
-    
     strcpy_P(buffer, PSTR("     "));  // 5 spaces. This will get put in dynamic memory :-(
+
+    if (val < -9999 || val > 19999) { return; }    
 
     uint16_t m = 0;
     uint16_t m2 = 0;
@@ -1546,7 +1546,8 @@ void writeNumber(unsigned char* mat1, unsigned char* mat2, int16_t val)
     else if (b[3] == '-')
         { memcpy_P(mat1 + 1, font_3x5[GLYPH_3x5_MINUS], 3); }   // no need for this: // neg = 1; }
 
-    memcpy_P(mat1 + 5, font_3x5[GLYPH_3x5_0 + b[4] - '0'], 3);
+    if (b[4] != ' ')
+    	memcpy_P(mat1 + 5, font_3x5[GLYPH_3x5_0 + b[4] - '0'], 3);
     }
         
         
