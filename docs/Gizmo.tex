@@ -32,7 +32,7 @@ Gizmo comes built-in with the following applications and other capabilities:
 
 \paragraph{Applications}
 \begin{itemize}
-\item {\bf Arpeggiator.}\quad Gizmo's arpeggiator has built-in up, down, up/down, repeated chord, note-assign, and random arpeggios spanning one to three octaves.  Additionally, you can define up to ten additional arpeggiator patterns, each up to 32 notes long, involving up to 14 different chord notes, plus rests and ties.  Arpeggios can be {\it latched} (or not), meaning that they may continue to play even after you have released the keys.  You can specify  the note value relative to the tempo (ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), whether or not the velocity is fixed, the output MIDI channel, and the degree of swing (syncopation).  Gizmo will show the arpeggio on-screen.
+\item {\bf Arpeggiator.}\quad Gizmo's arpeggiator has built-in up, down, up/down, repeated chord, note-assign, and random arpeggios spanning one to three octaves.  Additionally, you can define up to ten additional arpeggiator patterns, each up to 32 notes long, involving up to 14 different chord notes, plus rests and (on the Mega) ties.  Arpeggios can be {\it latched} (or not), meaning that they may continue to play even after you have released the keys.  You can specify  the note value relative to the tempo (ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), whether or not the velocity is fixed, the output MIDI channel, and the degree of swing (syncopation).  Gizmo will show the arpeggio on-screen.
 
 \item {\bf Step Sequencer.}\quad Gizmo's step sequencer can be organized as 12 16-note tracks, 8 24-note tracks, or 6 32-note tracks.  Each note in a track can have its own unique pitch and velocity, or be a rest, or continue (lengthen, tie) the previous note.  You can also fix the velocity for an entire track, mute tracks, fade their volume, specify their independent output MIDI channels, specify the note value relative to the tempo (again ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), and the degree of swing (syncopation).   In addition to note data, you can sequence CC, RPN/NRPN, Pitch Bend, Aftertouch, or PC data.  The step sequencer lets you edit in two modes: either by triggering independent steps like a classic drum sequencer, or by playing a sequence of notes.  The Arduino Uno can store up to two sequences in its slots (shared with the Recorder, discussed next).  Gizmo will show and edit sequences on-screen.  {\bf Extended Version on the Mega:} The extended version also permits 4 48-note tracks or 3 64-note tracks.  You can lock a sequence so that playing along with it won't modify it.  You can stipulate whether starting/stopping the sequencer will also start/stop the MIDI clock.  You can also have the Sequencer avoid playing notes out as they are entered.  The Mega can store up to nine sequences.
 
@@ -77,16 +77,6 @@ Gizmo applications can also be set with a {\it note value} (or {\it note speed})
 \item {\bf \textit{Mega Only}\quad Menu Delay.}\quad Many of Gizmo's menus display the first few letters of a menu item, then pause for some interval of time before they start scrolling the full item.  You can change this interval.
 
 \end{itemize} 
-
-\paragraph{Future Stuff (on the Arduino Mega)}
-
-I have written but not tested some additional code.  It won't appear on the Uno version (not enough space) but may show up on the Mega version.  This stuff includes:
-
-\begin{itemize}
-
-\item {\bf Per-MIDI Device Options.}\quad There will be an area for specific kinds of MIDI devices.  For example, I have written code to convert NRPN values into the unusual sysex messages required by the Kawai K4 Synthesizer so it can be manipulated easily via a standard MIDI controller.
-
-\end{itemize}
 
 Hopefully there'll be more than this.  Message filtering?  A MIDIPal-style CC LFO?  Longer note recorder songs?  And so on.
 
