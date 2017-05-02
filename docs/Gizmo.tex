@@ -40,7 +40,7 @@ Gizmo comes built-in with the following applications and other capabilities:
 
 \item {\bf MIDI Gauge.}\quad The gauge will display all incoming MIDI information on one or all channels.  Note on, note off, and polyphonic aftertouch are shown with pitch and velocity (or pressure).  Channel aftertouch is shown with the appropriate pitch.  Program changes indicate the number.  Pitch bends indicate the value in full 14-bit.  Control Change, Channel Mode, NRPN, and RPN messages display the number, value, and whether the value is being set, incremented, or decremented.  Sysex, song position, song select, tune request, start, continue, stop, and system reset are simply noted.  Rapid-fire MIDI signals such as MIDI clock, active sensing, and time code just turn on individual LEDs. {\bf Extended Version on the Mega:}  The extended version lets you read raw Control Change messages (that is, not parsed into NRPN etc.), and provides more useful information on Channel Mode messages.  The Mega can store up to nine recordings.
 
-\item {\bf MIDI Control Surface.}\quad Gizmo has two potentiometers and two buttons.  Each can be configured to send a unique Program Change, Control Change, NRPN, or RPN commands.  The potentiometers can send up to 10 bits of data (MSB + partial LSB).   {\bf Extended Version on the Mega:}  The extended version also can send pitch bend, aftertouch, and control voltage values via either of two DACs. 
+\item {\bf MIDI Control Surface.}\quad Gizmo has two potentiometers and two buttons.  Each can be configured to send a unique Program Change, Control Change, NRPN, or RPN commands.  The potentiometers can send up to 10 bits of data (MSB + partial LSB).   {\bf Extended Version on the Mega:}  The extended version also can send pitch bend, aftertouch, and control voltage values via either of two DACs.   The extended version also contains an {\bf 8-stage loopable envelope} reminiscent of the wave envelope in the Microwave synthesizers, which can manipulate any of these commands as well.
 
 \item {\bf \textit{Mega Only:}\quad Keyboard Splitter.}\quad You can split incoming MIDI notes by pitch and route them to different MIDI out channels.  You can also fade notes between two channels depending on note velocity.
 
@@ -90,6 +90,7 @@ I have written but not tested some additional code.  It won't appear on the Uno 
 
 Hopefully there'll be more than this.  Message filtering?  A MIDIPal-style CC LFO?  Longer note recorder songs?  And so on.
 
+\clearpage
 
 \section{Building Gizmo}
 
@@ -175,6 +176,7 @@ Gizmo has a debounce mechanism built-in: it ignores secondary apparent button-pr
 
 After about four months of extremely heavy use, my select and back buttons began to fail: if I pressed either the right way it wouldn't indicate that it's been pressed.  If you reach this state you may have to replace the buttons, though that's kind of hard to do: I just built a new board with different, better-quality low-profile buttons (just look on Adafruit for 12mm pushbutton switches).  Fingers crossed.
 
+\clearpage
 \section{Initializing Gizmo}
 
 Gizmo must be initialized before it can be used.  You can do a factory reset on Gizmo with this procedure:
@@ -196,7 +198,6 @@ Gizmo normally targets the SparkFun MIDI Shield, but you might be able to use it
 
 To do this you'll need to clear Gizmo's options and files without needing to press any buttons (as you won't have any).  You can do it like this:
 
-\clearpage
 \begin{enumerate}
 \item In the \texttt{All.h} file, change the line 
 \begin{verbatim}
@@ -238,6 +239,7 @@ Now you need to modify Gizmo's code to run headless, so it doesn't bother lighti
 
 I make no guarantees that this will work: but it might.
 
+\clearpage
 \section{Starting Gizmo}
 
 \begin{wrapfigure}{r}{2in}
@@ -262,7 +264,7 @@ Many versions of the Arduino Mega have an error in their bootloader which may ca
 \end{itemize}
 
 
-%\clearpage
+\clearpage
 
 \section{User Interface}
 
@@ -317,6 +319,7 @@ Gizmo's potentiometers (or {\bf pots}) do a number of tasks, including scrolling
 
 There are two LEDs on-board the SparkFun MIDI Shield.  The {\bf red LED} is toggled on and off to reflect incoming MIDI data.  The {\bf green LED} is toggled on and off to reflect outgoing MIDI data.  
 
+\clearpage
 \section{How Gizmo Handles MIDI}
 
 Gizmo listens for certain kinds of incoming MIDI data, then hands it to an {\bf application}, which may in turn send MIDI data out.  Applications can send data out any way they wish, but in many cases they restrict themselves to sending data out only to Gizmo's {\bf default MIDI Out Channel.}  Note data (Note on, Note Off) sent out may also be subject to further user-specified transformation in the form of transposition or volume control.  
@@ -619,6 +622,9 @@ Of particular use to you will be Tempo and Click.  Click gives you an audible cl
 
 The Recorder records nothing but MIDI NOTE ON and NOTE OFF messages.  It presently quantizes these messages, rounding them up or down to the nearest MIDI Clock pulse, that is, 1/24 of a quarter note.\footnote{This is pretty low-resolution, but there you have it.  Space is tight.}
 
+
+\clearpage
+
 \vspace{2em}
 \begin{figure}[h!]
 \begin{center}
@@ -686,8 +692,8 @@ Messages that are associated with a MIDI channel will have their channel number 
 
 
 \begin{wrapfigure}{r}{1.6in}
-\vspace{-20em}\includegraphics[width=1.6in]{notefunction.pdf}
-\vspace{-2em}\caption{\small Note Function}\vspace{-2em}
+\vspace{-39em}\includegraphics[width=1.6in]{notefunction.pdf}
+\vspace{-2em}\caption{\small Note Function}
 \label{notefunction}
 \end{wrapfigure}
 
@@ -695,10 +701,12 @@ Messages that are associated with a MIDI channel will have their channel number 
 Note messages are displayed with both the {\bf pitch} (at left) and the {\bf velocity} (at right) of the note value, plus the particular kind of message in question: {\bf Note On, Note Off,} and {\bf Polyphonic Aftertouch}.
 
 \begin{wrapfigure}{r}{1.8in}
+\vspace{-32em}
 \includegraphics[width=1.8in]{octave.pdf}
 \vspace{-2em}\caption{\small Octave Values.  Three common octave numbering schemes shown: Yamaha, SPN (so-called {\it Scientific Pitch Notation}), and MIDI.  SPN is the most common on keyboards.}\vspace{-5em}
 \label{octave}
 \end{wrapfigure}
+
 
 
 \paragraph{Note Display}
@@ -718,6 +726,7 @@ Note pitches are displayed by showing the note (such as B$\flat$), with the octa
 \end{itemize}
 
 
+\clearpage
 \section {The Controller}
 \label{controller}
 
@@ -899,6 +908,7 @@ Long-pressing the Middle Button cycles through three options:
 \end{itemize}
 
 
+\clearpage
 \begin{figure}[h!]
 \vspace{-1em}\includegraphics[width=6.5in]{thru.pdf}
 \vspace{-1.25em}
@@ -979,6 +989,8 @@ I might add more unusual transformers later.  Anyway, here are your options:
 				
 	\end{description}
 
+
+\clearpage
 \section {Synthesizer MIDI Helpers}
 \label{synthesizer}
 
@@ -1047,7 +1059,7 @@ Because the TX81Z has more than 128 patches, Program Change Table lets you (weir
 	To change what a measure (bar) or phrase means, long-press the Select button to bring up the Menu.  Here you can choose the {\bf Beats Per Bar} (a value from 1...16)\footnote{Why not 32, like Bars Per Phrase uses?  Because \(32 \times 32 \times 128 > 2^{16}\).  So basically for the same reason as Footnote \ref{footnotetenths}.} and the {\bf Bars per Phrase} (1...32), and as usual, call up the {\bf Options Menu} to change the {\bf Tempo}, etc.
 	
 \begin{wrapfigure}{r}{2in}
-\vspace{-1em}\includegraphics[width=2in]{measurebeats}
+\includegraphics[width=2in]{measurebeats}
 \vspace{-2em}\caption{\small Beats or 1/8 Second Ticks}\vspace{-3em}
 \label{midichannelvalues}
 \end{wrapfigure}
@@ -1059,7 +1071,8 @@ Because the TX81Z has more than 128 patches, Program Change Table lets you (weir
 
 	You can also control the Measure Counter via MIDI: if you send a MIDI Play, it will reset the Measure Counter.  Note that if you send a MIDI Stop, and Gizmo is listening to external MIDI clock, then the Measure Counter will be halted (and MIDI Continue will continue the Counter).  However sending a MIDI Stop will not presently halt the stopwatch.
 
-		
+
+\clearpage
 \section {Options}
 \label{options}
 
@@ -1249,8 +1262,7 @@ Why is this useful?  Here's an example scenario.  You have a sequencer on Device
 		
 	\item{\bf \textit{Mega Only:}\quad Menu Delay}\\
 		Gizmo often will display text (such as \texttt{SWING}) by filling the screen with the first few letters (in this case, \texttt{SWI}), then {\it delaying} for a certain interval, then scrolling through the whole word horizontally. You can specify how long that delay is.
-		
-		\clearpage
+	
 		
 		\begin{description}
 			\item{\bf \textit{Choose}}:
@@ -1277,7 +1289,15 @@ Why is this useful?  Here's an example scenario.  You have a sequencer on Device
 		Presently says:\quad \texttt{GIZMO V2 (C) 2017 BY SEAN LUKE}
 	\end{description}
 
-	\section{Starting, Stopping, and Continuing the Clock (on the Mega)}
+\clearpage
+	\section{About the Clock}
+
+	\subsection{The Internal Clock}
+	\label{internalclock}
+
+The Arduino has an internal clock with 32 bits, yielding a maximum of 42,949,672,95 ticks (one tick per microsecond) before it rolls back over to 0.  This sounds like a lot, but it's not: it's a bit over an hour.\footnote{71.5827882666 minutes to be exact.}  This means that once an hour, Gizmo might do something odd, if you're using the internal clock.  Most likely it could drop a single pulse (1/24 of a quarter note), so it might be off by that much with respect to other instruments synced to it.  You've been warned.
+
+\subsection{Starting, Stopping, and Continuing the Clock (on the Mega)}
 	\label{startingclock}
 
 		You can start, stop, and continue the clock via NRPN/CC as discussed earlier (see {\bf Control MIDI} in Section \ref{options}).   But there's another ``secret'' way to do it on the Mega, using Gizmo's buttons.  If you are in the Options menu, long-press the Middle Button: this toggles {\bf starting} or {\bf stopping} the clock.  And if you long-press the Select button, you can toggle {\bf continuing} or {\bf stopping} the clock.  Remember that you can also get to the Options menu from inside the Arpeggiator, Step Sequencer, or Recorder.
@@ -1288,10 +1308,6 @@ Why is this useful?  Here's an example scenario.  You have a sequencer on Device
 		
 		Manually stopping and starting the clock can produce results which look like bugs, but aren't, so you have think about the effects.  For example, if you're in {\bf Generate Clock} mode and you've manually stopped the clock, and you go into the Step Sequencer and start playing, nothing will happen. More than once this has confused me enough to look through the code thinking I'd written an error.
 		
-	\section{The Internal Clock}
-	\label{internalclock}
-
-The Arduino has an internal clock with 32 bits, yielding a maximum of 42,949,672,95 ticks (one tick per microsecond) before it rolls back over to 0.  This sounds like a lot, but it's not: it's a bit over an hour.\footnote{71.5827882666 minutes to be exact.}  This means that once an hour, Gizmo might do something odd, if you're using the internal clock.  Most likely it could drop a single pulse (1/24 of a quarter note), so it might be off by that much with respect to other instruments synced to it.  You've been warned.
 
 
 \section{Development Status}
