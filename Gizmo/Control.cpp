@@ -104,7 +104,11 @@ void setControllerNumber(uint8_t type, uint16_t &number, uint8_t backupType, uin
         break;
         case MENU_SELECTED:
             {
-            if (nextState == STATE_CONTROLLER || nextState == STATE_CONTROLLER_MODULATION)  // we're not doing buttons
+            if (nextState == STATE_CONTROLLER 
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+            || nextState == STATE_CONTROLLER_MODULATION
+#endif
+            )  // we're not doing buttons
                 saveOptions();
             else                                                                // we're doing buttons and either NRPN or RPN
                 local.control.doIncrement = (type == CONTROL_TYPE_NRPN || type == CONTROL_TYPE_RPN);
@@ -363,7 +367,7 @@ void playWaveEnvelope()
 			// Move to the next stage
 			local.control.wavePosition++;
 			if ((options.envelopeMode == ENVELOPE_MODE_GATED || options.envelopeMode == ENVELOPE_MODE_TRIGGERED) &&
-				(local.control.wavePosition == 7 || WAVETIME(local.control.wavePosition) == -1))
+				(local.control.wavePosition == (ENVELOPE_SIZE - 1) || WAVETIME(local.control.wavePosition) == ENVELOPE_END))
 				{
 				// we're at the end of one-shot, do one last controller command, sort of a semi reset envelope
 				local.control.currentWaveControl = WAVEVAL(local.control.wavePosition) << 7;
@@ -375,7 +379,7 @@ void playWaveEnvelope()
 				local.control.wavePosition = -1;
 				}
 			else if ((options.envelopeMode == ENVELOPE_MODE_LOOPED || options.envelopeMode == ENVELOPE_MODE_FREE) &&
-					 (local.control.wavePosition == 8 || WAVETIME(local.control.wavePosition) == -1))
+					 (local.control.wavePosition == ENVELOPE_SIZE || WAVETIME(local.control.wavePosition) == ENVELOPE_END))
 				{
 				// we're at the end of a loop
 				resetWaveEnvelope(0);
@@ -390,7 +394,7 @@ void playWaveEnvelope()
 			{
 			uint8_t endPos = local.control.wavePosition + 1;
 			if ((options.envelopeMode == ENVELOPE_MODE_LOOPED || options.envelopeMode == ENVELOPE_MODE_FREE) &&			/// we're looping AND
-				(local.control.wavePosition == 7 || WAVETIME(local.control.wavePosition + 1) == -1))					// it's the last wave
+				(local.control.wavePosition == (ENVELOPE_SIZE - 1) || WAVETIME(local.control.wavePosition + 1) == ENVELOPE_END))					// it's the last wave
 					{
 					endPos = 0;
 					}
@@ -458,13 +462,15 @@ void setWaveEnvelopeValue()
 		}
 	 else if (local.control.waveEnvelopeIndex == 1)  // first envelope not permitted to be off
 	 	{
-		result = doNumericalDisplay(0, 127, options.waveEnvelope[local.control.waveEnvelopeIndex], false, false);
+		result = doNumericalDisplay(0, ENVELOPE_END - 1, options.waveEnvelope[local.control.waveEnvelopeIndex], false, false);
 	 	}
 	 else // ODD : time
 		{
-		// 0 == STOP HERE
-		// otherwise the value is currentValue - 1
-		result = doNumericalDisplay(-1, 127, options.waveEnvelope[local.control.waveEnvelopeIndex], true, false);
+		// -1 -> 255 (ENVELOPE_END) == STOP HERE
+		result = doNumericalDisplay(-1, ENVELOPE_END - 1, 			
+			// if the envelope is 255, change to -1.  Otherwise keep as it is (0...254)
+			options.waveEnvelope[local.control.waveEnvelopeIndex] == ENVELOPE_END ? -1 : options.waveEnvelope[local.control.waveEnvelopeIndex], 
+			true, false);
 		}
 	
 	switch (result)
@@ -475,8 +481,10 @@ void setWaveEnvelopeValue()
 		break;
 		case MENU_SELECTED:
 			{
-			options.waveEnvelope[local.control.waveEnvelopeIndex] = currentDisplay;
-			if (backupOptions.waveEnvelope[local.control.waveEnvelopeIndex] != currentDisplay)
+			options.waveEnvelope[local.control.waveEnvelopeIndex] = (uint8_t) currentDisplay;
+			if (currentDisplay == -1) 
+				options.waveEnvelope[local.control.waveEnvelopeIndex] = ENVELOPE_END;  // should happen anyway but just in case...
+			if (backupOptions.waveEnvelope[local.control.waveEnvelopeIndex] != options.waveEnvelope[local.control.waveEnvelopeIndex])
 				saveOptions();  // this also sets backupOptions to options
 			}
 		// FALL THRU

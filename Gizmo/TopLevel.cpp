@@ -697,9 +697,9 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
         }
 #endif
     
-    // if we're doing a high-resolution number (>= 256 basically) then
+    // if we're doing a high-resolution number (> 128 basically) then
     // we check the right pot and use it as a fine-tuning
-    if (potUpdated[RIGHT_POT] && (maxValue - minValue + 1) >= 256)
+    if (potUpdated[RIGHT_POT] && (maxValue - minValue + 1) > 128)
         {
         // this is gonna have funky effects at the boundaries
         

@@ -101,7 +101,7 @@ void resetOptions()
 	// Length values for waves 2 through 8 are OFF by default.
 	// Length value for wave 1 is 0 by default, hence we start at 3.
 	for(int i = 3; i < 16; i++)
-		options.waveEnvelope[i] = -1;
+		options.waveEnvelope[i] = 255;
 #endif
     }
 

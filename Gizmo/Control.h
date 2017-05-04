@@ -166,6 +166,8 @@ struct _controlLocal
 #define ENVELOPE_MODE_LOOPED 2
 #define ENVELOPE_MODE_FREE 3
 
+#define ENVELOPE_END 255
+#define ENVELOPE_SIZE 8
 
 // SET CONTROLLER TYPE
 // Lets the user set a controller type.   This is stored in &type.  When the user is finished

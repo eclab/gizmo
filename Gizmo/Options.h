@@ -76,7 +76,7 @@ struct _options
 #endif
 
 #ifdef INCLUDE_EXTENDED_CONTROLLER
-	int8_t waveEnvelope[16];
+	uint8_t waveEnvelope[16];
 	uint8_t envelopeMode;
 	uint8_t controlModulationClocked;
     uint8_t waveControlType ;
