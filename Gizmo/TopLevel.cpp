@@ -610,21 +610,21 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
 // doNumericalDisplay will display the text "- - - -", suggesting "OFF"
 // or "NONE" to the user.
 // 
-// If includeOther is set to OTHER_OMNI, OTHER_DEFAULT, OTHER_DECREMENT,
-// OTHER_INCREMENT, or OTHER_FREE, then instead of displaying the MAXIMUM
-// VALUE, doNumericalDisplay will display a glyph (OTHER_OMNI = "ALLC",
-// OTHER_DEFAULT = "DFLT", OTHER_DECREMENT = "DECR", OTHER_INCREMENT = "INCR",
-// OTHER_FREE = "FREE").  if includeOther is instead set to OTHER_NONE, then
+// If includeOther is set a value other than GLYPH_OTHER or GLYPH_NONE,
+// then instead of displaying the MAXIMUM
+// VALUE, doNumericalDisplay will display the indicated glyph. 
+//
+// if includeOther is instead set to GLYPH_NONE, then
 // the maximum value will be displayed as normal.
 //
-// If includeOther is set to OTHER_GLYPH, then *all* of the values
+// If includeOther is set to GLYPH_OTHER, then *all* of the values
 // will be replaced with single (3x5) glyphs in the glyph font (see LEDDisplay.h)
 // whose index is specified by you the global array 'glyphs'. Specifically,
 // the glyph displayed for value X will be glyphs[x - minimumValue].  Be warned
 // that this array is MAX_GLYPHS in length, so minimumValue - maximumValue + 1
 // must be <= MAX_GLYPHS if you want to use this option.
 //
-// If either a glyph (due to OTHER_GLYPH) is being displayed, or a number
+// If either a glyph (due to GLYPH_OTHER) is being displayed, or a number
 // is currently being displayed, you can also choose to display an additional
 // 3x5 glyph at the far left side of the screen.  To do this, you put the glyph
 // index in the global variable 'secondGlyph'.  You must set this global variable
@@ -717,18 +717,16 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
         if (includeOff && (currentDisplay == minValue))
             {
             // write "--"
-            write3x5Glyphs(GLYPH_NONE);
+            write3x5Glyphs(GLYPH_OFF);
             }
-        else if ((includeOther >= OTHER_OMNI) && 
-            (includeOther <= OTHER_FREE) &&
-            (currentDisplay == maxValue))
+        else if ((includeOther != GLYPH_NONE) && (includeOther != GLYPH_OTHER) && (currentDisplay == maxValue))
             {
-            write3x5Glyphs(includeOther - GLYPH_OMNI + GLYPH_OMNI);
+            write3x5Glyphs(includeOther);
             }
         else
             {
             writeNumber(led, led2, currentDisplay);
-            if (includeOther == OTHER_GLYPH)
+            if (includeOther == GLYPH_OTHER)
                 {
                 if (glyphs[currentDisplay] != SLOT_TYPE_EMPTY &&
                     glyphs[currentDisplay] != slotTypeForApplication(application))  // need to indicate that we're overwriting
@@ -1403,8 +1401,8 @@ void go()
             if (entry)
                 MIDI.sendRealTime(MIDIClock);
 #ifdef INCLUDE_EXTENDED_CONTROLLER:
-            const char* menuItems[6] = { PSTR("GO"), PSTR("L KNOB"), PSTR("R KNOB"), PSTR("M BUTTON"), PSTR("R BUTTON"), PSTR("WAVE") };
-            doMenuDisplay(menuItems, 6, STATE_CONTROLLER_PLAY, STATE_ROOT, 1);
+            const char* menuItems[7] = { PSTR("GO"), PSTR("L KNOB"), PSTR("R KNOB"), PSTR("M BUTTON"), PSTR("R BUTTON"), PSTR("WAVE"), PSTR("RANDOM") };
+            doMenuDisplay(menuItems, 7, STATE_CONTROLLER_PLAY, STATE_ROOT, 1);
 #else
             const char* menuItems[5] = { PSTR("GO"), PSTR("L KNOB"), PSTR("R KNOB"), PSTR("M BUTTON"), PSTR("R BUTTON") };
             doMenuDisplay(menuItems, 5, STATE_CONTROLLER_PLAY, STATE_ROOT, 1);
@@ -1550,14 +1548,14 @@ void go()
         break;
         case STATE_ARPEGGIATOR_PLAY_OCTAVES:
             {
-            stateNumerical(0, ARPEGGIATOR_MAX_OCTAVES, options.arpeggiatorPlayOctaves, backupOptions.arpeggiatorPlayOctaves, true, false, OTHER_NONE,  STATE_ARPEGGIATOR_PLAY);
+            stateNumerical(0, ARPEGGIATOR_MAX_OCTAVES, options.arpeggiatorPlayOctaves, backupOptions.arpeggiatorPlayOctaves, true, false, GLYPH_NONE,  STATE_ARPEGGIATOR_PLAY);
             playArpeggio();
             }
         break;
         case STATE_ARPEGGIATOR_PLAY_VELOCITY:
             {
             // 128 represents FREE key velocity
-            stateNumerical(0, 128, options.arpeggiatorPlayVelocity, backupOptions.arpeggiatorPlayVelocity, false, false, OTHER_FREE, STATE_ARPEGGIATOR_PLAY);
+            stateNumerical(0, 128, options.arpeggiatorPlayVelocity, backupOptions.arpeggiatorPlayVelocity, false, false, GLYPH_FREE, STATE_ARPEGGIATOR_PLAY);
             playArpeggio();
             }
         break;
@@ -1610,7 +1608,7 @@ void go()
                 clearNotesOnTracks(true);
                 
             // 17 represents DEFAULT channel
-            uint8_t val = stateNumerical(0, 17, local.stepSequencer.outMIDI[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, true, OTHER_DEFAULT, STATE_STEP_SEQUENCER_MENU);
+            uint8_t val = stateNumerical(0, 17, local.stepSequencer.outMIDI[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, true, GLYPH_DEFAULT, STATE_STEP_SEQUENCER_MENU);
             if (val != NO_STATE_NUMERICAL_CHANGE)
                 sendAllSoundsOff();
             playStepSequencer();
@@ -1619,20 +1617,20 @@ void go()
         case STATE_STEP_SEQUENCER_VELOCITY:
             {
             // 128 represents FREE velocity
-            stateNumerical(0, 128, local.stepSequencer.velocity[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, OTHER_FREE, STATE_STEP_SEQUENCER_MENU);
+            stateNumerical(0, 128, local.stepSequencer.velocity[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_FREE, STATE_STEP_SEQUENCER_MENU);
             playStepSequencer();
             }
         break;
         case STATE_STEP_SEQUENCER_FADER:
             {
-            stateNumerical(0, 127, local.stepSequencer.fader[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, OTHER_NONE, STATE_STEP_SEQUENCER_MENU);
+            stateNumerical(0, 127, local.stepSequencer.fader[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_NONE, STATE_STEP_SEQUENCER_MENU);
             playStepSequencer();
             }
         break;
         case STATE_STEP_SEQUENCER_LENGTH:
             {
             // 101 represents DEFAULT length
-            stateNumerical(0, 101, local.stepSequencer.noteLength[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, OTHER_DEFAULT, STATE_STEP_SEQUENCER_MENU);
+            stateNumerical(0, 101, local.stepSequencer.noteLength[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_DEFAULT, STATE_STEP_SEQUENCER_MENU);
             playStepSequencer();
             }
         break;
@@ -1862,6 +1860,10 @@ void go()
                             writeShortNumber(led, msb, false);
                         }
                     }
+                else
+                	{
+                	write3x5Glyphs(GLYPH_OFF);
+                	}
                 }
             }
         break;
@@ -1886,47 +1888,105 @@ void go()
             }
         break;
 #ifdef INCLUDE_EXTENDED_CONTROLLER
-        case STATE_CONTROLLER_MODULATION:
+        case STATE_CONTROLLER_WAVE_ENVELOPE:
             {
             const char* menuItems[5] = { PSTR("GO"), PSTR("CONTROL"), PSTR("ENVELOPE"), PSTR("MODE"), options.controlModulationClocked ? PSTR("UNSYNC") : PSTR("SYNC") };
             doMenuDisplay(menuItems, 5, STATE_CONTROLLER_PLAY_WAVE_ENVELOPE, STATE_CONTROLLER, 1);
             }
         break;
-        case STATE_CONTROLLER_PLAY_WAVE_ENVELOPE:
+        case STATE_CONTROLLER_RANDOM:
             {
-            playWaveEnvelope();
+            const char* menuItems[7] = { PSTR("GO"), PSTR("CONTROL"), PSTR("MODE"), PSTR("RANGE"), PSTR("INITIAL VALUE"), PSTR("LENGTH"), options.controlRandomClocked ? PSTR("UNSYNC") : PSTR("SYNC") };
+            doMenuDisplay(menuItems, 7, STATE_CONTROLLER_PLAY_RANDOM, STATE_CONTROLLER, 1);
             }
         break;
-        case STATE_CONTROLLER_SET_WAVE_TYPE:
+        case STATE_CONTROLLER_PLAY_WAVE_ENVELOPE:
             {
-            setControllerType(options.waveControlType, STATE_CONTROLLER_PLAY_WAVE_NUMBER, STATE_NONE);
+            stateControllerPlayWaveEnvelope();
+            }
+        break;
+        case STATE_CONTROLLER_SET_WAVE_ENVELOPE_TYPE:
+            {
+            setControllerType(options.waveControlType, STATE_CONTROLLER_SET_WAVE_ENVELOPE_NUMBER, STATE_NONE);
             }
         break;
         case STATE_CONTROLLER_SET_WAVE_ENVELOPE:
             {
-            setWaveEnvelope();
+            stateControllerSetWaveEnvelope();
             }
         break;
-        case STATE_CONTROLLER_MODULATION_SET_MODE:
+        case STATE_CONTROLLER_WAVE_ENVELOPE_SET_MODE:
             {
             stateControllerModulationSetMode();
             }
         break;
-        case STATE_CONTROLLER_MODULATION_SET_CLOCK:
+        case STATE_CONTROLLER_WAVE_ENVELOPE_SET_CLOCK:
             {
             options.controlModulationClocked = !options.controlModulationClocked;
             saveOptions();
-            goUpState(STATE_CONTROLLER_MODULATION);
+            goUpState(STATE_CONTROLLER_WAVE_ENVELOPE);
             }
         break;
         case STATE_CONTROLLER_SET_WAVE_ENVELOPE_VALUE:
             {
-            setWaveEnvelopeValue();
+            stateControllerSetWaveEnvelopeValue();
             }
         break;
-        case STATE_CONTROLLER_PLAY_WAVE_NUMBER:
+        case STATE_CONTROLLER_RESET_WAVE_ENVELOPE_VALUES:
             {
-            setControllerNumber(options.waveControlType, options.waveControlNumber, backupOptions.waveControlType, backupOptions.waveControlNumber, STATE_CONTROLLER_MODULATION);
+            stateSure(STATE_CONTROLLER_RESET_WAVE_ENVELOPE_VALUES_GO, STATE_CONTROLLER_SET_WAVE_ENVELOPE_VALUE);
+            }
+        break;
+        case STATE_CONTROLLER_RESET_WAVE_ENVELOPE_VALUES_GO:
+            {
+            stateControllerResetWaveEnvelopeValuesGo();
+            }
+        break;
+        case STATE_CONTROLLER_SET_WAVE_ENVELOPE_NUMBER:
+            {
+            setControllerNumber(options.waveControlType, options.waveControlNumber, backupOptions.waveControlType, backupOptions.waveControlNumber, STATE_CONTROLLER_WAVE_ENVELOPE);
+            }
+        break;
+        case STATE_CONTROLLER_PLAY_RANDOM:
+            {
+            stateControllerPlayRandom();
+            }
+        break;
+        case STATE_CONTROLLER_RANDOM_SET_TYPE:
+            {
+            setControllerType(options.randomControlType, STATE_CONTROLLER_SET_RANDOM_NUMBER, STATE_NONE);
+            }
+        break;
+        case STATE_CONTROLLER_RANDOM_SET_MODE:
+            {
+            stateControllerRandomSetMode();
+            }
+        break;
+        case STATE_CONTROLLER_RANDOM_SET_RANGE:
+            {
+			stateNumerical(1, 127, options.randomRange, backupOptions.randomRange, true, false, GLYPH_NONE, STATE_CONTROLLER_RANDOM);
+            }
+        break;
+        case STATE_CONTROLLER_RANDOM_SET_INITIAL_VALUE:
+            {
+			stateNumerical(0, 127, options.randomInitialValue, backupOptions.randomInitialValue, true, false, GLYPH_NONE, STATE_CONTROLLER_RANDOM);
+            }
+        break;
+        case STATE_CONTROLLER_RANDOM_SET_LENGTH:
+            {
+			stateNumerical(0, 255, options.randomLength, backupOptions.randomLength, true, false, GLYPH_HIGH, STATE_CONTROLLER_RANDOM);
+            }
+        break;
+        case STATE_CONTROLLER_RANDOM_SET_CLOCK:
+            {
+            options.controlRandomClocked = !options.controlRandomClocked;
+            saveOptions();
+            goUpState(STATE_CONTROLLER_RANDOM);
+            }
+        break;
+        case STATE_CONTROLLER_SET_RANDOM_NUMBER:
+            {
+            setControllerNumber(options.randomControlType, options.randomControlNumber, backupOptions.randomControlType, backupOptions.randomControlNumber, STATE_CONTROLLER_RANDOM);
             }
         break;
 #endif
@@ -2008,7 +2068,7 @@ void go()
             // at this point, MIDDLE_BUTTON shouldn't have any effect on doNumericalDisplay (incrementing it)
             // because it's been consumed.
             
-            uint8_t result = doNumericalDisplay(1, MAXIMUM_BPM, options.tempo, 0, OTHER_NONE);
+            uint8_t result = doNumericalDisplay(1, MAXIMUM_BPM, options.tempo, 0, GLYPH_NONE);
             switch (result)
                 {
                 case NO_MENU_SELECTED:
@@ -2080,7 +2140,7 @@ void go()
         case STATE_OPTIONS_SWING:
             {
             if (entry) backupOptions = options; 
-            uint8_t result = doNumericalDisplay(0, 99, options.swing, 0, OTHER_NONE);
+            uint8_t result = doNumericalDisplay(0, 99, options.swing, 0, GLYPH_NONE);
             switch (result)
                 {
                 case NO_MENU_SELECTED:
@@ -2109,7 +2169,7 @@ void go()
                 backupOptions = options;
                 }
                                  
-            uint8_t result = doNumericalDisplay(-60, 60, options.transpose, false, OTHER_NONE);
+            uint8_t result = doNumericalDisplay(-60, 60, options.transpose, false, GLYPH_NONE);
             switch (result)
                 {
                 case NO_MENU_SELECTED:
@@ -2177,22 +2237,22 @@ void go()
         case STATE_OPTIONS_PLAY_LENGTH:
             {
 #ifdef INCLUDE_IMMEDIATE_RETURN
-            stateNumerical(0, 100, options.noteLength, backupOptions.noteLength, true, false, OTHER_NONE, 
+            stateNumerical(0, 100, options.noteLength, backupOptions.noteLength, true, false, GLYPH_NONE, 
                 immediateReturn ? optionsReturnState : STATE_OPTIONS);
 #else
-            stateNumerical(0, 100, options.noteLength, backupOptions.noteLength, true, false, OTHER_NONE, STATE_OPTIONS);
+            stateNumerical(0, 100, options.noteLength, backupOptions.noteLength, true, false, GLYPH_NONE, STATE_OPTIONS);
 #endif
             playApplication();
             }
         break;
         case STATE_OPTIONS_MIDI_CHANNEL_IN:
             {
-            stateNumerical(CHANNEL_OFF, CHANNEL_OMNI, options.channelIn, backupOptions.channelIn, true, true, OTHER_OMNI, STATE_OPTIONS);
+            stateNumerical(CHANNEL_OFF, CHANNEL_OMNI, options.channelIn, backupOptions.channelIn, true, true, GLYPH_OMNI, STATE_OPTIONS);
             }
         break;
         case STATE_OPTIONS_MIDI_CHANNEL_OUT:
             {
-            uint8_t val = stateNumerical(CHANNEL_OFF, HIGHEST_MIDI_CHANNEL, options.channelOut, backupOptions.channelOut, true, true, OTHER_NONE, STATE_OPTIONS);
+            uint8_t val = stateNumerical(CHANNEL_OFF, HIGHEST_MIDI_CHANNEL, options.channelOut, backupOptions.channelOut, true, true, GLYPH_NONE, STATE_OPTIONS);
             if (val != NO_STATE_NUMERICAL_CHANGE)
                 sendAllSoundsOff();
             }
@@ -2201,9 +2261,9 @@ void go()
             {
 #ifdef HEADLESS
             // Do not permit CHANNEL_OFF
-            stateNumerical(LOWEST_MIDI_CHANNEL, HIGHEST_MIDI_CHANNEL, options.channelControl, backupOptions.channelControl, true, false, OTHER_NONE, STATE_OPTIONS);
+            stateNumerical(LOWEST_MIDI_CHANNEL, HIGHEST_MIDI_CHANNEL, options.channelControl, backupOptions.channelControl, true, false, GLYPH_NONE, STATE_OPTIONS);
 #else
-            stateNumerical(CHANNEL_OFF, HIGHEST_MIDI_CHANNEL, options.channelControl, backupOptions.channelControl, true, true, OTHER_NONE, STATE_OPTIONS);
+            stateNumerical(CHANNEL_OFF, HIGHEST_MIDI_CHANNEL, options.channelControl, backupOptions.channelControl, true, true, GLYPH_NONE, STATE_OPTIONS);
 #endif // HEADLESS
             }
         break;
@@ -2250,7 +2310,7 @@ void go()
 #ifdef INCLUDE_OPTIONS_MIDI_CLOCK_DIVIDE
         case STATE_OPTIONS_MIDI_CLOCK_DIVIDE:
             {
-            stateNumerical(1, 16, options.clockDivisor, backupOptions.clockDivisor, true, true, OTHER_NONE, STATE_OPTIONS);
+            stateNumerical(1, 16, options.clockDivisor, backupOptions.clockDivisor, true, true, GLYPH_NONE, STATE_OPTIONS);
             playApplication();
             }
         break;
@@ -2292,7 +2352,7 @@ void go()
         case STATE_OPTIONS_SCREEN_BRIGHTNESS:
             {
             if (entry) backupOptions = options; 
-            uint8_t result = doNumericalDisplay(1, 16, options.screenBrightness + 1, 0, OTHER_NONE);
+            uint8_t result = doNumericalDisplay(1, 16, options.screenBrightness + 1, 0, GLYPH_NONE);
             switch (result)
                 {
                 case NO_MENU_SELECTED:
@@ -2394,7 +2454,7 @@ void go()
 #ifdef INCLUDE_SPLIT
         case STATE_SPLIT_CHANNEL:
             {
-            stateNumerical(LOWEST_MIDI_CHANNEL, HIGHEST_MIDI_CHANNEL, options.splitChannel, backupOptions.splitChannel, true, false, OTHER_NONE, STATE_SPLIT);
+            stateNumerical(LOWEST_MIDI_CHANNEL, HIGHEST_MIDI_CHANNEL, options.splitChannel, backupOptions.splitChannel, true, false, GLYPH_NONE, STATE_SPLIT);
             }
         break;
 
@@ -2421,13 +2481,13 @@ void go()
                 
         case STATE_THRU_EXTRA_NOTES:
             {
-            stateNumerical(0, 31, options.thruExtraNotes, backupOptions.thruExtraNotes, true, true, OTHER_NONE, STATE_THRU);
+            stateNumerical(0, 31, options.thruExtraNotes, backupOptions.thruExtraNotes, true, true, GLYPH_NONE, STATE_THRU);
             }
         break;
                   
         case STATE_THRU_DISTRIBUTE_NOTES:
             {
-            stateNumerical(0, 15, options.thruNumDistributionChannels, backupOptions.thruNumDistributionChannels, true, true, OTHER_NONE, STATE_THRU);
+            stateNumerical(0, 15, options.thruNumDistributionChannels, backupOptions.thruNumDistributionChannels, true, true, GLYPH_NONE, STATE_THRU);
             }
         break;
         
@@ -2457,13 +2517,13 @@ void go()
         
         case STATE_THRU_DEBOUNCE:
             {
-            stateNumerical(0, 255, options.thruDebounceMilliseconds, backupOptions.thruDebounceMilliseconds, true, true, OTHER_NONE, STATE_THRU);
+            stateNumerical(0, 255, options.thruDebounceMilliseconds, backupOptions.thruDebounceMilliseconds, true, true, GLYPH_NONE, STATE_THRU);
             }
         break;
         
         case STATE_THRU_MERGE_CHANNEL_IN:
             {
-            stateNumerical(CHANNEL_OFF, HIGHEST_MIDI_CHANNEL, options.thruMergeChannelIn, backupOptions.thruMergeChannelIn, true, true, OTHER_NONE, STATE_THRU);
+            stateNumerical(CHANNEL_OFF, HIGHEST_MIDI_CHANNEL, options.thruMergeChannelIn, backupOptions.thruMergeChannelIn, true, true, GLYPH_NONE, STATE_THRU);
             }
         break;
 
@@ -2494,14 +2554,14 @@ void go()
     
         case STATE_MEASURE_BEATS_PER_BAR:
             {
-            stateNumerical(1, 16, options.measureBeatsPerBar, backupOptions.measureBeatsPerBar, true, false, OTHER_NONE, STATE_MEASURE);
+            stateNumerical(1, 16, options.measureBeatsPerBar, backupOptions.measureBeatsPerBar, true, false, GLYPH_NONE, STATE_MEASURE);
             playApplication();
             }
         break;
     
         case STATE_MEASURE_BARS_PER_PHRASE:
             {
-            stateNumerical(1, 32, options.measureBarsPerPhrase, backupOptions.measureBarsPerPhrase, true, false, OTHER_NONE, STATE_MEASURE);
+            stateNumerical(1, 32, options.measureBarsPerPhrase, backupOptions.measureBarsPerPhrase, true, false, GLYPH_NONE, STATE_MEASURE);
             playApplication();
             }
         break;

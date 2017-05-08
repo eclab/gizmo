@@ -91,7 +91,7 @@ void stateSplitLayerNote()
     if (options.splitLayerNote != NO_NOTE)
         {
         clearScreen();
-        write3x5Glyphs(GLYPH_NONE);
+        write3x5Glyphs(GLYPH_OFF);
         if (isUpdated(SELECT_BUTTON, PRESSED))
             {
             //isUpdated(SELECT_BUTTON, RELEASED);  // clear this just in case

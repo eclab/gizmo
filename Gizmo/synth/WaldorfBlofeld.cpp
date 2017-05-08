@@ -53,6 +53,7 @@ void stateSynthWaldorfBlofeld()
         local.synth.type.waldorfBlofeld.id = 0;
         local.synth.type.waldorfBlofeld.data[0] = 0;
         local.synth.type.waldorfBlofeld.countDown = 0;
+        local.synth.type.waldorfBlofeld.lastParameter = WALDORF_BLOFELD_BAD_PARAMETER;
         entry = false;
         }
 
@@ -106,7 +107,7 @@ void stateSynthWaldorfBlofeld()
 
         if (local.synth.type.waldorfBlofeld.lastParameter == WALDORF_BLOFELD_BAD_PARAMETER)
             {
-            write3x5Glyphs(GLYPH_NONE);
+            write3x5Glyphs(GLYPH_OFF);
             }
         else if (local.synth.type.waldorfBlofeld.lastParameter == WALDORF_BLOFELD_ID_PARAMETER)
             {

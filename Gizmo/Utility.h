@@ -48,28 +48,31 @@ void doClick();
 void drawMIDIChannel(uint8_t channel);
 
 //// GLYPHS available to WRITE 3x5 GLYPHS, which writes 4 glyphs filling the whole screen
-#define GLYPH_NONE 0                                    // ----
+#define GLYPH_OFF 0                                    	// ----
 #define GLYPH_OMNI 1                                    // ALLC
 #define GLYPH_DEFAULT 2                                 // DFLT
 #define GLYPH_DECREMENT 3                               // DECR
 #define GLYPH_INCREMENT 4                                                               // INCR
-#define GLYPH_FREE 5                                            // FREE
+#define GLYPH_FREE 5                                    // FREE
 #define GLYPH_NOTE 6                                    // NOTE
 #define GLYPH_SYSEX 7                                   // SYSX
-#define GLYPH_SONG_POSITION 8                                   // SPOS
+#define GLYPH_SONG_POSITION 8                           // SPOS
 #define GLYPH_SONG_SELECT 9                             // SSEL
-#define GLYPH_TUNE_REQUEST 10                                   // TREQ
+#define GLYPH_TUNE_REQUEST 10                           // TREQ
 #define GLYPH_START 11                                  // STRT
 #define GLYPH_CONTINUE 12                               // CONT
 #define GLYPH_STOP 13                                   // STOP
-#define GLYPH_SYSTEM_RESET 14                                   // RSET
+#define GLYPH_SYSTEM_RESET 14                           // RSET
 
 #ifdef INCLUDE_EXTENDED_GLYPH_TABLE
-#define GLYPH_FADE 15                                                                   // FADE
-#define GLYPH_PLAY 16                                                                   // PLAY
-#define GLYPH_CHORD 17                                                                  // CHRD
-#define GLYPH_HIGH 18                                                                  // HIGH
+#define GLYPH_FADE 15									// FADE
+#define GLYPH_PLAY 16									// PLAY
+#define GLYPH_CHORD 17									// CHRD
+#define GLYPH_HIGH 18									// HIGH
 #endif
+
+#define GLYPH_OTHER (254)	// reserved to represent "use this glyph instead"
+#define GLYPH_NONE	(255)	// reserved to represent "no glyph"
 
 // Writes any of the above glyph sets to the screen
 void write3x5Glyphs(uint8_t index);

@@ -837,7 +837,7 @@ void stateArpeggiatorCreateSave()
             { firstEmptySlot = i; break; }
         }
                 
-    uint8_t result = doNumericalDisplay(0, NUM_ARPS - 1, firstEmptySlot, 0, OTHER_NONE);
+    uint8_t result = doNumericalDisplay(0, NUM_ARPS - 1, firstEmptySlot, 0, GLYPH_NONE);
     switch (result)
         {
         case NO_MENU_SELECTED:

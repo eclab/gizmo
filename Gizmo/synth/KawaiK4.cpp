@@ -160,7 +160,7 @@ void stateSynthKawaiK4()
         else
             {
             clearScreen();  // again
-            write3x5Glyphs(GLYPH_NONE);
+            write3x5Glyphs(GLYPH_OFF);
             }
         }
     }

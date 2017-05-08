@@ -164,7 +164,7 @@ void stateSynthYamahaTX81Z()
         if (local.synth.type.yamahaTX81Z.lastParameter == YAMAHA_TX81Z_BAD_PARAMETER)
             {
             clearScreen();  // again
-            write3x5Glyphs(GLYPH_NONE);
+            write3x5Glyphs(GLYPH_OFF);
             }
         else 
             {

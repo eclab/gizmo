@@ -219,7 +219,7 @@ void stateSynthKorgMicrosampler()
         if (local.synth.type.korgMicrosampler.lastParameter == KORG_MICROSAMPLER_NO_PARAMETER)
             {
             clearScreen();  // again
-            write3x5Glyphs(GLYPH_NONE);
+            write3x5Glyphs(GLYPH_OFF);
             }
         }
     }

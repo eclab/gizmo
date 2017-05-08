@@ -211,7 +211,7 @@ uint8_t stateSaveLoad(uint8_t includeOff)
             glyphs[i] = getSlotType(i);
             }
         }
-    return doNumericalDisplay(includeOff ? -1 : 0, (NUM_SLOTS - 1), 0, includeOff, OTHER_GLYPH);
+    return doNumericalDisplay(includeOff ? -1 : 0, (NUM_SLOTS - 1), 0, includeOff, GLYPH_OTHER);
     }
 
 

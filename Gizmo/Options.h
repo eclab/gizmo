@@ -39,6 +39,7 @@ struct _options
 
 #ifdef INCLUDE_EXTENDED_CONTROLLER
     uint16_t waveControlNumber;
+    uint16_t randomControlNumber;
 #endif
 
 /*
@@ -80,6 +81,12 @@ struct _options
 	uint8_t envelopeMode;
 	uint8_t controlModulationClocked;
     uint8_t waveControlType ;
+	uint8_t randomMode;
+	uint8_t randomRange;
+	uint8_t randomLength;
+	uint8_t randomInitialValue;
+	uint8_t controlRandomClocked;
+    uint8_t randomControlType ;
 #endif
 
     uint8_t noteLength;

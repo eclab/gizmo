@@ -118,14 +118,25 @@ typedef enum _State: uint8_t
 #endif
 
 #ifdef INCLUDE_EXTENDED_CONTROLLER
-	STATE_CONTROLLER_MODULATION,
+	STATE_CONTROLLER_WAVE_ENVELOPE,
+	STATE_CONTROLLER_RANDOM,
 	STATE_CONTROLLER_PLAY_WAVE_ENVELOPE,
-	STATE_CONTROLLER_SET_WAVE_TYPE,
+	STATE_CONTROLLER_SET_WAVE_ENVELOPE_TYPE,
 	STATE_CONTROLLER_SET_WAVE_ENVELOPE,
-	STATE_CONTROLLER_MODULATION_SET_MODE,
-	STATE_CONTROLLER_MODULATION_SET_CLOCK,
+	STATE_CONTROLLER_WAVE_ENVELOPE_SET_MODE,
+	STATE_CONTROLLER_WAVE_ENVELOPE_SET_CLOCK,
 	STATE_CONTROLLER_SET_WAVE_ENVELOPE_VALUE,
-	STATE_CONTROLLER_PLAY_WAVE_NUMBER,
+	STATE_CONTROLLER_RESET_WAVE_ENVELOPE_VALUES,
+	STATE_CONTROLLER_RESET_WAVE_ENVELOPE_VALUES_GO,
+	STATE_CONTROLLER_SET_WAVE_ENVELOPE_NUMBER,
+	STATE_CONTROLLER_PLAY_RANDOM,
+	STATE_CONTROLLER_RANDOM_SET_TYPE,
+	STATE_CONTROLLER_RANDOM_SET_MODE,
+	STATE_CONTROLLER_RANDOM_SET_RANGE,
+	STATE_CONTROLLER_RANDOM_SET_INITIAL_VALUE,
+	STATE_CONTROLLER_RANDOM_SET_LENGTH,
+	STATE_CONTROLLER_RANDOM_SET_CLOCK,
+	STATE_CONTROLLER_SET_RANDOM_NUMBER,
 #endif
 
 #ifdef INCLUDE_CONTROLLER
@@ -407,36 +418,47 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
 //
 // This function updates a display in the form of an on-screen number
 // ranging between a MIN VALUE and a MAX VALUE, and starting at a given
-// DEFAULT VALUE. 
+// DEFAULT VALUE.   The user can choose from these values, or cancel
+// the operation.
 //
-// If the global variable 'entry' is true, then doNumericalDisplay will
-// set up the display.  Thereafter (when 'entry' is false) it 
-// ignores what's passed into it and just lets the user choose a number.
+// To do this, you call doNumericalDisplay() multiple times until the
+// user either picks a value or cancels.  The first time this function 
+// is called, you should first set the global variable 'entry' to TRUE.
+// This will cause doNumericalDisplay to set up its display.  
+// Thereafter you should call 'entry' to FALSE until the user has chosen
+// a value or has cancelled.
 //
 // As the user is scrolling through various options,
 // doNumericalDisplay will return NO_MENU_SELECTED, but you can see which
-// item is being considered as currentDisplay.  If the user selects a
-// menu item, then MENU_SELECTED is set (again the item
-// is currentDisplay).  Finally if the user goes back, then
-// MENU_CANCELLED is returned.
+// item is being considered in the global variable 'currentDisplay'.  
+// If the user selects an item, then MENU_SELECTED is set (again the item
+// is 'currentDisplay').  Finally if the user cancels, then MENU_CANCELLED
+// is returned (and 'currentDisplay' is undefined).
 //
-// If _includeOff == 1, then currentDisplay can also be equal to minValue - 1,
-// meaning "off", and the displayed value will be "--".
+// If includeOff is TRUE, then instead of displaying the MINIMUM VALUE,
+// doNumericalDisplay will display the text "- - - -", suggesting "OFF"
+// or "NONE" to the user.
+// 
+// If includeOther is set a value other than GLYPH_OTHER or GLYPH_NONE,
+// then instead of displaying the MAXIMUM
+// VALUE, doNumericalDisplay will display the indicated glyph. 
 //
-// includeOther can be set to OTHER_NONE, OTHER_OMNI, OTHER_DEFAULT, OTHER_FREE, or 
-// OTHER_GLYPH, and if anything but OTHER_NONE, it will correspond to the maximum value.
-// Furthermore if OTHER_GLYPH is used, then the glyphs array is scanned to determine 
-// a glyph to display on the far left side of the screen for each possible numerical
-// value.  At present this array is only MAX_GLYPHS in length, so if your max value is 
-// larger than this, you're going to have a problem.  
-
-#define OTHER_NONE 0
-#define OTHER_OMNI 1
-#define OTHER_DEFAULT 2
-#define OTHER_DECREMENT 3
-#define OTHER_INCREMENT 4
-#define OTHER_FREE 5
-#define OTHER_GLYPH 255
+// if includeOther is instead set to GLYPH_NONE, then
+// the maximum value will be displayed as normal.
+//
+// If includeOther is set to GLYPH_OTHER, then *all* of the values
+// will be replaced with single (3x5) glyphs in the glyph font (see LEDDisplay.h)
+// whose index is specified by you the global array 'glyphs'. Specifically,
+// the glyph displayed for value X will be glyphs[x - minimumValue].  Be warned
+// that this array is MAX_GLYPHS in length, so minimumValue - maximumValue + 1
+// must be <= MAX_GLYPHS if you want to use this option.
+//
+// If either a glyph (due to GLYPH_OTHER) is being displayed, or a number
+// is currently being displayed, you can also choose to display an additional
+// 3x5 glyph at the far left side of the screen.  To do this, you put the glyph
+// index in the global variable 'secondGlyph'.  You must set this global variable
+// every time the function is called, as it is immediately reset to NO_GLYPH
+// afterwards.
 
 #define MAX_GLYPHS 11
 extern uint8_t glyphs[MAX_GLYPHS];

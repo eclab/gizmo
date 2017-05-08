@@ -158,6 +158,9 @@ struct _controlLocal
     uint32_t waveEndTicks;
     uint8_t waveCountDown;
     int8_t lastWavePosition;
+    uint16_t startWaveControl;
+    uint16_t endWaveControl;
+    uint8_t randomKeyDownOnce;
     };
 
 
@@ -168,6 +171,20 @@ struct _controlLocal
 
 #define ENVELOPE_END 255
 #define ENVELOPE_SIZE 8
+
+#define MAX_RANDOM_TRIES (6)
+
+#define RANDOM_LENGTH_FOREVER (255)
+
+#define RANDOM_MODE_GATED 0
+#define RANDOM_MODE_TRIGGERED 1
+#define RANDOM_MODE_NOT_RESET 2
+#define RANDOM_MODE_FREE 3
+#define RANDOM_MODE_SH_GATED 4
+#define RANDOM_MODE_SH_TRIGGERED 5
+#define RANDOM_MODE_SH_NOT_RESET 6
+#define RANDOM_MODE_SH_FREE 7
+
 
 // SET CONTROLLER TYPE
 // Lets the user set a controller type.   This is stored in &type.  When the user is finished
@@ -189,10 +206,13 @@ void setControllerButtonOnOff(uint16_t &onOff, int8_t nextState);
 
 #ifdef INCLUDE_EXTENDED_CONTROLLER
 #define WAVE_COUNTDOWN (32)
-void setWaveEnvelope();
-void setWaveEnvelopeValue();
-void playWaveEnvelope();
+void stateControllerSetWaveEnvelope();
+void stateControllerSetWaveEnvelopeValue();
+void stateControllerPlayWaveEnvelope();
 void stateControllerModulationSetMode();
+void stateControllerResetWaveEnvelopeValuesGo();
+void stateControllerPlayRandom();
+void stateControllerRandomSetMode();
 #endif
 
 #endif

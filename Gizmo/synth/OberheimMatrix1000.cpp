@@ -83,7 +83,7 @@ void stateSynthOberheimMatrix1000()
             }
         else
             {
-            write3x5Glyphs(GLYPH_NONE);
+            write3x5Glyphs(GLYPH_OFF);
             }
         }
     }
