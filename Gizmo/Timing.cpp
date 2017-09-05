@@ -208,11 +208,13 @@ void resetDividedClock()
 // If we have an external pulse, we want to update to reflect this.
 // If we're doing USE or GENERATE, pass it through (on the UNO).
 // On the mega, we'll do this via division in updateTimers()
+//
+// Returns 1 if successful
 
-void pulseClock(uint8_t fromButton)
+uint8_t pulseClock(uint8_t fromButton)
     {
     if (clockState == CLOCK_STOPPED)
-        return;
+        return 0;
 
     // update our external clock pulse estimate
     if (USING_EXTERNAL_CLOCK())
@@ -226,6 +228,8 @@ void pulseClock(uint8_t fromButton)
                 
     pulse = 1;
     pulseCount++;
+    
+    return 1;
     }
 
 

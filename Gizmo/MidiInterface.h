@@ -197,7 +197,7 @@ void sendNoteOn(uint8_t note, uint8_t velocity, uint8_t channel);
 void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel);
 void sendPolyPressure(uint8_t note, uint8_t pressure, uint8_t channel);
 void sendAllSoundsOffDisregardBypass(uint8_t channel);
-void sendAllSoundsOff();
+void sendAllSoundsOff(uint8_t channel=CHANNEL_OMNI);
 
 
 //// SENDING VOLTAGE

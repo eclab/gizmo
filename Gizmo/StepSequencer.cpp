@@ -48,7 +48,15 @@ void blinkOrSetPoint(unsigned char* led, uint8_t x, uint8_t y, uint8_t isCursor)
         setPoint(led, x, y);
     }
 
-    
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+void stepSequencerBypass()
+	{
+	toggleBypass();
+	if (!bypass)					// gotta also reset bypassOut
+		bypassOut = false;
+	}
+#endif
+  
 uint8_t shouldMuteTrack(uint8_t track)
     {
     return 
@@ -394,6 +402,13 @@ local.stepSequencer.noteOff[i] = local.stepSequencer.noteOff[i + (GET_TRACK_LENG
         }
     else if (isUpdated(MIDDLE_BUTTON, RELEASED))
         {
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+        if (bypass)
+        	{
+        	stepSequencerBypass();
+        	}
+        else
+#endif        
         if (local.stepSequencer.currentEditPosition >= 0)
             {
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
@@ -423,6 +438,14 @@ local.stepSequencer.noteOff[i] = local.stepSequencer.noteOff[i + (GET_TRACK_LENG
         }
     else if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
         {
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+        if (bypass || button[SELECT_BUTTON])
+        	{
+        	isUpdated(SELECT_BUTTON, PRESSED);  // kill the long release on the select button
+        	stepSequencerBypass();
+        	}
+        else
+#endif        
         if (local.stepSequencer.currentEditPosition >= 0)
             {
             // add a tie.
@@ -509,8 +532,18 @@ local.stepSequencer.noteOff[i] = local.stepSequencer.noteOff[i + (GET_TRACK_LENG
         }
     else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
         {
-        state = STATE_STEP_SEQUENCER_MENU;
-        entry = true;
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+        if (button[MIDDLE_BUTTON])
+        	{
+        	isUpdated(MIDDLE_BUTTON, PRESSED);  // kill the long release on the middle button
+        	stepSequencerBypass();
+        	}
+        else
+#endif
+			{
+	        state = STATE_STEP_SEQUENCER_MENU;
+	        entry = true;
+	        }
         }
     else if (potUpdated[LEFT_POT])
         {
@@ -535,7 +568,16 @@ local.stepSequencer.noteOff[i] = local.stepSequencer.noteOff[i + (GET_TRACK_LENG
             local.stepSequencer.currentRightPot = -1;
             }
         }
-    else if (newItem && (itemType == MIDI_NOTE_ON) //// there is a note played
+        
+        
+///// INCOMING MIDI DATA
+  
+  	else if (bypass)
+  		{
+  		// do nothing
+  		}
+    
+    else if (newItem && (itemType == MIDI_NOTE_ON)  //// there is a note played
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
         && !data.slot.data.stepSequencer.locked 
         && local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_NOTE
@@ -676,21 +718,19 @@ local.stepSequencer.noteOff[i] = local.stepSequencer.noteOff[i + (GET_TRACK_LENG
 #define STEP_SEQUENCER_MENU_MIDI_OUT 2
 #define STEP_SEQUENCER_MENU_VELOCITY 3
 #define STEP_SEQUENCER_MENU_FADER 4
+#define STEP_SEQUENCER_MENU_RESET 5
+#define STEP_SEQUENCER_MENU_SAVE 6
 
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-#define STEP_SEQUENCER_MENU_RESET 5
-#define STEP_SEQUENCER_MENU_SAVE 6
-#define STEP_SEQUENCER_MENU_TYPE 7
-#define STEP_SEQUENCER_MENU_SEND_CLOCK 8
-#define STEP_SEQUENCER_MENU_LOCK 9
-#define STEP_SEQUENCER_MENU_NO_ECHO 10
-#define STEP_SEQUENCER_MENU_OPTIONS 11
+#define STEP_SEQUENCER_MENU_BYPASS 7
+#define STEP_SEQUENCER_MENU_TYPE 8
+#define STEP_SEQUENCER_MENU_SEND_CLOCK 9
+#define STEP_SEQUENCER_MENU_LOCK 10
+#define STEP_SEQUENCER_MENU_NO_ECHO 11
+#define STEP_SEQUENCER_MENU_OPTIONS 12
 #else
-#define STEP_SEQUENCER_MENU_RESET 5
-#define STEP_SEQUENCER_MENU_SAVE 6
 #define STEP_SEQUENCER_MENU_OPTIONS 7
 #endif
-
 
 
 // Gives other options
@@ -699,7 +739,7 @@ void stateStepSequencerMenu()
     uint8_t result;
 
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-    const char* menuItems[12] = {    
+    const char* menuItems[13] = {    
         (local.stepSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),
         PSTR("LENGTH (TRACK)"),
         PSTR("OUT MIDI (TRACK)"),
@@ -707,13 +747,14 @@ void stateStepSequencerMenu()
         PSTR("FADER (TRACK)"), 
         PSTR("RESET TRACK"),
         PSTR("SAVE"), 
+        (!bypass) ? PSTR("BYPASS IN") : PSTR("NO BYPASS"),
         PSTR("TYPE (TRACK)"),
         options.stepSequencerSendClock ? PSTR("NO CLOCK CONTROL") : PSTR("CLOCK CONTROL"),
         data.slot.data.stepSequencer.locked ? PSTR("UNLOCK") : PSTR("LOCK"),
         options.stepSequencerNoEcho ? PSTR("ECHO") : PSTR("NO ECHO"), 
         options_p 
         };
-    result = doMenuDisplay(menuItems, 12, STATE_NONE, STATE_NONE, 1);
+    result = doMenuDisplay(menuItems, 13, STATE_NONE, STATE_NONE, 1);
 #else
     const char* menuItems[8] = {    
         (local.stepSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),
@@ -779,6 +820,11 @@ void stateStepSequencerMenu()
                     }
                 break;
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+                case STEP_SEQUENCER_MENU_BYPASS:
+                    {
+                    stepSequencerBypass();
+                    }
+                break;
                 case STEP_SEQUENCER_MENU_TYPE:
                     {
                     state = STATE_STEP_SEQUENCER_MENU_TYPE;

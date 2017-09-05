@@ -349,7 +349,7 @@ Index   CC      Range   Value                   Parameter
 62      53      0..127  F1 64..F2 63            Mixer Osc 1 Balance
 63      56      0..127  0..127                  Mixer Osc 2 Level
 64      57      0..127  F1 64..F2 63            Mixer Osc 2 Balance
-65      58      0..127  0..127                  Mixer Osc 3 Level
+65      58      0..127        0..127                 Mixer Osc 3 Level
 66      59      0..127  F1 64..F2 63            Mixer Osc 3 Balance
 67      60      0..127  0..127                  Mixer Noise Level
 68      61      0..127  F1 64..F2 63            Mixer Noise Balance

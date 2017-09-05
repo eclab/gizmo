@@ -103,6 +103,10 @@ on the Microsampler, including some odd shaped ones which appear to be perfectly
 10	42 32 7F 41 62 00 PN 00 DV 00	Pattern Length		1...99, PN = Pattern Number (1...16)
 11	42 32 7F 41 62 00 PN 00 DV 00	Pattern Keyboard Sample	0...35, PN = Pattern Number + 16 (17...32), yes I notice that sample is zero-based
 
+-- Keyboard parameters --
+42 32 7F 41 62 00 20 00 SN 00 		Sample played by keyboard
+						-- I wonder if there are others, like keyboard vs sample, or loop hold 
+
 -- Sample parameters --
 [SN is the Sample Number + 15 (16...51)
 [In NRPN you set the sample number first (1...36), via NRPN 50 ]

@@ -242,7 +242,8 @@ void stateArpeggiator();
 void stateArpeggiatorPlay();
 
 // Handle the screen for creating an arpeggio.  This first chooses the root.
-void stateArpeggiatorCreate();
+// Inlined at TopLevel to save space
+//void stateArpeggiatorCreate();
 
 // Handle the screen for editing an arpeggio.
 void stateArpeggiatorCreateEdit();

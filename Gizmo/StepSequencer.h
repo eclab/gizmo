@@ -60,6 +60,34 @@
 ////     8 bits velocity (including "use per-note velocity", which is 128)
 ////     7 bits fader
 ////     3 bits unused
+
+//We should make that 7 bits velocity, and use per-note velocity should be 0
+
+//We have three modes:
+//1. Notes with pitch and velocity, and a fixed length
+//2. Notes with pitch and a fixed velocity and two fixed accents, and a variable length
+//3. Control
+
+//In #2 notes are stored as
+//PITCH = 7 bits ACCENT = 2 bits (00 = rest or tie), LENGTH = 5 bits?
+
+////     Storage for #2 would be
+////     1 bit fixed velocity?
+////     1 bit mute
+////     5 bits MIDI out channel (including "use default", which is 17, and "no MIDI out", which is 0)
+////     7 bits length
+////     7 bits velocity
+////     4 bits accent velocity multiplier
+////     6 bits unused
+
+
+
+//// Possible revision
+////
+////	 7 bits velocity (1--127, plus 0 = "use per-note velocity")
+////     1 bit  mode 
+
+
 //// If CONTROL:
 ////     3 bits: CC MSB, NRPN MSB, RPN MSB, PC, BEND MSB, AFTERTOUCH, VOLTAGE A, VOLTAGE B
 ////     14 bits Parameter

@@ -246,6 +246,7 @@ void go();
 //// BYPASSING
 
 extern uint8_t bypass;                                  // are we bypassing MIDI right now?
+extern uint8_t bypassOut;                                  // are we bypassing MIDI right now?
 
 
 
@@ -341,7 +342,8 @@ void fullReset();
 void semiReset();
 
 //// BYPASS TOGGLE
-void toggleBypass(uint8_t channel);
+void toggleBypassSoundsOff(uint8_t channel);
+void toggleBypass();
 
 ///// THE DISPLAY
 

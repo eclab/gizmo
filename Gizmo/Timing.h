@@ -168,7 +168,7 @@ extern uint8_t beat;
 //// appropriate, as opposed to the method being called internally or via MIDI
 //// clock (if we're listening to MIDI clock), which should not be ignored.
 
-void pulseClock(uint8_t fromButton);	// note that fromButton is ignored.  It's just here so pulseClock looks the same as the others so we can call it as a function pointer
+uint8_t pulseClock(uint8_t fromButton);	// note that fromButton is ignored.  It's just here so pulseClock looks the same as the others so we can call it as a function pointer
 uint8_t stopClock(uint8_t fromButton);
 uint8_t startClock(uint8_t fromButton);
 uint8_t continueClock(uint8_t fromButton);

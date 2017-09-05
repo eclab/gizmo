@@ -123,7 +123,7 @@ void playArpeggio()
     //
     // The last condition is because if the note length is 100% we want to NEVER turn off unless there's
     // a note pulse, even if the off time is exceeded, because we're doing fully legato.
-    if (!bypass && local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || (currentTime >= local.arp.offTime && options.noteLength < 100))
+    if (!bypassOut && local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || (currentTime >= local.arp.offTime && options.noteLength < 100))
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
         // we don't want to turn off the note if the next note is a tie
         && !(                                                                                                                                                                                                                           // it's NOT the case that....
@@ -209,7 +209,7 @@ void playArpeggio()
                     break;
                     case ARPEGGIATOR_NUMBER_RANDOM:
                         {
-                        if (local.arp.numChordNotes > 1)
+                        if (local.arp.numChordNotes > 2)
                             {
                             // we want semi-random: don't play the same note twice
                             uint8_t newPosition;
@@ -470,10 +470,16 @@ void stateArpeggiatorPlay()
         sendAllSoundsOff();
         goUpState(STATE_ARPEGGIATOR);
         }
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
     else if (isUpdated(SELECT_BUTTON, RELEASED))
         {
-        toggleBypass(options.channelOut);
+		if (!options.arpeggiatorLatch)
+	        local.arp.numChordNotes = 0;  // reset arpeggiation
+        toggleBypass();
+        if (!bypass)					// gotta also reset bypassOut
+        	bypassOut = false;
         }
+#endif
     else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
         {
         goDownState(STATE_ARPEGGIATOR_MENU);
@@ -481,8 +487,9 @@ void stateArpeggiatorPlay()
     else if (isUpdated(MIDDLE_BUTTON, PRESSED))
         {
         options.arpeggiatorLatch = !options.arpeggiatorLatch;
+		if (!options.arpeggiatorLatch)
+	        local.arp.numChordNotes = 0;  // reset arpeggiation
         saveOptions();
-        //local.arp.numChordNotes = 0;  // reset
         }
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
     else if (potUpdated[LEFT_POT] && 
@@ -590,7 +597,8 @@ void garbageCollectNotes()
     }
 
 
-
+/*
+///// MOVED TO TOP LEVEL TO SAVE SPACE
 // Handle the screen for creating an arpeggio.  This first chooses the root.
 void stateArpeggiatorCreate()
     {
@@ -602,7 +610,7 @@ void stateArpeggiatorCreate()
         entry = true;
         }
     }
-
+*/
 
 // Handle the screen for editing an arpeggio.
 void stateArpeggiatorCreateEdit()

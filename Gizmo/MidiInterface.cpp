@@ -125,7 +125,7 @@ uint8_t updateMIDI(byte channel, uint8_t _itemType, uint16_t _itemNumber, uint16
 
 
 // A code-shortening effort.  Processes a MIDI clock command (start/stop/continue/clock)
-void handleClockCommand(void (*clockFunction)(uint8_t), midi::MidiType clockMIDI)
+void handleClockCommand(uint8_t (*clockFunction)(uint8_t), midi::MidiType clockMIDI)
     {
     newItem = NEW_ITEM;
     itemType = MIDI_CLOCK;
@@ -275,7 +275,7 @@ void handleNoteOff(byte channel, byte note, byte velocity)
         if (updateMIDI(channel, MIDI_NOTE_OFF, note, velocity))
             {
 #ifdef INCLUDE_ARPEGGIATOR
-            if (application == STATE_ARPEGGIATOR && local.arp.playing)
+            if (application == STATE_ARPEGGIATOR && local.arp.playing && !bypass)
                 arpeggiatorRemoveNote(note);
             else
 #endif
@@ -368,7 +368,7 @@ void handleNoteOn(byte channel, byte note, byte velocity)
             break;
             case CC_BYPASS_PARAMETER:
                 {
-                toggleBypass(CHANNEL_OMNI);
+                toggleBypassSoundsOff(CHANNEL_OMNI);
                 }
             break;
             case CC_UNLOCK_PARAMETER:
@@ -399,7 +399,7 @@ void handleNoteOn(byte channel, byte note, byte velocity)
         if (updateMIDI(channel, MIDI_NOTE_ON, note, velocity))
             {
 #ifdef INCLUDE_ARPEGGIATOR
-            if (application == STATE_ARPEGGIATOR && local.arp.playing)
+            if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing))
                 {
                 // the arpeggiation velocity shall be the velocity of the most recently added note
                 arpeggiatorAddNote(note, velocity);
@@ -638,7 +638,7 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
             break;
             case CC_BYPASS_PARAMETER:
                 {
-                toggleBypass(CHANNEL_OMNI);
+                toggleBypassSoundsOff(CHANNEL_OMNI);
                 }
             break;
             case CC_UNLOCK_PARAMETER:
@@ -754,7 +754,7 @@ void handleNRPN(byte channel, uint16_t parameter, uint16_t value, uint8_t valueT
             break;
             case NRPN_BYPASS_PARAMETER:
                 {
-                toggleBypass(CHANNEL_OMNI);
+                toggleBypassSoundsOff(CHANNEL_OMNI);
                 }
             break;
             case NRPN_UNLOCK_PARAMETER:
@@ -980,6 +980,10 @@ struct _controlParser
     // NO_MSB (128).
     uint8_t controllerValueMSB;
     
+    // The controllerValueLSB is either a valid LSB or it is 
+    // NO_LSB (128).
+    uint8_t controllerValueLSB;
+    
 #ifdef INCLUDE_PROVIDE_RAW_CC
     uint8_t parseRawCC = false;
 #endif
@@ -1062,6 +1066,8 @@ void parse(_controlParser* parser, byte channel, byte number, byte value)
                 {
                 parser->status = NRPN_END;
                 parser->controllerNumberLSB = value;
+                parser->controllerValueLSB = 0;
+                parser->controllerValueMSB = 0;
                 }
             else parser->status = INVALID;
             }
@@ -1092,6 +1098,8 @@ void parse(_controlParser* parser, byte channel, byte number, byte value)
                 {
                 parser->status = RPN_END;
                 parser->controllerNumberLSB = value;
+                parser->controllerValueLSB = 0;
+                parser->controllerValueMSB = 0;
                 }
             }
 
@@ -1104,26 +1112,25 @@ void parse(_controlParser* parser, byte channel, byte number, byte value)
                 if (number == 6)
                     {
                     parser->controllerValueMSB = value;
-                    handleNRPN(channel, controllerNumber, ((uint16_t)value) << 7, VALUE_MSB_ONLY);
+                    handleNRPN(channel, controllerNumber, (((uint16_t)parser->controllerValueMSB) << 7) | parser->controllerValueLSB, VALUE);
                     }
                                 
                 // Data Entry LSB for RPN, NRPN
                 else if (number == 38)
                     {
-                    handleNRPN(channel, controllerNumber, (((uint16_t)parser->controllerValueMSB) << 7) | value, VALUE);
+                    parser->controllerValueLSB = value;
+                    handleNRPN(channel, controllerNumber, (((uint16_t)parser->controllerValueMSB) << 7) | parser->controllerValueLSB, VALUE);
                     }
                                 
                 // Data Increment for RPN, NRPN
                 else if (number == 96)
                     {
-                    parser->controllerValueMSB = 0;
                     handleNRPN(channel, controllerNumber , (value ? value : 1), INCREMENT);
                     }
 
                 // Data Decrement for RPN, NRPN
                 else if (number == 97)
                     {
-                    parser->controllerValueMSB = 0;
                     handleNRPN(channel, controllerNumber, (value ? value : 1), DECREMENT);
                     }
                 else parser->status = INVALID;
@@ -1133,26 +1140,25 @@ void parse(_controlParser* parser, byte channel, byte number, byte value)
                 if (number == 6)
                     {
                     parser->controllerValueMSB = value;
-                    handleRPN(channel, controllerNumber, ((uint16_t)value) << 7, VALUE_MSB_ONLY);
+                    handleRPN(channel, controllerNumber, (((uint16_t)parser->controllerValueMSB) << 7) | parser->controllerValueLSB, VALUE);
                     }
                                 
                 // Data Entry LSB for RPN, NRPN
                 else if (number == 38)
                     {
-                    handleRPN(channel, controllerNumber, (((uint16_t)parser->controllerValueMSB) << 7) | value, VALUE);
+                    parser->controllerValueLSB = value;
+                    handleRPN(channel, controllerNumber, (((uint16_t)parser->controllerValueMSB) << 7) | parser->controllerValueLSB, VALUE);
                     }
                                 
                 // Data Increment for RPN, NRPN
                 else if (number == 96)
                     {
-                    parser->controllerValueMSB = 0;
                     handleRPN(channel, controllerNumber, (value ? value : 1), INCREMENT);
                     }
 
                 // Data Decrement for RPN, NRPN
                 else if (number == 97)
                     {
-                    parser->controllerValueMSB = 0;
                     handleRPN(channel, controllerNumber, (value ? value : 1), DECREMENT);
                     }
                 else parser->status = INVALID;
@@ -1489,7 +1495,7 @@ void handleSystemReset()
 /// Sends out pressure, transposing as appropriate
 void sendPolyPressure(uint8_t note, uint8_t pressure, uint8_t channel)
     {
-    if (bypass) return;
+    if (bypassOut) return;
   
 #ifdef INCLUDE_OPTIONS_TRANSPOSE_AND_VOLUME
     int16_t n = note + (uint16_t)options.transpose;
@@ -1525,7 +1531,7 @@ void turnOffVoltage()
 /// the velocity as appropriate.  Also sends out CV.
 void sendNoteOn(uint8_t note, uint8_t velocity, uint8_t channel)
     {
-    if (bypass) return;
+    if (bypassOut) return;
   
 #ifdef INCLUDE_OPTIONS_TRANSPOSE_AND_VOLUME
     int16_t n = note + (uint16_t)options.transpose;
@@ -1555,7 +1561,7 @@ void sendNoteOn(uint8_t note, uint8_t velocity, uint8_t channel)
 /// Sends a note off, transposing as appropriate, and turning off the voltage
 void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel)
     {
-    if (bypass) return;
+    if (bypassOut) return;
 
 #ifdef INCLUDE_OPTIONS_TRANSPOSE_AND_VOLUME
     int16_t n = note + (uint16_t)options.transpose;
@@ -1608,10 +1614,10 @@ void sendAllSoundsOffDisregardBypass(uint8_t channel)
 
 /// Sends an all notes off on ALL channels, but only if bypass is off.
 /// Also turns off voltage.
-void sendAllSoundsOff()
+void sendAllSoundsOff(uint8_t channel)
     {
-    if (!bypass) 
-        sendAllSoundsOffDisregardBypass(CHANNEL_OMNI);
+    if (!bypassOut) 
+        sendAllSoundsOffDisregardBypass(channel);
     else
         {
 #ifdef INCLUDE_VOLTAGE
@@ -1675,6 +1681,9 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t
     uint8_t msb = fullValue >> 7;
     uint8_t lsb = fullValue & 127;
     
+    if (bypassOut)
+    	return;
+    	
     // amazingly, putting this here reduces the code by 4 bytes.  Though it could
     // easily be removed as the switch below handles it!
     if (commandType == CONTROL_TYPE_OFF)

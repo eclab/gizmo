@@ -1732,7 +1732,7 @@ void setScrollDelays(uint16_t firstDelay, uint16_t defaultDelay) { firstScrollDe
 uint8_t getBufferLength() { return bufferLength; }
 
 
-void writeToMatrix(char* mat, int8_t _bufferPos)
+void writeToMatrix(unsigned char* mat, int8_t _bufferPos)
     {
     int8_t len;
     int8_t offset = 0;
@@ -1859,7 +1859,7 @@ void addGlyphToBuffer(const char* glyph, uint8_t width, uint8_t forScrolling, ui
 // which are interpreted as up arrows or down arrows.
 // Adds initial padding to right-justify when buffer is reset
 // Automatically adds two spaces after any characters
-void addToBuffer(const char* val, uint8_t extra = 0)
+void addToBuffer(const char* val, uint8_t extra) //  = 0)
     {
     uint8_t padded = 0;
     if (bufferLength == 0)

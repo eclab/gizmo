@@ -40,19 +40,26 @@ GLOBAL const char* options_p;  // = PSTR("OPTIONS");
 ///    Don't set bypass -- instead call toggleBypass
 
 GLOBAL uint8_t bypass = 0;                                        // Do we bypass the system entirely and just let MIDI flow through the box?
+GLOBAL uint8_t bypassOut = 0;                                        // Do we bypass the system entirely and just let MIDI flow through the box?
 
 
-void toggleBypass(uint8_t channel)
-    {
+void toggleBypassSoundsOff(uint8_t channel)
+	{
     sendAllSoundsOffDisregardBypass(channel);
+    toggleBypass();
+    bypassOut = bypass;
+	}
+	
+void toggleBypass()
+    {
+#ifndef HEADLESS
     if (!bypass) 
         {
-        // clear the LEDs
-#ifndef HEADLESS
+	    // clear the LEDs
         *port_LED_GREEN |= LED_GREEN_mask;
         *port_LED_RED |= LED_RED_mask;
-#endif
         }
+#endif
     bypass = !bypass;
     if (bypass) { MIDI.turnThruOn(); }
     else MIDI.turnThruOff();
@@ -482,7 +489,7 @@ GLOBAL int16_t currentDisplay;                     // currently displayed menu i
 
 #define FORCE_NEW_DISPLAY 255
 
-uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, uint8_t backState, uint8_t scrollMenu, uint8_t extra = 0)
+uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, uint8_t backState, uint8_t scrollMenu, uint8_t extra) //  = 0)
     {
     // What we'd like to display next.  By default it's set to currentDisplay to indicate that we're not changing
     uint8_t newDisplay;
@@ -640,7 +647,7 @@ int16_t boundValue(int16_t val, int16_t minValue, int16_t maxValue)
     }
 
 GLOBAL static int8_t potFineTune;
-GLOBAL static uint8_t secondGlyph = NO_GLYPH;
+GLOBAL uint8_t secondGlyph = NO_GLYPH;
 
 uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultValue, 
     uint8_t includeOff, uint8_t includeOther)
@@ -970,7 +977,7 @@ void writeGaugeNote()
 ////
 //// These are occasional (not constant) MIDI signals
 //// that we can reasonably display on our gauge.  This is used for STATE_GAUGE_ANY
-//// Omitted are: MIDI CLock, Active Sensing, both AfterTouch forms, Time Code Quarter Frame
+//// Omitted are: MIDI Clock, Active Sensing, both AfterTouch forms, Time Code Quarter Frame
 
 
 
@@ -1033,7 +1040,7 @@ void go()
     
     if (isUpdated(BACK_BUTTON, RELEASED_LONG))
         {
-        toggleBypass(CHANNEL_OMNI);
+        toggleBypassSoundsOff(CHANNEL_OMNI);
         }
 
     // Now do your state-specific thing
@@ -1494,7 +1501,7 @@ void go()
                                           PSTR("MENU DELAY"), 
                                               (options.voltage == NO_VOLTAGE ? PSTR("CV+VELOCITY") : 
                                               (options.voltage == VOLTAGE_WITH_VELOCITY ? PSTR("CV+AFTERTOUCH") : PSTR("NO CV"))),
-                                          PSTR("GIZMO V3 (C) 2017 SEAN LUKE") };
+                                          PSTR("GIZMO V4 (C) 2017 SEAN LUKE") };
             doMenuDisplay(menuItems, 16, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
 #endif
 #if defined(__UNO__)
@@ -1502,7 +1509,7 @@ void go()
                                           PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), 
                                           ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
                                           PSTR("BRIGHTNESS"),
-                                          PSTR("GIZMO V3 (C) 2017 SEAN LUKE") };
+                                          PSTR("GIZMO V4 (C) 2017 SEAN LUKE") };
             doMenuDisplay(menuItems, 11, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
 #endif
 
@@ -1566,7 +1573,13 @@ void go()
         break;
         case STATE_ARPEGGIATOR_CREATE:
             {
-            stateArpeggiatorCreate();
+			uint8_t note = stateEnterNote(STATE_ARPEGGIATOR);
+			if (note != NO_NOTE)  // it's a real note
+				{
+				data.arp.root = note;
+				state = STATE_ARPEGGIATOR_CREATE_EDIT;
+				entry = true;
+				}
             }
         break;
         case STATE_ARPEGGIATOR_CREATE_EDIT:

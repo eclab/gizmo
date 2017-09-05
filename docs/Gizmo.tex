@@ -162,7 +162,7 @@ The SparkFun MIDI Shield uses poor quality buttons.  You can push down on the bu
 
 Gizmo has a debounce mechanism built-in: it ignores secondary apparent button-presses if they occurred within \(N\) milliseconds of an earlier button release.  At present \(N\) is set to 100ms.  If you need to press buttons faster than ten times a second (and it's possible) set the \texttt{BUTTON\_PRESSED\_COUNTDOWN\_DEBOUNCE} constant (in \texttt{TopLevel.h}) to something smaller.
 
-After about four months of extremely heavy use, my select and back buttons began to fail: if I pressed either the right way it wouldn't indicate that it's been pressed.  If you reach this state you may have to replace the buttons, though that's kind of hard to do: I just built a new board with different, better-quality low-profile buttons (just look on Adafruit for 12mm pushbutton switches).  Fingers crossed.
+After about four months of extremely heavy use, my select and back buttons began to fail: if I pressed either one the right way it wouldn't indicate that it's been pressed.  If you reach this state you may have to replace the buttons, though that's kind of hard to do: I just built a new board with different, better-quality low-profile buttons (just look on Adafruit for 12mm pushbutton switches).  Fingers crossed.
 
 \clearpage
 \section{Initializing Gizmo}
@@ -290,11 +290,11 @@ Buttons do different things.  Here are certain common items:
 
 \begin{itemize}
 \item {\bf Pressing the Back Button}\quad This is the ``escape'' or ``cancel'' button: it {\bf always goes back up the menu hierarchy.}  Thus you can't ever get lost\,---\,just keep pressing the Back button and you'll eventually find yourself at the root menu.
-\item {\bf Long-Pressing the Back Button}\quad This toggles {\bf bypass mode}, where Gizmo tries hard to act as if it's just a MIDI THRU coupler between its input and output MIDI wires: it passes through all the MIDI it receives, and with one exception (the Controller, see Section \ref{controller}) it doesn't output any new data.  In bypass mode, the {\bf Beat/Bypass} light (Figure~\ref{HighLevelGizmoLayout}) will stop beating and instead will flash rapidly.
-\end{itemize}
 
-\begin{itemize}
+\item {\bf Long-Pressing the Back Button}\quad This toggles {\bf bypass mode}, where Gizmo tries hard to act as if it's just a MIDI THRU coupler between its input and output MIDI wires: it passes through all the MIDI it receives, and with one exception (the Controller, see Section \ref{controller}) it doesn't output any new data.  In bypass mode, the {\bf Beat/Bypass} light (Figure~\ref{HighLevelGizmoLayout}) will stop beating and instead will flash rapidly.  Bypass mode also sends an ``all sounds off'' command to all outgoing MIDI channels, so if you need to shut up a misbehaving synth, you can enter bypass mode and then leave it again.
+
 \item {\bf Pressing the Select Button}\quad If you're being presented with a menu of options, or a number to choose, or a glyph to choose, the Select button will select the currently-displayed option.  In some applications (such as the Step Sequencer, Arpeggiator, and Recorder) the Select Button is assigned other tasks.
+
 \item {\bf Pressing the Middle Button}\quad Likewise if you're being presented with a menu of options, or a number to choose, or a glyph to choose, the Middle button will increment the current display (but not select it). 
 \end{itemize}
 
@@ -343,13 +343,11 @@ Alternatively if you toggle the {\bf latch}, then the playing will continue afte
 \vspace{-2em}\includegraphics[width=1in]{updown}
 \vspace{-1em}
 \caption{\small Up, Down, and Up-Down Symbols}
-\vspace{-3em}
+\vspace{-2em}
 \end{center}
 \end{wrapfigure}
 
-
-Also, normally you toggle {\bf bypass mode} by Long-Pressing the back button.  But that's not fast enough to turn arpeggiation on and off in performance.  So the arpeggiator also lets you toggle bypass by pressing the {\bf select} button.  (Of course you can also toggle bypass via NRPN if you like). 
-
+(Mega Only) The arpeggiator also has a {\bf special bypass mode} which you toggle by pressing the {\bf select} button.  This mode is just like the standard {\bf bypass mode} (which is normally entered by Long-pressing the back button) except that it doesn't also send an ``all sounds off'' message to outgoing MIDI channels, and the Arpeggiator will continue to send MIDI notes if in Latch mode.  This is useful in two contexts.  First, it's faster to enter bypass mode by pressing this button than long-pressing the back button, so you can rapidly switch back and forth between playing arpeggios and playing your own notes.  Second, if you're in latch mode, and you enter the special bypass mode, the latched arpeggio continues to play, so you can play along with it.  
 
 \paragraph{Playing Preset Arpeggios}
 
@@ -360,7 +358,7 @@ There are six preset arpeggios: {\it up}, {\it down}, {\it up-down}, {\it random
 \item {\bf Down}.  Each note in your chord is played in turn, highest note first.  When all notes are exhausted, the pattern is repeated.
 \item {\bf Up-Down}.  Each note in your chord is played in turn, lowest note first, up to but not including the highest note.  When all notes are exhausted, all notes in the chord are played in turn, highest note first, down to but not including the lowest note.  When all notes are again exhausted, this pattern repeats.
 
-\item {\bf Random}.  Chord notes are played at random.  Gizmo tries to not play the same note twice in a row.
+\item {\bf Random}.  Chord notes are played at random.  Gizmo tries to not play the same note twice in a row, unless there's only one or two notes in the chord.
 \item {\bf Chord Repeat}.  The entire chord is repeatedly played in its entirety.
 \item {\bf Assign}. Each note in your chord is played in turn, in the order in which you had pressed the keys when you formed the chord.  When all notes are exhausted, the pattern is repeated.
 \end{itemize}
@@ -526,6 +524,8 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 \item {\bf Fader}\quad This lets you specify a volume modifier which is multiplied against the velocities of the notes in the track.  Possible values are 0...127, where 0 completely hushes the notes, and 127 lets them play at their specified velocities. 
 \item {\bf Reset Track}\quad This wipes out and resets the track.  Unlike Long-Pressing the Middle Button while in Play Position mode, this doesn't just clear the track: it also resets all of its settings to their defaults.
 \item {\bf Save} \quad This saves the sequence. You then choose the slot to save in.  Slots are displayed by number, plus an \texttt{S} (for Save), plus optionally an \texttt{R} or \texttt{S} (for Recorder or Step Sequencer) if the slot is already used by that application.  This letter {\bf blinks} if the file isn't the type of your current application to warn you that you will be overwriting the other application's slot.
+\item {\bf Bypass In} (or {\bf No Bypass}) (Mega only).  This turns on a {\bf special bypass mode} similar to the one in the Arpeggiator: it doesn't send the ``all sounds off'' message, allows the Step Sequencer to continue to output MIDI notes (but not respond to incoming ones).   The idea is that after you get your track going, you can play along with it by turning on bypass.  The notes you play will not get entered into the Step Sequencer, but rather will get routed straight through.  You can turn also turn this on by long-pressing {\it both} the select and middle buttons at the same time.  You can turn it off again through the menu, or by pressing the middle button, or by long-pressing both the select and middle buttons again.
+
 \item {\bf Type} (Mega only) \quad Lets you specify the type of data stored in this track.  See {\bf Other Types of Track Data} above.
 \item {\bf Clock Control} (or {\bf No Clock Control}) (Mega only) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note regardless of the setting of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.
 \item {\bf Lock} (or {\bf Unlock}) (Mega only) \quad This toggles {\it locked mode}.  Here, playing a note will not enter it into the sequence, nor will you be able to enter a rest or clear the track.  You will be able to reset the track and perform any other operation.  Note that track locks must be saved with your sequence: if you lock (or unlock) a sequence, but don't save, then next time the sequence will be back in its previous unlocked (or locked) state.
@@ -561,7 +561,7 @@ Of particular use are Tempo, Note Speed, Swing, and especially Click.
 \label{recorder}
 \end{wrapfigure}
 
-The Note Recorder lets you record and play back approximately 64 notes\footnote{Why {\it approximately} 64? Because the recorder is recording MIDI NOTE ON and NOTE OFF messages.  If you provide 64 pairs of these messages, it'll take up exactly all the available memory.  But you could plausibly send a few more NOTE ON than NOTE OFF messages, in which case at the end of the recording all the remaining outstanding notes will be terminated.  This would allow you to squeeze in a few (perhaps 16) more notes in rare circumstances.  But I'd not rely on it.  BTW, if you looked carefully you would have noted that the Note Display in Figure~\ref{recorder} has space for 16 more notes too.} spread over 21 measures.\footnote{Why 21?  Because notes are stored with a timestamp of eleven bits, resulting in \(2^11 = 2048\) timesteps.  A single timestep is 1/24 of a quarter note, and a quarter note is 1/4 of a measure, so we have \(2048 / 24 / 4 = 21 1/3\) measures.  We round that down to 21.}  You can save up to two recordings on an Arduino Uno and nine recordings on a Mega.
+The Note Recorder lets you record and play back approximately 64 notes\footnote{Why {\it approximately} 64? Because the recorder is recording MIDI NOTE ON and NOTE OFF messages.  If you provide 64 pairs of these messages, it'll take up exactly all the available memory.  But you could plausibly send a few more NOTE ON than NOTE OFF messages, in which case at the end of the recording all the remaining outstanding notes will be terminated.  This would allow you to squeeze in a few (perhaps 16) more notes in rare circumstances.  But I'd not rely on it.  BTW, if you looked carefully you would have noted that the Note Display in Figure~\ref{recorder} has space for 16 more notes too.} spread over 21 measures.\footnote{Why 21?  Because notes are stored with a timestamp of eleven bits, resulting in \(2^{11} = 2048\) timesteps.  A single timestep is 1/24 of a quarter note, and a quarter note is 1/4 of a measure, so we have \(2048 / 24 / 4 = 21 \frac{1}{3}\) measures.  We round that down to 21.}  You can save up to two recordings on an Arduino Uno and nine recordings on a Mega.
 
 The Note Recorder screen has two major parts.  The {\it Note Display} section indicates the current note number being played (and hints at the remaining notes available).  The {\it Measure Display} section indicates the current measure being played (and again hints at the remaining measures available).  When recording a song, each of these sections will contain a single lit LED indicating the current note or measure position.  When playing a song, the Note Display and Measure Display will each also contain an additional lit LED indicating the position of the end of the song.
 
@@ -1427,6 +1427,241 @@ Measure Counter & $\checkmark$ & $\checkmark$& & Seems to work.  MIDI clock resp
 \end{tabular}
 }
 \end{center}
+
+
+
+
+\section{Development Hints}
+
+So you want to write a Gizmo application?  Here's some hints for you.
+
+\subsection{Notes}
+
+The code is largely written in C, with a few little C++ features, notably
+a few functions which pass by reference (arguments with \texttt{\&} in front of them).  The
+code is presently written so as to cram as many features as possible into an
+{\bf Arduino Uno}, which has only 32K of code space, 2K of working RAM, and 1K of Flash.  
+Thus there are a lot of little oddities here and there meant to conserve space and/or
+speed.  A few examples:
+
+\begin{itemize}
+
+\item {\bf Division}\quad  Division on the Uno is slow and costly.  Gizmo often uses custom \texttt{div}
+  functions which are smaller and faster than a general use of the \texttt{\textbackslash} and \texttt{\%}
+  operators.  See the file \texttt{Divison.h}  Also in some cases I've found that (perhaps due to a bug?)
+  gcc appears not to be converting division by a power of two into a simple right shift.
+  So Gizmo often uses right shifts rather than divisions to force this.  Perhaps this
+  is cargo cult programming, perhaps not.
+
+\item {\bf The State Machine}\quad  The state machine is a large case statement located in the go()
+  method in \texttt{TopLevel.cpp}. To compile to a jump table, the cases have to be contiguous
+  integers; since the Mega and Uno have different sets of cases, this means different
+  integer \texttt{\#define}s.  They are NOT presently enums!  Adding a new cases is always fun 
+  as you have to move all the \texttt{\#define}s down or up by 1.   Also, in some cases I've 
+  inlined the certain functions in the case statement as it makes the code smaller 
+  than calling them separately.
+
+\item {\bf Helper Functions}\quad  Gizmo has lots of helper functions meant to reduce code redundancy.
+  In several cases these helper functions have intentional side effects which you may
+  not realize: for example, the \texttt{doMenuDisplay(...)} function [as a random example] expects
+  to handle, and clear, the \texttt{entry} flag.  These can be serious gotchas if you've not
+  looked them over carefully.
+
+\item {\bf Strange Code}\quad  Sometimes you'll see weird things in the code, such as code that's been inlined
+ in the \texttt{TopLevel.cpp} state machine rather than appear in their own functions; or oddly written
+ code which could have been written more straightforwardly; or obvious opportunities for removing
+ redundancy through a function call.  The reason behind this weirdness is almost always that the
+ Atmel compiler for the Arduino Uno will compile tighter the way it's written.
+
+\end{itemize}
+
+\subsection{Code Files}
+
+The files are in certain categories:
+
+\noindent\begin{tabular}{r@{\hspace{2em}}p{4.7in}}
+	\bf Hardware &\\
+	\tt MidiShield.h/cpp	& Macros and variables for the SparkFun MIDI Shield \\ 
+	\tt LEDDisplay.h/cpp	& Code to do drawing on the Adafruit 16x8 LED \\ 
+	\tt DAC.h/cpp		& Code to control the DACs \\ 
+\\
+\\
+	\bf Core Code  &\\
+	\tt Timing.h/cpp	& 	Internal and external clocks, notes, pulses, beats \\ 
+	\tt TopLevel.h/cpp	& 	The core.  Contains various important functions, the state machine. \\ 
+	\tt MidiInterface.h/cpp	& MIDI callbacks, MIDI wrapper functions \\ 
+	\tt Utility.h/cpp		& Utility functions used by various applications \\ 
+	\tt Storage.h/cpp		& Slot (file) storage in Flash \\ 
+	\tt Options.h/cpp		& Storage of global and application-specific options \\ 
+	\tt Division.h/cpp		& The arduino doesn't have hardware divide.  This
+				file contains various functions for dividing by
+				specific common constants (10, 12, 100, etc.) \\ 
+	\tt All.h		& 	One header file to bring them all and in the
+				darkness bind them. \\ 
+	\tt Gizmo.ino		& The standard Arduino entry functions \\ 
+\\
+\\
+
+	\bf General Applications  &		\it (Note that many parts of applications are embedded
+				in the state machine in \texttt{TopLevel.cpp}, and a few bits
+				are located in the MIDI callback functions in
+				\texttt{TopLevel.cpp}, though I try to avoid embedding
+				in the callback functions when possible.)\\
+	\tt Arpeggiator.h/cpp & 	The arpeggiator \\ 
+	\tt StepSequencer.h/cpp  & 	The step sequencer \\ 
+	\tt Control.h/cpp	& 	The MIDI control surface \\ 
+	\tt Gauge.h	& 		The MIDI gauge.  There's no \texttt{Gauge.cpp} because it's
+				entirely contained within the state machine in
+				{\texttt{TopLevel.cpp}} \\ 
+	\tt Recorder.h/cpp	& 	The note recorder \\ 
+	\tt Split.h/cpp	 & 	The keyboard splitter / layerer \\ 
+	\tt Thru.h/cpp & 		The MIDI thru application \\ 
+	\tt Measure.h/cpp	& The Measure counter application \\ 
+	\tt Synth.h/cpp	& The Synthesizer helper top-level \\ 
+\\
+\\
+	\bf Synth Helpers  & \it (In the \texttt{synth} subdirectory.)\\
+	\tt KawaiK4.h/cpp	& 	NRPN\(\rightarrow\)Sysex converter for the Kawai K4 and K4r\\ 
+	\tt KorgMicrosampler.h/cpp	& 	NRPN\(\rightarrow\)Sysex converter for the Korg Microsampler\\ 
+	\tt OberheimMatrix1000.h/cpp	& 	CC\(\rightarrow\)NRPN converter for the Oberheim Matrix 1000 with the 1.16 or 1.120 ROM upgrades\\ 
+	\tt WaldorfBlofeld.h/cpp	& 	NRPN\(\rightarrow\)Sysex converter for the Waldorf Blofeld\\ 
+	\tt YamahaTX81Z.h/cpp	& 	NRPN\(\rightarrow\)Sysex converter for the Yamaha TX81Z\\ 
+\end{tabular}
+
+
+
+
+\subsection{Application Building Tutorial}
+
+\paragraph{Defining the Application}
+Applications in Gizmo are included (or not) in two steps.  First, you have to turn on a \texttt{\#define} which will include all of the application's code.  Second, you need to include the name of the application in the right spot in the application menu.  We'll start with the \texttt{\#define}.
+
+We'll make an application called {\bf Foo}.  Let's assume that your application is meant to run on the Arduino Mega.  In \texttt{All.h} there's an area where it says:
+
+\begin{verbatim}
+#if defined(__MEGA__)
+...
+#endif
+\end{verbatim}
+
+This area defines which applications will be turned on when we compile for the Mega.  In this region, add 
+your own application:
+
+\begin{verbatim}
+#define INCLUDE_FOO
+\end{verbatim}
+
+While we're add it, let's add a comment which lets developers know that your application is an option.  You'll notice that in the file \texttt{All.h}, there is a section labeled
+
+\begin{verbatim}
+// -- APPLICATIONS --
+\end{verbatim}
+
+Under this section, let's add a bit of documentation about our new \texttt{\#define}
+
+\begin{verbatim}
+// INCLUDE_FOO                // This will include the Foo application
+\end{verbatim}
+
+\paragraph{Modifying the State Machine}
+Next we want to add our application as a state in the state machine.  The state machine is for the moment a large enum called \texttt{\_State}, located in the file \texttt{TopLevel.h}.  The first state is state number 255: \texttt{STATE\_NONE}.  After this the {\bf root state}, defined as state number 0: \texttt{STATE\_ROOT}.  The root state is the state that the Gizmo starts up in.  The root state shows the application menu.
+
+After the root state are up to 12 {\bf application states}, the last of which is \texttt{STATE\_OPTIONS}.  These states have no associated number, and so will be numbered consecutively after 0 (the root).  You will add a state here.  For simplicity, add your state as the last application before \texttt{STATE\_OPTIONS}.  In file \texttt{TopLevel.h}, just before the line
+
+\begin{verbatim}
+    STATE_OPTIONS,
+\end{verbatim}
+
+add the following:
+
+\begin{verbatim}
+#ifdef INCLUDE_FOO
+    STATE_FOO,
+#endif
+\end{verbatim}
+
+Now that you have a state, you can add the code for it.  In the file \texttt{TopLevel.cpp}, just before the line
+
+\begin{verbatim}
+        case STATE_OPTIONS:
+\end{verbatim}
+
+add the following:
+
+\begin{verbatim}
+#ifdef INCLUDE_FOO
+        case STATE_FOO:
+            {
+            stateFoo();
+            }
+        break;
+#endif
+\end{verbatim}
+
+\paragraph{Modifying the Root Menu}
+
+We also need to modify the root menu to include your application.  In the file \texttt{TopLevel.cpp}, look for the line
+
+\begin{verbatim}
+        case STATE_ROOT:
+\end{verbatim}
+
+Here you'll find a chunk of code which looks something like this (the exact number of apps may be different):
+
+\begin{verbatim}
+#if defined(__MEGA__)
+            const char* menuItems[10] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), 
+                        PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"),
+                        PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), options_p };
+            doMenuDisplay(menuItems, 10, FIRST_APPLICATION, STATE_ROOT, 1);
+#endif
+\end{verbatim}
+
+You need to modify this to add a label in the menu corresponding to the position of your application in the state machine.  Your application appears immediately before the Options application, so you'd modify it this way:
+
+\begin{verbatim}
+#if defined(__MEGA__)
+            const char* menuItems[11] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), 
+                        PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"),
+                        PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), PSTR("FOO"), options_p };
+            doMenuDisplay(menuItems, 11, FIRST_APPLICATION, STATE_ROOT, 1);
+#endif
+\end{verbatim}
+
+Notice h
+
+This adds a state which, when called, will call the \texttt{stateFoo()} method.  Additional states would typically 
+get tacked onto the end of the \texttt{\#define} list and be called stuff like \texttt{STATE\_FOO\_EDIT} or \texttt{STATE\_FOO\_WHATEVER}.  
+The critical item here is that your \texttt{\#define}s in \texttt{TopLevel.h} and \texttt{TopLevel.cpp} must be in the same position,
+so the switch statement stays contiguous and can remain a jump table.
+
+Now, create some \texttt{Foo.h} and \texttt{Foo.cpp} files, and add \texttt{Foo.h} to \texttt{All.h} as an \texttt{\#include}.
+ 
+ Your \texttt{Foo.h} file should look like this:
+ 
+ \begin{verbatim}
+#ifndef __FOO_H__
+#define __FOO_H__ 
+#ifdef INCLUDE_FOO
+
+void stateFoo();
+
+#endif
+#endif
+\end{verbatim}
+
+Your \texttt{Foo.cpp} file should look like this:
+
+\begin{verbatim}
+#include "All.h"
+#ifdef INCLUDE_FOO
+
+void stateFoo()
+    {
+    }
+
+#endif
+\end{verbatim}
 
 
 \end{document}
