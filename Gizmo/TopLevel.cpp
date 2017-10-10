@@ -119,7 +119,7 @@ GLOBAL static uint16_t potCurrent[2][3];     // The filtered current left pot va
 GLOBAL static uint16_t potCurrentFinal[2];    //  
 GLOBAL static uint16_t potLast[2];     // The last pot value submitted 
 
-// Divide this into the pot[LEFT_POT] to determne what the menu state should be.
+// Divide this into the pot[LEFT_POT] to determine what the menu state should be.
 // If negative, then MULTIPLY pot[LEFT_POT] by -potDivisor to determine what the state should be.
 GLOBAL static int16_t potDivisor;
 
@@ -502,14 +502,23 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
         // can't avoid a divide :-(
         potDivisor = 1024 / menuLen;
         
-        // what do we display first?
-        
-        if (baseState == STATE_NONE)                                            // These aren't states, so just use the first item
-            currentDisplay = 0;
-        else if (defaultState == STATE_NONE)                                            // We don't have a default state specified.  So use the first item
-            currentDisplay = 0;
-        else                                                                    // We have a default state.  So use it
-            currentDisplay = defaultState - baseState;
+        // what do we display first
+        if (baseState == STATE_NONE)                                            // These aren't states
+            {
+#ifdef INCLUDE_EXTENDED_MENU_DEFAULTS
+            currentDisplay = defaultMenuValue;									// Display the first item unless the default state was specified
+            defaultMenuValue = 0;
+#else
+            currentDisplay = 0;													// Display the first item unless the default state was specified
+#endif
+            }
+        else																	// These are states
+        	{
+        	if (defaultState == STATE_NONE)                                     // We don't have a default state specified.  So use the first item
+            	currentDisplay = 0;
+        	else                                                                // We have a default state.  So use it
+            	currentDisplay = defaultState - baseState;
+            }
                 
         newDisplay = FORCE_NEW_DISPLAY;                                         // This tells us that we MUST compute a new display
         entry = false;
@@ -1008,6 +1017,14 @@ GLOBAL uint8_t application = FIRST_APPLICATION;           // The top state (the 
 GLOBAL uint8_t entry = 1;  
 GLOBAL uint8_t optionsReturnState;
 GLOBAL uint8_t defaultState = STATE_NONE;
+#ifdef INCLUDE_EXTENDED_MENU_DEFAULTS
+// Explanation.  While doNumericalDisplay uses defaultState for its defaults, doMenuDisplay cannot because
+// defaultState is already used to describe a *state*.  So if you have a non-stateful menu which jumps to
+// a new state and then you jump back with the defaultState set, you don't want the non-stateful menu
+// to interpret this as a default *value*.  So this hack allows us to specify a default value for a menu
+// that's not stateful.  Yuck.
+GLOBAL uint8_t defaultMenuValue = 0;
+#endif
 #ifdef INCLUDE_IMMEDIATE_RETURN
 GLOBAL uint8_t immediateReturn = false;
 #endif
@@ -1501,7 +1518,7 @@ void go()
                                           PSTR("MENU DELAY"), 
                                               (options.voltage == NO_VOLTAGE ? PSTR("CV+VELOCITY") : 
                                               (options.voltage == VOLTAGE_WITH_VELOCITY ? PSTR("CV+AFTERTOUCH") : PSTR("NO CV"))),
-                                          PSTR("GIZMO V4 (C) 2017 SEAN LUKE") };
+                                          PSTR("GIZMO V5 (C) 2017 SEAN LUKE") };
             doMenuDisplay(menuItems, 16, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
 #endif
 #if defined(__UNO__)
@@ -1509,7 +1526,7 @@ void go()
                                           PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), 
                                           ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
                                           PSTR("BRIGHTNESS"),
-                                          PSTR("GIZMO V4 (C) 2017 SEAN LUKE") };
+                                          PSTR("GIZMO V5 (C) 2017 SEAN LUKE") };
             doMenuDisplay(menuItems, 11, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
 #endif
 
@@ -1636,7 +1653,7 @@ void go()
         break;
         case STATE_STEP_SEQUENCER_FADER:
             {
-            stateNumerical(0, 127, local.stepSequencer.fader[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_NONE, STATE_STEP_SEQUENCER_MENU);
+            stateNumerical(0, 31, local.stepSequencer.fader[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_NONE, STATE_STEP_SEQUENCER_MENU);
             playStepSequencer();
             }
         break;
@@ -1662,6 +1679,11 @@ void go()
 #endif
 
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+        case STATE_STEP_SEQUENCER_MENU_PATTERN:
+            {
+            stateStepSequencerMenuPattern();
+            }
+        break;
         case STATE_STEP_SEQUENCER_MENU_TYPE:
             {
             stateStepSequencerMenuType();
@@ -1670,6 +1692,27 @@ void go()
         case STATE_STEP_SEQUENCER_MENU_TYPE_PARAMETER:
             {
             stateStepSequencerMenuTypeParameter();
+            }
+        break;
+        case STATE_STEP_SEQUENCER_MENU_PERFORMANCE:
+            {
+            const char* menuItems[3] = { PSTR("PLAY ALONG"), PSTR("REPEAT SEQUENCE"), PSTR("NEXT SEQUENCE") };
+            doMenuDisplay(menuItems, 3, STATE_STEP_SEQUENCER_MENU_PERFORMANCE_PLAY_ALONG, STATE_STEP_SEQUENCER_MENU, 1);
+            }
+        break;
+        case STATE_STEP_SEQUENCER_MENU_PERFORMANCE_PLAY_ALONG:
+            {
+			stateStepSequencerMenuPerformancePlayAlong();
+            }
+        break;
+        case STATE_STEP_SEQUENCER_MENU_PERFORMANCE_REPEAT:
+            {
+			stateStepSequencerMenuPerformanceRepeat();
+            }
+        break;
+        case STATE_STEP_SEQUENCER_MENU_PERFORMANCE_NEXT:
+            {
+			stateStepSequencerMenuPerformanceNext();
             }
         break;
 #endif
@@ -2068,11 +2111,13 @@ void go()
                     // <= options.tempo because we'd truncate DOWN to newTempo in this case.
                     if (options.tempo < newTempo)
                         newTempo = newTempo + 1;
-                    options.tempo = ((options.tempo + newTempo) >> 1);
+                    options.tempo = max(min(((options.tempo + newTempo) >> 1), 999), 1);  // saves a tiny bit of code space!
 
+/*
                     if (options.tempo < 1) options.tempo = 1;
                     if (options.tempo > 999) options.tempo = 999;
-
+*/
+					setPulseRate(options.tempo);
                     entry = true;
                     }
                 lastTempoTapTime = currentTime;
@@ -2286,7 +2331,9 @@ void go()
             if (entry) 
                 {
                 backupOptions = options; 
-                defaultState = options.clock;  // so we display the right thing
+#ifdef INCLUDE_EXTENDED_MENU_DEFAULTS
+                defaultMenuValue = options.clock;  // so we display the right thing
+#endif
                 }
             const char* menuItems[5] = { PSTR("USE"), PSTR("CONSUME"), PSTR("IGNORE"), PSTR("GENERATE"), PSTR("BLOCK") };
             result = doMenuDisplay(menuItems, 5, STATE_NONE, STATE_NONE, 1);

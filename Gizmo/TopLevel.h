@@ -92,8 +92,13 @@ typedef enum _State: uint8_t
 #endif
 
 #ifdef 	INCLUDE_EXTENDED_STEP_SEQUENCER
+	STATE_STEP_SEQUENCER_MENU_PATTERN,
 	STATE_STEP_SEQUENCER_MENU_TYPE,
 	STATE_STEP_SEQUENCER_MENU_TYPE_PARAMETER,
+	STATE_STEP_SEQUENCER_MENU_PERFORMANCE,
+	STATE_STEP_SEQUENCER_MENU_PERFORMANCE_PLAY_ALONG,
+	STATE_STEP_SEQUENCER_MENU_PERFORMANCE_REPEAT,
+	STATE_STEP_SEQUENCER_MENU_PERFORMANCE_NEXT,
 #endif
 
 
@@ -230,6 +235,9 @@ extern uint8_t state;                     // The current state
 extern uint8_t application;               // The top-level non-root state (the application, so to speak)
 extern uint8_t optionsReturnState;        // If we're in STATE_OPTIONS and the user presses BACK, where should we go?
 extern uint8_t defaultState;              // If we have just BACKed up into a menu state, what state should be the first one displayed?  This can be STATE_NONE
+#ifdef INCLUDE_EXTENDED_MENU_DEFAULTS
+extern uint8_t defaultMenuValue;
+#endif
 extern uint8_t entry;                     // Are we just entering a state?
 #ifdef INCLUDE_IMMEDIATE_RETURN
 extern uint8_t immediateReturn;

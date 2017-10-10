@@ -107,6 +107,10 @@ void resetOptions()
 	options.randomInitialValue = 64;
 	options.randomRange = 127;
 #endif
+
+#ifdef INCLUDE_EXTENDED_SEQUENCER
+	options.stepSequencerPlayAlongChannel = 17;
+#endif
     }
 
 

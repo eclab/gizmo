@@ -122,10 +122,6 @@ uint8_t debug(int8_t val1, int8_t val2)
 
 void goDownState(uint8_t nextState)
     {
-//    defaultState = STATE_NONE;
-//    state = nextState;
-//    entry = true;
-//    clearReleased();
     goUpState(nextState);
     defaultState = STATE_NONE;
     }
@@ -252,13 +248,14 @@ void stateSave(uint8_t backState)
                             //// 5 bits MIDI out channel (including "use default")
                             //// 7 bits length
                             //// 8 bits velocity (including "use per-note velocity")
-                            //// 7 bits fader
+                            //// 4 bits fader
         
                             distributeByte(pos + 1, local.stepSequencer.muted[i] << 7);
                             distributeByte(pos + 2, local.stepSequencer.outMIDI[i] << 3);
                             distributeByte(pos + 7, local.stepSequencer.noteLength[i] << 1);
                             distributeByte(pos + 14, local.stepSequencer.velocity[i]);      
-                            distributeByte(pos + 22, local.stepSequencer.fader[i] << 1);
+                            distributeByte(pos + 22, local.stepSequencer.fader[i] << 3);
+                            distributeByte(pos + 27, local.stepSequencer.pattern[i] << 4);
                             }
                         else
                             {
@@ -285,7 +282,7 @@ void stateSave(uint8_t backState)
                         distributeByte(pos + 1, local.stepSequencer.outMIDI[i] << 3);
                         distributeByte(pos + 6, local.stepSequencer.noteLength[i] << 1);
                         distributeByte(pos + 13, local.stepSequencer.velocity[i]);      
-                        distributeByte(pos + 21, local.stepSequencer.fader[i] << 1);
+                        distributeByte(pos + 21, local.stepSequencer.fader[i] << 3);
 #endif
 
 
@@ -364,14 +361,15 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                                 //// 5 bits MIDI out channel (including "use default")
                                 //// 7 bits length
                                 //// 8 bits velocity (including "use per-note velocity")
-                                //// 7 bits fader
+                                //// 4 bits fader
                                 local.stepSequencer.data[i] = STEP_SEQUENCER_DATA_NOTE;
                                 
                                 local.stepSequencer.muted[i] = (gatherByte(pos + 1) >> 7); // first bit
                                 local.stepSequencer.outMIDI[i] = (gatherByte(pos + 2) >> 3);  // top 5 bits moved down 3
                                 local.stepSequencer.noteLength[i] = (gatherByte(pos + 7) >> 1); // top 7 bits moved down 1
                                 local.stepSequencer.velocity[i] = (gatherByte(pos + 14)); // all 8 bits
-                                local.stepSequencer.fader[i] = (gatherByte(pos + 22) >> 1);  // top 7 bits moved down 1
+                                local.stepSequencer.fader[i] = (gatherByte(pos + 22) >> 3);  // top 5 bits moved down 3
+                                local.stepSequencer.pattern[i] = (gatherByte(pos + 27) >> 4);  // top 4 bits moved down 4
                                 }
                             else                        // It's a control sequence
                                 {                               
@@ -390,16 +388,20 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                             //// 5 bits MIDI out channel (including "use default")
                             //// 7 bits length
                             //// 8 bits velocity (including "use per-note velocity")
-                            //// 7 bits fader
+                            //// 4 bits fader
                             local.stepSequencer.muted[i] = (gatherByte(pos) >> 7); // first bit
                             local.stepSequencer.outMIDI[i] = (gatherByte(pos + 1) >> 3);  // top 5 bits moved down 3
                             local.stepSequencer.noteLength[i] = (gatherByte(pos + 6) >> 1); // top 7 bits moved down 1
                             local.stepSequencer.velocity[i] = (gatherByte(pos + 13)); // all 8 bits
-                            local.stepSequencer.fader[i] = (gatherByte(pos + 21) >> 1);  // top 7 bits moved down 1
+                            local.stepSequencer.fader[i] = (gatherByte(pos + 21) >> 3);  // top 5 bits moved down 3
 #endif
                             }
                             
                         stripHighBits();
+                        
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+						resetStepSequencerCountdown();
+#endif
                         }
 #endif
                     }
@@ -445,7 +447,6 @@ void stateSure(uint8_t selectedState, uint8_t backState)
 
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
-        //suggestedDefaultState = defaultState; 
         // send ALL NOTES OFF
         MIDI.sendControlChange(123, 0, options.channelOut);
         
@@ -649,7 +650,7 @@ void clearScreen()
 
 GLOBAL static uint8_t glyphTable[
 #ifdef INCLUDE_EXTENDED_GLYPH_TABLE
-    19
+    20
 #else
     15
 #endif
@@ -677,11 +678,11 @@ GLOBAL static uint8_t glyphTable[
     {GLYPH_3x5_F, GLYPH_3x5_A, GLYPH_3x5_D, GLYPH_3x5_E},   // FADE
     {GLYPH_3x5_P, GLYPH_3x5_L, GLYPH_3x5_A, GLYPH_3x5_Y},   // PLAY
     {GLYPH_3x5_C, GLYPH_3x5_H, GLYPH_3x5_R, GLYPH_3x5_D},   // CHRD
-    {GLYPH_3x5_H, GLYPH_3x5_I, GLYPH_3x5_G, GLYPH_3x5_H},       // HIGH
+    {GLYPH_3x5_H, GLYPH_3x5_I, GLYPH_3x5_G, GLYPH_3x5_H},   // HIGH
+    {GLYPH_3x5_T, GLYPH_3x5_R, GLYPH_3x5_A, GLYPH_3x5_N},   // TRAN
 #endif
 
     };
-
 
 
 // Writes any of the above glyph sets to the screen

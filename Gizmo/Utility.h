@@ -52,7 +52,7 @@ void drawMIDIChannel(uint8_t channel);
 #define GLYPH_OMNI 1                                    // ALLC
 #define GLYPH_DEFAULT 2                                 // DFLT
 #define GLYPH_DECREMENT 3                               // DECR
-#define GLYPH_INCREMENT 4                                                               // INCR
+#define GLYPH_INCREMENT 4                               // INCR
 #define GLYPH_FREE 5                                    // FREE
 #define GLYPH_NOTE 6                                    // NOTE
 #define GLYPH_SYSEX 7                                   // SYSX
@@ -69,6 +69,7 @@ void drawMIDIChannel(uint8_t channel);
 #define GLYPH_PLAY 16									// PLAY
 #define GLYPH_CHORD 17									// CHRD
 #define GLYPH_HIGH 18									// HIGH
+#define GLYPH_TRANSPOSE 19								// TRAN
 #endif
 
 #define GLYPH_OTHER (254)	// reserved to represent "use this glyph instead"
@@ -197,8 +198,10 @@ uint8_t incrementAndWrap(uint8_t n, uint8_t max);
 /// Computes the median of five values.  [Presently unused]
 uint16_t medianOfFive(uint16_t array[]);
 
-
-
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+uint8_t gatherByte(uint16_t pos);		// used by step sequencer also
+void stripHighBits();
+#endif
 
 
 #endif __UTILITY_H__

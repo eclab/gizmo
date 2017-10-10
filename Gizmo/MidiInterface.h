@@ -154,7 +154,8 @@ extern uint8_t itemChannel;				// Channel of the incoming item.  One of 1...16
 #define NRPN_STOP_PARAMETER                     8       
 #define NRPN_CONTINUE_PARAMETER                 9
 
-// The Pot CC parameters are 14-bit (MSB+LSB).  The others are 7-bit.
+// The non-relative Pot CC parameters and extra parameters S...Z are 14-bit (MSB+LSB).
+// All others are 7-bit.
 
 #define CC_LEFT_POT_PARAMETER                 14
 #define CC_RIGHT_POT_PARAMETER                15
@@ -166,9 +167,32 @@ extern uint8_t itemChannel;				// Channel of the incoming item.  One of 1...16
 #define CC_START_PARAMETER                    107
 #define CC_STOP_PARAMETER                     108     
 #define CC_CONTINUE_PARAMETER                 109
-
-
-
+#define CC_LEFT_POT_RELATIVE_PARAMETER        110
+#define CC_RIGHT_POT_RELATIVE_PARAMETER       111
+#define CC_EXTRA_PARAMETER_A			      64
+#define CC_EXTRA_PARAMETER_B			      65
+#define CC_EXTRA_PARAMETER_C			      66
+#define CC_EXTRA_PARAMETER_D			      67
+#define CC_EXTRA_PARAMETER_E			      68
+#define CC_EXTRA_PARAMETER_F			      69
+#define CC_EXTRA_PARAMETER_G			      70
+#define CC_EXTRA_PARAMETER_H			      71
+#define CC_EXTRA_PARAMETER_I			      72
+#define CC_EXTRA_PARAMETER_J			      73
+#define CC_EXTRA_PARAMETER_K			      74
+#define CC_EXTRA_PARAMETER_L			      75
+#define CC_EXTRA_PARAMETER_M			      76
+#define CC_EXTRA_PARAMETER_N			      77
+#define CC_EXTRA_PARAMETER_O			      78
+#define CC_EXTRA_PARAMETER_P			      79
+#define CC_EXTRA_PARAMETER_S				  24
+#define CC_EXTRA_PARAMETER_T				  25
+#define CC_EXTRA_PARAMETER_U				  26
+#define CC_EXTRA_PARAMETER_V				  27
+#define CC_EXTRA_PARAMETER_W				  28
+#define CC_EXTRA_PARAMETER_X				  29
+#define CC_EXTRA_PARAMETER_Y				  30
+#define CC_EXTRA_PARAMETER_Z				  31
 
 //// MIDI HANDLERS
 

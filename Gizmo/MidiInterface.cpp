@@ -661,6 +661,37 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
                 continueClock(true);
                 }
             break;
+            case CC_LEFT_POT_RELATIVE_PARAMETER:
+                {
+                int16_t v = ((int16_t) (pot[LEFT_POT] + value >> 7)) - 64;
+                if (v < 0) v = 0;
+                if (v > 1023) v = 1023;
+                pot[LEFT_POT] = (uint16_t) v; 
+                potUpdated[LEFT_POT] = CHANGED;
+                }
+            break;
+            case CC_RIGHT_POT_RELATIVE_PARAMETER:
+                {
+                int16_t v = ((int16_t) (pot[RIGHT_POT] + value >> 7)) - 64;
+                if (v < 0) v = 0;
+                if (v > 1023) v = 1023;
+                pot[RIGHT_POT] = (uint16_t) v; 
+                potUpdated[RIGHT_POT] = CHANGED;
+                }
+            break;
+            
+#ifdef EXTENDED_STEP_SEQUENCER
+// Clear Track
+// Mute
+// Solo
+// Lock?
+// Click Track
+// Track Velocity
+// Track Fader
+
+////// FIXME
+
+#endif
             }
         }
 #endif
@@ -1593,7 +1624,8 @@ void sendAllSoundsOffDisregardBypass(uint8_t channel)
             {
 #ifdef USE_ALL_NOTES_OFF
             MIDI.sendControlChange(123, 0, i);          // All Notes Off
-#else
+#endif
+#ifdef USE_ALL_SOUNDS_OFF
             MIDI.sendControlChange(120, 0, i);              // All Sound Off
 #endif
             }
@@ -1602,7 +1634,8 @@ void sendAllSoundsOffDisregardBypass(uint8_t channel)
         {
 #ifdef USE_ALL_NOTES_OFF
         MIDI.sendControlChange(123, 0, channel);        // All Notes Off
-#else
+#endif
+#ifdef USE_ALL_SOUNDS_OFF
         MIDI.sendControlChange(120, 0, channel);        // All Sound Off
 #endif
         }

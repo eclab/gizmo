@@ -105,11 +105,11 @@
 //
 // OPTIONS
 //
-// Permanent options special to the Arpeggiator are:
+// Permanent options special to the Step Sequencer are:
 //
 // options.stepSequencerNoEcho          Toggle for Echo
 //
-// Other permanent options affecting the Arpeggiator include:
+// Other permanent options affecting the Step Sequencer include:
 //
 // options.noteSpeedType
 // options.swing
@@ -212,12 +212,17 @@
 
 #define MAX_CONTROL_VALUE (16383)
 
+#define COUNTDOWN_INFINITE (255)
+
+#define STEP_SEQUENCER_PATTERN_RANDOM (0)
+#define STEP_SEQUENCER_PATTERN_ALL (15)
+
 #define NO_TRACK (255)
 
 struct _stepSequencerLocal
     {
-    uint8_t playState;                                                              // is the sequencer playing, paused, or stopped?
-    int8_t currentEditPosition;                                             // Where is the edit cursor?  Can be -1, indicating PLAY rather than STEP BY STEP entry mode
+    uint8_t playState;                                              // is the sequencer playing, paused, or stopped?
+    int8_t currentEditPosition;                                     // Where is the edit cursor?  Can be -1, indicating PLAY rather than STEP BY STEP entry mode
     uint8_t currentPlayPosition;                                    // Where is the play position marker?
         
     // You'd think that the right way to do this would be to make a struct with each of these variables
@@ -228,25 +233,31 @@ struct _stepSequencerLocal
     uint8_t noteLength[MAX_STEP_SEQUENCER_TRACKS];  // Per-track note length, from 0...100, or PLAY_LENGTH_USE_DEFAULT
     uint8_t muted[MAX_STEP_SEQUENCER_TRACKS];               // Per-track mute toggle
     uint8_t velocity[MAX_STEP_SEQUENCER_TRACKS];    // Per track note velocity, or STEP_SEQUENCER_NO_OVERRIDE_VELOCITY
-    uint8_t fader[MAX_STEP_SEQUENCER_TRACKS];               // Per-track fader, values from 0...100
-    uint32_t offTime[MAX_STEP_SEQUENCER_TRACKS];    // When do we turn off?  Note it's uint16, not uint32.  It's a delta from the lastTime
+    uint8_t fader[MAX_STEP_SEQUENCER_TRACKS];               // Per-track fader, values from 1...16
+    uint32_t offTime[MAX_STEP_SEQUENCER_TRACKS];    // When do we turn off? 
     uint8_t noteOff[MAX_STEP_SEQUENCER_TRACKS];
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+    uint8_t shouldPlay[MAX_STEP_SEQUENCER_TRACKS];
+    uint8_t pattern[MAX_STEP_SEQUENCER_TRACKS];
     uint8_t dontPlay[MAX_STEP_SEQUENCER_TRACKS];
 	uint16_t controlParameter[MAX_STEP_SEQUENCER_TRACKS];
     uint16_t lastControlValue[MAX_STEP_SEQUENCER_TRACKS];
     uint8_t newData;		// a temporary variable.  comes in from STATE_STEP_SEQUENCER_MENU_TYPE, used in STATE_STEP_SEQUENCER_MENU_TYPE_PARAMETER
 	int8_t transpose;
+    uint8_t performanceMode;
+    uint8_t goNextSequence;
+    uint8_t countdown;
+    uint8_t countup;
 #endif      
     uint8_t solo;
     uint8_t currentTrack;                                                   // which track are we editing?
-    uint8_t backup;                                                                 // used to back up various values when the user cancels
+    uint8_t backup;      		// used for backing up data to restore it                                                           // used to back up various values when the user cancels
     int16_t currentRightPot;
     };
 
 
 
-#define FADER_IDENTITY_VALUE 32
+#define FADER_IDENTITY_VALUE 8
 
 /// DATA
 
@@ -259,14 +270,15 @@ struct _stepSequencerLocal
 #define STEP_SEQUENCER_FORMAT_64x3_ 4
 #endif
 
+#define CHANNEL_TRANSPOSE (17)
 
 #define STEP_SEQUENCER_BUFFER_SIZE		(SLOT_DATA_SIZE - 3)
 
 struct _stepSequencer
     {
-    uint8_t format;                                             // step sequencer format in question
-	uint8_t locked;
-	uint8_t unused;  											// future expansion
+    uint8_t format;                                 // step sequencer format in question
+    uint8_t repeat;									// how much should we repeat and where should we continue?  This is forever, 1 time, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 24, 32, 64, 128 times (Low 4 bits) | STOP, 1, ..., 9 (High 4 bits)
+	uint8_t unused;
     uint8_t buffer[STEP_SEQUENCER_BUFFER_SIZE];
     };
 
@@ -315,5 +327,12 @@ void resetStepSequencer();
 
 void clearTrack(uint8_t track);
 
+// Performance Options
+void stateStepSequencerMenuPerformancePlayAlong();
+void stateStepSequencerMenuPerformanceRepeat();
+void stateStepSequencerMenuPerformanceNext();
+void loadStepSequencer(int slot);
+void resetStepSequencerCountdown();
+void stateStepSequencerMenuPattern();
 #endif
 

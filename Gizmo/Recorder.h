@@ -118,6 +118,9 @@ struct _recorderLocal
     
     // the "pre count" prior to recording.
     uint8_t tickoff;
+    
+    // Number of notes recorded so far
+    uint8_t numNotes;
     };
 
 
@@ -129,8 +132,8 @@ struct _recorderLocal
 
 struct _recorder
     {
-    uint16_t length;                                    // how many bytes are stored in the buffer (up to 384)
-    uint8_t notes;                                              // how many NOTE ONs are there in the buffer?
+    uint16_t length;                        // how many bytes are stored in the buffer (up to 384)
+    uint8_t repeat;							// how much should we repeat and where should we continue?  This is 1 time, 2, times, ..., 16 times (Low 4 bits) | 1, ..., 9 (High 4 bits)
     uint8_t buffer[RECORDER_BUFFER_SIZE];
     };
 

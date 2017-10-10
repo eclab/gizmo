@@ -105,13 +105,11 @@
 
 
 // -- OPTIONS --
-// USE_ALL_NOTES_OFF						By default when Gizmo kills all sounds it does so with "All Sounds Off" because some hardware
-//											(like the Blofeld's Arpeggiated sounds) do not respond properly to All Notes Off.  But that's 
-//											harsh: it doesn't allow notes to do their release. If you set this, it will change things to 
-//											ALL NOTES OFF.
+// USE_ALL_NOTES_OFF						These define how Gizmo kills all sounds.  The Blofeld's Arpeggiated sounds do not respond properly 
+// USE_ALL_SOUNDS_OFF						to All Notes Off.  But other hardware, such as the Kawai K4, doesn't properly respond to ALL Sounds 
+//											Off.  :-(  You can set one, or both, of these.
 
-// #define USE_ALL_NOTES_OFF
-
+#define USE_ALL_SOUNDS_OFF					// see Mega below, it uses both
 
 
 /// Here are the standard values for the MEGA and for the UNO
@@ -126,6 +124,8 @@
 #define INCLUDE_THRU
 #define INCLUDE_SYNTH
 #define INCLUDE_MEASURE
+
+#define USE_ALL_NOTES_OFF
 
 #define INCLUDE_OPTIONS_TRANSPOSE_AND_VOLUME
 #define INCLUDE_OPTIONS_MIDI_CLOCK_DIVIDE		// interestingly, cutting this out *increases* memory usage
@@ -157,7 +157,6 @@
 #define INCLUDE_RECORDER
 #define INCLUDE_GAUGE
 #define INCLUDE_CONTROLLER
-//#define INCLUDE_BUFFERED_CURSOR_X_POS
 #endif
 
 
@@ -174,6 +173,7 @@
 #define INCLUDE_STEP_SEQUENCER
 #define INCLUDE_VOLTAGE
 #define INCLUDE_EXTENDED_CONTROL_SIGNALS
+#define INCLUDE_EXTENDED_MENU_DEFAULTS
 #endif
 
 #ifdef INCLUDE_EXTENDED_RECORDER

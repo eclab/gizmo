@@ -50,7 +50,7 @@ void recorderLoadNote(uint8_t load, uint8_t id, uint16_t time)
         {
         data.slot.data.recorder.length += 4;
         local.recorder.currentPos++;
-        data.slot.data.recorder.notes++;
+        local.recorder.numNotes++;
         }
     else // LOAD_NOTE_OFF
         {
@@ -105,7 +105,7 @@ void stateRecorderPlay()
         if ((currentDisplay == -1) || (data.slot.type != slotTypeForApplication(STATE_RECORDER))) // initialize
             {
             data.slot.data.recorder.length = 0;
-            data.slot.data.recorder.notes = 0;
+            local.recorder.numNotes = 0;
             }
         entry = false;
         }
@@ -254,7 +254,7 @@ void stateRecorderPlay()
                 uint8_t id = MAX_RECORDER_NOTES_PLAYING + 1;    // indicates an invalid or unknown ID
                                                                         
                 if ((itemType == MIDI_NOTE_ON) && 
-                    (data.slot.data.recorder.notes < MAX_RECORDER_NOTES) && 
+                    (local.recorder.numNotes < MAX_RECORDER_NOTES) && 
                     (data.slot.data.recorder.length <= (RECORDER_BUFFER_SIZE - RECORDER_SIZE_OF_NOTE_ON)))  // this last one isn't really technically needed but it's a good idea 
                     {
                     // find an open id slot
@@ -323,7 +323,7 @@ void stateRecorderPlay()
                 memset(local.recorder.notes, NO_NOTE, MAX_RECORDER_NOTES_PLAYING);
                 resetRecorder();
                 data.slot.data.recorder.length = 0;
-                data.slot.data.recorder.notes = 0;
+                local.recorder.numNotes = 0;
                 }
                         
             if (local.recorder.tickoff == 5)
@@ -350,7 +350,7 @@ void stateRecorderPlay()
         
         // draw the recorder
         // this is the slow way to do it.  Too slow?
-        recorderDrawPoint(data.slot.data.recorder.notes, 0);
+        recorderDrawPoint(local.recorder.numNotes, 0);
         recorderDrawPoint(local.recorder.currentPos, 0);
         recorderDrawPoint(local.recorder.tick / 96, 5);                 // 96 = 24 pulses per quarter note * 4 quarter notes per measure
         setPoint(led2, 6, 1);  // boundary

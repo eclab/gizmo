@@ -42,24 +42,6 @@ struct _options
     uint16_t randomControlNumber;
 #endif
 
-/*
-	lfo/env rate
-
-					[MIDDLE BUTTON TOGGLES LFO1/2/ENV1/2]
-
-	lfo top
-	lfo bottom
-	lfo type		: pwm, wave, 				random, 	random sample and hold
-	lfo aux			: pwm, sawtooth<->triangle, momentum, 	rate   [LEFT KNOB]
-	lfo frequency   [RIGHT KNOB]
-	lfo gate		: constant, while note is down, retrigger on any note
-	
-	env attack
-	env decay
-	env gate		: while note is down, retrigger on any note
-*/
-	
-
     // then 8-bit stuff
     uint8_t screenBrightness;
     uint8_t clock ;                     // Chosen option for handling the MIDI clock
@@ -146,6 +128,7 @@ struct _options
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
     uint8_t stepSequencerNoEcho;
     uint8_t stepSequencerSendClock;
+	uint8_t stepSequencerPlayAlongChannel;
 #endif
 
 #ifdef INCLUDE_EXTENDED_RECORDER
