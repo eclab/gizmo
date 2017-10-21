@@ -145,7 +145,7 @@ Attach the four wires for SDA, SCL, 5V (VCC), and GND between the MIDI Shield an
 
 \item {\bf Switch the MIDI Shield to ``Run''}\quad  You can plug in MIDI cables now.
 
-\item {\bf Reset Gizmo}\quad Power up the Arduino.  Then hold down all three pushbuttons on the MIDI Shield.  While doing so, press and release the reset button on the MIDI Shield.  Continue to hold down the three push buttons until the two LEDs on the MIDI Shield light up.\footnote{Sometimes you have to do this a couple of times on the Mega to get the lights to light up.}  Let go of the pushbuttons.  
+\item {\b Do a Full Reset of Gizmo}\quad Power up the Arduino.  Then hold down all three pushbuttons on the MIDI Shield.  While doing so, press and release the reset button on the MIDI Shield.  Continue to hold down the three push buttons until the two LEDs on the MIDI Shield light up.\footnote{Sometimes you have to do this a couple of times on the Mega to get the lights to light up.}  Let go of the pushbuttons.  
 
 This procedure initializes the memory, options, and files in the device.  Now you're ready to go!
 
@@ -178,7 +178,7 @@ Gizmo must be initialized before it can be used.  You can do a factory reset on 
 
 Gizmo will reset all of its flash RAM and reboot.  This means that all options will be set to their default state, and all file storage (including arpeggios) will be emptied.
 
-\paragraph{Note} Different Gizmo configurations arrange the options memory region differently, so whenever you load new Gizmo software, you should reinitialize it or strange things will happen.  However a full factory reset also erases your saved files (sequences, arpeggios, recordings).  If you want to preserve these but reset the options, just hold down the left and right buttons instead of all three (don't hold down the middle button).
+\paragraph{Doing a ``Partial Reset''} Whenever you load new Gizmo software, you should reinitialize Gizmo or strange things will happen.  However a full factory reset also erases your saved files (sequences, arpeggios, recordings).  If you want to preserve these but just reset the options, just hold down the left and right buttons instead of all three (don't hold down the middle button).
 
 \subsection{Starting Gizmo Headless}
 
@@ -523,7 +523,7 @@ You can tell you're in play position mode because the play position cursor has c
 
 You can get out of play position mode just by turning the right knob so that the edit cursor is once again on-screen.
 
-\paragraph{Performance Mode} [Mega only]  If you simultaneously Long-Press the Select and Middle buttons when in either Edit or Play Position Mode, you'll enter Performance Mode.  This mode is meant to support performing with completed sequences.  Here, if you play notes they're not entered as data in the Sequencer.  Instead one of two things will happen depending on how you've configured things: either the notes will be routed to some channel in MIDI Out, or the notes will be used to {\it transpose} the sequence as it's playing.
+\paragraph{Performance Mode} [Mega only]  If you simultaneously Long-Press the Select and Middle buttons when in either Edit or Play Position Mode, you'll enter Performance Mode.  This mode is meant to support performing with completed sequences.  Here, if you play notes they're not entered as data in the Sequencer.  Instead one of two things will happen depending on how you've configured things: either the notes will be routed to some channel in MIDI Out, or the notes will be used to {\it transpose} the sequence as it's playing.  A track is transposed only if you have turned its ``Transpose'' option on (see Menu Options below).
 
 In Performance Mode, a number of controls change their function  Pressing the Back Button doesn't exit the Step Sequencer: but rather, it exits Performance Mode back into whatever previous Mode you had used.  Pressing the Middle Button toggles muting of  the track.  Long-Pressing the Middle Button toggles Soloing: only your current track is played.  You can tell you're in Solo mode because every track {\it except} for the soloed one appears to be muted (LEDs at each end of the tracks are blinking).  Pressing the Select button starts and stops playing as usual, and long-pressing the Select button brings up the menu.  The Left Knob changes tracks as usual, but the Right Knob changes the {\bf tempo}.
 
@@ -539,25 +539,27 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 
 \begin{itemize}
 \item {\bf Solo} (or {\bf No Solo})\quad This plays only the current track, muting the others.
+\item {\bf Reset Track}\quad This wipes out and resets the track.  Unlike Long-Pressing the Middle Button while in Play Position mode, this doesn't just clear the track: it also resets all of its settings to their defaults.
 \item {\bf Length (Track)}\quad This specifies the note length of notes in the track, as a percentage (0 is fully staccato and 100 is fully legato).   You can choose numerical values, or choose \texttt{DFLT}, which tells the Step Sequencer to use the default note length specified in the Options menu (see Section \ref{options}).
 \item {\bf Out MIDI (Track)}\quad This specifies the MIDI Out Channel for notes in the track,    You can choose a value 1...16, or choose \texttt{DFLT}, which tells the Step Sequencer to use the default MIDI Out Channel specified in the Options menu (see Section \ref{options}).
-\item {\bf Velocity (Track)}\quad This lets you specify a key velocity\footnote{By velocity we mean in the MIDI sense: how fast the key is struck; this basically translates to loudness.} that {\it all} notes in the track will use (as a value 0...127).  If you would instead prefer that each note in the track use its own independent key velocity as you had entered them, you can choose \texttt{FREE}.
+\item {\bf Velocity (Track)}\quad This lets you specify a key velocity\footnote{By velocity we mean in the MIDI sense: how fast the key is struck; this basically translates to loudness.} that {\it all} notes in the track will use (as a value 1...127).  If you would instead prefer that each note in the track use its own independent key velocity as you had entered them, you can choose {\it none}.
 \item {\bf Fader (Track)}\quad This lets you specify a volume modifier which is multiplied against the velocities of the notes in the track.  Possible values are 0...31, where 0 completely hushes the notes, 8 lets them play at their specified velocities, and values larger than or smaller than 8 will make the notes louder or quieter respectively.
-\item {\bf Reset Track}\quad This wipes out and resets the track.  Unlike Long-Pressing the Middle Button while in Play Position mode, this doesn't just clear the track: it also resets all of its settings to their defaults.
-\item {\bf Save} \quad This saves the sequence. You then choose the slot to save in.  Slots are displayed by number, plus an \texttt{S} (for Save), plus optionally an \texttt{R} or \texttt{S} (for Recorder or Step Sequencer) if the slot is already used by that application.  This letter {\bf blinks} if the file isn't the type of your current application to warn you that you will be overwriting the other application's slot.
 \item {\bf Bypass In} (or {\bf No Bypass}) (Mega only).  This turns on a {\bf special bypass mode} similar to the one in the Arpeggiator: it doesn't send the ``all sounds off'' message, allows the Step Sequencer to continue to output MIDI notes (but not respond to incoming ones).   The idea is that after you get your track going, you can play along with it by turning on bypass.  The notes you play will not get entered into the Step Sequencer, but rather will get routed straight through.  You can turn also turn this on by long-pressing {\it both} the select and middle buttons at the same time.  You can turn it off again through the menu, or by pressing the middle button, or by long-pressing both the select and middle buttons again.
 \item {\bf Type (Track)} (Mega only) \quad Lets you specify the type of data stored in this track.  See discussion of {\bf Edit Mode} above.
 \item {\bf Pattern (Track)} (Mega only)\quad Lets you specify the four-iteration pattern for this track.  An {\tt O} indicates that the track will be played, and a {\tt -} indicates that it will be hushed.  Your options are: \texttt{OOOO, O-O-, -O-O, O---, -O--, --O-, ---O, OO--, -OO-, --OO, O--O,  OOO-, O-OO, OO-O,} or {\tt RND}, indicating that each iteration the track is hushed at random.
-\item {\bf Clock Control} (or {\bf No Clock Control}) (Mega only) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note regardless of the setting of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.
+\item {\bf Transpose (Track)} (or {\bf No Transpose (Track)}) (Mega only) \quad This toggles whether this track responds to the user transposing the sequencer during performance mode.
+\item {\bf Clock Control} (or {\bf No Clock Control}) (Mega only) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note that regardless of the setting of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.
 \item {\bf No Echo} (or {\bf Echo}) (Mega only) \quad This toggles {\it no-echo mode}.  Normally when you enter a note, it's automatically played so you get some feedback.  But in some circumstances this isn't desirable: for example, if you're entering {\it and} playing notes from the same keyboard, then this default behavior will cause two notes to be played whenever you enter a note.  {\bf No Echo} will turn this off.\footnote{The Mega also has another closely related feature: if you're in play position mode and you have entered a note slightly before its time, Gizmo won't play it (the first time) when its time comes up, because you just played it yourself.  This isn't the case on the Uno: you'll hear a double-played note the first time.  There's not enough space on the Uno to add this feature, sorry.}
 
 \item {\bf Performance} (Mega only) \quad  This brings up the Performance Mode sub-menu.  You can select these menu items from any mode (not just Performance Mode), but the impact of your changes will only be felt in Performance Mode:
 
 \begin{itemize}
-\item {\bf Play Along}  This menu option lets you choose to {\it play along} with the sequence (as you play notes they will be sent to MIDI Out)  or to {\it transpose} the sequence in real-time by pressing a key.   The menu options are 1...16 (the MIDI channel to route your played notes) or ``Transpose''.
+\item {\bf Play Along}  This menu option lets you choose to {\it play along} with the sequence (as you play notes they will be sent to MIDI Out)  or to {\it transpose} the sequence in real-time by pressing a key.   The menu options are {\it None} (meaning, confusingly, to send out the default MIDI Out Channel), 1...16 (the MIDI channel to route your played notes) or {\tt TRAN}, meaning``Transpose''.
 \item {\bf Repeat Sequence} This menu option specifies how many iterations the sequence should play before it stops.  The default is ``Forever'', but you also have 1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 24, 32, 64, or 128 iterations as options.
 \item {\bf Next Sequence} This menu option specifies {\it which} sequence the sequencer should switch to when it has completed the given sequence.  Your options are None, or 0...9.
 \end{itemize} 
+
+\item {\bf Save} \quad This saves the sequence. You then choose the slot to save in.  Slots are displayed by number, plus an \texttt{S} (for Save), plus optionally an \texttt{R} or \texttt{S} (for Recorder or Step Sequencer) if the slot is already used by that application.  This letter {\bf blinks} if the file isn't the type of your current application to warn you that you will be overwriting the other application's slot.
 
 \item {\bf Options} \quad This brings up the Options menu, which enables you to do...
 \end{itemize}
@@ -575,6 +577,30 @@ In MIDI& Out MIDI&Control MIDI&MIDI Clock&Volume (on Mega)\\
 
 \vspace{1em}
 Of particular use are Tempo, Note Speed, Swing, and especially Click.
+
+
+
+\paragraph{Button Summary}  The Step Sequencer's buttons can be a bit complex.  Here's what they do in each mode.  Note that once you're changing the tempo, you can also tap the middle button to adjust the tempo in addition to moving the knob.
+
+\vspace{1em}
+\noindent {\small
+\begin{tabular}{@{}rlll@{}}
+\it Control					& \it Edit Cursor Mode	& \it Play Cursor Mode	& \it Performance Mode\\
+\hline\\[-0.5em]
+Back Button				& Exit  & Exit & Leave Performance Mode\\
+Back Button (Long)			& Toggle Bypass & Toggle Bypass & Toggle Bypass\\
+Middle Button				& Rest & Toggle Mute Track & Toggle Mute Track\\
+Middle Button (Long)			& Tie & Clear Track & Toggle Solo\\
+Select Button				& Start/Stop & Start/Stop & Start/Stop\\
+Select Button (Long)			& Menu & Menu & Menu\\
+Select + Middle Button (Long) 	& Enter Performance Mode & Enter Performance Mode & Trigger Next Sequence\\
+Left Knob					& Change Track & Change Track & Change Track\\
+Right Knob				& Change Note Position & Leave Play Cursor Mode & Change Tempo\\
+						& {\it or} Enter Play Cursor Mode && {\it (Press Back/Select when Done)}\\
+Keystrokes, CC, etc.			& Enter at Edit Cursor&Enter at Play Cursor & Transpose {\it or} Route Out\\
+\end{tabular}
+}
+
 
 
 \clearpage
@@ -1417,26 +1443,6 @@ The Arduino has an internal clock with 32 bits, yielding a maximum of 42,949,672
 		
 		Manually stopping and starting the clock can produce results which look like bugs, but aren't, so you have think about the effects.  For example, if you're in {\bf Generate Clock} mode and you've manually stopped the clock, and you go into the Step Sequencer and start playing, nothing will happen. More than once this has confused me enough to look through the code thinking I'd written an error.
 		
-
-\section{Foo}
-
-{\small
-\begin{tabular}{@{}llll@{}}
-Control					& Edit Cursor Mode	& Play Cursor Mode	& Performance Mode\\
-\hline
-Back Button				& Exit  & Exit & Leave Performance Mode\\
-Back Button (Long)			& Bypass & Bypass & Bypass\\
-Middle Button				& Rest & Mute/Unmute Track & Mute/Unmute Track\\
-Middle Button (Long)			& Tie & Clear Track & Toggle Solo\\
-Select Button				& Start/Stop & Start/Stop & Start/Stop\\
-Select Button (Long)			& Menu & Menu & Menu\\
-Select + Middle Button (Long) 	& Enter Performance Mode & Enter Performance Mode & Next Sequence\\
-Left Knob					& Change Track & Change Track & Change Track\\
-Right Knob				& Change Note Position & Leave Play Cursor Mode & Change Tempo\\
-						& {\it or} Enter Play Cursor Mode && {\it (Press Back/Select when Done)}\\
-Keystrokes, CC, etc.			& Enter at Edit Cursor&Enter at Play Cursor & Transpose {\it or} Route Out\\
-\end{tabular}
-}
 
 \section{Development Status}
 

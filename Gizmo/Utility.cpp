@@ -253,7 +253,8 @@ void stateSave(uint8_t backState)
                             distributeByte(pos + 1, local.stepSequencer.muted[i] << 7);
                             distributeByte(pos + 2, local.stepSequencer.outMIDI[i] << 3);
                             distributeByte(pos + 7, local.stepSequencer.noteLength[i] << 1);
-                            distributeByte(pos + 14, local.stepSequencer.velocity[i]);      
+                            distributeByte(pos + 14, local.stepSequencer.velocity[i] << 1);      
+                            distributeByte(pos + 21, local.stepSequencer.transposable[i] << 7);      
                             distributeByte(pos + 22, local.stepSequencer.fader[i] << 3);
                             distributeByte(pos + 27, local.stepSequencer.pattern[i] << 4);
                             }
@@ -367,7 +368,8 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                                 local.stepSequencer.muted[i] = (gatherByte(pos + 1) >> 7); // first bit
                                 local.stepSequencer.outMIDI[i] = (gatherByte(pos + 2) >> 3);  // top 5 bits moved down 3
                                 local.stepSequencer.noteLength[i] = (gatherByte(pos + 7) >> 1); // top 7 bits moved down 1
-                                local.stepSequencer.velocity[i] = (gatherByte(pos + 14)); // all 8 bits
+                                local.stepSequencer.velocity[i] = (gatherByte(pos + 14) >> 1); // top 7 bits moved down 1
+                                local.stepSequencer.transposable[i] = (gatherByte(pos + 21) >> 7); // top 1 bits moved down 7
                                 local.stepSequencer.fader[i] = (gatherByte(pos + 22) >> 3);  // top 5 bits moved down 3
                                 local.stepSequencer.pattern[i] = (gatherByte(pos + 27) >> 4);  // top 4 bits moved down 4
                                 }

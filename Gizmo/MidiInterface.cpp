@@ -553,7 +553,7 @@ void handleAfterTouchPoly(byte channel, byte note, byte pressure)
 //// nature of the numerical value.
 
 // Data types
-#define VALUE 0                                 // 14-bit values given to CC
+#define VALUE 0                         // 14-bit values given to CC
 #define VALUE_MSB_ONLY 1                // 
 #define INCREMENT 2
 #define DECREMENT 3

@@ -67,19 +67,21 @@ void setup()
     // All three buttons pressed on startup?  Do a full reset after 5 seconds
     if (digitalRead(PIN_BACK_BUTTON) == 0 && digitalRead(PIN_SELECT_BUTTON) == 0)
 		{
+    uint8_t semi = digitalRead(PIN_MIDDLE_BUTTON);    // if 0 (button pressed), then not semi
+      
     	// Turn the board LEDs on
 		digitalWrite(PIN_LED_RED, 0);
 		digitalWrite(PIN_LED_GREEN, 0);
 		delay(5000);
 		
-		if (digitalRead(PIN_MIDDLE_BUTTON) == 0)
+		if (semi)
 			{
-			fullReset();
+        semiReset();
 			}
 		else
 			{
-			semiReset();
-			}
+	      fullReset();
+  		}
 		}
 
     // Turn the board LEDs off

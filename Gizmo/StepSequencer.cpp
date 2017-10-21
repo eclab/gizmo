@@ -65,7 +65,7 @@ void stateStepSequencerMenuPattern()
 
 void stateStepSequencerMenuPerformancePlayAlong()
 	{
-	uint8_t result = doNumericalDisplay(1, 17, options.stepSequencerPlayAlongChannel, false, GLYPH_TRANSPOSE);
+	uint8_t result = doNumericalDisplay(0, 17, options.stepSequencerPlayAlongChannel, true, GLYPH_TRANSPOSE);
     playStepSequencer();
     switch (result)
         {
@@ -237,7 +237,8 @@ void loadSequence(int slot)
 				local.stepSequencer.muted[i] = (gatherByte(pos + 1) >> 7); // first bit
 				local.stepSequencer.outMIDI[i] = (gatherByte(pos + 2) >> 3);  // top 5 bits moved down 3
 				local.stepSequencer.noteLength[i] = (gatherByte(pos + 7) >> 1); // top 7 bits moved down 1
-				local.stepSequencer.velocity[i] = (gatherByte(pos + 14)); // all 8 bits
+                local.stepSequencer.velocity[i] = (gatherByte(pos + 14) >> 1); // top 7 bits moved down 1
+            	local.stepSequencer.transposable[i] = (gatherByte(pos + 21) >> 7); // top 1 bits moved down 7
 				local.stepSequencer.fader[i] = (gatherByte(pos + 22) >> 3);  // top 5 bits moved down 3
                 local.stepSequencer.pattern[i] = (gatherByte(pos + 27) >> 4);  // top 4 bits moved down 4
 				}
@@ -280,6 +281,7 @@ void resetTrack(uint8_t track)
     local.stepSequencer.data[track] = STEP_SEQUENCER_DATA_NOTE;
     local.stepSequencer.lastControlValue[track] = 0;
     local.stepSequencer.pattern[track] = STEP_SEQUENCER_PATTERN_ALL;
+    local.stepSequencer.transposable[track] = 1;
 #endif
     local.stepSequencer.outMIDI[track] = MIDI_OUT_DEFAULT;  // default
     local.stepSequencer.noteLength[track] = PLAY_LENGTH_USE_DEFAULT;
@@ -889,40 +891,49 @@ void stateStepSequencerPlay()
 	// rerouting to new channel
 	else if (newItem && (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE))
 		{
-		if (itemType == MIDI_NOTE_ON)
+		// figure out what the channel should be
+		uint8_t channelOut = options.stepSequencerPlayAlongChannel;
+		if (channelOut == 0)
+			channelOut = options.channelOut;
+		
+		// send the appropriate command
+		if (channelOut != 0)
 			{
-			sendNoteOn(itemNumber, itemValue, options.stepSequencerPlayAlongChannel - 1);
-			}
-		else if (itemType == MIDI_NOTE_OFF)
-			{
-			sendNoteOff(itemNumber, itemValue, options.stepSequencerPlayAlongChannel - 1);
-			}
-		else if (itemType == MIDI_AFTERTOUCH_POLY)
-			{
-			sendPolyPressure(itemNumber, itemValue, options.stepSequencerPlayAlongChannel - 1);
-			}
-		else if (itemType == MIDI_AFTERTOUCH)
-			{
-			sendControllerCommand(CONTROL_TYPE_AFTERTOUCH, 0, itemValue, options.stepSequencerPlayAlongChannel - 1);
-			}
-		else if (itemType == MIDI_CC_7_BIT)  // we're always raw
-			{
-			if (itemNumber < 32)
-				sendControllerCommand(CONTROL_TYPE_CC, itemNumber, itemValue, options.stepSequencerPlayAlongChannel - 1);
+			if (itemType == MIDI_NOTE_ON)
+				{
+				sendNoteOn(itemNumber, itemValue, channelOut);
+				}
+			else if (itemType == MIDI_NOTE_OFF)
+				{
+				sendNoteOff(itemNumber, itemValue, channelOut);
+				}
+			else if (itemType == MIDI_AFTERTOUCH_POLY)
+				{
+				sendPolyPressure(itemNumber, itemValue, channelOut);
+				}
+			else if (itemType == MIDI_AFTERTOUCH)
+				{
+				sendControllerCommand(CONTROL_TYPE_AFTERTOUCH, 0, itemValue, channelOut);
+				}
+			else if (itemType == MIDI_CC_7_BIT)  // we're always raw
+				{
+				if (itemNumber < 32)
+					sendControllerCommand(CONTROL_TYPE_CC, itemNumber, itemValue, channelOut);
+				else
+					sendControllerCommand(CONTROL_TYPE_CC, itemNumber, (itemValue << 7), channelOut);
+				}
+			else if (itemType == MIDI_PROGRAM_CHANGE)
+				{
+				sendControllerCommand(CONTROL_TYPE_PC, 0, itemValue, channelOut);
+				}
+			else if (itemType == MIDI_PITCH_BEND)
+				{
+				sendControllerCommand(CONTROL_TYPE_PITCH_BEND, 0, itemValue, channelOut);
+				}
 			else
-				sendControllerCommand(CONTROL_TYPE_CC, itemNumber, (itemValue << 7), options.stepSequencerPlayAlongChannel - 1);
-			}
-		else if (itemType == MIDI_PROGRAM_CHANGE)
-			{
-			sendControllerCommand(CONTROL_TYPE_PC, 0, itemValue, options.stepSequencerPlayAlongChannel - 1);
-			}
-		else if (itemType == MIDI_PITCH_BEND)
-			{
-			sendControllerCommand(CONTROL_TYPE_PITCH_BEND, 0, itemValue, options.stepSequencerPlayAlongChannel - 1);
-			}
-		else
-			{
-			// do nothing
+				{
+				// do nothing
+				}
 			}
 		}
 		
@@ -1061,21 +1072,23 @@ void stateStepSequencerPlay()
 
 // Various choices in the menu
 #define STEP_SEQUENCER_MENU_SOLO 0
-#define STEP_SEQUENCER_MENU_LENGTH 1
-#define STEP_SEQUENCER_MENU_MIDI_OUT 2
-#define STEP_SEQUENCER_MENU_VELOCITY 3
-#define STEP_SEQUENCER_MENU_FADER 4
-#define STEP_SEQUENCER_MENU_RESET 5
-#define STEP_SEQUENCER_MENU_SAVE 6
+#define STEP_SEQUENCER_MENU_RESET 1
+#define STEP_SEQUENCER_MENU_LENGTH 2
+#define STEP_SEQUENCER_MENU_MIDI_OUT 3
+#define STEP_SEQUENCER_MENU_VELOCITY 4
+#define STEP_SEQUENCER_MENU_FADER 5
 
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-#define STEP_SEQUENCER_MENU_TYPE 7
-#define STEP_SEQUENCER_MENU_PATTERN 8
+#define STEP_SEQUENCER_MENU_TYPE 6
+#define STEP_SEQUENCER_MENU_PATTERN 7
+#define STEP_SEQUENCER_MENU_TRANSPOSABLE 8
 #define STEP_SEQUENCER_MENU_SEND_CLOCK 9
 #define STEP_SEQUENCER_MENU_NO_ECHO 10
 #define STEP_SEQUENCER_MENU_PERFORMANCE 11
-#define STEP_SEQUENCER_MENU_OPTIONS 12
+#define STEP_SEQUENCER_MENU_SAVE 12
+#define STEP_SEQUENCER_MENU_OPTIONS 13
 #else
+#define STEP_SEQUENCER_MENU_SAVE 6
 #define STEP_SEQUENCER_MENU_OPTIONS 7
 #endif
 
@@ -1086,30 +1099,31 @@ void stateStepSequencerMenu()
     uint8_t result;
 
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-    const char* menuItems[13] = {    
+    const char* menuItems[14] = {    
         (local.stepSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),
+        PSTR("RESET TRACK"),
         PSTR("LENGTH (TRACK)"),
         PSTR("OUT MIDI (TRACK)"),
         PSTR("VELOCITY (TRACK)"),
         PSTR("FADER (TRACK)"), 
-        PSTR("RESET TRACK"),
-        PSTR("SAVE"), 
         PSTR("TYPE (TRACK)"),
         PSTR("PATTERN (TRACK)"),
+        local.stepSequencer.transposable[local.stepSequencer.currentTrack] ? PSTR("NO TRANSPOSE (TRACK)") : PSTR("TRANSPOSE (TRACK)"),
         options.stepSequencerSendClock ? PSTR("NO CLOCK CONTROL") : PSTR("CLOCK CONTROL"),
         options.stepSequencerNoEcho ? PSTR("ECHO") : PSTR("NO ECHO"), 
         PSTR("PERFORMANCE"),
+        PSTR("SAVE"), 
         options_p 
         };
-    result = doMenuDisplay(menuItems, 13, STATE_NONE, STATE_NONE, 1);
+    result = doMenuDisplay(menuItems, 14, STATE_NONE, STATE_NONE, 1);
 #else
     const char* menuItems[8] = {    
         (local.stepSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),
+        PSTR("RESET TRACK"),
         PSTR("LENGTH (TRACK)"),
         PSTR("OUT MIDI (TRACK)"),
         PSTR("VELOCITY (TRACK)"),
         PSTR("FADER (TRACK)"), 
-        PSTR("RESET TRACK"),
         PSTR("SAVE"), 
         options_p 
         };
@@ -1132,18 +1146,14 @@ void stateStepSequencerMenu()
                 {
                 case STEP_SEQUENCER_MENU_SOLO:
                     {
-#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-                    if (local.stepSequencer.performanceMode)
-                    	{
-                    	state = STATE_STEP_SEQUENCER_MENU_PERFORMANCE;
-                    	}
-                    else
-#endif
-                    	{
-	                    local.stepSequencer.solo = !local.stepSequencer.solo;
-	                    }
+	                local.stepSequencer.solo = !local.stepSequencer.solo;
                     }
                 break;
+                case STEP_SEQUENCER_MENU_RESET:
+                    {
+                    resetTrack(local.stepSequencer.currentTrack);
+                    break;
+                    }
                 case STEP_SEQUENCER_MENU_LENGTH:
                     {
                     state = STATE_STEP_SEQUENCER_LENGTH;                            
@@ -1165,25 +1175,20 @@ void stateStepSequencerMenu()
                     state = STATE_STEP_SEQUENCER_FADER;
                     }
                 break;
-                case STEP_SEQUENCER_MENU_RESET:
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+                case STEP_SEQUENCER_MENU_TYPE:
                     {
-                    resetTrack(local.stepSequencer.currentTrack);
-                    break;
-                    }
-                case STEP_SEQUENCER_MENU_SAVE:
-                    {
-                    state = STATE_STEP_SEQUENCER_SAVE;
+                    state = STATE_STEP_SEQUENCER_MENU_TYPE;
                     }
                 break;
-#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
                 case STEP_SEQUENCER_MENU_PATTERN:
                     {
                     state = STATE_STEP_SEQUENCER_MENU_PATTERN;
                     }
                 break;
-                case STEP_SEQUENCER_MENU_TYPE:
+                case STEP_SEQUENCER_MENU_TRANSPOSABLE:
                     {
-                    state = STATE_STEP_SEQUENCER_MENU_TYPE;
+                    local.stepSequencer.transposable[local.stepSequencer.currentTrack] = !local.stepSequencer.transposable[local.stepSequencer.currentTrack];
                     }
                 break;
                 case STEP_SEQUENCER_MENU_SEND_CLOCK:
@@ -1219,6 +1224,11 @@ void stateStepSequencerMenu()
                     }
                 break;
 #endif
+                case STEP_SEQUENCER_MENU_SAVE:
+                    {
+                    state = STATE_STEP_SEQUENCER_SAVE;
+                    }
+                break;
                 case STEP_SEQUENCER_MENU_OPTIONS:
                     {
                     optionsReturnState = STATE_STEP_SEQUENCER_MENU;
@@ -1462,13 +1472,16 @@ void playStepSequencer()
                         if (newvel > 127) 
                             newvel = 127;
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-                        // transpose can only go -60 ... 67, so
-                        // newNote can only go -60 ... 67 + 127
-                        int16_t newNote = local.stepSequencer.transpose + (int16_t) note;
-                        if (newNote >= 0 && newNote <= 127)
-                            {
-                            note = (uint8_t) newNote;
-                            }
+                        if (local.stepSequencer.transposable[track])
+                        	{
+                        	// transpose can only go -60 ... 67, so
+                        	// newNote can only go -60 ... 67 + 127
+                        	int16_t newNote = local.stepSequencer.transpose + (int16_t) note;
+                        	if (newNote >= 0 && newNote <= 127)
+                        	    {
+                        	    note = (uint8_t) newNote;
+                        	    }
+                        	}
 #endif
                         sendTrackNote(note, (uint8_t)newvel, track);         
                     	

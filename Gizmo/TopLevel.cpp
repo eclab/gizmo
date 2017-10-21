@@ -658,8 +658,7 @@ int16_t boundValue(int16_t val, int16_t minValue, int16_t maxValue)
 GLOBAL static int8_t potFineTune;
 GLOBAL uint8_t secondGlyph = NO_GLYPH;
 
-uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultValue, 
-    uint8_t includeOff, uint8_t includeOther)
+uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultValue, uint8_t includeOff, uint8_t includeOther)
     {
     if (maxValue > 19999)
         maxValue = 19999;
@@ -1646,8 +1645,8 @@ void go()
         break;
         case STATE_STEP_SEQUENCER_VELOCITY:
             {
-            // 128 represents FREE velocity
-            stateNumerical(0, 128, local.stepSequencer.velocity[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_FREE, STATE_STEP_SEQUENCER_MENU);
+            // 0 represents FREE velocity
+            stateNumerical(0, 128, local.stepSequencer.velocity[local.stepSequencer.currentTrack], local.stepSequencer.backup, true, false, GLYPH_NONE, STATE_STEP_SEQUENCER_MENU);
             playStepSequencer();
             }
         break;
