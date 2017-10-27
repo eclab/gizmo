@@ -184,12 +184,29 @@
 #define STEP_SEQUENCER_DATA_BEND	6
 #define STEP_SEQUENCER_DATA_AFTERTOUCH	7
 
-#define MAX_CONTROL_VALUE (16383)
+#define CONTROL_VALUE_EMPTY (16383)
+#define MAX_CONTROL_VALUE (16382)
 
 #define COUNTDOWN_INFINITE (255)
 
-#define STEP_SEQUENCER_PATTERN_RANDOM (0)
+#define STEP_SEQUENCER_PATTERN_RANDOM_1_2 (0)
+#define STEP_SEQUENCER_PATTERN_RANDOM_1_3 (7)
+#define STEP_SEQUENCER_PATTERN_RANDOM_1_4 (13)
+#define STEP_SEQUENCER_PATTERN_RANDOM_1_8 (14)
 #define STEP_SEQUENCER_PATTERN_ALL (15)
+
+#define STEP_SEQUENCER_NOT_MUTED (0)
+#define STEP_SEQUENCER_MUTED (1)
+#define STEP_SEQUENCER_MUTE_ON_SCHEDULED (2)
+#define STEP_SEQUENCER_MUTE_OFF_SCHEDULED (3)
+#define STEP_SEQUENCER_MUTE_ON_SCHEDULED_ONCE (4)
+#define STEP_SEQUENCER_MUTE_OFF_SCHEDULED_ONCE (5)
+
+#define STEP_SEQUENCER_NO_SOLO (0)
+#define STEP_SEQUENCER_SOLO (1)
+#define STEP_SEQUENCER_SOLO_ON_SCHEDULED (2)
+#define STEP_SEQUENCER_SOLO_OFF_SCHEDULED (3)
+
 
 #define NO_TRACK (255)
 
@@ -223,6 +240,9 @@ struct _stepSequencerLocal
     uint8_t goNextSequence;
     uint8_t countdown;
     uint8_t countup;
+    uint16_t pots[2];
+    uint8_t markTrack;
+    uint8_t markPosition;
 #endif      
     uint8_t solo;
     uint8_t currentTrack;                                                   // which track are we editing?
@@ -231,8 +251,9 @@ struct _stepSequencerLocal
     };
 
 
+#define MAXIMUM_TRACK_LENGTH (64)
 
-#define FADER_IDENTITY_VALUE 8
+#define FADER_IDENTITY_VALUE 16
 
 /// DATA
 
@@ -307,8 +328,13 @@ void clearTrack(uint8_t track);
 void stateStepSequencerMenuPerformancePlayAlong();
 void stateStepSequencerMenuPerformanceRepeat();
 void stateStepSequencerMenuPerformanceNext();
-void loadStepSequencer(int slot);
+void loadStepSequencer(uint8_t slot);
 void resetStepSequencerCountdown();
 void stateStepSequencerMenuPattern();
+
+// Edit Options
+void stateStepSequencerMenuEditMark();
+void stateStepSequencerMenuEditCopy(uint8_t splat, uint8_t paste);
+
 #endif
 

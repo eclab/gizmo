@@ -454,6 +454,7 @@ One note regarding the {\bf Note Length} option.  If the Note Length is set to 1
 
 
 \section {The Step Sequencer}
+\label{stepsequencersec}
 
 The Step Sequencer makes it easy to create multitrack loops common on devices like drum machines.  On the Uno, you can have twelve 16-note tracks, eight 24-note tracks, or six 32-note tracks.  On the Mega you can additionally have four 48-note tracks or three 64-note tracks.
 
@@ -533,6 +534,24 @@ You can optionally chain two sequences together but set the first sequence to re
 
 In Performance Mode, as in Play Position Mode, you'll always see the Play Position cursor.  When in Play Position Mode, a particular LED will also constantly blink to indicate the mode.  The current sequence iteration is also shown with a two-note pattern as shown at right.  Finally, if you have triggered the Sequencer to switch to a new sequence, then an LED is displayed to indicate this as well. See Figure \ref{stepsequencer}.
 
+The behavior of {\bf Mute} and {\bf Solo} change in Performance Mode. The purpose of these behaviors is to make mute and solo more useful for syncing up with you in performance.
+
+If you press solo, you won't {\it toggle} the solo.  Instead, you {\it schedule} the solo to be toggled at the beginning of the next sequence iteration.  If you press a second time, you undo your previous action.  So in short, pressing buttons go through this loop, which is known as {\bf advancing solo}:
+
+\begin{itemize}
+\item If you are currently {\it not} soloed: {\bf Schedule Solo} \(\rightarrow\) {\bf Undo}
+\item If you are currently soloed: {\bf Schedule Un-solo} \(\rightarrow\) {\bf Undo}
+\end{itemize}
+
+Similarly, if you press mute, you {\it schedule} the track to be muted (or not), at the next sequence iteration, for exactly one iteration, and then to return to its present state.  If you press mute a second time, you schedule the track to be muted (or not) permanently at the next sequence iteration.  If you press mute a third time, you undo all this.  This is known as {\bf advancing mute}:
+
+\begin{itemize}
+\item If current track is {\it not} muted: {\bf Schedule Mute For One Iteration} \(\rightarrow\)  {\bf Schedule Mute} \(\rightarrow\) {\bf Undo}
+\item If current track is muted: {\bf Schedule Un-mute For One Iteration} \(\rightarrow\)  {\bf Schedule Un-mute} \(\rightarrow\) {\bf Undo}
+\end{itemize}
+
+If you include a CC control surface (see {\it Remote Control over CC} below) you have the further option of advancing mute on any track individually.  This is useful to perform with Gizmo as a groove surface, where you trigger various tracks to play once or turn them on or off during the performance.
+
 \paragraph{Menu Options}
 
 If you Long Press the Select button, you'll call up the Step Sequencer's menu.  The Step Sequencer has a number of options:
@@ -543,10 +562,17 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 \item {\bf Length (Track)}\quad This specifies the note length of notes in the track, as a percentage (0 is fully staccato and 100 is fully legato).   You can choose numerical values, or choose \texttt{DFLT}, which tells the Step Sequencer to use the default note length specified in the Options menu (see Section \ref{options}).
 \item {\bf Out MIDI (Track)}\quad This specifies the MIDI Out Channel for notes in the track,    You can choose a value 1...16, or choose \texttt{DFLT}, which tells the Step Sequencer to use the default MIDI Out Channel specified in the Options menu (see Section \ref{options}).
 \item {\bf Velocity (Track)}\quad This lets you specify a key velocity\footnote{By velocity we mean in the MIDI sense: how fast the key is struck; this basically translates to loudness.} that {\it all} notes in the track will use (as a value 1...127).  If you would instead prefer that each note in the track use its own independent key velocity as you had entered them, you can choose {\it none}.
-\item {\bf Fader (Track)}\quad This lets you specify a volume modifier which is multiplied against the velocities of the notes in the track.  Possible values are 0...31, where 0 completely hushes the notes, 8 lets them play at their specified velocities, and values larger than or smaller than 8 will make the notes louder or quieter respectively.
+\item {\bf Fader (Track)}\quad This lets you specify a volume modifier which is multiplied against the velocities of the notes in the track.  Possible values are 0...31, where 0 completely hushes the notes, 16 lets them play at their specified velocities, and 31 is roughly twice their velocity.  In general, values larger than or smaller than 16 will make the notes louder or quieter respectively.
 \item {\bf Bypass In} (or {\bf No Bypass}) (Mega only).  This turns on a {\bf special bypass mode} similar to the one in the Arpeggiator: it doesn't send the ``all sounds off'' message, allows the Step Sequencer to continue to output MIDI notes (but not respond to incoming ones).   The idea is that after you get your track going, you can play along with it by turning on bypass.  The notes you play will not get entered into the Step Sequencer, but rather will get routed straight through.  You can turn also turn this on by long-pressing {\it both} the select and middle buttons at the same time.  You can turn it off again through the menu, or by pressing the middle button, or by long-pressing both the select and middle buttons again.
 \item {\bf Type (Track)} (Mega only) \quad Lets you specify the type of data stored in this track.  See discussion of {\bf Edit Mode} above.
 \item {\bf Pattern (Track)} (Mega only)\quad Lets you specify the four-iteration pattern for this track.  An {\tt O} indicates that the track will be played, and a {\tt -} indicates that it will be hushed.  Your options are: \texttt{OOOO, O-O-, -O-O, O---, -O--, --O-, ---O, OO--, -OO-, --OO, O--O,  OOO-, O-OO, OO-O,} or {\tt RND}, indicating that each iteration the track is hushed at random.
+\item {\bf Edit} (Mega only)\quad A submenu for cut/copy/paste-like operations:
+\begin{itemize}
+\item {\bf Mark} (Mega only)\quad Records the current track and edit position as the {\it mark position}.
+\item {\bf Copy} (Mega only)\quad Copies the data at the mark position to the current track starting at the current edit position.  The copied data is wrapped around when it goes beyond the end of the current track.
+\item {\bf Splat} (Mega only)\quad Copies the data at the mark position to the current track starting at the current edit position.  The copied data is {\it not} wrapped around when it goes beyond the end of the current track: it just stops there.
+\item {\bf Move} (Mega only)\quad Works like Copy, except that the mark position track is then erased.
+\end{itemize}
 \item {\bf Transpose (Track)} (or {\bf No Transpose (Track)}) (Mega only) \quad This toggles whether this track responds to the user transposing the sequencer during performance mode.
 \item {\bf Clock Control} (or {\bf No Clock Control}) (Mega only) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note that regardless of the setting of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.
 \item {\bf No Echo} (or {\bf Echo}) (Mega only) \quad This toggles {\it no-echo mode}.  Normally when you enter a note, it's automatically played so you get some feedback.  But in some circumstances this isn't desirable: for example, if you're entering {\it and} playing notes from the same keyboard, then this default behavior will cause two notes to be played whenever you enter a note.  {\bf No Echo} will turn this off.\footnote{The Mega also has another closely related feature: if you're in play position mode and you have entered a note slightly before its time, Gizmo won't play it (the first time) when its time comes up, because you just played it yourself.  This isn't the case on the Uno: you'll hear a double-played note the first time.  There's not enough space on the Uno to add this feature, sorry.}
@@ -601,6 +627,50 @@ Keystrokes, CC, etc.			& Enter at Edit Cursor&Enter at Play Cursor & Transpose {
 \end{tabular}
 }
 
+\paragraph{Remote Control over CC}  If you have a remote control surface, you can greatly enhance the Step Sequencer's editing and performance chops by sending CC messages over Gizmo's Control MIDI Channel:
+
+\begin{itemize}
+\item In any mode you can {\bf jump directly to any track,} clear the current track, and directly edit the length, midi out, velocity, fader, transposability, and pattern of the current track.  You can also change a variety of sequencer or note settings and perform edits.
+
+\item In Edit Cursor Mode or Play Cursor Mode you can also toggle the mute of any track independently and toggle solo.
+
+\item In Performance Mode you can {\bf advance the mute of any track independently} and you can advance the solo.  You can also trigger a jump to the next sequence.
+
+\item These operations are on top of the CC Control Midi operations (Section \ref{options}, see ``Control MIDI''), namely start/stop/continue, back button, middle button, select button, bypass, and left/right knob.
+\end{itemize}
+
+\vspace{1em}
+\noindent {\small
+\begin{tabular}{@{}rll@{}}
+\it CC Number & CC Value	& \it Operation\\
+\hline\\[-0.5em]
+64 ... 75	&	Any		& Toggle Mute (or Advance Mute in Performance Mode) for track \(n - 63\), that is, track 1...12\\
+76 ... 87	&	Any		& Select Track \(n - 75\), that is, track 1...12\\
+88	&	Any		& Toggle Solo\\
+89	&	Any		& Toggle Transposable Track\\
+90	&	Any		& Clear Track\\
+91	&	Any		& Toggle Triggering of Next Sequence\\
+92	&	Any		& Toggle Click Track\\
+93	&	Any		& Mark\\
+94	&	Any		& Copy\\
+95	&	Any		& Splat\\
+96	&	Any		& Move\\
+16	&	0--127		& Set Track Note Length (press Select to set, Back to cancel)\\
+17	&	0--127		& Set Track MIDI Out (press Select to set, Back to cancel)\\
+18	&	0--127		& Set Track Velocity (press Select to set, Back to cancel)\\
+19	&	0--127		& Set Track Fader (press Select to set, Back to cancel)\\
+20	&	0--127		& Set Track Pattern (press Select to set, Back to cancel)\\
+21	&	0--127		& Set Gizmo's Tempo (press Select to set, Back to cancel)\\
+22	&	0--127		& Set Gizmo's Transpose (press Select to set, Back to cancel)\\
+23	&	0--127		& Set Gizmo's Volume (press Select to set, Back to cancel)\\
+24	&	0--127		& Set Gizmo's Note Speed (press Select to set, Back to cancel)\\
+25	&	0--127		& Set Gizmo's Play Length (press Select to set, Back to cancel)\\
+26	&	0--127		& Set Gizmo's Swing (press Select to set, Back to cancel)\\
+\end{tabular}
+}
+
+\vspace{1em}
+\noindent Note that the Set... CCs transfer to the relevant menu, then act as proxies for the left knob.  This means that once you've transferred to a menu, {\it any} of them can be used to set the menu, along with the left knob CC.  This can be confusing.
 
 
 \clearpage
@@ -1323,12 +1393,15 @@ Because the TX81Z has more than 128 patches, Program Change Table lets you (weir
 		107&7	&	Any Value &Any Value & MSB& Start Clock.  If Gizmo's clock is stopped, resets and starts it.  When appropriate, sends a MIDI START message.\\
 		108&8	& Any Value	&Any Value & MSB& Stop Clock.  If Gizmo's clock is playing, stops it.  When appropriate, sends a MIDI STOP message.\\
 		109&9	&	Any Value &Any Value & MSB & Continue Clock.    If Gizmo's clock is stopped, continues it.  When appropriate, sends a MIDI CONTINUE message.\\
-		110&---	& 0	&127 & --- & Turn the Left Potentiometer (relative).  Values \(<\) 64 will more and more decrease the left potentiometer.  Values \(\>\) 64 will more and more increase it.\\
-		111&---&	0 &127 & --- &  Turn the Right Potentiometer (relative).  Values \(<\) 64 will more and more decrease the right potentiometer.  Values \(\>\) 64 will more and more increase it.\\
-		\end{tabular}\\
-		\\
-		\\
-		You can also start/stop/continue the clock via by pressing the Middle button while in the Options menu (see {\bf Starting, Stopping, and Continuing the Clock} at the end of this section).
+%		110&---	& 0	&127 & --- & Turn the Left Potentiometer (relative).  Values \(<\) 64 will more and more decrease the left potentiometer.  Values \(\>\) 64 will more and more increase it.\\
+%		111&---&	0 &127 & --- &  Turn the Right Potentiometer (relative).  Values \(<\) 64 will more and more decrease the right potentiometer.  Values \(\>\) 64 will more and more increase it.\\
+		\end{tabular}
+
+\vspace{1em}
+
+		These operations are in addition to those discussed in the Step Sequencer (Section \ref{stepsequencersec}).
+
+		You can also start/stop the clock via by Long-Pressing the Middle button while in the Options menu.  And you can start/continue the clock by Long-Pressing the Select button while in the Options menu.   See also {\bf Starting, Stopping, and Continuing the Clock} in Section \ref{startingclock}.
 		
 	\item{\bf MIDI Clock}\\
 		Gizmo can respond to a MIDI clock, ignore it, or emit its own MIDI clock.  The use of the {\bf Options\(\boldsymbol\rightarrow\)Tempo} setting will depend on the setting chosen here.
@@ -1348,7 +1421,7 @@ Because the TX81Z has more than 128 patches, Program Change Table lets you (weir
 		\end{description}
 }
 \vspace{-1em}
-		You can also start/stop/continue the clock via by pressing the Middle button while in the Options menu (see {\bf Starting, Stopping, and Continuing the Clock} at the end of this section), or by sending an appropriate NRPN message (see {\bf Control MIDI} earlier).
+		You can also start/stop the clock via by Long-Pressing the Middle button while in the Options menu.  And you can start/continue the clock by Long-Pressing the Select button while in the Options menu.   See also {\bf Starting, Stopping, and Continuing the Clock} in Section \ref{startingclock}.
 
 	\item{\bf Divide}\\
 	If your MIDI Clock option is set to {\bf Use}, {\bf Ignore}, or {\bf Generate} (that is, something which causes Gizmo to emit MIDI Clock), then you have the option of slowing down the emitted MIDI clock by {\it dividing} it by some constant \(N\)  For example, if your clock is presently running at 120 BPM, and you're doing Generate, and \(N=3\), then Gizmo's emitted MIDI clock will be at 40BPM.   Or if you're doing Use and the incoming MIDI Clock is at 100BPM, and \(N=2\), then Gizmo will adjust this to 50BPM when sent out.  Note that Gizmo's internal applications will use the original clock speed.  Note that {\bf Bypass Mode} disables all this nonsense.

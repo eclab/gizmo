@@ -87,7 +87,7 @@
 // indenting the following array
 ;
 
-const char PROGMEM font_3x5[46][3] = {
+const char PROGMEM font_3x5[47][3] = {
         { // (
         A01110A,
         A10001A,
@@ -123,10 +123,10 @@ const char PROGMEM font_3x5[46][3] = {
         A10000A,
         A00000A
         },
-        { // /  UP-DOWN
-        A01010A,
-        A11111A,
-        A01010A,
+        { // /  SLASH
+        A11000A,
+        A01110A,
+        A00011A,
         },
         { //0
         A01110A,
@@ -312,6 +312,11 @@ const char PROGMEM font_3x5[46][3] = {
         A11111A,
         A10100A,
         A01100A
+        },
+        { // /  UP-DOWN
+        A01010A,
+        A11111A,
+        A01010A,
         },
         { // BLANK
         A00000A,

@@ -19,7 +19,7 @@
 #define DAC_B   0x63
 
 // Address of Digital Pin which goes LOW when Gate is opened (a note is played)
-#define VOLTAGE_GATE  (8)
+#define VOLTAGE_GATE  (23)
 extern uint8_t VOLTAGE_GATE_mask;
 extern volatile uint8_t *port_VOLTAGE_GATE;
 

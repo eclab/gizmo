@@ -96,8 +96,11 @@ void setup()
     v_p = PSTR("IS");
     options_p = PSTR("OPTIONS");
 
-    // seed random number generator
-    randomSeed(analogRead(A2));  // not used by the pots, nor by I2C, seems reasonable
+	// seed the random number generator.  I need something which has
+	// a moderate amount of entropy but is tiny.  analogRead(A0) is actually
+	// pretty crummy.  There are lots of high-entropy libraries but they're 
+	// big code.  Here's my simple approach
+	randomSeed(analogRead(A0) ^ (analogRead(A2) << 8) ^ (analogRead(A4) << 16) ^ (analogRead(A5) << 24));
 
     // prepare the pots
     setupPots();

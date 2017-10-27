@@ -5,6 +5,13 @@
 #include "All.h"
 
 
+#ifdef INCLUDE_CC_LEFT_POT_PARAMETER_EQUIVALENTS
+// If this is TRUE then the various left pot parameter equivalent CCs will
+// do the same thing as the left pot parameter CC.  If false, they will do nothing
+// (the application can still have them do something)
+GLOBAL uint8_t leftPotParameterEquivalent = false;
+#endif
+
 
 #ifdef INCLUDE_VOLTAGE
 
@@ -603,8 +610,18 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
     else if (channel == options.channelControl)  // options.channelControl can be zero remember
         {
         lockoutPots = 1;
-                        
-        switch (number)
+
+		if ((number >= 24 && number < 32) || 
+			(number >= 64 && number < 96) ||
+			(number >= 116 && number < 119))
+				{
+            	newItem = NEW_ITEM;
+            	itemType = MIDI_CUSTOM_CONTROLLER;
+            	itemNumber = number;
+            	itemValue = value;
+            	itemChannel = channel;
+				}                    
+        else switch (number)
             {
             case CC_LEFT_POT_PARAMETER:
                 {
@@ -618,6 +635,40 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
                 potUpdated[RIGHT_POT] = CHANGED;
                 }
             break;
+#ifdef INCLUDE_CC_LEFT_POT_PARAMETER_EQUIVALENTS
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_1:
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_2:
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_3:
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_4:
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_5:
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_6:
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_7:
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_8:
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_9:
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_10:
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_11:
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_12:
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_13:
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_14:
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_15:
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_16:
+				{
+				if (leftPotParameterEquivalent)
+					{
+                	pot[LEFT_POT] = (value >> 4); 
+                	potUpdated[LEFT_POT] = CHANGED;
+					}
+				else
+					{
+					newItem = NEW_ITEM;
+					itemType = MIDI_CUSTOM_CONTROLLER;
+					itemNumber = number;
+					itemValue = value;
+					itemChannel = channel;
+					}
+				}
+			break;
+#endif
             case CC_BACK_BUTTON_PARAMETER:
                 {
                 buttonState[BACK_BUTTON] = (value != 0);
@@ -661,9 +712,10 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
                 continueClock(true);
                 }
             break;
+            /*
             case CC_LEFT_POT_RELATIVE_PARAMETER:
                 {
-                int16_t v = ((int16_t) (pot[LEFT_POT] + value >> 7)) - 64;
+                int16_t v = pot[LEFT_POT] + (int16_t)(value - 64) * MINIMUM_POT_DEVIATION;
                 if (v < 0) v = 0;
                 if (v > 1023) v = 1023;
                 pot[LEFT_POT] = (uint16_t) v; 
@@ -672,26 +724,14 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
             break;
             case CC_RIGHT_POT_RELATIVE_PARAMETER:
                 {
-                int16_t v = ((int16_t) (pot[RIGHT_POT] + value >> 7)) - 64;
+                int16_t v = pot[RIGHT_POT] + (int16_t)(value - 64) * MINIMUM_POT_DEVIATION;
                 if (v < 0) v = 0;
                 if (v > 1023) v = 1023;
                 pot[RIGHT_POT] = (uint16_t) v; 
                 potUpdated[RIGHT_POT] = CHANGED;
                 }
             break;
-            
-#ifdef EXTENDED_STEP_SEQUENCER
-// Clear Track
-// Mute
-// Solo
-// Lock?
-// Click Track
-// Track Velocity
-// Track Fader
-
-////// FIXME
-
-#endif
+            */
             }
         }
 #endif

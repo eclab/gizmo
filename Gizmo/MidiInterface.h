@@ -120,6 +120,8 @@
 #define MIDI_STOP       23
 #define MIDI_SYSTEM_RESET       24
 
+// Messages sent on the control channel which aren't handled by Gizmo proper.
+#define MIDI_CUSTOM_CONTROLLER	32
 
 
 // newItem can be any of the following
@@ -159,6 +161,22 @@ extern uint8_t itemChannel;				// Channel of the incoming item.  One of 1...16
 
 #define CC_LEFT_POT_PARAMETER                 14
 #define CC_RIGHT_POT_PARAMETER                15
+#define CC_LEFT_POT_PARAMETER_EQUIVALENT_1	  16
+#define CC_LEFT_POT_PARAMETER_EQUIVALENT_2	  17	
+#define CC_LEFT_POT_PARAMETER_EQUIVALENT_3	  18	
+#define CC_LEFT_POT_PARAMETER_EQUIVALENT_4	  19
+#define CC_LEFT_POT_PARAMETER_EQUIVALENT_5	  20	
+#define CC_LEFT_POT_PARAMETER_EQUIVALENT_6	  21	
+#define CC_LEFT_POT_PARAMETER_EQUIVALENT_7	  22	
+#define CC_LEFT_POT_PARAMETER_EQUIVALENT_8	  23	
+#define CC_LEFT_POT_PARAMETER_EQUIVALENT_9	  24
+#define CC_LEFT_POT_PARAMETER_EQUIVALENT_10	  25	
+#define CC_LEFT_POT_PARAMETER_EQUIVALENT_11   26	
+#define CC_LEFT_POT_PARAMETER_EQUIVALENT_12	  27	
+#define CC_LEFT_POT_PARAMETER_EQUIVALENT_13	  28	
+#define CC_LEFT_POT_PARAMETER_EQUIVALENT_14	  29	
+#define CC_LEFT_POT_PARAMETER_EQUIVALENT_15	  30
+#define CC_LEFT_POT_PARAMETER_EQUIVALENT_16	  31	
 #define CC_BACK_BUTTON_PARAMETER              102
 #define CC_MIDDLE_BUTTON_PARAMETER            103
 #define CC_SELECT_BUTTON_PARAMETER            104
@@ -167,8 +185,8 @@ extern uint8_t itemChannel;				// Channel of the incoming item.  One of 1...16
 #define CC_START_PARAMETER                    107
 #define CC_STOP_PARAMETER                     108     
 #define CC_CONTINUE_PARAMETER                 109
-#define CC_LEFT_POT_RELATIVE_PARAMETER        110
-#define CC_RIGHT_POT_RELATIVE_PARAMETER       111
+//#define CC_LEFT_POT_RELATIVE_PARAMETER        110
+//#define CC_RIGHT_POT_RELATIVE_PARAMETER       111
 #define CC_EXTRA_PARAMETER_A			      64
 #define CC_EXTRA_PARAMETER_B			      65
 #define CC_EXTRA_PARAMETER_C			      66
@@ -185,14 +203,35 @@ extern uint8_t itemChannel;				// Channel of the incoming item.  One of 1...16
 #define CC_EXTRA_PARAMETER_N			      77
 #define CC_EXTRA_PARAMETER_O			      78
 #define CC_EXTRA_PARAMETER_P			      79
-#define CC_EXTRA_PARAMETER_S				  24
-#define CC_EXTRA_PARAMETER_T				  25
-#define CC_EXTRA_PARAMETER_U				  26
-#define CC_EXTRA_PARAMETER_V				  27
-#define CC_EXTRA_PARAMETER_W				  28
-#define CC_EXTRA_PARAMETER_X				  29
-#define CC_EXTRA_PARAMETER_Y				  30
-#define CC_EXTRA_PARAMETER_Z				  31
+#define CC_EXTRA_PARAMETER_Q				  80
+#define CC_EXTRA_PARAMETER_R				  81
+#define CC_EXTRA_PARAMETER_S				  82
+#define CC_EXTRA_PARAMETER_T				  83
+#define CC_EXTRA_PARAMETER_U				  84
+#define CC_EXTRA_PARAMETER_V				  85
+#define CC_EXTRA_PARAMETER_W				  86
+#define CC_EXTRA_PARAMETER_X				  87
+#define CC_EXTRA_PARAMETER_Y				  88
+#define CC_EXTRA_PARAMETER_Z				  89
+#define CC_EXTRA_PARAMETER_1				  90
+#define CC_EXTRA_PARAMETER_2				  91
+#define CC_EXTRA_PARAMETER_3				  92
+#define CC_EXTRA_PARAMETER_4				  93
+#define CC_EXTRA_PARAMETER_5				  94
+#define CC_EXTRA_PARAMETER_6				  95
+#define CC_EXTRA_PARAMETER_7				  116
+#define CC_EXTRA_PARAMETER_8				  117
+#define CC_EXTRA_PARAMETER_9				  118
+#define CC_EXTRA_PARAMETER_10				  119
+
+
+
+#ifdef INCLUDE_CC_LEFT_POT_PARAMETER_EQUIVALENTS
+// If this is TRUE then the various left pot parameter equivalent CCs will
+// do the same thing as the left pot parameter CC.  If false, they will do nothing
+// (the application can still have them do something)
+extern uint8_t leftPotParameterEquivalent;
+#endif
 
 //// MIDI HANDLERS
 

@@ -14,6 +14,510 @@
 
 
 
+
+
+
+///// DOMENUDISPLAY()
+//
+// This function updates a display in the form of a menu of
+// scrolling text items.  The user provides up to MAX_MENU_ITEMS
+// text items, and doMenuDisplay does the rest.
+//
+// If menu is non-NULL, then doMenuDisplay will
+// set up the menu items.  Thereafter (when the menu is NULL) it 
+// ignores what's passed into it and just lets the user choose and scroll them.
+//
+// The user can use doMenuDisplay() in two ways:
+// 
+// 1. To choose among different STATES.  Here in addition to the
+//    menu items and their length, the user provides a BASE STATE
+//    (the state corresponding to menu item 0), a DEFAULT STATE
+//    (the state that should be first shown -- corresponds to
+//    menu item DEFAULT STATE - BASE STATE), and a BACK STATE
+//    (the state that should be transitioned to if the user presses
+//    the back button -- corresponds to the menu item
+//    BACK STATE - BASE STATE.  In this case the system will
+//    automatically choose a state and transition to it when the
+//    user either presses the select or back buttons.
+//
+// 2. To simply indicate what menu item was provided.  Here, the
+//    user passes in STATE_NONE as baseState, and passes in a DEFAULT
+//    MENU ITEM (not STATE) for defaultState.  backState is entirely
+//    ignored.  As the user is scrolling through various options,
+//    doMenuDisplay will return NO_MENU_SELECTED, but you can see which
+//    item is being considered as currentDisplay.  If the user selects a
+//    menu item, then MENU_SELECTED is set (again the item
+//    is currentDisplay).  Finally if the user goes back, then
+//    MENU_CANCELLED is returned.
+
+
+
+// Divide this into the pot[LEFT_POT] to determine what the menu state should be.
+// If negative, then MULTIPLY pot[LEFT_POT] by -potDivisor to determine what the state should be.
+GLOBAL int16_t potDivisor;
+
+
+GLOBAL static const char* menu[MAX_MENU_ITEMS];                        // This is an array of pointers into PROGMEM
+GLOBAL int16_t currentDisplay;                     // currently displayed menu item
+
+// NOTE: This creates a temporary char buffer of length MAX_MENU_ITEM_LENGTH.
+// It's better than storing a buffer 8xMAX_MENU_ITEM_LENGTH though.
+// So you need to subtract about 28 (for the moment) from the local variable storage left
+
+#define FORCE_NEW_DISPLAY 255
+
+uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, uint8_t backState, uint8_t scrollMenu, uint8_t extra) //  = 0)
+    {
+    // What we'd like to display next.  By default it's set to currentDisplay to indicate that we're not changing
+    uint8_t newDisplay;
+    
+    if (entry)
+        {
+        // copy over the PSTRs but don't convert them.
+        memcpy(menu, _menu, menuLen * sizeof(const char*));
+    
+        // can't avoid a divide :-(
+        potDivisor = 1024 / menuLen;
+        
+        // what do we display first
+        if (baseState == STATE_NONE)                                            // These aren't states
+            {
+#ifdef INCLUDE_EXTENDED_MENU_DEFAULTS
+            currentDisplay = defaultMenuValue;									// Display the first item unless the default state was specified
+            defaultMenuValue = 0;
+#else
+            currentDisplay = 0;													// Display the first item unless the default state was specified
+#endif
+            }
+        else																	// These are states
+        	{
+        	if (defaultState == STATE_NONE)                                     // We don't have a default state specified.  So use the first item
+            	currentDisplay = 0;
+        	else                                                                // We have a default state.  So use it
+            	currentDisplay = defaultState - baseState;
+            }
+                
+        newDisplay = FORCE_NEW_DISPLAY;                                         // This tells us that we MUST compute a new display
+        entry = false;
+        defaultState = STATE_NONE;                                              // We're done with this
+        }
+    else
+        {
+        newDisplay = currentDisplay;            // we're not changing by default
+        
+        if (potUpdated[LEFT_POT])
+            {
+            // can't avoid a divide :-(
+            newDisplay = (uint8_t) (pot[LEFT_POT] / potDivisor); //(uint8_t)((potUpdated[LEFT_POT] ? pot[LEFT_POT] : pot[RIGHT_POT]) / potDivisor);
+            if (newDisplay >= menuLen)        // this can happen because potDivisor is discrete
+                newDisplay = menuLen - 1; 
+            }
+#ifdef INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU
+        else if (isUpdated(MIDDLE_BUTTON, RELEASED))
+            {
+            newDisplay++;
+            if (newDisplay >= menuLen)
+                newDisplay = 0; 
+            }
+#endif
+        }
+
+    if (newDisplay != currentDisplay)                                           // we're starting fresh (FORCE_NEW_DISPLAY) or have something new
+        {
+        char menuItem[MAX_MENU_ITEM_LENGTH];
+
+        if (newDisplay != FORCE_NEW_DISPLAY)
+            currentDisplay = newDisplay;
+                
+        clearBuffer();
+        strcpy_P(menuItem, menu[currentDisplay]);  
+        addToBuffer(menuItem, extra);
+                
+        if (state == STATE_ROOT)
+            application = FIRST_APPLICATION + currentDisplay;
+        }
+
+    if (isUpdated(BACK_BUTTON, RELEASED))
+        {
+        if (baseState != STATE_NONE)
+            {
+            if (state == STATE_ROOT)
+                return NO_MENU_SELECTED;
+            goUpState(backState);
+            }
+        return MENU_CANCELLED;
+        }
+    else if (isUpdated(SELECT_BUTTON, RELEASED))
+        {
+        if (baseState != STATE_NONE)
+            {
+            state = baseState + currentDisplay;
+            entry = true;
+            }
+        return MENU_SELECTED;
+        }
+
+    if (updateDisplay)
+        {
+        clearScreen();
+        if (scrollMenu)
+            scrollBuffer(led, led2);
+        else 
+            writeBuffer(led, led2);
+        }    
+    return NO_MENU_SELECTED;
+    }
+    
+    
+
+          
+          
+
+
+
+
+
+
+///// DONUMERICALDISPLAY()
+//
+// This function updates a display in the form of an on-screen number
+// ranging between a MIN VALUE and a MAX VALUE, and starting at a given
+// DEFAULT VALUE.   The user can choose from these values, or cancel
+// the operation.
+//
+// To do this, you call doNumericalDisplay() multiple times until the
+// user either picks a value or cancels.  The first time this function 
+// is called, you should first set the global variable 'entry' to TRUE.
+// This will cause doNumericalDisplay to set up its display.  
+// Thereafter you should call 'entry' to FALSE until the user has chosen
+// a value or has cancelled.
+//
+// As the user is scrolling through various options,
+// doNumericalDisplay will return NO_MENU_SELECTED, but you can see which
+// item is being considered in the global variable 'currentDisplay'.  
+// If the user selects an item, then MENU_SELECTED is set (again the item
+// is 'currentDisplay').  Finally if the user cancels, then MENU_CANCELLED
+// is returned (and 'currentDisplay' is undefined).
+//
+// If includeOff is TRUE, then instead of displaying the MINIMUM VALUE,
+// doNumericalDisplay will display the text "- - - -", suggesting "OFF"
+// or "NONE" to the user.
+// 
+// If includeOther is set a value other than GLYPH_OTHER or GLYPH_NONE,
+// then instead of displaying the MAXIMUM
+// VALUE, doNumericalDisplay will display the indicated glyph. 
+//
+// if includeOther is instead set to GLYPH_NONE, then
+// the maximum value will be displayed as normal.
+//
+// If includeOther is set to GLYPH_OTHER, then *all* of the values
+// will be replaced with single (3x5) glyphs in the glyph font (see LEDDisplay.h)
+// whose index is specified by you the global array 'glyphs'. Specifically,
+// the glyph displayed for value X will be glyphs[x - minimumValue].  Be warned
+// that this array is MAX_GLYPHS in length, so minimumValue - maximumValue + 1
+// must be <= MAX_GLYPHS if you want to use this option.
+//
+// If either a glyph (due to GLYPH_OTHER) is being displayed, or a number
+// is currently being displayed, you can also choose to display an additional
+// 3x5 glyph at the far left side of the screen.  To do this, you put the glyph
+// index in the global variable 'secondGlyph'.  You must set this global variable
+// every time the function is called, as it is immediately reset to NO_GLYPH
+// afterwards.
+
+
+int16_t boundValue(int16_t val, int16_t minValue, int16_t maxValue)
+    {
+    if (val < minValue) val = minValue;
+    if (val > maxValue) val = maxValue;
+    return val;
+    }
+
+GLOBAL static int8_t potFineTune;
+GLOBAL uint8_t secondGlyph = NO_GLYPH;
+
+uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultValue, uint8_t includeOff, uint8_t includeOther)
+    {
+    if (maxValue > 19999)
+        maxValue = 19999;
+        
+    if (entry)
+        {
+        defaultValue = boundValue(defaultValue, minValue, maxValue);
+
+        currentDisplay = defaultValue;
+        if (maxValue - minValue + 1 > 1024)  // whooo boy
+            {
+            potDivisor = -((maxValue - minValue + 1) >> 10);  // division by 1024
+            }
+        else
+            {
+            // can't avoid a divide :-(
+            potDivisor = 1024 / (maxValue - minValue + 1);
+            }
+        potFineTune = 0;
+        entry = false;
+        }
+    
+    if (isUpdated(BACK_BUTTON, RELEASED))
+        {
+        return MENU_CANCELLED;
+        }
+    else if (isUpdated(SELECT_BUTTON, PRESSED))
+        {
+        return MENU_SELECTED;
+        }
+    
+    if (potUpdated[LEFT_POT])
+        {
+        potFineTune = 0;
+        // can't avoid a divide this time!
+        if (potDivisor > 0)  // small numbers
+            {
+            currentDisplay = boundValue((pot[LEFT_POT] / potDivisor) + minValue, minValue, maxValue);
+            }
+        else            // big numbers
+            {
+            currentDisplay = boundValue((pot[LEFT_POT] * (-potDivisor)) + minValue, minValue, maxValue);
+            }
+        }
+#ifdef INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU
+    else if (isUpdated(MIDDLE_BUTTON, RELEASED))
+        {
+        currentDisplay++;
+        if (currentDisplay > maxValue)
+            currentDisplay = minValue; 
+        }
+#endif
+    
+    // if we're doing a high-resolution number (> 128 basically) then
+    // we check the right pot and use it as a fine-tuning
+    if (potUpdated[RIGHT_POT] && (maxValue - minValue + 1) > 128)
+        {
+        // this is gonna have funky effects at the boundaries
+        
+        currentDisplay -= potFineTune;  // old one
+        potFineTune = (pot[RIGHT_POT] >> 3) - 64;  // right pot always maps to a delta of -64 ... 63.
+        currentDisplay += potFineTune;
+
+        currentDisplay = boundValue(currentDisplay, minValue, maxValue);
+        }        
+
+    if (updateDisplay)
+        {
+        clearScreen();
+
+        if (includeOff && (currentDisplay == minValue))
+            {
+            // write "--"
+            write3x5Glyphs(GLYPH_OFF);
+            }
+        else if ((includeOther != GLYPH_NONE) && (includeOther != GLYPH_OTHER) && (currentDisplay == maxValue))
+            {
+            write3x5Glyphs(includeOther);
+            }
+        else
+            {
+            writeNumber(led, led2, currentDisplay);
+            if (includeOther == GLYPH_OTHER)
+                {
+                if (glyphs[currentDisplay] != SLOT_TYPE_EMPTY &&
+                    glyphs[currentDisplay] != slotTypeForApplication(application))  // need to indicate that we're overwriting
+                    {
+                    blink3x5Glyph(led2, glyphs[currentDisplay], 4);
+                    }
+                else 
+                    {
+                    write3x5Glyph(led2, glyphs[currentDisplay], 4);
+                    }
+                }
+            if (secondGlyph != NO_GLYPH)
+                write3x5Glyph(led2, secondGlyph, 0);
+            secondGlyph = NO_GLYPH;
+            }
+        }
+        
+    return NO_MENU_SELECTED;
+    }
+
+
+
+
+// STATE NUMERICAL
+// This function performs the basic functions for a state whose entire purpose is to compute a numerical value
+// and set *value* to that value.  If updateOptions is true, then stateNumerical will recover from a cancel by
+// overwriting the options with the backup options. Otherwise it will recover by overwriting value with backupValue.  
+uint8_t stateNumerical(uint8_t start, uint8_t end, uint8_t &value, uint8_t &backupValue,
+    uint8_t updateOptions, uint8_t includeOff, uint8_t other, uint8_t backState)
+    {
+    uint8_t oldValue = value;
+    if (entry)
+        { 
+        if (updateOptions) backupOptions = options; 
+        else backupValue = value;
+        }
+        
+    uint8_t result = doNumericalDisplay(start, end, value, includeOff, other);
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            {
+            if (value != currentDisplay)
+                {
+                value = currentDisplay; 
+                }
+            }
+        break;
+        case MENU_SELECTED:
+            {
+            if (updateOptions)
+                saveOptions();
+            else
+                backupValue = value;
+            }
+        // FALL THRU
+        case MENU_CANCELLED:
+            {
+            goUpState(backState);
+            if (updateOptions) 
+                options = backupOptions;
+            else 
+                value = backupValue;
+            }
+        break;
+        }
+    if (value != oldValue) 
+        return oldValue;
+    else return NO_STATE_NUMERICAL_CHANGE;
+    }
+
+
+
+
+///// DOGLYPHDISPLAY()
+//
+// This function updates a display to one of several glyphs, while 
+// optionally updating the alternate display to a specific glyph.
+// The glyphs are given as an array of GLYPH NUMBERS.  A glyph number
+// is the glyph constant (such as GLYPH_4x5_NEGATIVE_6) 
+// plus the font constant (such as FONT_4x5).
+//
+// If glyph array is non-NULL, then doGlyphDisplay will
+// set up the menu items.  Thereafter (when the array is NULL) it 
+// ignores what's passed into it and just lets the user choose and scroll them.
+//
+// As the user is scrolling through various options,
+// doGlyphDisplay will return NO_MENU_SELECTED, but you can see which
+// item is being considered as currentDisplay.  If the user selects a
+// menu item, then MENU_SELECTED is set (again the item
+// is currentDisplay).  Finally if the user goes back, then
+// MENU_CANCELLED is returned.
+
+
+
+
+GLOBAL uint8_t glyphs[MAX_GLYPHS];
+
+// used internally for doGlyphDisplay()
+void drawGlyphForGlyphDisplay(uint8_t* mat, const uint8_t glyph)
+    {
+    switch(glyph >> 6)
+        {
+        case 0:         // FONT_3x5
+            {
+            write3x5Glyph(mat, glyph & 63, 5);
+            }
+        break;
+        case 1:         // FONT_4x5
+            {
+            write4x5Glyph(mat, glyph & 63, 4);
+            }
+        break;
+        case 2:         // FONT_8x5
+            {
+            write8x5Glyph(mat, glyph & 63);
+            }
+        break;
+        case 3:
+            {
+            // DO NOTHING
+            }
+        break;
+        }
+    }
+
+
+///// DOGLYPHDISPLAY()
+//
+// This function updates a display to one of several glyphs, while 
+// optionally updating the alternate display to a specific glyph.
+// The glyphs are given as an array of GLYPH NUMBERS.  A glyph number
+// is the glyph constant (such as GLYPH_4x5_NEGATIVE_6) 
+// plus the font constant (such as FONT_4x5).  Presently FONT_5x5_ALPHABET is unsupported.
+//
+// If glyph array is non-NULL, then doGlyphDisplay will
+// set up the menu items.  Thereafter (when the array is NULL) it 
+// ignores what's passed into it and just lets the user choose and scroll them.
+//
+// As the user is scrolling through various options,
+// doGlyphDisplay will return NO_MENU_SELECTED, but you can see which
+// item is being considered as currentDisplay.  If the user selects a
+// menu item, then MENU_SELECTED is set (again the item
+// is currentDisplay).  Finally if the user goes back, then
+// MENU_CANCELLED is returned.
+
+
+uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t otherGlyph, int16_t defaultValue)
+    {
+    if (_glyphs != NULL)
+        {
+        currentDisplay = defaultValue;
+        // can't avoid a divide this time!
+        potDivisor = 1024 / numGlyphs;
+        memcpy(glyphs, _glyphs, numGlyphs);
+        entry = false;
+        }
+    
+    if (isUpdated(BACK_BUTTON, RELEASED))
+        {
+        return MENU_CANCELLED;
+        }
+    else if (isUpdated(SELECT_BUTTON, PRESSED))
+        {
+        return MENU_SELECTED;
+        }
+    else if (potUpdated[LEFT_POT])
+        {
+        // can't avoid a divide this time!
+        currentDisplay = (uint8_t) (pot[LEFT_POT] / potDivisor); // ((potUpdated[LEFT_POT] ? pot[LEFT_POT] : pot[RIGHT_POT]) / potDivisor);
+        if (currentDisplay >= numGlyphs)
+            currentDisplay = numGlyphs - 1;
+        }
+#ifdef INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU
+    else if (isUpdated(MIDDLE_BUTTON, RELEASED))
+        {
+        currentDisplay++;
+        if (currentDisplay  >= numGlyphs)
+            currentDisplay = 0; 
+        }
+#endif
+                
+    if (updateDisplay)
+        {
+        clearScreen();
+        drawGlyphForGlyphDisplay(led, glyphs[currentDisplay]);
+        if (otherGlyph != NO_GLYPH)
+            drawGlyphForGlyphDisplay(led2, otherGlyph);
+        }
+        
+    return NO_MENU_SELECTED;
+    }
+
+
+
+
+
+
+
 //// COMPUTING MEDIANS
 
 // presently unused
@@ -250,7 +754,7 @@ void stateSave(uint8_t backState)
                             //// 8 bits velocity (including "use per-note velocity")
                             //// 4 bits fader
         
-                            distributeByte(pos + 1, local.stepSequencer.muted[i] << 7);
+                            distributeByte(pos + 1, local.stepSequencer.muted[i] << 7);  // will work for STEP_SEQUENCER_MUTED and STEP_SEQUENCER_MUTE_OFF_SCHEDULED
                             distributeByte(pos + 2, local.stepSequencer.outMIDI[i] << 3);
                             distributeByte(pos + 7, local.stepSequencer.noteLength[i] << 1);
                             distributeByte(pos + 14, local.stepSequencer.velocity[i] << 1);      
@@ -402,6 +906,8 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                         stripHighBits();
                         
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+        	local.stepSequencer.markTrack = 0;
+        	local.stepSequencer.markPosition = 0;
 						resetStepSequencerCountdown();
 #endif
                         }
@@ -611,6 +1117,9 @@ void playApplication()
         case STATE_ARPEGGIATOR_PLAY:
             playArpeggio();          
             break; 
+#endif
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+		case STATE_STEP_SEQUENCER_PLAY:
 #endif
 #ifdef INCLUDE_STEP_SEQUENCER
         case STATE_STEP_SEQUENCER_MENU:

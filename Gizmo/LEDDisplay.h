@@ -122,7 +122,7 @@
 #define GLYPH_3x5_DOWN          4               // associated with character ','
 #define GLYPH_3x5_MINUS         5
 #define GLYPH_3x5_PERIOD        6
-#define GLYPH_3x5_UP_DOWN       7               // associated with character '/'
+#define GLYPH_3x5_SLASH         7
 #define GLYPH_3x5_0             8
 #define GLYPH_3x5_1             9
 #define GLYPH_3x5_2             10
@@ -159,8 +159,9 @@
 #define GLYPH_3x5_X             41
 #define GLYPH_3x5_Y             42
 #define GLYPH_3x5_Z             43
-#define GLYPH_3x5_FLAT          44
-#define GLYPH_3x5_BLANK         45
+#define GLYPH_3x5_FLAT          44				// associated with the character '['
+#define GLYPH_3x5_UP_DOWN       45              // associated with the character '\'
+#define GLYPH_3x5_BLANK         46
 
 
 #define GLYPH_4x5_10    0
@@ -226,7 +227,7 @@
 
 //extern const char PROGMEM font_1x5[3][1];
 //extern const char PROGMEM font_2x5[1][2];
-extern const char PROGMEM font_3x5[46][3];
+extern const char PROGMEM font_3x5[47][3];
 extern const char PROGMEM font_4x5[19][4];
 extern const char PROGMEM font_5x5[5][5];
 //extern const char PROGMEM font_alphabet5x5[26][5];
