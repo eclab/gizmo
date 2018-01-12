@@ -1,7 +1,7 @@
 ////// Copyright 2016 by Sean Luke
 ////// Licensed under the Apache 2.0 License
 
-
+ 
 
 #ifndef __MIDI_INTERFACE__
 #define __MIDI_INTERFACE__
@@ -259,7 +259,7 @@ void handleSystemReset();
 void sendNoteOn(uint8_t note, uint8_t velocity, uint8_t channel);
 void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel);
 void sendPolyPressure(uint8_t note, uint8_t pressure, uint8_t channel);
-void sendAllSoundsOffDisregardBypass(uint8_t channel);
+void sendAllSoundsOffDisregardBypass(uint8_t channel=CHANNEL_OMNI);
 void sendAllSoundsOff(uint8_t channel=CHANNEL_OMNI);
 
 

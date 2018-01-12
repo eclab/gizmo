@@ -177,7 +177,7 @@ void handleClockCommand(uint8_t (*clockFunction)(uint8_t), midi::MidiType clockM
         sendClock(clockMIDI, false);
         }
 #endif
-
+ 
         else if (USING_EXTERNAL_CLOCK())  // CONSUME, USE, or IGNORE (which we just handled already)
             {
             clockFunction(false);
@@ -283,7 +283,19 @@ void handleNoteOff(byte channel, byte note, byte velocity)
             {
 #ifdef INCLUDE_ARPEGGIATOR
             if (application == STATE_ARPEGGIATOR && local.arp.playing && !bypass)
+            {
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+				if (local.arp.playAlong)
+					{
+					uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+					if (channelOut == 0)
+						channelOut = options.channelOut;
+					sendNoteOff(note, velocity, channelOut);
+					}
+				else
+#endif             
                 arpeggiatorRemoveNote(note);
+            }
             else
 #endif
 
@@ -375,7 +387,7 @@ void handleNoteOn(byte channel, byte note, byte velocity)
             break;
             case CC_BYPASS_PARAMETER:
                 {
-                toggleBypassSoundsOff(CHANNEL_OMNI);
+                toggleBypass(CHANNEL_OMNI);
                 }
             break;
             case CC_UNLOCK_PARAMETER:
@@ -409,6 +421,16 @@ void handleNoteOn(byte channel, byte note, byte velocity)
             if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing))
                 {
                 // the arpeggiation velocity shall be the velocity of the most recently added note
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+				if (local.arp.playAlong)
+					{
+					uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+					if (channelOut == 0)
+						channelOut = options.channelOut;
+					sendNoteOn(note, velocity, channelOut);
+					}
+				else
+#endif             
                 arpeggiatorAddNote(note, velocity);
                 }
             else
@@ -485,6 +507,17 @@ void handleAfterTouchPoly(byte channel, byte note, byte pressure)
     // is data coming in the default channel?
     if (updateMIDI(channel, MIDI_AFTERTOUCH_POLY, note, pressure))
         {
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+		if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && local.arp.playAlong))
+			{
+			uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+			if (channelOut == 0)
+				channelOut = options.channelOut;
+			sendPolyPressure(note, pressure, channelOut);
+			}
+		else
+#endif
+
 #ifdef INCLUDE_SPLIT
         if ((application == STATE_SPLIT) && local.split.playing && !bypass)
             {
@@ -611,8 +644,7 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
         {
         lockoutPots = 1;
 
-		if ((number >= 24 && number < 32) || 
-			(number >= 64 && number < 96) ||
+		if ((number >= 64 && number < 96) ||
 			(number >= 116 && number < 119))
 				{
             	newItem = NEW_ITEM;
@@ -689,7 +721,7 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
             break;
             case CC_BYPASS_PARAMETER:
                 {
-                toggleBypassSoundsOff(CHANNEL_OMNI);
+                toggleBypass(CHANNEL_OMNI);
                 }
             break;
             case CC_UNLOCK_PARAMETER:
@@ -825,7 +857,7 @@ void handleNRPN(byte channel, uint16_t parameter, uint16_t value, uint8_t valueT
             break;
             case NRPN_BYPASS_PARAMETER:
                 {
-                toggleBypassSoundsOff(CHANNEL_OMNI);
+                toggleBypass(CHANNEL_OMNI);
                 }
             break;
             case NRPN_UNLOCK_PARAMETER:
@@ -1318,6 +1350,16 @@ void handleProgramChange(byte channel, byte number)
     uint8_t isChannelIn = updateMIDI(channel, MIDI_PROGRAM_CHANGE, number, 1);
     if (!bypass) 
         {
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+		if (state == STATE_ARPEGGIATOR_PLAY && number < ARPEGGIATOR_NUMBER_CREATE && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
+			{
+			if (local.arp.number == ARPEGGIATOR_NUMBER_CHORD_REPEAT)
+        		sendAllSoundsOff();
+			local.arp.number = number;
+			local.arp.currentPosition = 0;
+			}
+		else	
+#endif
 #ifdef INCLUDE_SPLIT
         // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
         if (application == STATE_SPLIT && local.split.playing && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
@@ -1371,6 +1413,17 @@ void handleAfterTouchChannel(byte channel, byte pressure)
     uint8_t isChannelIn = updateMIDI(channel, MIDI_AFTERTOUCH, 1, pressure);
     if (!bypass) 
         {
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+		if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && local.arp.playAlong))
+			{
+			uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+			if (channelOut == 0)
+				channelOut = options.channelOut;
+			MIDI.sendAfterTouch(pressure, channelOut);
+			}
+		else
+#endif
+
 #ifdef INCLUDE_SPLIT
         // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
         if (application == STATE_SPLIT && local.split.playing && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
@@ -1428,6 +1481,17 @@ void handlePitchBend(byte channel, int bend)
     uint8_t isChannelIn = updateMIDI(channel, MIDI_PITCH_BEND, 1, (uint16_t) bend + 8192);
     if (!bypass) 
         {
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+		if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && local.arp.playAlong))
+			{
+			uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+			if (channelOut == 0)
+				channelOut = options.channelOut;
+			MIDI.sendPitchBend(bend, channelOut);
+			}
+		else
+#endif
+
 #ifdef INCLUDE_SPLIT
         // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
         if (application == STATE_SPLIT && local.split.playing && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))

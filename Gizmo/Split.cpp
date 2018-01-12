@@ -1,6 +1,6 @@
 ////// Copyright 2016 by Sean Luke
 ////// Licensed under the Apache 2.0 License
-
+ 
 #include "All.h"
 
 #ifdef INCLUDE_SPLIT
@@ -18,19 +18,7 @@ void stateSplit()
     // bounces on the select button so I'm moving the main stuff to the middle button
     // and only having long releases on the select button
                 
-    if (isUpdated(SELECT_BUTTON, RELEASED))
-        {
-        goDownState(STATE_SPLIT_NOTE);
-        }
-    else if (isUpdated(MIDDLE_BUTTON, RELEASED))
-        {
-        goDownState(STATE_SPLIT_LAYER_NOTE);
-        }
-    else if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
-        {
-        goDownState(STATE_SPLIT_CHANNEL);
-        }
-    else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
+    if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
         {
         options.splitControls++;
         if (options.splitControls > SPLIT_MIX)
@@ -39,6 +27,18 @@ void stateSplit()
             options.splitControls = SPLIT_CONTROLS_RIGHT;
             }
         saveOptions();
+        }
+    else if (isUpdated(SELECT_BUTTON, RELEASED))
+        {
+        goDownState(STATE_SPLIT_NOTE);
+        }
+    else if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
+        {
+        goDownState(STATE_SPLIT_CHANNEL);
+        }
+    else if (isUpdated(MIDDLE_BUTTON, RELEASED))
+        {
+        goDownState(STATE_SPLIT_LAYER_NOTE);
         }
     else if (isUpdated(BACK_BUTTON, RELEASED))
         {

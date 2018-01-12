@@ -1,7 +1,7 @@
 ////// Copyright 2016 by Sean Luke
 ////// Licensed under the Apache 2.0 License
 
-
+ 
 
 
 
@@ -161,8 +161,9 @@
 #define GLYPH_3x5_Z             43
 #define GLYPH_3x5_FLAT          44				// associated with the character '['
 #define GLYPH_3x5_UP_DOWN       45              // associated with the character '\'
-#define GLYPH_3x5_BLANK         46
-
+#define GLYPH_3x5_BLANK         46				// associated with the character ']'
+// if you add additional characters here be sure
+// to update LEDDisplay.addToBuffer to extend its reach
 
 #define GLYPH_4x5_10    0
 #define GLYPH_4x5_11    1
@@ -220,8 +221,9 @@
 
 #define STR_UP "*"
 #define STR_DOWN ","
-#define STR_UP_DOWN "/"
-
+#define STR_FLAT "["
+#define STR_UP_DOWN "\\"
+#define STR_BLANK "]"
 
 //// OUR FONTS
 

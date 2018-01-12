@@ -12,10 +12,6 @@
 
 MIDI_CREATE_DEFAULT_INSTANCE();
 
-
-
-
-
 ///// COMMON PROGMEM STRINGS
 
 // some shorthand so we can save a bit of program space.  Of course
@@ -41,17 +37,12 @@ GLOBAL const char* options_p;  // = PSTR("OPTIONS");
 
 GLOBAL uint8_t bypass = 0;                                        // Do we bypass the system entirely and just let MIDI flow through the box?
 GLOBAL uint8_t bypassOut = 0;                                        // Do we bypass the system entirely and just let MIDI flow through the box?
+GLOBAL uint8_t dontBypassOut = 0;
 
-
-void toggleBypassSoundsOff(uint8_t channel)
+void toggleBypass(uint8_t channel)
 	{
     sendAllSoundsOffDisregardBypass(channel);
-    toggleBypass();
-    bypassOut = bypass;
-	}
-	
-void toggleBypass()
-    {
+
 #ifndef HEADLESS
     if (!bypass) 
         {
@@ -63,8 +54,10 @@ void toggleBypass()
     bypass = !bypass;
     if (bypass) { MIDI.turnThruOn(); }
     else MIDI.turnThruOff();
-    }
 
+    bypassOut = (bypass && !dontBypassOut);
+	}
+	
 
 
 
@@ -563,7 +556,7 @@ void go()
     
     if (isUpdated(BACK_BUTTON, RELEASED_LONG))
         {
-        toggleBypassSoundsOff(CHANNEL_OMNI);
+        toggleBypass(CHANNEL_OMNI);
         }
 
     // Now do your state-specific thing
@@ -1015,8 +1008,9 @@ void go()
                     }
                 }
 #endif
-                        
+                       
 #if defined(__MEGA__)
+#ifdef INCLUDE_VOLTAGE
             const char* menuItems[16] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
                                           PSTR("VOLUME"), PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), PSTR("DIVIDE"),
                                           ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
@@ -1026,6 +1020,15 @@ void go()
                                               (options.voltage == VOLTAGE_WITH_VELOCITY ? PSTR("CV+AFTERTOUCH") : PSTR("NO CV"))),
                                           PSTR("GIZMO V5 (C) 2017 SEAN LUKE") };
             doMenuDisplay(menuItems, 16, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
+#else
+            const char* menuItems[15] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
+                                          PSTR("VOLUME"), PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), PSTR("DIVIDE"),
+                                          ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
+                                          PSTR("BRIGHTNESS"), 
+                                          PSTR("MENU DELAY"),
+                                          PSTR("GIZMO V5 (C) 2017 SEAN LUKE") };
+            doMenuDisplay(menuItems, 15, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
+#endif
 #endif
 #if defined(__UNO__)
             const char* menuItems[11] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), 
@@ -1121,6 +1124,17 @@ void go()
             }
         break;
 #endif
+
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+        case STATE_ARPEGGIATOR_PLAY_ALONG:
+            {
+            // 0 is DEFAULT
+            stateNumerical(0, 16, options.arpeggiatorPlayAlongChannel, backupOptions.arpeggiatorPlayAlongChannel, true, false, GLYPH_NONE,  STATE_ARPEGGIATOR_MENU);
+            playArpeggio();
+            }
+        break;
+#endif
+
 
 #ifdef INCLUDE_STEP_SEQUENCER
         case STATE_STEP_SEQUENCER_FORMAT:
@@ -1250,14 +1264,14 @@ void go()
         break;
         case STATE_STEP_SEQUENCER_MENU_PERFORMANCE:
             {
-            const char* menuItems[3] = { PSTR("PLAY ALONG"), PSTR("REPEAT SEQUENCE"), PSTR("NEXT SEQUENCE") };
-            doMenuDisplay(menuItems, 3, STATE_STEP_SEQUENCER_MENU_PERFORMANCE_PLAY_ALONG, STATE_STEP_SEQUENCER_MENU, 1);
+            const char* menuItems[3] = { PSTR("KEYBOARD"), PSTR("REPEAT SEQUENCE"), PSTR("NEXT SEQUENCE") };
+            doMenuDisplay(menuItems, 3, STATE_STEP_SEQUENCER_MENU_PERFORMANCE_KEYBOARD, STATE_STEP_SEQUENCER_MENU, 1);
 		    playStepSequencer();
             }
         break;
-        case STATE_STEP_SEQUENCER_MENU_PERFORMANCE_PLAY_ALONG:
+        case STATE_STEP_SEQUENCER_MENU_PERFORMANCE_KEYBOARD:
             {
-			stateStepSequencerMenuPerformancePlayAlong();
+			stateStepSequencerMenuPerformanceKeyboard();
             }
         break;
         case STATE_STEP_SEQUENCER_MENU_PERFORMANCE_REPEAT:
@@ -1320,10 +1334,12 @@ void go()
                 local.control.displayValue = -1;
                 local.control.displayType = CONTROL_TYPE_OFF;
                 entry = false;
+                dontBypassOut = true;
                 }
 
             if (isUpdated(BACK_BUTTON, RELEASED))
                 {
+                dontBypassOut = false;
                 goUpState(STATE_CONTROLLER);
                 }
             else
@@ -1464,12 +1480,15 @@ void go()
                     else
                         {
 #ifdef INCLUDE_EXTENDED_CONTROLLER
+#ifdef INCLUDE_VOLTAGE
                         if (local.control.displayType == CONTROL_TYPE_VOLTAGE_A ||
                             local.control.displayType == CONTROL_TYPE_VOLTAGE_B)
                             {
                             writeNumber(led, led2, (uint16_t)(local.control.displayValue));
                             }
-                        else if (local.control.displayType == CONTROL_TYPE_PITCH_BEND)
+                        else 
+#endif
+                        if (local.control.displayType == CONTROL_TYPE_PITCH_BEND)
                             {
                             writeNumber(led, led2, ((int16_t)(local.control.displayValue)) + (int16_t)(MIDI_PITCHBEND_MIN));
                             }

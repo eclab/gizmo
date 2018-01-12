@@ -1,6 +1,6 @@
 #ifndef __MEASURE_H__
 #define __MEASURE_H__
-
+ 
 struct _measureLocal
 	{
 	uint32_t initialTime;

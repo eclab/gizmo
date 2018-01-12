@@ -1,7 +1,7 @@
 ////// Copyright 2016 by Sean Luke
 ////// Licensed under the Apache 2.0 License
 
-
+ 
 #include "All.h"
 
 
@@ -21,8 +21,13 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
         backupOptions = options; 
         }
 #ifdef INCLUDE_EXTENDED_CONTROLLER
+#ifdef INCLUDE_VOLTAGE
     const char* menuItems[9] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC"), PSTR("BEND"), PSTR("AFTERTOUCH"), PSTR("A VOLTAGE"), PSTR("B VOLTAGE")};
     result = doMenuDisplay(menuItems, 9, STATE_NONE,  STATE_NONE, 1);
+#else
+    const char* menuItems[7] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC"), PSTR("BEND"), PSTR("AFTERTOUCH")};
+    result = doMenuDisplay(menuItems, 7, STATE_NONE,  STATE_NONE, 1);
+#endif
 #else
     const char* menuItems[5] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC")};
     result = doMenuDisplay(menuItems, 5, STATE_NONE, STATE_NONE, 1);
@@ -49,7 +54,11 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
                 goUpState(STATE_CONTROLLER);
                 }
 #ifdef INCLUDE_EXTENDED_CONTROLLER
-            else if ((type == CONTROL_TYPE_PC || type == CONTROL_TYPE_VOLTAGE_A || type == CONTROL_TYPE_VOLTAGE_B || type == CONTROL_TYPE_PITCH_BEND || type == CONTROL_TYPE_AFTERTOUCH))
+            else if ((type == CONTROL_TYPE_PC || type == CONTROL_TYPE_PITCH_BEND || type == CONTROL_TYPE_AFTERTOUCH
+#ifdef INCLUDE_VOLTAGE
+            || type == CONTROL_TYPE_VOLTAGE_A || type == CONTROL_TYPE_VOLTAGE_B 
+#endif      
+            ))
 #else
             else if (type == CONTROL_TYPE_PC)
 #endif

@@ -2,7 +2,7 @@
 ////// Licensed under the Apache 2.0 License
 
 
-
+ 
 
 
 #ifndef __ARPEGGIATOR_H__
@@ -149,6 +149,7 @@
 #define ARP_POT_SLOP (32)
 #endif
 
+
 //// LOCAL 
 
 struct _arpLocal
@@ -168,14 +169,14 @@ struct _arpLocal
     uint8_t lastVelocity;                                               // Stores the most recent velocity with which a note was entered during editing, so when we scroll back we have a reasonable velocity to play
     uint8_t currentRightPot;                                        	// What is the most recent right pot value for editing (-1 ... 32 or so).  
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+    uint8_t backup;      		// used for backing up data to restore it                                                           // used to back up various values when the user cancels
+	uint8_t playAlong;
 	uint16_t oldLeftPot;
 	uint16_t oldRightPot;
 #endif
     // We have to jump by at least 2 to start scrolling -- this is an anti-noise measure
     };
         
-
-
 //// DATA
 
 // Maximum length of an arpeggio

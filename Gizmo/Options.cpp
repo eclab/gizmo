@@ -1,6 +1,6 @@
 ////// Copyright 2016 by Sean Luke
 ////// Licensed under the Apache 2.0 License
-
+ 
 
 //// IMPORTANT NOTE:
 //// All of the option states are hard-coded into the state machine switch
@@ -106,10 +106,6 @@ void resetOptions()
 		}
 	options.randomInitialValue = 64;
 	options.randomRange = 127;
-#endif
-
-#ifdef INCLUDE_EXTENDED_SEQUENCER
-	options.stepSequencerPlayAlongChannel = 17;
 #endif
     }
 

@@ -1,7 +1,7 @@
 ////// Copyright 2016 by Sean Luke
 ////// Licensed under the Apache 2.0 License
 
-
+ 
 #ifndef __TOPLEVEL_H__
 #define __TOPLEVEL_H__
 
@@ -79,6 +79,10 @@ typedef enum _State: uint8_t
 	STATE_ARPEGGIATOR_CREATE_SURE,
 #endif
 
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+	STATE_ARPEGGIATOR_PLAY_ALONG,
+#endif
+
 #ifdef INCLUDE_STEP_SEQUENCER
 	STATE_STEP_SEQUENCER_FORMAT,
 	STATE_STEP_SEQUENCER_PLAY,
@@ -101,7 +105,7 @@ typedef enum _State: uint8_t
 	STATE_STEP_SEQUENCER_MENU_EDIT_SPLAT,
 	STATE_STEP_SEQUENCER_MENU_EDIT_MOVE,
 	STATE_STEP_SEQUENCER_MENU_PERFORMANCE,
-	STATE_STEP_SEQUENCER_MENU_PERFORMANCE_PLAY_ALONG,
+	STATE_STEP_SEQUENCER_MENU_PERFORMANCE_KEYBOARD,
 	STATE_STEP_SEQUENCER_MENU_PERFORMANCE_REPEAT,
 	STATE_STEP_SEQUENCER_MENU_PERFORMANCE_NEXT,
 	STATE_STEP_SEQUENCER_MENU_NO,
@@ -206,7 +210,7 @@ typedef enum _State: uint8_t
 	STATE_THRU_CHORD_MEMORY,
 	STATE_THRU_DEBOUNCE,
 	STATE_THRU_MERGE_CHANNEL_IN,
-	STATE_THRU_CC_NRPN,
+//	STATE_THRU_CC_NRPN,
 	STATE_THRU_BLOCK_OTHER_CHANNELS,
 #endif
 
@@ -261,6 +265,7 @@ void go();
 
 extern uint8_t bypass;                                  // are we bypassing MIDI right now?
 extern uint8_t bypassOut;                                  // are we bypassing MIDI right now?
+extern uint8_t shouldBypassOut;
 
 
 
@@ -356,8 +361,7 @@ void fullReset();
 void semiReset();
 
 //// BYPASS TOGGLE
-void toggleBypassSoundsOff(uint8_t channel);
-void toggleBypass();
+void toggleBypass(uint8_t channel);
 
 ///// THE DISPLAY
 

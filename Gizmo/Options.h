@@ -79,6 +79,10 @@ struct _options
     uint8_t arpeggiatorLatch;  
 #endif
 
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+    uint8_t arpeggiatorPlayAlongChannel;
+#endif
+  
 #ifdef INCLUDE_RECORDER
     //uint8_t recorderRepeat;
 #endif
@@ -128,7 +132,7 @@ struct _options
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
     uint8_t stepSequencerNoEcho;
     uint8_t stepSequencerSendClock;
-	uint8_t stepSequencerPlayAlongChannel;
+	int8_t stepSequencerPlayAlongChannel;
 #endif
 
 #ifdef INCLUDE_EXTENDED_RECORDER

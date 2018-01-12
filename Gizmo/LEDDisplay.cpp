@@ -1,7 +1,7 @@
 ////// Copyright 2016 by Sean Luke
 ////// Licensed under the Apache 2.0 License
 
-
+ 
 
 
 
@@ -1966,7 +1966,7 @@ void addToBuffer(const char* val, uint8_t extra) //  = 0)
                     ], 5);
             bufferLength += 5;
             }
-        else if (c >= 'A' && c <= 'Z')  // letter, add it plus a thin space
+        else if (c >= 'A' && c <= ']')  // a letter or FLAT, UPDOWN, or BLANK
             {
             //uint8_t len = strnlen_P(font_alphabet5x5[c - 'A'], 5);
             memcpy_P(buffer + bufferLength, font_3x5[c - 'A' + GLYPH_3x5_A], 3);
@@ -1991,7 +1991,7 @@ void addToBuffer(const char* val, uint8_t extra) //  = 0)
         */
         else 
             {
-            if (c >= '(' && c <= '9')   // one of ( ) UP PLUS DOWN MINUS PERIOD UP_DOWN 0 1 2 3 4 5 6 7 8 9
+            if (c >= '(' && c <= '9')   // one of ( ) UP PLUS DOWN MINUS PERIOD SLASH 0 1 2 3 4 5 6 7 8 9
                 memcpy_P(buffer + bufferLength, font_3x5[c - '(' + GLYPH_2x5_LEFT_PAREN], 3);
             /*
               if (c >= '0' && c <= '9')  // number

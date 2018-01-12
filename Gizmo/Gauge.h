@@ -2,7 +2,7 @@
 ////// Licensed under the Apache 2.0 License
 
 
-
+ 
 #ifndef __GAUGE_H__
 #define __GAUGE_H__
 

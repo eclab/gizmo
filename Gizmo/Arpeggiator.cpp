@@ -15,23 +15,18 @@ void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len)
     clearMatrix(mat);
 
     uint8_t maxNote = 0;  // it's okay that this isn't -1 I think
-#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
-    uint8_t minNote = ARP_TIE;
-#else
     uint8_t minNote = ARP_REST;
-#endif
     for(uint8_t i = 0; i < data.arp.length; i++)
         {
         uint8_t n = ARP_NOTEX(i);
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
         if (n == ARP_TIE) continue;  // don't count rests or ties as part of this
-#else
-        if (n == ARP_REST) continue;  // don't count rests as part of this
 #endif
+        if (n == ARP_REST) continue;  // don't count rests as part of this
         if (n > maxNote) maxNote = n;
         if (n < minNote) minNote = n;
         }
-    
+            
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
     if (minNote < ARP_TIE) // it's not all rests or ties (or empty)  -- actually it'd be impossible for it to be all ties or a mix of rests and ties...
 #else
@@ -134,6 +129,7 @@ void playArpeggio()
         {
         if (local.arp.number == ARPEGGIATOR_NUMBER_CHORD_REPEAT)
             {
+            // we don't call sendAllSoundsOff here because it's too large for the Uno
             MIDI.sendControlChange(123, 0, options.channelOut);
             }
         else
@@ -284,6 +280,13 @@ void playArpeggio()
         // draw latch
         if (options.arpeggiatorLatch)
             setPoint(led, 7, 1);
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+        // draw play-along
+        if (options.stepSequencerPlayAlongChannel == CHANNEL_TRANSPOSE)
+            blinkPoint(led, 6, 1);
+        else if (options.stepSequencerPlayAlongChannel != CHANNEL_LAYER)
+            setPoint(led, 6, 1);
+#endif
         }
 
     }
@@ -385,6 +388,9 @@ void stateArpeggiator()
         local.arp.goingDown = 0;  // same reason
         local.arp.playing = 0;  // don't want to add and remove notes right now
         local.arp.steadyNoteOff = local.arp.noteOff = NO_NOTE;
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+		local.arp.playAlong = 0;
+#endif        
         sendAllSoundsOff();
         }
     const char* menuItems[17] = { PSTR(STR_UP), PSTR(STR_DOWN), PSTR(STR_UP_DOWN), PSTR("RANDOM"), PSTR("ASSIGN"), PSTR("CHORD"), PSTR("0"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("CREATE")};
@@ -473,19 +479,44 @@ void stateArpeggiatorPlay()
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
     else if (isUpdated(SELECT_BUTTON, RELEASED))
         {
-		if (!options.arpeggiatorLatch)
-	        local.arp.numChordNotes = 0;  // reset arpeggiation
-        toggleBypass();
-        if (!bypass)					// gotta also reset bypassOut
-        	bypassOut = false;
+        // Load the arpeggiator data
+        if (local.arp.number > ARPEGGIATOR_NUMBER_CHORD_REPEAT)
+            {
+            // search toroidally for a nonempty arpeggio and load it.  If we fail, we wind up
+            // back where we are.
+            for(int i = 0; i < NUM_ARPS; i++)
+            	{
+	            local.arp.number++;
+	            if (local.arp.number >= NUM_ARPS)
+	            	local.arp.number = 0;
+	            if (ARPEGGIO_IS_NONEMPTY(local.arp.number - ARPEGGIATOR_NUMBER_CHORD_REPEAT - 1))
+	            	{
+	           		LOAD_ARPEGGIO(local.arp.number - ARPEGGIATOR_NUMBER_CHORD_REPEAT - 1);
+	           		break;
+	           		}
+	            }
+            }
         }
 #endif
     else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
         {
         goDownState(STATE_ARPEGGIATOR_MENU);
         }
-    else if (isUpdated(MIDDLE_BUTTON, PRESSED))
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+    else if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
         {
+        if (local.arp.playAlong)
+        	{
+        	uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+        	if (channelOut == 0)
+        		channelOut = options.channelOut;
+        	sendAllSoundsOff(channelOut);
+        	}
+        local.arp.playAlong = !local.arp.playAlong;
+        }
+#endif
+    else if (isUpdated(MIDDLE_BUTTON, RELEASED))
+    	{
         options.arpeggiatorLatch = !options.arpeggiatorLatch;
 		if (!options.arpeggiatorLatch)
 	        local.arp.numChordNotes = 0;  // reset arpeggiation
@@ -519,9 +550,13 @@ void stateArpeggiatorPlay()
 
 void stateArpeggiatorMenu()
     {
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+    const char* menuItems[4] = { PSTR("OCTAVES"), PSTR("VELOCITY"), PSTR("PLAY ALONG"), options_p };
+    uint8_t result = doMenuDisplay(menuItems, 4, STATE_NONE, 0, 1, 8);
+#else
     const char* menuItems[3] = { PSTR("OCTAVES"), PSTR("VELOCITY"), options_p };
     uint8_t result = doMenuDisplay(menuItems, 3, STATE_NONE, 0, 1, 8);
-        
+#endif        
     switch (result)
         {
         case NO_MENU_SELECTED:
@@ -532,9 +567,17 @@ void stateArpeggiatorMenu()
             {
             switch(currentDisplay)
                 {
+                
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+#define ARPEGGIATOR_PLAY_OCTAVES 0
+#define ARPEGGIATOR_PLAY_VELOCITY 1
+#define ARPEGGIATOR_PLAY_ALONG 2
+#define ARPEGGIATOR_PLAY_OPTIONS 3
+#else
 #define ARPEGGIATOR_PLAY_OCTAVES 0
 #define ARPEGGIATOR_PLAY_VELOCITY 1
 #define ARPEGGIATOR_PLAY_OPTIONS 2
+#endif
 
                 case ARPEGGIATOR_PLAY_OCTAVES:
                     {
@@ -546,6 +589,13 @@ void stateArpeggiatorMenu()
                     goDownState(STATE_ARPEGGIATOR_PLAY_VELOCITY);
                     }
                 break;
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+                case ARPEGGIATOR_PLAY_ALONG:
+                    {
+                    goDownState(STATE_ARPEGGIATOR_PLAY_ALONG);
+                    }
+                break;
+#endif
                 case ARPEGGIATOR_PLAY_OPTIONS:
                     {
                     optionsReturnState = STATE_ARPEGGIATOR_MENU;
@@ -879,6 +929,42 @@ void stateArpeggiatorCreateSave()
         break;
         }
     }
+    
+   
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+  
+void stateArpeggiatorMenuPerformancePlayAlong()
+	{
+	uint8_t result = doNumericalDisplay(0, 16, options.stepSequencerPlayAlongChannel, true, GLYPH_NONE);
+    playStepSequencer();
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            {
+            // do nothing
+            }
+        break;
+        case MENU_SELECTED:
+            {
+            options.stepSequencerPlayAlongChannel = currentDisplay;
+            sendAllSoundsOff();
+            // get rid of any residual select button calls, so we don't stop when exiting here
+            isUpdated(SELECT_BUTTON, RELEASED);
+            goUpState(STATE_STEP_SEQUENCER_MENU);
+            }
+        break;
+        case MENU_CANCELLED:
+            {
+            // get rid of any residual select button calls, so we don't stop when exiting here
+            isUpdated(SELECT_BUTTON, RELEASED);
+            goUpState(STATE_STEP_SEQUENCER_MENU);
+            }
+        break;
+        }
+	}
+
+#endif
+
 
 
 #endif

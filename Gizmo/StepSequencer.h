@@ -6,7 +6,7 @@
 #ifndef __STEP_SEQUENCER_H__
 #define __STEP_SEQUENCER_H__
 
-
+ 
 
 #include "All.h"
 
@@ -248,8 +248,13 @@ struct _stepSequencerLocal
     uint8_t currentTrack;                                                   // which track are we editing?
     uint8_t backup;      		// used for backing up data to restore it                                                           // used to back up various values when the user cancels
     int16_t currentRightPot;
+    uint8_t clearTrack;
     };
 
+
+#define CLEAR_TRACK 0
+#define DONT_CLEAR_TRACK 1
+#define DONT_CLEAR_TRACK_FIRST 2
 
 #define MAXIMUM_TRACK_LENGTH (64)
 
@@ -267,7 +272,8 @@ struct _stepSequencerLocal
 #endif
 
 #define CHANNEL_TRANSPOSE (17)
-#define CHANNEL_MIDI_OUT (0)
+#define CHANNEL_LAYER (-1)
+#define CHANNEL_DEFAULT_MIDI_OUT (0)
 
 #define STEP_SEQUENCER_BUFFER_SIZE		(SLOT_DATA_SIZE - 3)
 
@@ -325,7 +331,7 @@ void resetStepSequencer();
 void clearTrack(uint8_t track);
 
 // Performance Options
-void stateStepSequencerMenuPerformancePlayAlong();
+void stateStepSequencerMenuPerformanceKeyboard();
 void stateStepSequencerMenuPerformanceRepeat();
 void stateStepSequencerMenuPerformanceNext();
 void loadStepSequencer(uint8_t slot);
