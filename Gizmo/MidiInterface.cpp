@@ -13,74 +13,6 @@ GLOBAL uint8_t leftPotParameterEquivalent = false;
 #endif
 
 
-#ifdef INCLUDE_VOLTAGE
-
-
-////////// VOLTAGE SETTERS
-
-
-// Sets DAC_A when appropriate
-//
-// TODO: Perhaps we should allow high-resolution pitch bend in
-// this as well.  It'd require (1) storing the current note on, and
-// (2) allowing the user to specify the pitch bend range.
-void setPrimaryVoltage(uint8_t note, uint8_t on)
-    {
-    // should we bail?
-    if (options.voltage == NO_VOLTAGE 
-#ifdef INCLUDE_EXTENDED_CONTROLLER
-        || (application == STATE_CONTROLLER && 
-                (options.leftKnobControlType == CONTROL_TYPE_VOLTAGE_A ||
-                options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_A))
-#endif
-        )                 
-        return; 
-
-    // first always turn off gate if requested
-    if (!on)
-        {
-        *port_VOLTAGE_GATE &= ~VOLTAGE_GATE_mask;
-        }       
-
-    // The only valid notes are MIDI# 36 ... 60, which will correspond to 0...5V with 1V per octave
-    if (note < 36 || note > 96) return;
-
-    setValue(DAC_A, (4095 * ((uint16_t) note - 36)) / 60);
-        
-    if (on) 
-        {
-        *port_VOLTAGE_GATE |= VOLTAGE_GATE_mask;
-        }
-    }
-
-
-// Sets DAC_B when appropriate
-void setSecondaryVoltage(uint8_t voltage)
-    {
-    // should we bail?
-    if (options.voltage == NO_VOLTAGE 
-#ifdef INCLUDE_EXTENDED_CONTROLLER
-        || (application == STATE_CONTROLLER && 
-                (options.leftKnobControlType == CONTROL_TYPE_VOLTAGE_B ||
-                options.rightKnobControlType != CONTROL_TYPE_VOLTAGE_B))
-#endif
-        )
-
-        // We translate 0...127 to 0...4095.  Wish it was higher
-        // resolution than 7 bits, but there you have it.  :-(
-        setValue(DAC_B, (((uint16_t) voltage) * 4095) / 127);
-    }
-
-
-#endif
-
-
-
-
-
-
-
-
 
 
 
@@ -177,7 +109,7 @@ void handleClockCommand(uint8_t (*clockFunction)(uint8_t), midi::MidiType clockM
         sendClock(clockMIDI, false);
         }
 #endif
- 
+
         else if (USING_EXTERNAL_CLOCK())  // CONSUME, USE, or IGNORE (which we just handled already)
             {
             clockFunction(false);
@@ -1470,10 +1402,6 @@ void handleAfterTouchChannel(byte channel, byte pressure)
         }
     else
         TOGGLE_OUT_LED();
-
-#ifdef INCLUDE_VOLTAGE
-    setSecondaryVoltage(pressure);
-#endif
     }
   
 void handlePitchBend(byte channel, int bend)
@@ -1623,8 +1551,7 @@ void handleSystemReset()
 /// The following functions foo(...) are called instead of the MIDI.foo(...)
 /// equivalents in many cases because they filter or modify the commands before
 /// they are sent out: either blocking them because we're in bypass mode,
-/// or changing the volume, or transposing, or toggling the MIDI out LED,
-/// or sending out to Control Voltage.
+/// or changing the volume, or transposing, or toggling the MIDI out LED.
 
 
 /// Sends out pressure, transposing as appropriate
@@ -1639,28 +1566,9 @@ void sendPolyPressure(uint8_t note, uint8_t pressure, uint8_t channel)
 #else
     MIDI.sendPolyPressure(note, pressure, channel);
 #endif
-#ifdef INCLUDE_VOLTAGE
-    setSecondaryVoltage(pressure);
-#endif
     TOGGLE_OUT_LED();
     }
-    
-
-
-/// Sets voltage to 0 on both DACs, which (I presume) means "Note off"
-/// Perhaps this should be revisited.  This function is a helper function
-/// for the functions below.
-#ifdef INCLUDE_VOLTAGE
-uint8_t lastVoltageNote = NO_NOTE;
-
-void turnOffVoltage()
-    {
-    setPrimaryVoltage(0, 0);
-    setSecondaryVoltage(0);
-    lastVoltageNote = NO_NOTE;
-    }
-#endif
-        
+            
 
 /// Sends a note on, transposing as appropriate, and adjusting
 /// the velocity as appropriate.  Also sends out CV.
@@ -1682,18 +1590,10 @@ void sendNoteOn(uint8_t note, uint8_t velocity, uint8_t channel)
     MIDI.sendNoteOn(note, velocity, channel);
 #endif
 
-#ifdef INCLUDE_VOLTAGE
-    if (channel == options.channelOut)
-        {
-        setPrimaryVoltage(note, 1);
-        setSecondaryVoltage(velocity);
-        lastVoltageNote = note;
-        }  
-#endif
     TOGGLE_OUT_LED();
     }
 
-/// Sends a note off, transposing as appropriate, and turning off the voltage
+/// Sends a note off, transposing as appropriate
 void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel)
     {
     if (bypassOut) return;
@@ -1707,19 +1607,11 @@ void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel)
 #endif
     // dont' toggle the LED because if we're going really fast it toggles
     // the LED ON and OFF for a noteoff/noteon pair and you can't see the LED
-
-#ifdef INCLUDE_VOLTAGE
-    if (channel == options.channelOut && note == lastVoltageNote)
-        {
-        turnOffVoltage();
-        }
-#endif
     }
 
 
          
 /// Sends an all notes off on ALL channels, regardless of whether bypass is turned on or not.
-/// Also turns off voltage.
 void sendAllSoundsOffDisregardBypass(uint8_t channel)
     {
     if (channel == CHANNEL_OMNI)
@@ -1743,24 +1635,14 @@ void sendAllSoundsOffDisregardBypass(uint8_t channel)
         MIDI.sendControlChange(120, 0, channel);        // All Sound Off
 #endif
         }
-#ifdef INCLUDE_VOLTAGE
-    turnOffVoltage();
-#endif
     }
         
 
 /// Sends an all notes off on ALL channels, but only if bypass is off.
-/// Also turns off voltage.
 void sendAllSoundsOff(uint8_t channel)
     {
     if (!bypassOut) 
         sendAllSoundsOffDisregardBypass(channel);
-    else
-        {
-#ifdef INCLUDE_VOLTAGE
-        turnOffVoltage();
-#endif
-        }
     }
 
 
@@ -1769,7 +1651,6 @@ void sendAllSoundsOff(uint8_t channel)
 // Sends a controller command, one of:
 // CC, NRPN, RPN, PC
 // [Only if INCLUDE_EXTENDED_CONTROL_SIGNALS]: Pitch Bend, Aftertouch
-// [Only if INCLUDE_VOLTAGE]: Voltage A, Voltage B
 //
 // These are defined by the CONTROL_TYPE_* constants defined elsewhere
 //
@@ -1781,9 +1662,7 @@ void sendAllSoundsOff(uint8_t channel)
 // padded on the right.  For example, if you want to pass in a 7-bit
 // number (for PC, some CC values, or AFTERTOUCH) you should do so as (myval << 7).
 // If you want to pass in a signed PITCH BEND value (an int16_t from -8192...8191), you
-// should do so as (uint16_t myval + MIDI_PITCHBEND_MIN).  If you want to pass in a 12-bit
-// value because VOLTAGE_A and VOLTAGE_B are actually only 12-bit you can do so as
-// (myval << 2), though you might as well send in a full 14-bit value.
+// should do so as (uint16_t myval + MIDI_PITCHBEND_MIN).
 //
 // It's good practice to send a NULL RPN after sending an RPN or NRPN, but it's 50% more data
 // in an already slow command.  So Gizmo doesn't do it by default.  You can make Gizmo do it
@@ -1807,10 +1686,6 @@ void sendAllSoundsOff(uint8_t channel)
 // BEND         [ignored]       0-16383         1. BEND is normally signed (-8192...8191).  If you have the value as a signed int16_t,
 //                                                                         pass it in as (uint16_t) (myval + MIDI_PITCHBEND_MIN)
 // AFTERTOUCH [ignored] 0-127           1. Zero-pad your 7-bit data (shift it << 7)
-// VOLTAGE_A [ignored]  0-16383         1. Resolution is actually 12-bit (0-4095), but you should pass it in as 14-bit,
-//                                                                         zero-padded.  So if you have a number from 0-4095, pass it in as (myval << 2)
-// VOLTAGE_B [ignored]  0-16383         1. Resolution is actually 12-bit (0-4095), but you should pass it in as 14-bit,
-//                                                                         zero-padded.  So if you have a number from 0-4095, pass it in as (myval << 2)
 
 
 void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t fullValue, uint8_t channel)
@@ -1920,18 +1795,6 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t
         case CONTROL_TYPE_AFTERTOUCH:
             {
             MIDI.sendAfterTouch(msb, channel);
-            }
-        break;
-#endif
-#ifdef INCLUDE_VOLTAGE
-        case CONTROL_TYPE_VOLTAGE_A:
-            {
-            setValue(DAC_A, fullValue >> 2);
-            }
-        break;
-        case CONTROL_TYPE_VOLTAGE_B:
-            {
-            setValue(DAC_B, fullValue >> 2);
             }
         break;
 #endif

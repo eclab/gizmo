@@ -2,7 +2,7 @@
 ////// Licensed under the Apache 2.0 License
 
 #include "All.h"
- 
+
 #ifdef INCLUDE_STEP_SEQUENCER
 
 
@@ -442,7 +442,7 @@ void loadSequence(uint8_t slot)
 				}
 			else                        // It's a control sequence
 				{                               
-				////     3 bits: CC, NRPN, RPN, PC, BEND, AFTERTOUCH, VOLTAGE A, VOLTAGE B
+				////     3 bits: CC, NRPN, RPN, PC, BEND, AFTERTOUCH
 				////     14 bits Parameter
 				////     5 bits MIDI out channel
 

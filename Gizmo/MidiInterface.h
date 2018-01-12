@@ -1,7 +1,7 @@
 ////// Copyright 2016 by Sean Luke
 ////// Licensed under the Apache 2.0 License
 
- 
+
 
 #ifndef __MIDI_INTERFACE__
 #define __MIDI_INTERFACE__
@@ -43,10 +43,6 @@
 #ifdef INCLUDE_EXTENDED_CONTROL_SIGNALS
 #define CONTROL_TYPE_PITCH_BEND 5
 #define CONTROL_TYPE_AFTERTOUCH 6
-#endif
-#ifdef INCLUDE_VOLTAGE
-#define CONTROL_TYPE_VOLTAGE_A 7
-#define CONTROL_TYPE_VOLTAGE_B 8
 #endif
 
 
@@ -263,17 +259,10 @@ void sendAllSoundsOffDisregardBypass(uint8_t channel=CHANNEL_OMNI);
 void sendAllSoundsOff(uint8_t channel=CHANNEL_OMNI);
 
 
-//// SENDING VOLTAGE
-void setPrimaryVoltage(uint8_t voltage, uint8_t on);
-void setSecondaryVoltage(uint8_t voltage);
-void turnOffVoltage();
-
-
 // SEND CONTROLLER COMMAND
 // Sends a controller command, one of:
 // CC, NRPN, RPN, PC
 // [Only if INCLUDE_EXTENDED_CONTROL_SIGNALS]: Pitch Bend, Aftertouch
-// [Only if INCLUDE_VOLTAGE]: Voltage A, Voltage B
 //
 // These are defined by the CONTROL_TYPE_* constants defined elsewhere
 //
@@ -285,9 +274,7 @@ void turnOffVoltage();
 // padded on the right.  For example, if you want to pass in a 7-bit
 // number (for PC, some CC values, or AFTERTOUCH) you should do so as (myval << 7).
 // If you want to pass in a signed PITCH BEND value (an int16_t from -8192...8191), you
-// should do so as (uint16_t myval + MIDI_PITCHBEND_MIN).  If you want to pass in a 12-bit
-// value because VOLTAGE_A and VOLTAGE_B are actually only 12-bit you can do so as
-// (myval << 2), though you might as well send in a full 14-bit value.
+// should do so as (uint16_t myval + MIDI_PITCHBEND_MIN).
 //
 // It's good practice to send a NULL RPN after sending an RPN or NRPN, but it's 50% more data
 // in an already slow command.  So Gizmo doesn't do it by default.  You can make Gizmo do it
@@ -311,10 +298,6 @@ void turnOffVoltage();
 // BEND		[ignored]	0-16383		1. BEND is normally signed (-8192...8191).  If you have the value as a signed int16_t,
 //									   pass it in as (uint16_t) (myval + MIDI_PITCHBEND_MIN)
 // AFTERTOUCH [ignored]	0-127		1. Zero-pad your 7-bit data (shift it << 7)
-// VOLTAGE_A [ignored]	0-16383		1. Resolution is actually 12-bit (0-4095), but you should pass it in as 14-bit,
-//									   zero-padded.  So if you have a number from 0-4095, pass it in as (myval << 2)
-// VOLTAGE_B [ignored]	0-16383		1. Resolution is actually 12-bit (0-4095), but you should pass it in as 14-bit,
-//									   zero-padded.  So if you have a number from 0-4095, pass it in as (myval << 2)
 
 void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t fullValue, uint8_t channel);
 

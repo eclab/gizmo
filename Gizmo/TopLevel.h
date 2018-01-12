@@ -1,7 +1,7 @@
 ////// Copyright 2016 by Sean Luke
 ////// Licensed under the Apache 2.0 License
 
- 
+
 #ifndef __TOPLEVEL_H__
 #define __TOPLEVEL_H__
 
@@ -191,10 +191,6 @@ typedef enum _State: uint8_t
 	STATE_OPTIONS_MENU_DELAY,
 #endif
 
-#ifdef INCLUDE_VOLTAGE
-	STATE_OPTIONS_VOLTAGE,
-#endif
-
 	STATE_OPTIONS_ABOUT,
 
 #ifdef INCLUDE_SPLIT
@@ -299,15 +295,6 @@ union _local
     };
         
 extern _local local;
-
-
-
-//// CV OPTIONS
-
-#define NO_VOLTAGE  0
-#define VOLTAGE_WITH_VELOCITY	1
-#define VOLTAGE_WITH_AFTERTOUCH 2
-
 
 
 

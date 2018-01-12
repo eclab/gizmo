@@ -1008,19 +1008,8 @@ void go()
                     }
                 }
 #endif
-                       
+                        
 #if defined(__MEGA__)
-#ifdef INCLUDE_VOLTAGE
-            const char* menuItems[16] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
-                                          PSTR("VOLUME"), PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), PSTR("DIVIDE"),
-                                          ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
-                                          PSTR("BRIGHTNESS"), 
-                                          PSTR("MENU DELAY"), 
-                                              (options.voltage == NO_VOLTAGE ? PSTR("CV+VELOCITY") : 
-                                              (options.voltage == VOLTAGE_WITH_VELOCITY ? PSTR("CV+AFTERTOUCH") : PSTR("NO CV"))),
-                                          PSTR("GIZMO V5 (C) 2017 SEAN LUKE") };
-            doMenuDisplay(menuItems, 16, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
-#else
             const char* menuItems[15] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
                                           PSTR("VOLUME"), PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), PSTR("DIVIDE"),
                                           ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
@@ -1028,7 +1017,6 @@ void go()
                                           PSTR("MENU DELAY"),
                                           PSTR("GIZMO V5 (C) 2017 SEAN LUKE") };
             doMenuDisplay(menuItems, 15, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
-#endif
 #endif
 #if defined(__UNO__)
             const char* menuItems[11] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), 
@@ -1480,14 +1468,6 @@ void go()
                     else
                         {
 #ifdef INCLUDE_EXTENDED_CONTROLLER
-#ifdef INCLUDE_VOLTAGE
-                        if (local.control.displayType == CONTROL_TYPE_VOLTAGE_A ||
-                            local.control.displayType == CONTROL_TYPE_VOLTAGE_B)
-                            {
-                            writeNumber(led, led2, (uint16_t)(local.control.displayValue));
-                            }
-                        else 
-#endif
                         if (local.control.displayType == CONTROL_TYPE_PITCH_BEND)
                             {
                             writeNumber(led, led2, ((int16_t)(local.control.displayValue)) + (int16_t)(MIDI_PITCHBEND_MIN));
@@ -2105,19 +2085,6 @@ void go()
                 break;
                 }
             playApplication();     
-            }
-        break;
-#endif
-
-#ifdef INCLUDE_VOLTAGE
-        case STATE_OPTIONS_VOLTAGE:
-            {
-            options.voltage++;
-            if (options.voltage > VOLTAGE_WITH_AFTERTOUCH)
-                options.voltage = NO_VOLTAGE;
-            saveOptions();
-            goUpState(STATE_OPTIONS);
-            playApplication();
             }
         break;
 #endif

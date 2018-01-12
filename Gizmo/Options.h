@@ -82,7 +82,7 @@ struct _options
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
     uint8_t arpeggiatorPlayAlongChannel;
 #endif
-  
+
 #ifdef INCLUDE_RECORDER
     //uint8_t recorderRepeat;
 #endif
@@ -91,10 +91,6 @@ struct _options
 
 #ifdef INCLUDE_OPTIONS_MIDI_CLOCK_DIVIDE
 	uint8_t clockDivisor;
-#endif
-
-#ifdef INCLUDE_VOLTAGE
-    uint8_t voltage;
 #endif
 
 #ifdef INCLUDE_OPTIONS_MENU_DELAY

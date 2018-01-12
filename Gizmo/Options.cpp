@@ -1,6 +1,6 @@
 ////// Copyright 2016 by Sean Luke
 ////// Licensed under the Apache 2.0 License
- 
+
 
 //// IMPORTANT NOTE:
 //// All of the option states are hard-coded into the state machine switch

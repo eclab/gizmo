@@ -50,8 +50,6 @@
 // -- APPLICATIONS --
 // Note that if you include or exclude certain of these you must also take care to set up the menuItems array
 // correctly in STATE_ROOT (see roughly lines 1023--1029 of TopLevel.cpp)
-// WARNING: If you include the extended controller, this automatically includes VOLTAGE so you have to
-// modify the state options array in this case (see next).
 // 
 // INCLUDE_ARPEGGIATOR				Include the "basic" Arpeggiator application (the one which appears in the Uno)
 // INCLUDE_EXTENDED_ARPEGGIATOR		Include the "full" Arpeggiator application (the one which appears in the Mega)
@@ -71,13 +69,10 @@
 // -- ADDITIONAL OPTIONS MENU CHOICES --
 // Note that if you include or exclude certain of these you must also take care to set up the menuItems array
 // correctly in STATE_OPTIONS (see roughly lines 1349--1366 of TopLevel.cpp)
-// WARNING: If you include the extended controller, this automatically includes VOLTAGE so you have to
-// modify the state options array anyway in this case.
 //
 // INCLUDE_OPTIONS_TRANSPOSE_AND_VOLUME		Include transpose and volume on MIDI Out
 // INCLUDE_OPTIONS_MIDI_CLOCK_DIVIDE		Include clock division
 // INCLUDE_OPTIONS_MENU_DELAY				Include the menu delay option
-// INCLUDE_VOLTAGE							Include control Voltage
 
 
 // -- ADDITIONAL FEATURES --
@@ -115,8 +110,6 @@
 /// Here are the standard values for the MEGA and for the UNO
 
 #if defined(__MEGA__)
-//#define INCLUDE_VOLTAGE
-
 #define INCLUDE_EXTENDED_ARPEGGIATOR
 #define INCLUDE_EXTENDED_STEP_SEQUENCER
 #define INCLUDE_EXTENDED_RECORDER
@@ -172,11 +165,13 @@
 
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
 #define INCLUDE_STEP_SEQUENCER
-//#define INCLUDE_VOLTAGE
 #define INCLUDE_EXTENDED_CONTROL_SIGNALS
 #define INCLUDE_EXTENDED_MENU_DEFAULTS
 #define INCLUDE_STEP_SEQUENCER_CC
 #define INCLUDE_CC_LEFT_POT_PARAMETER_EQUIVALENTS
+#define INCLUDE_EXTENDED_GLYPH_TABLE
+#define INCLUDE_IMMEDIATE_RETURN
+#define INCLUDE_OPTIONS_TRANSPOSE_AND_VOLUME
 #endif
 
 #ifdef INCLUDE_EXTENDED_RECORDER
@@ -185,8 +180,8 @@
 
 #ifdef INCLUDE_EXTENDED_CONTROLLER
 #define INCLUDE_CONTROLLER
-//#define INCLUDE_VOLTAGE
 #define INCLUDE_EXTENDED_CONTROL_SIGNALS
+#define INCLUDE_EXTENDED_GLYPH_TABLE
 #endif
 
 #ifdef INCLUDE_EXTENDED_GAUGE
@@ -223,7 +218,6 @@
 #include <EEPROM.h>
 #include <MIDI.h>
 #include <SoftReset.h>
-#include "DAC.h"
 #include "MidiInterface.h"
 #include "Utility.h"
 #include "TopLevel.h"

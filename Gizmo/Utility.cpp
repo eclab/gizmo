@@ -6,7 +6,7 @@
 ////// Utility.h/.cpp define various utility functions used by a variety of applications
 ////// 
 
- 
+
 
 #include "All.h"
 
@@ -879,7 +879,7 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                                 }
                             else                        // It's a control sequence
                                 {                               
-                                ////     3 bits: CC, NRPN, RPN, PC, BEND, AFTERTOUCH, VOLTAGE A, VOLTAGE B
+                                ////     3 bits: CC, NRPN, RPN, PC, BEND, AFTERTOUCH
                                 ////     14 bits Parameter
                                 ////     5 bits MIDI out channel
 

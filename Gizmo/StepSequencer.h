@@ -6,7 +6,7 @@
 #ifndef __STEP_SEQUENCER_H__
 #define __STEP_SEQUENCER_H__
 
- 
+
 
 #include "All.h"
 
@@ -63,7 +63,7 @@
 ////	 4 bits pattern
 
 //// If CONTROL:
-////     3 bits: CC MSB, NRPN MSB, RPN MSB, PC, BEND MSB, AFTERTOUCH, VOLTAGE A, VOLTAGE B
+////     3 bits: CC MSB, NRPN MSB, RPN MSB, PC, BEND MSB, AFTERTOUCH
 ////     14 bits Parameter
 ////     5 bits MIDI out channel
 ////     9 bits unused

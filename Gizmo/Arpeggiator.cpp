@@ -282,9 +282,9 @@ void playArpeggio()
             setPoint(led, 7, 1);
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
         // draw play-along
-        if (options.stepSequencerPlayAlongChannel == CHANNEL_TRANSPOSE)
+        if (options.arpeggiatorPlayAlongChannel == CHANNEL_TRANSPOSE)
             blinkPoint(led, 6, 1);
-        else if (options.stepSequencerPlayAlongChannel != CHANNEL_LAYER)
+        else if (options.arpeggiatorPlayAlongChannel != CHANNEL_LAYER)
             setPoint(led, 6, 1);
 #endif
         }
@@ -930,13 +930,13 @@ void stateArpeggiatorCreateSave()
         }
     }
     
-   
+  
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
   
 void stateArpeggiatorMenuPerformancePlayAlong()
 	{
-	uint8_t result = doNumericalDisplay(0, 16, options.stepSequencerPlayAlongChannel, true, GLYPH_NONE);
-    playStepSequencer();
+	uint8_t result = doNumericalDisplay(0, 16, options.arpeggiatorPlayAlongChannel, true, GLYPH_NONE);
+    playArpeggio();
     switch (result)
         {
         case NO_MENU_SELECTED:
@@ -946,18 +946,19 @@ void stateArpeggiatorMenuPerformancePlayAlong()
         break;
         case MENU_SELECTED:
             {
-            options.stepSequencerPlayAlongChannel = currentDisplay;
+            options.arpeggiatorPlayAlongChannel = currentDisplay;
+            saveOptions();
             sendAllSoundsOff();
             // get rid of any residual select button calls, so we don't stop when exiting here
             isUpdated(SELECT_BUTTON, RELEASED);
-            goUpState(STATE_STEP_SEQUENCER_MENU);
+            goUpState(STATE_ARPEGGIATOR_MENU);
             }
         break;
         case MENU_CANCELLED:
             {
             // get rid of any residual select button calls, so we don't stop when exiting here
             isUpdated(SELECT_BUTTON, RELEASED);
-            goUpState(STATE_STEP_SEQUENCER_MENU);
+            goUpState(STATE_ARPEGGIATOR_MENU);
             }
         break;
         }

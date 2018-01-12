@@ -2,7 +2,7 @@
 ////// Licensed under the Apache 2.0 License
 
 
- 
+
 #ifndef __CONTROL_H__
 #define __CONTROL_H__
 
@@ -14,8 +14,6 @@
 // The controller can do the following:
 //
 // 1. Map the two pots and the select and middle buttons to Program Change, any Channel Control, any NRPN, any RPN, or OFF (do nothing).
-//
-// 2. If VOLTAGE is #defined on, you can also map to one of two 5V DACs for voltage output.
 //
 // 3. Buttons can be mapped to provide a VALUE, to INCREMENT, or to NOT DO ANYTHING when they are pushed or released.
 //    Buttons at present cannot send DECREMENT messages. [INCREMENT is only available for NRPN or RPN].
@@ -33,10 +31,10 @@
 //
 // Permanent options special to the Controller are:
 //
-// options.leftKnobControlType                          CONTROL_TYPE_OFF, _PC, _CC, _NRPN, _RPN, [_VOLTAGE_A, and _VOLTAGE_B]
-// options.rightKnobControlType                         CONTROL_TYPE_OFF, _PC, _CC, _NRPN, _RPN, [_VOLTAGE_A, and _VOLTAGE_B]
-// options.middleButtonControlType                      CONTROL_TYPE_OFF, _PC, _CC, _NRPN, _RPN, [_VOLTAGE_A, and _VOLTAGE_B]
-// options.selectButtonControlType                      CONTROL_TYPE_OFF, _PC, _CC, _NRPN, _RPN, [_VOLTAGE_A, and _VOLTAGE_B]
+// options.leftKnobControlType                          CONTROL_TYPE_OFF, _PC, _CC, _NRPN, _RPN
+// options.rightKnobControlType                         CONTROL_TYPE_OFF, _PC, _CC, _NRPN, _RPN
+// options.middleButtonControlType                      CONTROL_TYPE_OFF, _PC, _CC, _NRPN, _RPN
+// options.selectButtonControlType                      CONTROL_TYPE_OFF, _PC, _CC, _NRPN, _RPN
 // options.leftKnobControlNumber                        Parameter number (CC, NRPN, and RPN only).  NRPN and RPN can be 14-bit
 // options.rightKnobControlNumber                       Parameter number (CC, NRPN, and RPN only).  NRPN and RPN can be 14-bit
 // options.middleButtonControlNumber            Parameter number (CC, NRPN, and RPN only).  NRPN and RPN can be 14-bit
@@ -72,8 +70,6 @@
 //                      RPN
 //                              Parameter Number to send
 //                      PC
-//                      A VOLTAGE               [Only when voltage turned on]
-//                      B VOLTAGE               [Only when voltage turned on]
 //              Right Knob
 //                      Off
 //                      CC
@@ -83,8 +79,6 @@
 //                      RPN
 //                              Parameter Number to send
 //                      PC
-//                      A VOLTAGE               [Only when voltage turned on]
-//                      B VOLTAGE               [Only when voltage turned on]
 //              Middle Button
 //                      Off
 //                      CC
@@ -102,12 +96,6 @@
 //                      PC
 //                              Button On Value to send [or OFF]
 //                                      Button Off Value to send [or OFF]
-//                      A VOLTAGE               [Only when voltage turned on]
-//                              Button On Value to send [or OFF]
-//                                      Button Off Value to send [or OFF]
-//                      B VOLTAGE               [Only when voltage turned on]
-//                              Button On Value to send [or OFF]
-//                                      Button Off Value to send [or OFF]
 //              Right Button
 //                      Off
 //                      CC
@@ -123,12 +111,6 @@
 //                                      Button On Value to send [or OFF, or Increment]
 //                                              Button Off Value to send [or OFF, or Increment]
 //                      PC
-//                              Button On Value to send [or OFF]
-//                                      Button Off Value to send [or OFF]
-//                      A VOLTAGE               [Only when voltage turned on]
-//                              Button On Value to send [or OFF]
-//                                      Button Off Value to send [or OFF]
-//                      B VOLTAGE               [Only when voltage turned on]
 //                              Button On Value to send [or OFF]
 //                                      Button Off Value to send [or OFF]
 
