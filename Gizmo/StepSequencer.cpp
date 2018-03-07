@@ -47,12 +47,12 @@ void stateStepSequencerMenuEditCopy(uint8_t splat, uint8_t move)
 		uint8_t len = GET_TRACK_LENGTH();
 		uint8_t buf[MAXIMUM_TRACK_LENGTH * 2];
 		// copy it to third location
-		memcpy(buf, data.slot.data.stepSequencer.buffer + local.stepSequencer.markTrack * len * 2, len * 2);
+		memcpy(buf, data.slot.data.stepSequencer.buffer + local.stepSequencer.markTrack * ((uint16_t)len) * 2, len * 2);
 	
 		if (move)
 			{
 			// clear mark track
-			memset(data.slot.data.stepSequencer.buffer + local.stepSequencer.markTrack * len * 2, 
+			memset(data.slot.data.stepSequencer.buffer + local.stepSequencer.markTrack * ((uint16_t)len) * 2, 
 				local.stepSequencer.data[local.stepSequencer.markTrack] == STEP_SEQUENCER_DATA_NOTE ? 0 : CONTROL_VALUE_EMPTY, 
 				len * 2);
 			}
@@ -63,8 +63,8 @@ void stateStepSequencerMenuEditCopy(uint8_t splat, uint8_t move)
 		if (p1 < 0) p1 = 0;
 		for(uint8_t i = 0; i < len; i++)
 			{
-			data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * len + p1) * 2] = buf[p0 * 2];
-			data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * len + p1) * 2 + 1] = buf[p0 * 2 + 1];
+			data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * (uint16_t)len + p1) * 2] = buf[p0 * 2];
+			data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * (uint16_t)len + p1) * 2 + 1] = buf[p0 * 2 + 1];
 			p0++;
 			if (p0 >= len ) { if (splat) break; else p0 = 0; }
 			p1++;
@@ -82,18 +82,18 @@ void stateStepSequencerMenuEditCopy(uint8_t splat, uint8_t move)
 					{
 					if (
 						// I am a tie
-						data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * len + i) * 2] == 0 &&
-						data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * len + i) * 2 + 1] == 1 &&
+						data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * (uint16_t)len + i) * 2] == 0 &&
+						data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * (uint16_t)len + i) * 2 + 1] == 1 &&
 						// ...and the note before me is a rest (if I'm at pos 0, then the note before me is at pos (len - 1) )
 						(i == 0 ? 
-							(data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * len + (len - 1)) * 2] == 0 &&
-							 data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * len + (len - 1)) * 2 + 1] == 0) :
-							(data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * len + (i - 1)) * 2] == 0 &&
-							 data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * len + (i - 1)) * 2 + 1] == 0)))
+							(data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * (uint16_t)len + (len - 1)) * 2] == 0 &&
+							 data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * (uint16_t)len + (len - 1)) * 2 + 1] == 0) :
+							(data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * (uint16_t)len + (i - 1)) * 2] == 0 &&
+							 data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * (uint16_t)len + (i - 1)) * 2 + 1] == 0)))
 						 {
 						 // then set me to a rest
-						 data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * len + i) * 2] = 0;
-						 data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * len + i) * 2 + 1] = 0;
+						 data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * (uint16_t)len + i) * 2] = 0;
+						 data.slot.data.stepSequencer.buffer[(local.stepSequencer.currentTrack * (uint16_t)len + i) * 2 + 1] = 0;
 						 }
 					}
 				}
@@ -420,7 +420,7 @@ void loadSequence(uint8_t slot)
 		// unpack the high-bit info
 		for(uint8_t i = 0; i < num; i++)
 			{
-			uint16_t pos = i * len * 2;
+			uint16_t pos = i * ((uint16_t)len) * 2;
 
 			//// 1 bit type of data
 			if (gatherByte(pos) >> 7 == 0)  // It's a note
@@ -476,7 +476,7 @@ void loadSequence(uint8_t slot)
 void resetTrack(uint8_t track)
     {
     uint8_t trackLen = GET_TRACK_LENGTH();
-    memset(data.slot.data.stepSequencer.buffer + trackLen * local.stepSequencer.currentTrack * 2, 0, trackLen * 2);
+    memset(data.slot.data.stepSequencer.buffer + ((uint16_t)trackLen) * local.stepSequencer.currentTrack * 2, 0, trackLen * 2);
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
     local.stepSequencer.data[track] = STEP_SEQUENCER_DATA_NOTE;
     local.stepSequencer.lastControlValue[track] = 0;
@@ -762,13 +762,13 @@ void removeSuccessiveTies(uint8_t p, uint8_t trackLen)
 #endif
 
     p = incrementAndWrap(p, trackLen);
-        
-    uint8_t v = (trackLen * local.stepSequencer.currentTrack + p) * 2 ;
+    uint16_t v = (((uint16_t)trackLen) * local.stepSequencer.currentTrack + p) * 2 ;
     while((data.slot.data.stepSequencer.buffer[v + 1]== 0) &&
         data.slot.data.stepSequencer.buffer[v] == 1)
         {
         data.slot.data.stepSequencer.buffer[v] = 0;  // make it a rest
         p = incrementAndWrap(p, trackLen);
+        v = (((uint16_t)trackLen) * local.stepSequencer.currentTrack + p) * 2 ;
         }
                         
     // we gotta do this because we just deleted some notes :-(
@@ -792,7 +792,7 @@ void sendTrackNote(uint8_t note, uint8_t velocity, uint8_t track)
 
 
 
-void loadBuffer(uint8_t position, uint8_t note, uint8_t velocity)
+void loadBuffer(uint16_t position, uint8_t note, uint8_t velocity)
     {
     data.slot.data.stepSequencer.buffer[position * 2] = note;
     data.slot.data.stepSequencer.buffer[position * 2 + 1] = velocity;
@@ -915,7 +915,7 @@ void stateStepSequencerPlay()
                 // enter data
                 uint8_t msb = (uint8_t) (local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] >> 7);
                 uint8_t lsb = (uint8_t) (local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] & 127);
-                loadBuffer(trackLen * local.stepSequencer.currentTrack + local.stepSequencer.currentEditPosition, msb, lsb);
+                loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + local.stepSequencer.currentEditPosition, msb, lsb);
                 local.stepSequencer.currentEditPosition = incrementAndWrap(local.stepSequencer.currentEditPosition, trackLen);  
                 local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
                 }
@@ -923,7 +923,7 @@ void stateStepSequencerPlay()
 #endif
                 {
                 // add a rest
-                loadBuffer(trackLen * local.stepSequencer.currentTrack + local.stepSequencer.currentEditPosition, 0, 0);
+                loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + local.stepSequencer.currentEditPosition, 0, 0);
                 removeSuccessiveTies(local.stepSequencer.currentEditPosition, trackLen);
                 local.stepSequencer.currentEditPosition = incrementAndWrap(local.stepSequencer.currentEditPosition, trackLen);  
                 local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
@@ -976,19 +976,19 @@ void stateStepSequencerPlay()
             // (2) the note AFTER is NOT another tie (to prevent us from making a full line of ties)
             // These two positions (before and after) are p and p2 
             uint8_t p = local.stepSequencer.currentEditPosition - 1;
-            if (p == 255) p = trackLen - 1;             // we wrapped around from 0
             uint8_t p2 = p + 2;
-            if (p2 >= trackLen) p2 = 0;
+            if (p == 255) p = trackLen - 1;             // we wrapped around from 0
+            if (p2 >= trackLen) p2 = 0;					// we wrapped around from tracklen - 1
             
-            uint8_t v = (trackLen * local.stepSequencer.currentTrack + p) * 2 ;
-            uint8_t v2 = (trackLen * local.stepSequencer.currentTrack + p2) * 2 ;
+            uint16_t v = (((uint16_t)trackLen) * local.stepSequencer.currentTrack + p) * 2 ;		// these values can easily go beyond uint8_t
+            uint16_t v2 = (((uint16_t)trackLen) * local.stepSequencer.currentTrack + p2) * 2 ;
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
             if (local.stepSequencer.data[local.stepSequencer.currentTrack] != STEP_SEQUENCER_DATA_NOTE)
                 {
                 // erase data
                 uint8_t msb = 0;
                 uint8_t lsb = 0;
-                loadBuffer(trackLen * local.stepSequencer.currentTrack + local.stepSequencer.currentEditPosition, msb, lsb);
+                loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + local.stepSequencer.currentEditPosition, msb, lsb);
                 local.stepSequencer.currentEditPosition = incrementAndWrap(local.stepSequencer.currentEditPosition, trackLen);  
                 local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
                 }
@@ -1004,7 +1004,7 @@ void stateStepSequencerPlay()
                     }
                 else
                     {
-                    loadBuffer(trackLen * local.stepSequencer.currentTrack + local.stepSequencer.currentEditPosition, 1, 0);
+                    loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + local.stepSequencer.currentEditPosition, 1, 0);
                     local.stepSequencer.currentEditPosition = incrementAndWrap(local.stepSequencer.currentEditPosition, trackLen);
                     local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
                     }
@@ -1012,7 +1012,7 @@ void stateStepSequencerPlay()
         else 
 			{
 			// do a "light" clear, not a full reset
-			memset(data.slot.data.stepSequencer.buffer + trackLen * local.stepSequencer.currentTrack * 2, 0, trackLen * 2);
+			memset(data.slot.data.stepSequencer.buffer + ((uint16_t)trackLen) * local.stepSequencer.currentTrack * 2, 0, trackLen * 2);
 			}
         }
     else if (isUpdated(SELECT_BUTTON, RELEASED))
@@ -1233,7 +1233,7 @@ void stateStepSequencerPlay()
 	if ((local.stepSequencer.clearTrack == CLEAR_TRACK) && local.stepSequencer.performanceMode)
 		{
 		// clear track and notes
-		memset(data.slot.data.stepSequencer.buffer + trackLen * local.stepSequencer.currentTrack * 2, 0, trackLen * 2);
+		memset(data.slot.data.stepSequencer.buffer + ((uint16_t)trackLen) * local.stepSequencer.currentTrack * 2, 0, trackLen * 2);
 		clearNotesOnTracks(true);
 		local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
 		}
@@ -1250,7 +1250,7 @@ void stateStepSequencerPlay()
 	
 #endif
         // add a note
-        loadBuffer(trackLen * local.stepSequencer.currentTrack + pos, note, velocity);
+        loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + pos, note, velocity);
         removeSuccessiveTies(pos, trackLen);
 
         if (local.stepSequencer.currentEditPosition >= 0
@@ -1416,7 +1416,7 @@ void stateStepSequencerPlay()
 			case CC_EXTRA_PARAMETER_1:
 				{
 				// do a "light" clear, not a full reset
-				memset(data.slot.data.stepSequencer.buffer + trackLen * local.stepSequencer.currentTrack * 2, 0, trackLen * 2);
+				memset(data.slot.data.stepSequencer.buffer + ((uint16_t)trackLen) * local.stepSequencer.currentTrack * 2, 0, trackLen * 2);
 				break;
 				}
 			case CC_EXTRA_PARAMETER_2:
