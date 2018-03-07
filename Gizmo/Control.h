@@ -120,7 +120,6 @@
 #include "TopLevel.h"
 #include <Arduino.h>
 
-
 // numerical value that means a button isn't sending a value but is rather incrementing 
 #define MAXIMUM_PC_VALUE 127
 
@@ -143,6 +142,11 @@ struct _controlLocal
     uint16_t startWaveControl;
     uint16_t endWaveControl;
     uint8_t randomKeyDownOnce;
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+	uint16_t potUpdateValue[4];
+	uint32_t potUpdateTime[4];
+	uint8_t potWaiting[4];
+#endif
     };
 
 
@@ -188,6 +192,7 @@ void setControllerButtonOnOff(uint16_t &onOff, int8_t nextState);
 
 #ifdef INCLUDE_EXTENDED_CONTROLLER
 #define WAVE_COUNTDOWN (32)
+#define MINIMUM_CONTROLLER_POT_DELAY (50000L)	// 50ms
 void stateControllerSetWaveEnvelope();
 void stateControllerSetWaveEnvelopeValue();
 void stateControllerPlayWaveEnvelope();

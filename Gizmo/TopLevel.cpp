@@ -105,22 +105,40 @@ GLOBAL static uint8_t ignoreNextButtonRelease[3] = { false, false, false };
 
 #define LEFT_POT 0
 #define RIGHT_POT 1
+#define A2_POT 2
+#define A3_POT 3
 
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+GLOBAL uint16_t pot[4];        // The current left pot value OR MIDI controlled value
+GLOBAL uint8_t potUpdated[4];       // has the left pot been updated?  CHANGED or NO_CHANGE
+GLOBAL static uint16_t potCurrent[4][3];     // The filtered current left pot value
+GLOBAL static uint16_t potCurrentFinal[4];    //  
+GLOBAL static uint16_t potLast[4];     // The last pot value submitted 
+#else
 GLOBAL uint16_t pot[2];        // The current left pot value OR MIDI controlled value
 GLOBAL uint8_t potUpdated[2];       // has the left pot been updated?  CHANGED or NO_CHANGE
 GLOBAL static uint16_t potCurrent[2][3];     // The filtered current left pot value
 GLOBAL static uint16_t potCurrentFinal[2];    //  
 GLOBAL static uint16_t potLast[2];     // The last pot value submitted 
+#endif
 
 // SETUP POTS
 // initializes the pots
 void setupPots()
     {
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+    memset(potCurrent, 0, 4 * 3);
+    memset(potUpdated, NO_CHANGE, 4);
+    memset(pot, 0, 4);
+    memset(potCurrentFinal, 0, 4);
+    memset(potLast, 0, 4);
+#else
     memset(potCurrent, 0, 2 * 3);
     memset(potUpdated, NO_CHANGE, 2);
     memset(pot, 0, 2);
     memset(potCurrentFinal, 0, 2);
     memset(potLast, 0, 2);
+#endif
     }
 
 //// Clears the 'released' and 'released long' flag on all buttons.
@@ -324,6 +342,9 @@ uint8_t update()
             if (!lockoutPots)
                 potUpdated[LEFT_POT] = updatePot(pot[LEFT_POT], potCurrent[LEFT_POT], potCurrentFinal[LEFT_POT], potLast[LEFT_POT], A0);
 #endif // HEADLESS
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+                potUpdated[A2_POT] = updatePot(pot[A2_POT], potCurrent[A2_POT], potCurrentFinal[A2_POT], potLast[A2_POT], A14);
+#endif
             return 0;  // don't update the display
             }
         break;
@@ -333,6 +354,9 @@ uint8_t update()
             if (!lockoutPots)
                 potUpdated[RIGHT_POT] = updatePot(pot[RIGHT_POT], potCurrent[RIGHT_POT], potCurrentFinal[RIGHT_POT], potLast[RIGHT_POT], A1);
 #endif // HEADLESS
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+                potUpdated[A3_POT] = updatePot(pot[A3_POT], potCurrent[A3_POT], potCurrentFinal[A3_POT], potLast[A3_POT], A15);
+#endif
             return 0;  // don't update the display
             }
         break;  
@@ -924,8 +948,8 @@ void go()
             if (entry)
                 MIDI.sendRealTime(MIDIClock);
 #ifdef INCLUDE_EXTENDED_CONTROLLER:
-            const char* menuItems[7] = { PSTR("GO"), PSTR("L KNOB"), PSTR("R KNOB"), PSTR("M BUTTON"), PSTR("R BUTTON"), PSTR("WAVE"), PSTR("RANDOM") };
-            doMenuDisplay(menuItems, 7, STATE_CONTROLLER_PLAY, STATE_ROOT, 1);
+            const char* menuItems[9] = { PSTR("GO"), PSTR("L KNOB"), PSTR("R KNOB"), PSTR("M BUTTON"), PSTR("R BUTTON"), PSTR("WAVE"), PSTR("RANDOM"), PSTR("A2"), PSTR("A3"),  };
+            doMenuDisplay(menuItems, 9, STATE_CONTROLLER_PLAY, STATE_ROOT, 1);
 #else
             const char* menuItems[5] = { PSTR("GO"), PSTR("L KNOB"), PSTR("R KNOB"), PSTR("M BUTTON"), PSTR("R BUTTON") };
             doMenuDisplay(menuItems, 5, STATE_CONTROLLER_PLAY, STATE_ROOT, 1);
@@ -1321,13 +1345,23 @@ void go()
                 local.control.selectButtonToggle = 0;
                 local.control.displayValue = -1;
                 local.control.displayType = CONTROL_TYPE_OFF;
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+				local.control.potWaiting[0] = 0;
+				local.control.potWaiting[1] = 0;
+				local.control.potWaiting[2] = 0;
+				local.control.potWaiting[3] = 0;
+#endif
                 entry = false;
                 dontBypassOut = true;
+    			// update bypassOut on entry
+    			bypassOut = (bypass && !dontBypassOut);
                 }
 
             if (isUpdated(BACK_BUTTON, RELEASED))
                 {
                 dontBypassOut = false;
+    			// update bypassOut on exit
+    			bypassOut = (bypass && !dontBypassOut);
                 goUpState(STATE_CONTROLLER);
                 }
             else
@@ -1418,7 +1452,8 @@ void go()
                         }
                     }
         
-                
+
+#ifdef INCLUDE_EXTENDED_CONTROLLER
                 if (potUpdated[LEFT_POT] && (options.leftKnobControlType != CONTROL_TYPE_OFF))
                     {
                     local.control.displayValue = pot[LEFT_POT];
@@ -1426,7 +1461,118 @@ void go()
             
                     // Now move to MSB+LSB
                     local.control.displayValue = local.control.displayValue << 4;
-                                
+                    
+                    if (local.control.potUpdateValue[LEFT_POT] != local.control.displayValue)
+                    	{
+                    	local.control.potUpdateValue[LEFT_POT] = local.control.displayValue;
+	                    local.control.potWaiting[LEFT_POT] = 1;
+	                    }
+                    }
+          
+                if (potUpdated[RIGHT_POT] && (options.rightKnobControlType != CONTROL_TYPE_OFF))
+                    {
+                    local.control.displayValue = pot[RIGHT_POT];            
+                    // at this point local.control.displayValue is 0...1023
+
+                    // Now move to MSB+LSB
+                    local.control.displayValue = local.control.displayValue << 4;
+                    
+                    if (local.control.potUpdateValue[RIGHT_POT] != local.control.displayValue)
+                    	{
+   	                 	local.control.potUpdateValue[RIGHT_POT] = local.control.displayValue;
+   	                 	local.control.potWaiting[RIGHT_POT] = 1;
+						}
+                    }
+	
+                 if (potUpdated[A2_POT] && (options.a2ControlType != CONTROL_TYPE_OFF))
+                    {
+                    local.control.displayValue = pot[A2_POT];            
+                    // at this point local.control.displayValue is 0...1023
+
+                    // Now move to MSB+LSB
+                    local.control.displayValue = local.control.displayValue << 4;
+                    
+                    if (local.control.potUpdateValue[A2_POT] != local.control.displayValue)
+                    	{
+                    	local.control.potUpdateValue[A2_POT] = local.control.displayValue;
+                    	local.control.potWaiting[A2_POT] = 1;
+                    	}
+                    }
+
+                if (potUpdated[A3_POT] && (options.a3ControlType != CONTROL_TYPE_OFF))
+                    {
+                    local.control.displayValue = pot[A3_POT];            
+                    // at this point local.control.displayValue is 0...1023
+
+                    // Now move to MSB+LSB
+                    local.control.displayValue = local.control.displayValue << 4;
+
+                    if (local.control.potUpdateValue[A3_POT] != local.control.displayValue)
+                    	{
+                    	local.control.potUpdateValue[A3_POT] = local.control.displayValue;
+                    	local.control.potWaiting[A3_POT] = 1;
+                    	}
+                    }
+
+				// figure out who has been waiting the longest, if any.  The goal here is to only allow one out at a time and yet prevent starvation
+
+				int8_t winner = -1;
+				uint32_t winnerTime = 0;
+				if (local.control.potWaiting[LEFT_POT] && (currentTime - local.control.potUpdateTime[LEFT_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
+					{
+					if (local.control.potUpdateTime[LEFT_POT] - currentTime > winnerTime) { winner = LEFT_POT; winnerTime = currentTime - local.control.potUpdateTime[LEFT_POT]; }
+					}
+
+                if (local.control.potWaiting[RIGHT_POT] && (currentTime - local.control.potUpdateTime[RIGHT_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
+					{
+					if (local.control.potUpdateTime[RIGHT_POT] - currentTime > winnerTime) { winner = RIGHT_POT; winnerTime = currentTime - local.control.potUpdateTime[RIGHT_POT]; }
+					}
+
+                if (local.control.potWaiting[A2_POT] && (currentTime - local.control.potUpdateTime[A2_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
+					{
+					if (local.control.potUpdateTime[A2_POT] - currentTime > winnerTime) { winner = A2_POT; winnerTime = currentTime - local.control.potUpdateTime[A2_POT]; }
+					}
+
+                if (local.control.potWaiting[A3_POT] && (currentTime - local.control.potUpdateTime[A3_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
+					{
+					if (local.control.potUpdateTime[A3_POT] - currentTime > winnerTime) { winner = A3_POT; winnerTime = currentTime - local.control.potUpdateTime[A3_POT]; }
+					}
+					
+				// here we go
+                if (winner == LEFT_POT)
+                    	{
+                    	sendControllerCommand( local.control.displayType = options.leftKnobControlType, options.leftKnobControlNumber, local.control.potUpdateValue[LEFT_POT], options.channelOut);
+                    	local.control.potUpdateTime[LEFT_POT] = currentTime;
+                    	local.control.potWaiting[LEFT_POT] = 0;
+						}
+                else if (winner == RIGHT_POT)
+                    	{
+                    	sendControllerCommand( local.control.displayType = options.rightKnobControlType, options.rightKnobControlNumber, local.control.potUpdateValue[RIGHT_POT], options.channelOut);
+                    	local.control.potUpdateTime[RIGHT_POT] = currentTime;
+                    	local.control.potWaiting[RIGHT_POT] = 0;
+						}
+                else if (winner == A2_POT)
+                    	{
+                    	sendControllerCommand( local.control.displayType = options.a2ControlType, options.a2ControlNumber, local.control.potUpdateValue[A2_POT], options.channelOut);
+                    	local.control.potUpdateTime[A2_POT] = currentTime;
+                    	local.control.potWaiting[A2_POT] = 0;
+						}
+                else if (winner == A3_POT)
+                    	{
+                    	sendControllerCommand( local.control.displayType = options.a3ControlType, options.a3ControlNumber, local.control.potUpdateValue[A3_POT], options.channelOut);
+                    	local.control.potUpdateTime[A3_POT] = currentTime;
+                    	local.control.potWaiting[A3_POT] = 0;
+						}
+                
+#else
+                if (potUpdated[LEFT_POT] && (options.leftKnobControlType != CONTROL_TYPE_OFF))
+                    {
+                    local.control.displayValue = pot[LEFT_POT];
+                    // at this point local.control.displayValue is 0...1023
+            
+                    // Now move to MSB+LSB
+                    local.control.displayValue = local.control.displayValue << 4;
+                    
                     sendControllerCommand( local.control.displayType = options.leftKnobControlType, options.leftKnobControlNumber, local.control.displayValue, options.channelOut);
                     }
           
@@ -1440,6 +1586,7 @@ void go()
                     
                     sendControllerCommand( local.control.displayType = options.rightKnobControlType, options.rightKnobControlNumber, local.control.displayValue, options.channelOut); 
                     }
+#endif
                 }
    
             if (updateDisplay)
@@ -1515,6 +1662,16 @@ void go()
             {
             const char* menuItems[7] = { PSTR("GO"), PSTR("CONTROL"), PSTR("MODE"), PSTR("RANGE"), PSTR("INITIAL VALUE"), PSTR("LENGTH"), options.controlRandomClocked ? PSTR("UNSYNC") : PSTR("SYNC") };
             doMenuDisplay(menuItems, 7, STATE_CONTROLLER_PLAY_RANDOM, STATE_CONTROLLER, 1);
+            }
+        break;
+        case STATE_CONTROLLER_SET_A2_TYPE:
+            {
+            setControllerType(options.a2ControlType, STATE_CONTROLLER_SET_A2_NUMBER, STATE_NONE);
+            }
+        break;
+        case STATE_CONTROLLER_SET_A3_TYPE:
+            {
+            setControllerType(options.a3ControlType, STATE_CONTROLLER_SET_A3_NUMBER, STATE_NONE);
             }
         break;
         case STATE_CONTROLLER_PLAY_WAVE_ENVELOPE:
@@ -1604,6 +1761,16 @@ void go()
         case STATE_CONTROLLER_SET_RANDOM_NUMBER:
             {
             setControllerNumber(options.randomControlType, options.randomControlNumber, backupOptions.randomControlType, backupOptions.randomControlNumber, STATE_CONTROLLER_RANDOM);
+            }
+        break;
+        case STATE_CONTROLLER_SET_A2_NUMBER:
+            {
+            setControllerNumber(options.a2ControlType, options.a2ControlNumber, backupOptions.a2ControlType, backupOptions.a2ControlNumber, STATE_CONTROLLER);
+            }
+        break;
+        case STATE_CONTROLLER_SET_A3_NUMBER:
+            {
+            setControllerNumber(options.a3ControlType, options.a3ControlNumber, backupOptions.a3ControlType, backupOptions.a3ControlNumber, STATE_CONTROLLER);
             }
         break;
 #endif

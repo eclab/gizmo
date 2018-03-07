@@ -40,6 +40,8 @@ struct _options
 #ifdef INCLUDE_EXTENDED_CONTROLLER
     uint16_t waveControlNumber;
     uint16_t randomControlNumber;
+	uint16_t a2ControlNumber;
+	uint16_t a3ControlNumber;
 #endif
 
     // then 8-bit stuff
@@ -69,6 +71,8 @@ struct _options
 	uint8_t randomInitialValue;
 	uint8_t controlRandomClocked;
     uint8_t randomControlType ;
+	uint8_t a2ControlType;
+	uint8_t a3ControlType;
 #endif
 
     uint8_t noteLength;

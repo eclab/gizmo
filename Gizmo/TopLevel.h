@@ -135,6 +135,8 @@ typedef enum _State: uint8_t
 #ifdef INCLUDE_EXTENDED_CONTROLLER
 	STATE_CONTROLLER_WAVE_ENVELOPE,
 	STATE_CONTROLLER_RANDOM,
+	STATE_CONTROLLER_SET_A2_TYPE,
+	STATE_CONTROLLER_SET_A3_TYPE,
 	STATE_CONTROLLER_PLAY_WAVE_ENVELOPE,
 	STATE_CONTROLLER_SET_WAVE_ENVELOPE_TYPE,
 	STATE_CONTROLLER_SET_WAVE_ENVELOPE,
@@ -152,6 +154,8 @@ typedef enum _State: uint8_t
 	STATE_CONTROLLER_RANDOM_SET_LENGTH,
 	STATE_CONTROLLER_RANDOM_SET_CLOCK,
 	STATE_CONTROLLER_SET_RANDOM_NUMBER,
+	STATE_CONTROLLER_SET_A2_NUMBER,
+	STATE_CONTROLLER_SET_A3_NUMBER,
 #endif
 
 #ifdef INCLUDE_CONTROLLER
@@ -311,9 +315,6 @@ extern _local local;
 #define LEFT_POT 0
 #define RIGHT_POT 1
 
-extern uint8_t button[3];                                       // Is button #i presently being held down?
-extern uint16_t pot[2];                                         // What is the current value of pot #i?
-
 // Update states
 #define NO_CHANGE 0                             		// No change in the button or pot yet
 #define CHANGED 1                                       // The value pot has been changed
@@ -322,10 +323,19 @@ extern uint16_t pot[2];                                         // What is the c
 #define RELEASED 3                                      // The button has been released
 #define RELEASED_LONG 4                         // the button was released after being pressed for 1/2 second or more
 
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+extern uint8_t button[3];                                       // Is button #i presently being held down?
+extern uint16_t pot[4];                                         // What is the current value of pot #i?
+extern uint8_t potUpdated[4];       // has the left pot been updated?  CHANGED or NO_CHANGE
+extern uint8_t buttonUpdated[3];    // has the back button been updated?  PRESSED, RELEASED, PRESSED_AND_RELEASED, RELEASED_LONG, or NO_CHANGE
+extern uint8_t lockoutPots;                     // Set to TRUE when we we want to ignore changes to the pots (perhaps we're changing with NRPN messages)
+#else
+extern uint8_t button[3];                                       // Is button #i presently being held down?
+extern uint16_t pot[2];                                         // What is the current value of pot #i?
 extern uint8_t potUpdated[2];       // has the left pot been updated?  CHANGED or NO_CHANGE
 extern uint8_t buttonUpdated[3];    // has the back button been updated?  PRESSED, RELEASED, PRESSED_AND_RELEASED, RELEASED_LONG, or NO_CHANGE
 extern uint8_t lockoutPots;                     // Set to TRUE when we we want to ignore changes to the pots (perhaps we're changing with NRPN messages)
-
+#endif
 
 // SETUP POTS
 // initializes the pots
