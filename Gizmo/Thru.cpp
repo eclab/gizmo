@@ -177,6 +177,12 @@ void stateThruPlay()
         sendAllSoundsOff();
         }
         
+    else if (isUpdated(SELECT_BUTTON, PRESSED))
+    	{
+    	goDownState(STATE_OPTIONS);
+        optionsReturnState = STATE_THRU_PLAY;
+    	}
+        
     else if (!bypass && newItem && options.channelOut != CHANNEL_OFF && 
         (itemChannel == options.channelIn || options.channelIn == CHANNEL_OMNI || itemChannel == options.thruMergeChannelIn))
         {

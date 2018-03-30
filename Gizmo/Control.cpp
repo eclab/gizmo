@@ -222,8 +222,8 @@ void stateControllerModulationSetMode()
         backupOptions = options;
         }
 
-    const char* menuItems[4] = {  PSTR("GATED"), PSTR("TRIGGERED"), PSTR("LOOPED"), PSTR("FREE") };
-    uint8_t result = doMenuDisplay(menuItems, 4, STATE_NONE, STATE_NONE, 1);
+    const char* menuItems[5] = {  PSTR("GATED"), PSTR("FADED"), PSTR("TRIGGERED"), PSTR("LOOPED"), PSTR("FREE") };
+    uint8_t result = doMenuDisplay(menuItems, 5, STATE_NONE, STATE_NONE, 1);
 
     switch (result)
         {
@@ -314,16 +314,23 @@ uint32_t computeWaveEndTicks(uint8_t index)
 	
 uint16_t computeWaveValue(uint8_t startindex, uint8_t endindex)
 	{
+	// the start wave value is going to be fadeStartControl *if* we're doing FADED, and we just *restarted* (that is,
+	// fadeStartControl isn't negative) rather than *started*.  In all other cases, it's just the standard start wave of
+	// the given index
+	float _startWaveVal = (options.envelopeMode == ENVELOPE_MODE_FADED && startindex == 0 && local.control.fadeStartControl >= 0 ? 
+							local.control.fadeStartControl : (float)(WAVEVAL(startindex) << 7));
+
 	// (currenttime - starttime) / (endtime - starttime) = (currentval - startval) / (endval - startval)
 	// so currentval = (currenttime - starttime) / (endtime - starttime) * (endval - startval) + startval
 	// Note that the vals are 1 off, so that's why we're subtracting 1
+						   
 	float _currentWaveControl = (float)((options.controlModulationClocked? pulseCount : tickCount) - local.control.waveStartTicks) / 
 								(float)(local.control.waveEndTicks - local.control.waveStartTicks) * 
-								(float)((WAVEVAL(endindex) << 7) - (float)(WAVEVAL(startindex) << 7)) +
-								(float)(WAVEVAL(startindex) << 7);
+								(float)((WAVEVAL(endindex) << 7) - _startWaveVal) + _startWaveVal;
 		
 	if (_currentWaveControl < 0) _currentWaveControl = 0;
 	if (_currentWaveControl > 16383) _currentWaveControl = 16383;
+	local.control.fadeWaveControl = _currentWaveControl;			// we update fadeWaveControl here.  Note: can't be negative.
 	
 	uint16_t currentWaveControl = (uint16_t) _currentWaveControl;
 	if (options.waveControlType == CONTROL_TYPE_CC || 
@@ -339,8 +346,11 @@ uint16_t computeWaveValue(uint8_t startindex, uint8_t endindex)
 
 void resetWaveEnvelope(uint8_t index)
 	{
+	if (index == 0)
+		local.control.fadeStartControl = local.control.fadeWaveControl;  // may be we're doing FADED?  So set the start control to the very last wave control immedately before resetting.
 	local.control.wavePosition = index;
-	local.control.currentWaveControl = WAVEVAL(local.control.wavePosition) << 7;
+	if (index != 0 || options.envelopeMode != ENVELOPE_MODE_FADED)		// don't send a controller command with the new position, or we get a click
+		local.control.currentWaveControl = WAVEVAL(local.control.wavePosition) << 7;
 	sendControllerCommand(options.waveControlType, options.waveControlNumber, local.control.currentWaveControl, options.channelOut);
 	local.control.waveCountDown = WAVE_COUNTDOWN;
 	local.control.waveStartTicks = local.control.waveEndTicks; //(options.controlModulationClocked? pulseCount : tickCount);
@@ -355,6 +365,7 @@ void stateControllerPlayWaveEnvelope()
     	local.control.lastWavePosition = -1;
     	local.control.noteOnCount = 0;
     	local.control.waveCountDown = WAVE_COUNTDOWN;
+    	local.control.fadeStartControl = -1;			// < 0 so FADED works just like GATED the first time around.
     	entry = false;
         }
 
@@ -368,7 +379,7 @@ void stateControllerPlayWaveEnvelope()
 			{
 			local.control.noteOnCount--;
 			}
-		if ((local.control.noteOnCount == 0) && (options.envelopeMode == ENVELOPE_MODE_GATED || options.envelopeMode == ENVELOPE_MODE_LOOPED))
+		if ((local.control.noteOnCount == 0) && (options.envelopeMode == ENVELOPE_MODE_GATED || options.envelopeMode == ENVELOPE_MODE_FADED || options.envelopeMode == ENVELOPE_MODE_LOOPED))
 			{
 			local.control.wavePosition = -1;
 			}
@@ -392,12 +403,14 @@ void stateControllerPlayWaveEnvelope()
 			{
 			// Move to the next stage
 			local.control.wavePosition++;
-			if ((options.envelopeMode == ENVELOPE_MODE_GATED || options.envelopeMode == ENVELOPE_MODE_TRIGGERED) &&
+			if ((options.envelopeMode == ENVELOPE_MODE_GATED || options.envelopeMode == ENVELOPE_MODE_FADED || options.envelopeMode == ENVELOPE_MODE_TRIGGERED) &&
 				(local.control.wavePosition == (ENVELOPE_SIZE - 1) || WAVETIME(local.control.wavePosition) == ENVELOPE_END))
 				{
-				// we're at the end of one-shot, do one last controller command, sort of a semi reset envelope
+				// We're at the end of one-shot, do one last controller command, sort of a semi reset envelope.
+				// Unlike resetWaveEnvelope, we can send a controller command here this because we're not resetting the envelope to 0, right?
 				local.control.currentWaveControl = WAVEVAL(local.control.wavePosition) << 7;
-
+				local.control.fadeWaveControl = local.control.currentWaveControl;
+				local.control.fadeStartControl = local.control.fadeWaveControl;
 				sendControllerCommand(options.waveControlType, options.waveControlNumber, local.control.currentWaveControl, options.channelOut);
 				local.control.waveCountDown = WAVE_COUNTDOWN;
 				

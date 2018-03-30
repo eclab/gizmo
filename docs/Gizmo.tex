@@ -17,7 +17,7 @@
 \begin{document}
 
 \noindent {\Huge\bf Gizmo}\\[0.5em]
-{\large \bf An Arduino MIDI Tool, Version 5\\
+{\large \bf An Arduino MIDI Tool, Version 6\\
 By Sean Luke\quad sean@cs.gmu.edu} 
 \hspace{\fill}{\it \textbf{For Aric}}\\
 
@@ -76,6 +76,8 @@ Gizmo applications can also be set with a {\it note value} (or {\it note speed})
 \item {\bf \textit{Mega Only}\quad Transposition and Volume Control.}\quad You can transpose all of Gizmo's MIDI output pitch by anywhere from \(-60...60\) steps.  Additionally you can multiply the MIDI output velocity (volume) by multiples of two ranging from \(1/8\) to \(8\).
 
 \item {\bf \textit{Mega Only}\quad Menu Delay.}\quad Many of Gizmo's menus display the first few letters of a menu item, then pause for some interval of time before they start scrolling the full item.  You can change this interval.
+
+\item {\bf \textit{Mega Only}\quad Sysex Dumps.}\quad Arpeggios, Step Sequences, and Recordings can be uploaded and downloaded to your computer.
 
 \end{itemize} 
 
@@ -292,7 +294,7 @@ Buttons do different things.  Here are certain common items:
 \begin{itemize}
 \item {\bf Pressing the Back Button}\quad This is the ``escape'' or ``cancel'' button: it {\bf always goes back up the menu hierarchy.}  Thus you can't ever get lost\,---\,just keep pressing the Back button and you'll eventually find yourself at the root menu.
 
-\item {\bf Long-Pressing the Back Button}\quad This toggles {\bf bypass mode}, where Gizmo tries hard to act as if it's just a MIDI THRU coupler between its input and output MIDI wires: it passes through all the MIDI it receives, and with one exception (the Controller, see Section \ref{controller}) it doesn't output any new data.  In bypass mode, the {\bf Beat/Bypass} light (Figure~\ref{HighLevelGizmoLayout}) will stop beating and instead will flash rapidly.  Bypass mode also sends an ``all sounds off'' command to all outgoing MIDI channels, so if you need to shut up a misbehaving synth, you can enter bypass mode and then leave it again.
+\item {\bf Long-Pressing the Back Button}\quad This toggles {\bf bypass mode}, where Gizmo tries hard to act as if it's just a MIDI THRU coupler between its input and output MIDI wires: it passes through all the MIDI it receives, and with one exception (the Controller, see Section \ref{controller}) it doesn't output any new data.  In bypass mode, the {\bf Beat/Bypass} light (Figure~\ref{HighLevelGizmoLayout}) will stop beating and instead will flash rapidly.  Bypass mode also sends an ``all sounds off'' command to all outgoing MIDI channels, so if you need to shut up a misbehaving synth, you can enter bypass mode and then leave it again.\footnote{By default Gizmo starts up with Bypass turned on in a special way: when you select your very first application, Gizmo will automatically turn Bypass off (without sending an ``all sounds off''), enter that application, and thereafter treat Bypass normally.  This only happens on selecting your first application, and that's it.  Also if you toggle Bypass manually, Gizmo will automatically start treating Bypass normally.  The point of this is to allow Gizmo to be in Bypass mode unintrusively as soon as it's powered up so you can have it attached to your keyboard all the time even if you don't use it that often.  If you would prefer that Gizmo start up with Bypass turned {\it off}, in \texttt{All.h} change the line \texttt{\#define TOPLEVEL{\textunderscore}BYPASS}\quad to\quad\texttt{// \#define TOPLEVEL{\textunderscore}BYPASS}\quad and rebuild Gizmo.}
 
 \item {\bf Pressing the Select Button}\quad If you're being presented with a menu of options, or a number to choose, or a glyph to choose, the Select button will select the currently-displayed option.  In some applications (such as the Step Sequencer, Arpeggiator, and Recorder) the Select Button is assigned other tasks.
 
@@ -567,7 +569,7 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 \item {\bf Velocity (Track)}\quad This lets you specify a key velocity\footnote{By velocity we mean in the MIDI sense: how fast the key is struck; this basically translates to loudness.} that {\it all} notes in the track will use (as a value 1...127).  If you would instead prefer that each note in the track use its own independent key velocity as you had entered them, you can choose {\it none}.
 \item {\bf Fader (Track)}\quad This lets you specify a volume modifier which is multiplied against the velocities of the notes in the track.  Possible values are 0...31, where 0 completely hushes the notes, 16 lets them play at their specified velocities, and 31 is roughly twice their velocity.  In general, values larger than or smaller than 16 will make the notes louder or quieter respectively.
 \item {\bf Type (Track)} (Mega only) \quad Lets you specify the type of data stored in this track.  See discussion of {\bf Edit Mode} above.
-\item {\bf Pattern (Track)} (Mega only)\quad Lets you specify the four-iteration pattern for this track.  An {\tt O} indicates that the track will be played, and a {\tt -} indicates that it will be hushed.  Your options are: \texttt{OOOO, O-O-, -O-O, O---, -O--, --O-, ---O, OO--, -OO-, --OO, O--O,  OOO-, O-OO, OO-O,} or {\tt RND}, indicating that each iteration the track is hushed at random.
+\item {\bf Pattern (Track)} (Mega only)\quad Lets you specify the four-iteration pattern for this track.  An {\tt O} indicates that the track will be played, and a {\tt -} indicates that it will be hushed.  Your options are: \texttt{OOOO, O-O-, -O-O, O---, -O--, --O-, ---O, OO--, -OO-, --OO, O--O, OO-O, R1/8, R1/4, R1/2,} or\ \ {\tt R3/4}.  The last four hush at random: the fraction indicates the probability that the track will be played.
 \item {\bf Edit} (Mega only)\quad A submenu for cut/copy/paste-like operations:
 \begin{itemize}
 \item {\bf Mark}\quad Records the current track and edit position as the {\it mark position}.
@@ -805,7 +807,8 @@ Messages that are associated with a MIDI channel will have their channel number 
 126&\(C\)&Mono On ({\it with \(C\) channels, shown first})\\
 127&Normally 0&Poly On\\
 \end{tabular}\end{center}
-\item {\bf System Exclusive}\quad \texttt{SYSX} is displayed.\footnote{Note that the version of the MIDI library on which Gizmo relies presently doesn't handle large System Exclusive messages well.}
+\item {\bf System Exclusive}\quad is {\it not} indicated: Gizmo does not detect it.
+%\texttt{SYSX} is displayed.\footnote{Note that the version of the MIDI library on which Gizmo relies presently doesn't handle large System Exclusive messages well.}
 \item {\bf Song Position}\quad \texttt{SPOS} is displayed.
 \item {\bf Song Select}\quad \texttt{SSEL} is displayed.
 \item {\bf Tune Request}\quad \texttt{TREQ} is displayed.
@@ -855,7 +858,7 @@ Note pitches are displayed by showing the note (such as B$\flat$), with the octa
 \section {The Controller}
 \label{controller}
 
-The Controller allows you to assign to each of two buttons and two potentiometers any NRPN, RPN, Control Change (CC), or Program Change (PC) value; or (on the Mega) Pitch Bend or Channel Aftertouch.%, or control voltage.  
+The Controller allows you to assign to each of two buttons and four potentiometers any NRPN, RPN, Control Change (CC), or Program Change (PC) value; or (on the Mega) Pitch Bend or Channel Aftertouch.%, or control voltage.  
 These assignments are stored in Flash memory and survive reboots and power cycling.  You can also (on the Mega) set up an eight-stage loopable envelope to do complex control changes, such as emulating the Waldorf Microwave XT's ``wave envelope'', or doing unusual LFOs.  Finally, the Mega also sports a sophisticated Random LFO to do control changes.
 
 The Controller interacts with Bypass mode differently than other applications.  In bypass mode, the Controller passes all the incoming MIDI data to MIDI out as usual.  But it will still emit values when you press the buttons or more the knobs.  This is because it's typical that you'd want to use Controller to (for example) manipulate the VCF on an analog synthesizer while playing it via a remote keyboard.  To do this, you'd plug the keyboard into Gizmo, plug Gizmo into the synthesizer, and turn on bypass mode.
@@ -900,7 +903,10 @@ you would like to manipulate with the middle button.  If OFF, then pressing the 
 	
 	This submenu controls the Random LFO (see Section \ref{randomlfo}).
 
-		\item{\bf \textit{Note}} At the borders of 14-bit values (near 0 or 16383) you may find it harder to precisely set the BPM due to anti-potentiometer noise code in Gizmo. Just use the right knob to fine-tune your value. 
+	\item{\textit{[Mega Only]}\qquad }{\bf Analog Port 2} and {\bf Analog Port 3}\quad (\texttt{A2} and \texttt{A3})
+	
+	These submenus work exactly like the {\bf Left Knob} and {\bf Right Knob} menus, but they are for additional potentiometers or other devices which you can attach to ports A3 and A3, respectively, on your Arduino.  For example, I use them to get information from a joystick.\footnote{{\it Why not A4 and A5 too?\quad} Because A4 and A5 are used for I2C, which the screen uses.  You could of course add in A6...A12 too.}
+	
 	\end{description}
 	
 \paragraph{Warning} Gizmo could {\it theoretically} react to knob changes every 4 MIDI bytes read at full MIDI speed.  However an RPN/NRPN command will take up to 12 bytes (or 18 if \texttt{INCLUDE\_SEND\_NULL\_RPN} is turned on in the code), and a CC command could take up to 6 bytes.  This means that turning a knob may cause Gizmo to generate RPN/RPN/CC messages faster than it can send them.  Eventually the Arduino's write-buffer will fill with unwritten messages and the Arduino will pause until it's sent stuff out.  This could cause Gizmo to miss an incoming MIDI byte.  So if you're sending control commands while (say) at the same time passing data through, this may be an issue: though I have never had it happen to me.
@@ -922,12 +928,12 @@ you would like to manipulate with the middle button.  If OFF, then pressing the 
 \begin{figure}[t]
 \begin{center}
 \begin{tabular}{@{}ll@{}}
-\includegraphics[height=1.9in]{OneShot.pdf}&
-\includegraphics[height=1.9in]{OneShotShort.pdf}\\
-~(a) Gated/Triggered, 8 stages&
-~(b) Gated/Triggered, 5 stages\\\\
-\includegraphics[height=1.9in]{Looped.pdf}&
-\includegraphics[height=1.9in]{LoopedShort.pdf}\\
+\includegraphics[height=1.8in]{OneShot.pdf}&
+\includegraphics[height=1.8in]{OneShotShort.pdf}\\
+~(a) Gated/Faded/Triggered, 8 stages&
+~(b) Gated/Faded/Triggered, 5 stages\\\\
+\includegraphics[height=1.8in]{Looped.pdf}&
+\includegraphics[height=1.8in]{LoopedShort.pdf}\\
 ~(c) Looped/Free, 8 stages&
 ~(d) Looped/Free, 4 stages
 \end{tabular}
@@ -935,18 +941,19 @@ you would like to manipulate with the middle button.  If OFF, then pressing the 
 \caption{Examples of the 8-Stage Envelope in Action.}
 \end{figure}
 
-\paragraph{Modes}  There are four envelope modes:
+\paragraph{Modes}  There are five envelope modes:
 
 \begin{itemize}
 \item {\bf Gated}\quad This is the default.  The envelope will begin at the the stage 1 value when a key is pressed, and then start sweeping.  An envelope has expired when it reaches (not completes) stage 8, or when it reaches a stage whose time interval is ``off''.  When you release all the keys, or when the envelope has expired, then the control value will stay fixed at its current value until restarted.  You restart the envelope by releasing all the keys and then pressing a new one. 
+\item {\bf Faded}\quad This just like Gated, except that after an envelope is restarted, instead of resetting to Value 1 and moving towards Value 2 again, it will start at its previous final value and then move towards Value 2.  This prevents the sudden jump to Value 1.  This might be useful for multiple long legato pads.
 \item {\bf Triggered}\quad This is like Gated, except that the envelope continues even if you have released all the keys.  You restart the envelope by releasing all the keys and then pressing a new key.  This might be useful for sounds with long releases.
 \item {\bf Looped}\quad The envelope will begin at the the stage 1 value when a key is pressed, and then start sweeping.  An envelope has expired when it {\it completes} stage 8, or when it {\it reaches} (not completes) a stage whose time interval is ``off''.  When an envelope has expired, Gizmo loops to stage 1 again.  If you release all the keys, then the control value will stay fixed at its current value until restarted.  You restart the envelope by releasing all the keys and then pressing a new key.
 \item {\bf Free}\quad This is like Looped, except that envelope is constantly running and looping at all times.  The envelope cannot be stopped or restarted.
 \end{itemize}
 
-Please note that if you're using Gated or Triggered, then the time interval for stage 8 serves no function.  In Looped or Free, it indicates the length of stage 8 before returning to stage 1.  
+Please note that if you're using Gated, Faded, or Triggered, then the time interval for stage 8 serves no function.  In Looped or Free, it indicates the length of stage 8 before returning to stage 1.  
 
-\paragraph{Values}  All stage values are 0...127.  However the interpolation is 14-bit if you're doing NRPN, RPN,%, Voltage, 
+\paragraph{Values}  All stage values are 0...127.  However the interpolation is 14-bit if you're doing NRPN, RPN, %, Voltage, 
 or Pitch Bend.  Otherwise the interpolation is 7-bit.
 
 \paragraph{Intervals} A stage time interval can any \(n\) from 0...254 (or {\bf off} as discussed earlier).  The envelope can be {\bf synced} to the MIDI clock (or {\bf unsynced}). When synced, a value of \(n\) is a 32nd note, that is, \(n/8\) of a beat.  So if you want your interval to last a 4-beat measure, set \(n=32\).
@@ -961,7 +968,7 @@ When unsynced (the default), \(n\) represents approximately \(n/16\) steps per s
 \item {\bf Go}\quad Start the envelope.
 \item {\bf Control}\quad Specify the envelope control type.  If CC, NRPN, or RPN, additionally specify the parameter number. 
 \item {\bf Envelope}\quad Set the 8 envelope values and time intervals.  Remember that an interval can also be \texttt{-~-~-~-}, which indicates that that is the final stage.  The final entry in this submenu is {\bf Clear}, which resets all the values to 0 all the intervals to \texttt{-~-~-~-}. 
-\item {\bf Mode}\quad Specify the mode (Gated, Triggered, Looped, or Free).
+\item {\bf Mode}\quad Specify the mode (Gated, Faded, Triggered, Looped, or Free).
 \item {\bf Sync} {\it or} {\bf Unsync}\quad Sync the envelope to MIDI clock or unsync it.
 \end{itemize}
 
@@ -1280,7 +1287,7 @@ Because the TX81Z has more than 128 patches, Program Change Table lets you (weir
 \vspace{-1em}\label{measurecounter}
 \end{wrapfigure}
 
-	The measure counter\footnote{The Measure Counter was added to Gizmo at the request of \texttt{Inkog}, a member of http:/\!/gearslutz.com and early adopter of Gizmo.} is basically a stopwatch which counts elapsed beats, measures (bars), and phrases (up to 127 phrases).  Alternatively if can count eighths of a second,\footnote{\label{footnotetenths}Why not tenths of a second?  Because \(10 \times 60 \times 128\) is larger than \(2^{16}\), so it won't fit in a 16-bit integer.} seconds, and minutes (up to 127 minutes) via the internal clock or external MIDI clock.  If the minutes or phrases exceed 127, then \texttt{HI} is displayed instead.
+	The measure counter\footnote{The Measure Counter was added to Gizmo at the request of \texttt{Inkog}, a member of http:/\!/gearslutz.com and early adopter of Gizmo.} is basically a stopwatch which counts elapsed beats, measures (bars), and phrases (up to 127 phrases).  Alternatively it can count eighths of a second,\footnote{\label{footnotetenths}Why not tenths of a second?  Because \(10 \times 60 \times 128\) is larger than \(2^{16}\), so it won't fit in a 16-bit integer.} seconds, and minutes (up to 127 minutes) via the internal clock or external MIDI clock.  If the minutes or phrases exceed 127, then \texttt{HI} is displayed instead.
 	
 	To change what a measure (bar) or phrase means, long-press the Select button to bring up the Menu.  Here you can choose the {\bf Beats Per Bar} (a value from 1...16)\footnote{Why not 32, like Bars Per Phrase uses?  Because \(32 \times 32 \times 128 > 2^{16}\).  So basically for the same reason as Footnote \ref{footnotetenths}.} and the {\bf Bars per Phrase} (1...32), and as usual, call up the {\bf Options Menu} to change the {\bf Tempo}, etc.
 	
@@ -1297,6 +1304,22 @@ Because the TX81Z has more than 128 patches, Program Change Table lets you (weir
 
 	You can also control the Measure Counter via MIDI: if you send a MIDI Play, it will reset the Measure Counter.  Note that if you send a MIDI Stop, and Gizmo is listening to external MIDI clock, then the Measure Counter will be halted (and MIDI Continue will continue the Counter).  However sending a MIDI Stop will not presently halt the stopwatch.
 
+\clearpage
+
+\section {The Sysex Dump Facility}
+\label{sysex}
+
+	The sysex facility allows Gizmo to load and emit sysex dumps of individual arpeggios or of slots (which can hold either step sequences or note recordings).
+	
+	The facility is simple.  First, you're asked to choose whether you want to upload/download {\bf Slots} or {\bf Arpeggios}.  After this, you're asked which slot or arpeggio {\bf number} you want to upload/download.  After you have selected one, the sysex facility enters its {\bf transfer mode}.
+	
+Initially the transfer mode will display \texttt{-~-~-~-} indicating that nothing has happened yet.  When you press the {\bf Select Button}, Gizmo will do a sysex dump of your requested slot or arpeggio.  You can send this dump as many times as you like.  Correspondingly, if you send a slot or arpeggio to Gizmo while in transfer mode, Gizmo will automatically read and save it.  (Note that Gizmo will only save an arpeggio if you had selected an arpeggio, and likewise only save a slot if you had selected a slot: otherwise it will display \texttt{SYSX} on receiving the wrong type sysex dump).
+
+After either sending or receiving a sysex dump, Gizmo will display an ever-increasing integer.  The value of this integer means absolutely nothing: it exists so that when it changes you can tell that something was just successfully received or sent.  If Gizmo receives a bad sysex dump, it will display \texttt{FAIL}.
+
+Gizmo's sysex dump format is simple.  Bytes 0--6 are as follows:\quad\texttt{0xF0 0x7D 'G' 'I' 'Z' 'M' 'O'}.\quad  Byte 7 is the version number (presently \texttt{0x00}). Byte 8 is the sysex type (\texttt{0x00} for slots, \texttt{0x01} for arpeggios).  Next, Gizmo provides a memory dump of the bytes forming a single slot or arp structure (\texttt{struct~{\textunderscore}slot} or \texttt{struct~{\textunderscore}arp} in Gizmo's code).  Each byte in this memory dump is nybblized into two bytes in the sysex stream: that is the high 4 bits of the byte are sent first, followed by the low 4 bits.  For example, if a memory byte was binary 01101001, then the sysex would contain the two bytes 0000{\bf 0110} and 0000{\bf 1001} in that order.  Next, Gizmo has a checksum, which is simply the low 7 bits of the sum of all the nybbles.  Finally comes \texttt{0xF7}.   This structure is not really meant to be parsed, though a cursory reading of the Gizmo code should make it clear what the memory bytes mean.
+
+\paragraph{Installation Note} The Sysex facility is not enabled by default, because in order to use it you also need to make a small modification to the MIDI library.  You can't use the Sysex facility on the Uno because there's not enough RAM.  See the {\tt All.h} file for installation instructions.
 
 \clearpage
 \section {Options}

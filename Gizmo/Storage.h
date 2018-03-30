@@ -79,6 +79,7 @@ union _data
     {
     struct _slot slot;
     struct _arp arp;
+    unsigned char bytes[sizeof(struct _slot)];
     };
         
 // Our loaded data

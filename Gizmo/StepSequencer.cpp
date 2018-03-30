@@ -197,7 +197,7 @@ static uint8_t potChangedBy(uint16_t* potVals, uint8_t potNum, uint16_t amount)
 
 void stateStepSequencerMenuPattern()	
 	{
-    const char* menuItems[16] = {  PSTR("OOOO"), PSTR("O-O-"), PSTR("-O-O"), PSTR("O---"), PSTR("-O--"), PSTR("--O-"), PSTR("---O"), PSTR("OO--"), PSTR("-OO-"), PSTR("--OO"), PSTR("O--O"), PSTR("OO-O"), PSTR("R1/8"), PSTR("R1/4"), PSTR("R1/3"), PSTR("R1/2") };
+    const char* menuItems[16] = {  PSTR("OOOO"), PSTR("O-O-"), PSTR("-O-O"), PSTR("O---"), PSTR("-O--"), PSTR("--O-"), PSTR("---O"), PSTR("OO--"), PSTR("-OO-"), PSTR("--OO"), PSTR("O--O"), PSTR("OO-O"), PSTR("R1/8"), PSTR("R1/4"), PSTR("R1/2"), PSTR("R3/4") };
 	const uint8_t menuIndices[16] = {15	,	5,		10,		1,		2,		4,		8,		3,		6,		12,		9,		11,		14,		13,		7,		0 };
 #ifdef INCLUDE_EXTENDED_MENU_DEFAULTS
 	if (entry)
@@ -1963,13 +1963,13 @@ void playStepSequencer()
 			if (local.stepSequencer.currentPlayPosition == 0)
 				{
 				local.stepSequencer.shouldPlay[track] = ((local.stepSequencer.pattern[track] >> (local.stepSequencer.countup & 3)) & 1);
-				if (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_1_2)
+				if (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_3_4)
+					{
+					local.stepSequencer.shouldPlay[track] = (random() < (RANDOM_MAX / 4) * 3);
+					}
+				else if (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_1_2)
 					{
 					local.stepSequencer.shouldPlay[track] = (random() < (RANDOM_MAX / 2));
-					}
-				else if (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_1_3)
-					{
-					local.stepSequencer.shouldPlay[track] = (random() < (RANDOM_MAX / 3));
 					}
 				else if (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_1_4)
 					{

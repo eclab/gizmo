@@ -1161,7 +1161,7 @@ void clearScreen()
 
 GLOBAL static uint8_t glyphTable[
 #ifdef INCLUDE_EXTENDED_GLYPH_TABLE
-    20
+    21
 #else
     15
 #endif
@@ -1191,6 +1191,7 @@ GLOBAL static uint8_t glyphTable[
     {GLYPH_3x5_C, GLYPH_3x5_H, GLYPH_3x5_R, GLYPH_3x5_D},   // CHRD
     {GLYPH_3x5_H, GLYPH_3x5_I, GLYPH_3x5_G, GLYPH_3x5_H},   // HIGH
     {GLYPH_3x5_T, GLYPH_3x5_R, GLYPH_3x5_A, GLYPH_3x5_N},   // TRAN
+    {GLYPH_3x5_F, GLYPH_3x5_A, GLYPH_3x5_I, GLYPH_3x5_L},   // FAIL
 #endif
 
     };

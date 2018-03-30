@@ -35,13 +35,29 @@ GLOBAL const char* options_p;  // = PSTR("OPTIONS");
 ///    either by choosing it in the options, or by long-pressing BACK+SELECT.
 ///    Don't set bypass -- instead call toggleBypass
 
-GLOBAL uint8_t bypass = 0;                                        // Do we bypass the system entirely and just let MIDI flow through the box?
-GLOBAL uint8_t bypassOut = 0;                                        // Do we bypass the system entirely and just let MIDI flow through the box?
-GLOBAL uint8_t dontBypassOut = 0;
+#define BYPASS_ON (1)
+#define BYPASS_OFF (0)
+#define BYPASS_FIRST_ON (2)
+
+#ifdef TOPLEVEL_BYPASS
+GLOBAL uint8_t bypass = BYPASS_FIRST_ON;                       // This is set when we are doing bypassing
+#else
+GLOBAL uint8_t bypass = BYPASS_OFF;                       // This is set when we are doing bypassing
+#endif
+
+GLOBAL uint8_t bypassOut = BYPASS_OFF;                    // This is set when we are preventing Gizmo's applications from writing out
+GLOBAL uint8_t dontBypassOut = 0;				 // An application can set this to allow writing out, but he must afterwards say 
 
 void toggleBypass(uint8_t channel)
 	{
+#ifdef TOPLEVEL_BYPASS
+	// the first time through bypass is BYPASS_FIRST_ON.
+	// only after it's been turned off (or back on again) do we start doing all-sounds-off.
+	if (bypass !=  BYPASS_FIRST_ON)
+		sendAllSoundsOffDisregardBypass(channel);
+#else
     sendAllSoundsOffDisregardBypass(channel);
+#endif
 
 #ifndef HEADLESS
     if (!bypass) 
@@ -593,12 +609,29 @@ void go()
                 optionsReturnState = STATE_ROOT;
                 }
 #if defined(__MEGA__)
+#if defined(INCLUDE_SYSEX)
+            const char* menuItems[11] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), PSTR("SYSEX"), options_p };
+            if (doMenuDisplay(menuItems, 11, FIRST_APPLICATION, STATE_ROOT, 1) == MENU_SELECTED)
+#else
             const char* menuItems[10] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), options_p };
-            doMenuDisplay(menuItems, 10, FIRST_APPLICATION, STATE_ROOT, 1);
+            if (doMenuDisplay(menuItems, 10, FIRST_APPLICATION, STATE_ROOT, 1) == MENU_SELECTED)
+#endif
+            	{
+#if defined(TOPLEVEL_BYPASS)
+				if (bypass == BYPASS_FIRST_ON)
+					toggleBypass(0); // the channel doesn't matter, it'll get ignored
+#endif
+            	}
 #endif
 #if defined(__UNO__)
             const char* menuItems[6] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), options_p };
-            doMenuDisplay(menuItems, 6, FIRST_APPLICATION, STATE_ROOT, 1);
+            if (doMenuDisplay(menuItems, 6, FIRST_APPLICATION, STATE_ROOT, 1) == MENU_SELECTED)
+            	{
+#if defined(TOPLEVEL_BYPASS)
+				if (bypass == BYPASS_FIRST_ON)
+					toggleBypass(0); // the channel doesn't matter, it'll get ignored
+#endif
+            	}
 #endif
             }
         break;  
@@ -1004,6 +1037,108 @@ void go()
         break;
 #endif
 
+#ifdef INCLUDE_SYSEX
+        case STATE_SYSEX:
+            {
+            // make sure that we're reset properly
+            local.sysex.slot = NO_SYSEX_SLOT;
+            
+            const char* menuItems[2] = { PSTR("SLOT"), PSTR("ARPEGGIO") };
+            doMenuDisplay(menuItems, 2, STATE_SYSEX_SLOT, STATE_ROOT, 1);
+            }
+        break;
+        
+        case STATE_SYSEX_SLOT:
+            {
+            local.sysex.type = SYSEX_TYPE_SLOT;
+            
+            // make sure that we're reset properly
+            local.sysex.received = RECEIVED_NONE;
+            uint8_t result = doNumericalDisplay(0, NUM_SLOTS - 1, 1, false, GLYPH_NONE);
+            switch (result)
+                {
+                case NO_MENU_SELECTED:
+                    break;
+                case MENU_SELECTED:
+                	local.sysex.slot = currentDisplay;
+                	goDownState(STATE_SYSEX_GO);
+                	break;
+                case MENU_CANCELLED:
+                	goUpState(STATE_SYSEX);
+                	break;
+                }
+            }
+        break;
+        
+        case STATE_SYSEX_ARP:
+            {
+            local.sysex.type = SYSEX_TYPE_ARP;
+
+            // make sure that we're reset properly
+            local.sysex.received = RECEIVED_NONE;
+            uint8_t result = doNumericalDisplay(0, NUM_ARPS - 1, 1, false, GLYPH_NONE);
+            switch (result)
+                {
+                case NO_MENU_SELECTED:
+                    break;
+                case MENU_SELECTED:
+                	local.sysex.slot = currentDisplay;
+                	goDownState(STATE_SYSEX_GO);
+                	break;
+                case MENU_CANCELLED:
+                	goUpState(STATE_SYSEX);
+                	break;
+                }
+            }
+        break;
+
+        case STATE_SYSEX_GO:
+            {
+            // display
+            if (local.sysex.received == RECEIVED_NONE)
+            	{
+				clearScreen();  // is this necessary?
+            	write3x5Glyphs(GLYPH_OFF);
+            	}
+            else if (local.sysex.received == RECEIVED_WRONG)
+            	{
+				clearScreen();  // is this necessary?
+            	write3x5Glyphs(GLYPH_SYSEX);
+            	}
+            else if (local.sysex.received == RECEIVED_BAD)
+            	{
+				clearScreen();  // is this necessary?
+            	write3x5Glyphs(GLYPH_FAIL);
+            	}
+            else
+            	{
+				clearScreen();
+				writeShortNumber(led, ((uint8_t)local.sysex.received), false);
+            	}
+            	
+            // handle buttons
+            if (isUpdated(BACK_BUTTON, RELEASED))
+            	{
+            	goUpState(local.sysex.type == SYSEX_TYPE_SLOT ? STATE_SYSEX_SLOT : STATE_SYSEX_ARP);
+            	}
+            else if (isUpdated(SELECT_BUTTON, PRESSED))
+            	{
+            	if (local.sysex.type == SYSEX_TYPE_SLOT)
+            		{
+            		sendSlotSysex();
+            		}
+            	else
+            		{
+            		sendArpSysex();
+            		}
+				local.sysex.received++;
+				if (local.sysex.received <= 0)  // previous was BAD or WRONG, or we wrapped around
+					local.sysex.received = 1;
+            	}
+            }
+        break;
+#endif
+
 
         case STATE_OPTIONS:
             {
@@ -1039,7 +1174,7 @@ void go()
                                           ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
                                           PSTR("BRIGHTNESS"), 
                                           PSTR("MENU DELAY"),
-                                          PSTR("GIZMO V5 (C) 2017 SEAN LUKE") };
+                                          PSTR("GIZMO V6 (C) 2018 SEAN LUKE") };
             doMenuDisplay(menuItems, 15, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
 #endif
 #if defined(__UNO__)
@@ -1047,7 +1182,7 @@ void go()
                                           PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), 
                                           ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
                                           PSTR("BRIGHTNESS"),
-                                          PSTR("GIZMO V5 (C) 2017 SEAN LUKE") };
+                                          PSTR("GIZMO V6 (C) 2018 SEAN LUKE") };
             doMenuDisplay(menuItems, 11, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
 #endif
 

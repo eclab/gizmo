@@ -146,9 +146,17 @@ void setup()
     MIDI.setHandleTuneRequest(handleTuneRequest);
     MIDI.setHandleActiveSensing(handleActiveSensing);
     MIDI.setHandleSystemReset(handleSystemReset);
+#ifdef INCLUDE_SYSEX
+    MIDI.setHandleSystemExclusive(handleSysex);
+#endif INCLUDE_SYSEX
+    
     MIDI.begin(MIDI_CHANNEL_OMNI);
+#ifdef TOPLEVEL_BYPASS
+    MIDI.turnThruOn();
+#else
     MIDI.turnThruOff();
-
+#endif
+  
     defaultState = STATE_NONE;
 
     // start clock

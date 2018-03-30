@@ -54,6 +54,13 @@ typedef enum _State: uint8_t
 	STATE_MEASURE,
 #endif
 
+#ifdef INCLUDE_SYSEX
+	STATE_SYSEX,
+	STATE_SYSEX_SLOT,
+	STATE_SYSEX_ARP,
+	STATE_SYSEX_GO,
+#endif
+
 	STATE_OPTIONS,
 	STATE_UNDEFINED_1,	// leave all these alone, they're buffer space for 12 apps
 	STATE_UNDEFINED_2,
@@ -296,6 +303,7 @@ union _local
     struct _measureLocal measure;
     struct _splitLocal split;
     struct _synthLocal synth;
+    struct _sysexLocal sysex;
     };
         
 extern _local local;

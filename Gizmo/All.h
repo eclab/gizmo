@@ -23,6 +23,14 @@
 // for me to grep for global variables.
 #define GLOBAL
 
+// If this is set, then gizmo will start up in bypass mode initially, AND
+// every time you leave the toplevel menu and enter an application, gizmo
+// will always exit bypass mode even if you had manually set it.
+//
+// If this is UNSET, then gizmo will not start up in bypass mode initially,
+// and will not toy with bypass mode at all in the toplevel -- it stays as you set it.
+#define TOPLEVEL_BYPASS
+
 
 // If you don't want to use the SparkFun MIDI Shield, and perhaps use some other
 // compatible MIDI shield without the buttons and pots, you can turn on these defines.
@@ -85,6 +93,7 @@
 // INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU	When in menus, does the middle button increment through them?
 // INCLUDE_CLOCK_IN_OPTIONS					When in the options menu, can I manipulate the clock via buttons?
 // INCLUDE_CC_CONTROL						Can you control Gizmo via CC in addition to NRPN?
+// INCLUDE_TOPLEVEL_BYPASS					Can the user specify how bypass is handled in the top-level menus as an option?
 //
 // These are turned on as a consequence of other features -- they're probably not useful to turn on yourself.
 // INCLUDE_ENTER_CHORD						Should the stateEnterChord() function (Utility.h) be made available?
@@ -120,6 +129,14 @@
 #define INCLUDE_SYNTH
 #define INCLUDE_MEASURE
 
+//// NOTE: To include the Sysex dump facility, you not only uncomment the INCLUDE_SYSEX line below, but
+//// you ALSO must go into the "MIDI.h" file in the Forty Seven Effects MIDI library and change the line 
+////    static const unsigned SysExMaxSize = 0;
+//// to
+////	static const unsigned SysExMaxSize = 787;   // the size of the MIDI Dump of a Slot
+
+//#define INCLUDE_SYSEX
+
 #define USE_ALL_NOTES_OFF
 
 #define INCLUDE_OPTIONS_TRANSPOSE_AND_VOLUME
@@ -141,7 +158,6 @@
 #define INCLUDE_SYNTH_OBERHEIM_MATRIX_1000
 #define INCLUDE_SYNTH_KORG_MICROSAMPLER
 #define INCLUDE_SYNTH_YAMAHA_TX81Z
-
 #endif
 
 

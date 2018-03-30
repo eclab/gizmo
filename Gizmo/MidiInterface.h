@@ -302,6 +302,32 @@ void sendAllSoundsOff(uint8_t channel=CHANNEL_OMNI);
 void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t fullValue, uint8_t channel);
 
 
+
+//// LOCAL 
+
+#define SYSEX_VERSION 0
+
+#define NO_SYSEX_SLOT (-1)
+#define SYSEX_TYPE_SLOT 0
+#define SYSEX_TYPE_ARP 1
+#define RECEIVED_WRONG (-1)
+#define RECEIVED_BAD (-2)
+#define RECEIVED_NONE (0)
+
+struct _sysexLocal
+    {
+    int8_t slot;
+    uint8_t type;
+    int8_t received;
+    };
+
+
+#ifdef INCLUDE_SYSEX
+void sendSlotSysex();
+void sendArpSysex();
+void handleSysex(unsigned char* bytes, int len);
+#endif INCLUDE_SYSEX
+
 #ifdef INCLUDE_PROVIDE_RAW_CC
 void setParseRawCC(uint8_t val);
 #endif

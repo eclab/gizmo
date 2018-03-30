@@ -135,6 +135,8 @@ struct _controlLocal
     int8_t wavePosition;
     uint8_t noteOnCount;
     uint16_t currentWaveControl;
+    float fadeWaveControl;		// current wave control so we can set it to start if we're doing FADED
+    float fadeStartControl;		// the very last wave control done prior to resetting the index to 0 for FADED 
     uint32_t waveStartTicks;
     uint32_t waveEndTicks;
     uint8_t waveCountDown;
@@ -151,9 +153,10 @@ struct _controlLocal
 
 
 #define ENVELOPE_MODE_GATED 0
-#define ENVELOPE_MODE_TRIGGERED 1
-#define ENVELOPE_MODE_LOOPED 2
-#define ENVELOPE_MODE_FREE 3
+#define ENVELOPE_MODE_FADED 1
+#define ENVELOPE_MODE_TRIGGERED 2
+#define ENVELOPE_MODE_LOOPED 3
+#define ENVELOPE_MODE_FREE 4
 
 #define ENVELOPE_END 255
 #define ENVELOPE_SIZE 8
