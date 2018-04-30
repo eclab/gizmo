@@ -62,7 +62,7 @@ typedef enum _State: uint8_t
 #endif
 
 	STATE_OPTIONS,
-	STATE_UNDEFINED_1,	// leave all these alone, they're buffer space for 12 apps
+	STATE_UNDEFINED_1,	// leave all these alone, they're buffer space for 12 apps; there's some stuff which does additive math off of the "application" variable, and we don't want it to overflow
 	STATE_UNDEFINED_2,
 	STATE_UNDEFINED_3,
 	STATE_UNDEFINED_4,			   
