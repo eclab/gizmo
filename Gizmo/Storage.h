@@ -79,7 +79,7 @@ union _data
     {
     struct _slot slot;
     struct _arp arp;
-    unsigned char bytes[sizeof(struct _slot)];
+    unsigned char bytes[sizeof(struct _slot)];		// for sysex to get the bytes out
     };
         
 // Our loaded data
