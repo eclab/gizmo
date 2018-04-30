@@ -747,12 +747,14 @@ void stateSave(uint8_t backState)
                         if (local.stepSequencer.data[i] == STEP_SEQUENCER_DATA_NOTE)
                             {
                             distributeByte(pos, 0 << 7);  // Note data is a 0
-                                
+                            
                             //// 1 bit mute
                             //// 5 bits MIDI out channel (including "use default")
                             //// 7 bits length
-                            //// 8 bits velocity (including "use per-note velocity")
-                            //// 4 bits fader
+                            //// 7 bits velocity (including "use per-note velocity")
+                            //// 1 bit transposable
+                            //// 5 bits fader
+                            //// 4 bits pattern
         
                             distributeByte(pos + 1, local.stepSequencer.muted[i] << 7);  // will work for STEP_SEQUENCER_MUTED and STEP_SEQUENCER_MUTE_OFF_SCHEDULED
                             distributeByte(pos + 2, local.stepSequencer.outMIDI[i] << 3);
@@ -766,28 +768,32 @@ void stateSave(uint8_t backState)
                             {
                             distributeByte(pos, 1 << 7);  // Control data is a 1
                                 
-                            ////     3 bits: CC, NRPN, RPN, PC, BEND, AFTERTOUCH, INTERNAL
-                            ////     14 bits Parameter
+                            ////     3 bits: CC, NRPN, RPN, PC, BEND, AFTERTOUCH
+                            ////     7 bits MSB of Parameter 
+                            ////	 7 bits LSB of Parameter
                             ////     5 bits MIDI out channel
+                            ////	 4 bits pattern
 
                             uint8_t controlDataType = local.stepSequencer.data[i] - 1;
                             distributeByte(pos + 1, controlDataType << 4);
                             distributeByte(pos + 4, local.stepSequencer.noteLength[i] << 1);                // MSB of Control Parameter
                             distributeByte(pos + 11, local.stepSequencer.velocity[i] << 1);                 // LSB of Control Parameter
                             distributeByte(pos + 18, local.stepSequencer.outMIDI[i] << 3);
+                            distributeByte(pos + 23, local.stepSequencer.pattern[i] << 4);
                             }
 #else
                         //// 1 bit mute
                         //// 5 bits MIDI out channel (including "use default")
                         //// 7 bits length
-                        //// 8 bits velocity (including "use per-note velocity")
-                        //// 7 bits fader
+                        //// 7 bits velocity (including "use per-note velocity")
+                        //// 5 bits fader
         
                         distributeByte(pos, local.stepSequencer.muted[i] << 7);
                         distributeByte(pos + 1, local.stepSequencer.outMIDI[i] << 3);
                         distributeByte(pos + 6, local.stepSequencer.noteLength[i] << 1);
-                        distributeByte(pos + 13, local.stepSequencer.velocity[i]);      
-                        distributeByte(pos + 21, local.stepSequencer.fader[i] << 3);
+                        distributeByte(pos + 13, local.stepSequencer.velocity[i] << 1);      
+                        distributeByte(pos + 20, local.stepSequencer.fader[i] << 3);
+                        distributeByte(pos + 25, local.stepSequencer.pattern[i] << 4);
 #endif
 
 
@@ -879,15 +885,18 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                                 }
                             else                        // It's a control sequence
                                 {                               
-                                ////     3 bits: CC, NRPN, RPN, PC, BEND, AFTERTOUCH
-                                ////     14 bits Parameter
-                                ////     5 bits MIDI out channel
+								////     3 bits: CC, NRPN, RPN, PC, BEND, AFTERTOUCH
+								////     7 bits MSB of Parameter 
+								////	 7 bits LSB of Parameter
+								////     5 bits MIDI out channel
+								////	 4 bits pattern
 
-                                uint8_t controlDataType = (gatherByte(pos + 1) >> 5);
+                                uint8_t controlDataType = (gatherByte(pos + 1) >> 4);
                                 local.stepSequencer.data[i] = controlDataType + 1;
-                                local.stepSequencer.noteLength[i] = (gatherByte(pos + 4) >> 5);
-                                local.stepSequencer.velocity[i] = (gatherByte(pos + 11) >> 5);
-                                local.stepSequencer.outMIDI[i] = (gatherByte(pos + 18) >> 5);
+                                local.stepSequencer.noteLength[i] = (gatherByte(pos + 4) >> 1);		// MSB
+                                local.stepSequencer.velocity[i] = (gatherByte(pos + 11) >> 1);		// LSB
+                                local.stepSequencer.outMIDI[i] = (gatherByte(pos + 18) >> 3);
+                                local.stepSequencer.pattern[i] = (gatherByte(pos + 23) >> 4);
                                 }
 #else
                             //// 1 bit mute
@@ -898,8 +907,8 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                             local.stepSequencer.muted[i] = (gatherByte(pos) >> 7); // first bit
                             local.stepSequencer.outMIDI[i] = (gatherByte(pos + 1) >> 3);  // top 5 bits moved down 3
                             local.stepSequencer.noteLength[i] = (gatherByte(pos + 6) >> 1); // top 7 bits moved down 1
-                            local.stepSequencer.velocity[i] = (gatherByte(pos + 13)); // all 8 bits
-                            local.stepSequencer.fader[i] = (gatherByte(pos + 21) >> 3);  // top 5 bits moved down 3
+                            local.stepSequencer.velocity[i] = (gatherByte(pos + 13) >> 1); // top 7 bits moved down 1
+                            local.stepSequencer.fader[i] = (gatherByte(pos + 20) >> 3);  // top 5 bits moved down 3
 #endif
                             }
                             

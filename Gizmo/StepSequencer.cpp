@@ -197,12 +197,12 @@ static uint8_t potChangedBy(uint16_t* potVals, uint8_t potNum, uint16_t amount)
 
 void stateStepSequencerMenuPattern()	
 	{
-    const char* menuItems[16] = {  PSTR("OOOO"), PSTR("O-O-"), PSTR("-O-O"), PSTR("O---"), PSTR("-O--"), PSTR("--O-"), PSTR("---O"), PSTR("OO--"), PSTR("-OO-"), PSTR("--OO"), PSTR("O--O"), PSTR("OO-O"), PSTR("R1/8"), PSTR("R1/4"), PSTR("R1/2"), PSTR("R3/4") };
-	const uint8_t menuIndices[16] = {15	,	5,		10,		1,		2,		4,		8,		3,		6,		12,		9,		11,		14,		13,		7,		0 };
+    const char* menuItems[16] = {  		PSTR("OOOO"), PSTR("O-O-"), PSTR("-O-O"), PSTR("OOO-"), PSTR("---O"), PSTR("O--O"), PSTR("-OO-"), PSTR("OO--"), PSTR("--OO"), PSTR("OO-O"), PSTR("--O-"), PSTR("R1/8"), PSTR("R1/4"), PSTR("R1/2"), PSTR("R3/4"),  PSTR("EXCL") };
+	const uint8_t menuIndices[16] = {	15,		 	  5,			10,			  7,			8,			  9,			6,			  3,			   12,			 11,		   4,		  1,			 2,		   		13,			 14,		   0	};
 #ifdef INCLUDE_EXTENDED_MENU_DEFAULTS
 	if (entry)
 		{
-		const uint8_t inverseMenuIndices[16] = {15, 3, 4, 7, 5, 1, 8, 14, 6, 10, 2, 11, 9, 13, 12, 0};
+		const uint8_t inverseMenuIndices[16] = {15, 11, 12, 7, 10, 1, 6, 3, 4, 5, 2, 9, 8, 13, 14, 0};
 		defaultMenuValue = inverseMenuIndices[local.stepSequencer.pattern[local.stepSequencer.currentTrack]];
 		}
 #endif
@@ -428,29 +428,32 @@ void loadSequence(uint8_t slot)
 				//// 1 bit mute
 				//// 5 bits MIDI out channel (including "use default")
 				//// 7 bits length
-				//// 8 bits velocity (including "use per-note velocity")
+				//// 7 bits velocity (including "use per-note velocity")
 				//// 4 bits fader
 				local.stepSequencer.data[i] = STEP_SEQUENCER_DATA_NOTE;
 				
-				local.stepSequencer.muted[i] = (gatherByte(pos + 1) >> 7); // first bit.  This will set it to STEP_SEQUENCER_MUTED
+				local.stepSequencer.muted[i] = (gatherByte(pos + 1) >> 7); // first bit
 				local.stepSequencer.outMIDI[i] = (gatherByte(pos + 2) >> 3);  // top 5 bits moved down 3
 				local.stepSequencer.noteLength[i] = (gatherByte(pos + 7) >> 1); // top 7 bits moved down 1
-                local.stepSequencer.velocity[i] = (gatherByte(pos + 14) >> 1); // top 7 bits moved down 1
-            	local.stepSequencer.transposable[i] = (gatherByte(pos + 21) >> 7); // top 1 bits moved down 7
+				local.stepSequencer.velocity[i] = (gatherByte(pos + 14) >> 1); // top 7 bits moved down 1
+				local.stepSequencer.transposable[i] = (gatherByte(pos + 21) >> 7); // top 1 bits moved down 7
 				local.stepSequencer.fader[i] = (gatherByte(pos + 22) >> 3);  // top 5 bits moved down 3
-                local.stepSequencer.pattern[i] = (gatherByte(pos + 27) >> 4);  // top 4 bits moved down 4
+				local.stepSequencer.pattern[i] = (gatherByte(pos + 27) >> 4);  // top 4 bits moved down 4
 				}
 			else                        // It's a control sequence
 				{                               
 				////     3 bits: CC, NRPN, RPN, PC, BEND, AFTERTOUCH
-				////     14 bits Parameter
+				////     7 bits MSB of Parameter 
+				////	 7 bits LSB of Parameter
 				////     5 bits MIDI out channel
+				////	 4 bits pattern
 
-				uint8_t controlDataType = (gatherByte(pos + 1) >> 5);
+				uint8_t controlDataType = (gatherByte(pos + 1) >> 4);
 				local.stepSequencer.data[i] = controlDataType + 1;
-				local.stepSequencer.noteLength[i] = (gatherByte(pos + 4) >> 5);
-				local.stepSequencer.velocity[i] = (gatherByte(pos + 11) >> 5);
-				local.stepSequencer.outMIDI[i] = (gatherByte(pos + 18) >> 5);
+				local.stepSequencer.noteLength[i] = (gatherByte(pos + 4) >> 1);		// MSB
+				local.stepSequencer.velocity[i] = (gatherByte(pos + 11) >> 1);		// LSB
+				local.stepSequencer.outMIDI[i] = (gatherByte(pos + 18) >> 3);
+				local.stepSequencer.pattern[i] = (gatherByte(pos + 23) >> 4);
 				}
 			}
 			
@@ -677,6 +680,9 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
 		if (local.stepSequencer.goNextSequence)
 			setPoint(led, 3, 1);
 		}	
+	// is our track scheduled to play?
+	if (local.stepSequencer.shouldPlay[local.stepSequencer.currentTrack])
+		setPoint(led, 4, 1);
 	// draw pattern position
 	drawRange(led, 0, 1, 4, local.stepSequencer.countup & 3);
 #endif
@@ -1944,6 +1950,25 @@ void playStepSequencer()
 				local.stepSequencer.countup++;
 				}
 			}
+
+// pick an exclusive random track
+		uint8_t exclusiveTrack = 0;
+		if (local.stepSequencer.currentPlayPosition == 0)
+			{
+			int trkcount = 0;
+			for(uint8_t track = 0; track < numTracks; track++)
+				{
+				if (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE)
+					{
+					if ((trkcount == 0) || (random() < RANDOM_MAX / (trkcount + 1)))  // this could work without the trakcount == 0 but I save a call to random() here 
+						{
+						exclusiveTrack = track;
+						}
+					trkcount++;
+					}
+				}
+			}
+			
 #endif
         for(uint8_t track = 0; track < numTracks; track++)
             {
@@ -1962,7 +1987,12 @@ void playStepSequencer()
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
 			if (local.stepSequencer.currentPlayPosition == 0)
 				{
+				// pick a random track				
 				local.stepSequencer.shouldPlay[track] = ((local.stepSequencer.pattern[track] >> (local.stepSequencer.countup & 3)) & 1);
+				if (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE)
+					{
+					local.stepSequencer.shouldPlay[track] = (track == exclusiveTrack);
+					}
 				if (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_3_4)
 					{
 					local.stepSequencer.shouldPlay[track] = (random() < (RANDOM_MAX / 4) * 3);
@@ -1994,7 +2024,7 @@ void playStepSequencer()
 
 
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-            if (local.stepSequencer.data[track] != STEP_SEQUENCER_DATA_NOTE)
+            if (local.stepSequencer.data[track] != STEP_SEQUENCER_DATA_NOTE && shouldPlay)
                 {
                 uint16_t value = ( ((note & 127) << 7) | (vel & 127) );
                 if (value != 0)

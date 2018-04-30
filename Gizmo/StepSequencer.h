@@ -39,16 +39,16 @@
 //
 // STORAGE
 //
-// Notice that the number of tracks, times the number of notes is 12x16 = 8x24 = 6x32 = 192.  The step sequencer stores
+// Notice that the number of tracks, times the number of notes is 12x16 = 8x24 = 6x32 = 4x48 = 3x64 = 192.  The step sequencer stores
 // the PITCH and the VELOCITY of each note, which are 7 bits each, in two bytes, for a total of 192 x 2 = 384 bytes.
 // Additionally a REST is defined as having a pitch of 0 and a velocity of 0.  A TIE has a pitch of 1 and a velocity of 0.
 //
 // If we're storing CONTROL data rather than NOTE data, then 14-bits represent MSB + LSB, or (the value 2^14 - 1) "Nothing".
 // Yes, this means you can't enter 2^14-1 as a sequence value, oh well.
 //
-// A step sequence has a one-byte FORMAT, 16 bytes that are presently UNUSED, and a 384 byte BUFFER holding the notes.  
+// A step sequence consists of a FORMAT byte, a REPEAT byte, an UNUSED byte, and a 384 byte BUFFER holding the notes.  
 //
-// Embedded in each track is some per-track data.  This data is stored in the 1 unused bit in each byte in the buffer
+// Embedded in each track is some per-track data.  This data is stored in the single high unused bit in each byte in the buffer
 // [recall that MIDI pitch and velocity are only 7 bits each].  Tracks can have as little as 32 bytes (16 notes x 2 bytes per note),
 // so we have 32 bits to pack stuff into.  The data is (in order):
 //
@@ -56,17 +56,18 @@
 //// If NOTE:
 ////     1 bit mute
 ////     5 bits MIDI out channel (including "use default", which is 17, and "no MIDI out", which is 0)
-////     7 bits length
-////     7 bits velocity (0 = "use per-note velocity")
+////     7 bits note length (0...100 as a percentage, or PLAY_LENGTH_USE_DEFAULT)
+////     7 bits note velocity (0 = "use per-note velocity", or 1...127)
 ////     1 bit transposable
 ////     5 bits fader
 ////	 4 bits pattern
 
 //// If CONTROL:
-////     3 bits: CC MSB, NRPN MSB, RPN MSB, PC, BEND MSB, AFTERTOUCH
+////     3 bits: CC MSB, NRPN MSB, RPN MSB, PC, BEND MSB, AFTERTOUCH, INTERNAL
 ////     14 bits Parameter
 ////     5 bits MIDI out channel
-////     9 bits unused
+////	 4 bits pattern
+////     5 bits unused
 
 //
 // This extra data is packed and unpacked in Utilities.stateSave and Utilities.stateLoad, using the private functions
@@ -189,10 +190,11 @@
 
 #define COUNTDOWN_INFINITE (255)
 
-#define STEP_SEQUENCER_PATTERN_RANDOM_3_4 (0)
-#define STEP_SEQUENCER_PATTERN_RANDOM_1_2 (7)
-#define STEP_SEQUENCER_PATTERN_RANDOM_1_4 (13)
-#define STEP_SEQUENCER_PATTERN_RANDOM_1_8 (14)
+#define STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE (0)
+#define STEP_SEQUENCER_PATTERN_RANDOM_3_4 (14)
+#define STEP_SEQUENCER_PATTERN_RANDOM_1_2 (13)
+#define STEP_SEQUENCER_PATTERN_RANDOM_1_4 (2)
+#define STEP_SEQUENCER_PATTERN_RANDOM_1_8 (1)
 #define STEP_SEQUENCER_PATTERN_ALL (15)
 
 #define STEP_SEQUENCER_NOT_MUTED (0)
