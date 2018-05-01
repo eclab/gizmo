@@ -658,6 +658,8 @@ void goDownStateWithBackup(uint8_t _nextState)
 #ifdef INCLUDE_STEP_SEQUENCER
         
 // Starting at position pos, distributes the bits of the given byte among the high bytes >= pos
+// Note that the bits are in reverse order: the high bit is the first one,
+// and the low bit is the last one.
 void distributeByte(uint16_t pos, uint8_t byte)
     {
     for(uint8_t i = 0; i < 8; i++)
@@ -669,6 +671,8 @@ void distributeByte(uint16_t pos, uint8_t byte)
     }
 
 // Gathers high bits starting at position pos to form a complete byte.
+// Note that the bits are in reverse order: the high bit is the first one,
+// and the low bit is the last one.
 uint8_t gatherByte(uint16_t pos)
     {
     uint8_t byte = 0;
@@ -793,7 +797,7 @@ void stateSave(uint8_t backState)
                         distributeByte(pos + 6, local.stepSequencer.noteLength[i] << 1);
                         distributeByte(pos + 13, local.stepSequencer.velocity[i] << 1);      
                         distributeByte(pos + 20, local.stepSequencer.fader[i] << 3);
-                        distributeByte(pos + 25, local.stepSequencer.pattern[i] << 4);
+                        // there is no pattern, so we don't distribute it
 #endif
 
 

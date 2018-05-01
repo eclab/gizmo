@@ -343,6 +343,7 @@ void stateStepSequencerMenuPattern();
 // Edit Options
 void stateStepSequencerMenuEditMark();
 void stateStepSequencerMenuEditCopy(uint8_t splat, uint8_t paste);
+void stateStepSequencerMenuEditDuplicate();
 
 #endif
 

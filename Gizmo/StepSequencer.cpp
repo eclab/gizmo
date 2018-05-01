@@ -37,10 +37,44 @@ void stateStepSequencerMenuEditMark()
 #endif
 	}
 
+void stateStepSequencerMenuEditDuplicate()
+	{
+	local.stepSequencer.data[local.stepSequencer.currentTrack] = local.stepSequencer.data[local.stepSequencer.markTrack];
+	local.stepSequencer.outMIDI[local.stepSequencer.currentTrack] = local.stepSequencer.outMIDI[local.stepSequencer.markTrack];
+	local.stepSequencer.noteLength[local.stepSequencer.currentTrack] = local.stepSequencer.noteLength[local.stepSequencer.markTrack];
+	local.stepSequencer.muted[local.stepSequencer.currentTrack] = local.stepSequencer.muted[local.stepSequencer.markTrack];
+	local.stepSequencer.velocity[local.stepSequencer.currentTrack] = local.stepSequencer.velocity[local.stepSequencer.markTrack];
+	local.stepSequencer.fader[local.stepSequencer.currentTrack] = local.stepSequencer.fader[local.stepSequencer.markTrack];
+	local.stepSequencer.offTime[local.stepSequencer.currentTrack] = local.stepSequencer.offTime[local.stepSequencer.markTrack];
+	local.stepSequencer.noteOff[local.stepSequencer.currentTrack] = local.stepSequencer.noteOff[local.stepSequencer.markTrack];
+	local.stepSequencer.shouldPlay[local.stepSequencer.currentTrack] = local.stepSequencer.shouldPlay[local.stepSequencer.markTrack];
+	local.stepSequencer.transposable[local.stepSequencer.currentTrack] = local.stepSequencer.transposable[local.stepSequencer.markTrack];
+	local.stepSequencer.pattern[local.stepSequencer.currentTrack] = local.stepSequencer.pattern[local.stepSequencer.markTrack];
+	local.stepSequencer.dontPlay[local.stepSequencer.currentTrack] = local.stepSequencer.dontPlay[local.stepSequencer.markTrack];
+	local.stepSequencer.controlParameter[local.stepSequencer.currentTrack] = local.stepSequencer.controlParameter[local.stepSequencer.markTrack];
+	local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = local.stepSequencer.lastControlValue[local.stepSequencer.markTrack];
+
+	// set the mark and edit positions to 0 temporarily so we can copy the note data properly
+	uint8_t backupMarkPosition = local.stepSequencer.markPosition;
+	uint8_t backupEditPosition = local.stepSequencer.currentEditPosition;
+	local.stepSequencer.markPosition = 0;
+	local.stepSequencer.currentEditPosition = 0;
+	stateStepSequencerMenuEditCopy(false, false);  // we copy rather than splat to save some time
+	
+	// reset the mark and edit positions
+	local.stepSequencer.markPosition = backupMarkPosition;
+	local.stepSequencer.currentEditPosition = backupEditPosition;
+	
+#ifdef INCLUDE_IMMEDIATE_RETURN
+     goUpState(STATE_STEP_SEQUENCER_PLAY);
+#else
+	goUpState(STATE_STEP_SEQUENCER_MENU_EDIT);
+#endif
+	}
+
+
 void stateStepSequencerMenuEditCopy(uint8_t splat, uint8_t move)
 	{
-	playStepSequencer();
-	
 	// verify that the two tracks are the same type
 	if (local.stepSequencer.data[local.stepSequencer.markTrack] == local.stepSequencer.data[local.stepSequencer.currentTrack]) 
 		{
@@ -235,6 +269,9 @@ void stateStepSequencerMenuPattern()
 
 	
 
+//// NOTE: The IMMEDIATE_RETURN feature removed from the next three functions
+//// because I've found it VERY ANNOYING -- typically you need to set multiple
+//// items, and so should go back into the menu.
 
 void stateStepSequencerMenuPerformanceKeyboard()
 	{
@@ -254,22 +291,22 @@ void stateStepSequencerMenuPerformanceKeyboard()
             sendAllSoundsOff();
             // get rid of any residual select button calls, so we don't stop when exiting here
             isUpdated(SELECT_BUTTON, RELEASED);
-#ifdef INCLUDE_IMMEDIATE_RETURN
-            goUpState(STATE_STEP_SEQUENCER_PLAY);
-#else
+//#ifdef INCLUDE_IMMEDIATE_RETURN
+//            goUpState(STATE_STEP_SEQUENCER_PLAY);
+//#else
             goUpState(STATE_STEP_SEQUENCER_MENU);
-#endif
+//#endif
             }
         break;
         case MENU_CANCELLED:
             {
             // get rid of any residual select button calls, so we don't stop when exiting here
             isUpdated(SELECT_BUTTON, RELEASED);
-#ifdef INCLUDE_IMMEDIATE_RETURN
-            goUpState(STATE_STEP_SEQUENCER_PLAY);
-#else
+//#ifdef INCLUDE_IMMEDIATE_RETURN
+//            goUpState(STATE_STEP_SEQUENCER_PLAY);
+//#else
             goUpState(STATE_STEP_SEQUENCER_MENU);
-#endif
+//#endif
             }
         break;
         }
@@ -298,20 +335,20 @@ void stateStepSequencerMenuPerformanceRepeat()
         case MENU_SELECTED:
             {
             data.slot.data.stepSequencer.repeat = ((data.slot.data.stepSequencer.repeat & 0xF0) | (currentDisplay & 0x0F));
-#ifdef INCLUDE_IMMEDIATE_RETURN
-            goUpState(STATE_STEP_SEQUENCER_PLAY);
-#else
+//#ifdef INCLUDE_IMMEDIATE_RETURN
+//            goUpState(STATE_STEP_SEQUENCER_PLAY);
+//#else
             goUpState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE);
-#endif
+//#endif
             }
         break;
         case MENU_CANCELLED:
             {
-#ifdef INCLUDE_IMMEDIATE_RETURN
-            goUpState(STATE_STEP_SEQUENCER_PLAY);
-#else
+//#ifdef INCLUDE_IMMEDIATE_RETURN
+//            goUpState(STATE_STEP_SEQUENCER_PLAY);
+//#else
             goUpState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE);
-#endif
+//#endif
             }
         break;
         }
@@ -334,20 +371,20 @@ void stateStepSequencerMenuPerformanceNext()
         case MENU_SELECTED:
             {
             data.slot.data.stepSequencer.repeat = ((data.slot.data.stepSequencer.repeat & 0x0F) | ((currentDisplay + 1) << 4));
-#ifdef INCLUDE_IMMEDIATE_RETURN
-            goUpState(STATE_STEP_SEQUENCER_PLAY);
-#else
+//#ifdef INCLUDE_IMMEDIATE_RETURN
+//            goUpState(STATE_STEP_SEQUENCER_PLAY);
+//#else
             goUpState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE);
-#endif
+//#endif
             }
         break;
         case MENU_CANCELLED:
             {
-#ifdef INCLUDE_IMMEDIATE_RETURN
-            goUpState(STATE_STEP_SEQUENCER_PLAY);
-#else
+//#ifdef INCLUDE_IMMEDIATE_RETURN
+//            goUpState(STATE_STEP_SEQUENCER_PLAY);
+//#else
             goUpState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE);
-#endif
+//#endif
             }
         break;
         }
@@ -1467,6 +1504,13 @@ void stateStepSequencerPlay()
 		        immediateReturn = true;
 				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
 				goDownState(STATE_STEP_SEQUENCER_MENU_EDIT_MOVE);
+				break;
+				}
+			case CC_EXTRA_PARAMETER_8:
+				{
+		        immediateReturn = true;
+				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
+				goDownState(STATE_STEP_SEQUENCER_MENU_EDIT_DUPLICATE);
 				break;
 				}
 			

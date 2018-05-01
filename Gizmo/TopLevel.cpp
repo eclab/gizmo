@@ -1384,8 +1384,8 @@ void go()
         break;
         case STATE_STEP_SEQUENCER_MENU_EDIT:
             {
-            const char* menuItems[4] = { PSTR("MARK"), PSTR("COPY"), PSTR("SPLAT"), PSTR("MOVE") };
-            doMenuDisplay(menuItems, 4, STATE_STEP_SEQUENCER_MENU_EDIT_MARK, STATE_STEP_SEQUENCER_MENU, 1);
+            const char* menuItems[5] = { PSTR("MARK"), PSTR("COPY"), PSTR("SPLAT"), PSTR("MOVE"), PSTR("DUPLICATE") };
+            doMenuDisplay(menuItems, 5, STATE_STEP_SEQUENCER_MENU_EDIT_MARK, STATE_STEP_SEQUENCER_MENU, 1);
 		    playStepSequencer();
             }
         break;
@@ -1397,18 +1397,26 @@ void go()
         case STATE_STEP_SEQUENCER_MENU_EDIT_COPY:
             {
             stateStepSequencerMenuEditCopy(false, false);
+			playStepSequencer();
             }
         break;
         case STATE_STEP_SEQUENCER_MENU_EDIT_SPLAT:
             {
             stateStepSequencerMenuEditCopy(true, false);
+			playStepSequencer();
             }
         break;
         case STATE_STEP_SEQUENCER_MENU_EDIT_MOVE:
             {
             stateStepSequencerMenuEditCopy(false, true);
+			playStepSequencer();
             }
         break;
+        case STATE_STEP_SEQUENCER_MENU_EDIT_DUPLICATE:
+        	{
+            stateStepSequencerMenuEditDuplicate();
+			playStepSequencer();
+        	}
         case STATE_STEP_SEQUENCER_MENU_PERFORMANCE:
             {
             const char* menuItems[3] = { PSTR("KEYBOARD"), PSTR("REPEAT SEQUENCE"), PSTR("NEXT SEQUENCE") };

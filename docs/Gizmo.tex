@@ -576,6 +576,7 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 \item {\bf Copy}\quad Copies the data at the mark position to the current track starting at the current edit position.  The copied data is wrapped around when it goes beyond the end of the current track.
 \item {\bf Splat}\quad Copies the data at the mark position to the current track starting at the current edit position.  The copied data is {\it not} wrapped around when it goes beyond the end of the current track: it just stops there.
 \item {\bf Move}\quad Works like Copy, except that the mark position track is then erased.
+\item {\bf Duplicate}\quad Duplicate absolutely all of the data in the mark track to the current track (including note data, volume, MIDI out, etc.).  The specific mark (note) position is ignored.
 \end{itemize}
 \item {\bf Transpose (Track)} (or {\bf No Transpose (Track)}) (Mega only) \quad This toggles whether this track responds to the user transposing the sequencer during performance mode.
 \item {\bf Clock Control} (or {\bf No Clock Control}) (Mega only) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note that regardless of the setting of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.
@@ -668,7 +669,8 @@ Keystrokes, CC, etc.			& Enter at Edit Cursor&Enter at Play Cursor & Enter at Pl
 93	&	Any		& Mark\\
 94	&	Any		& Copy\\
 95	&	Any		& Splat\\
-96	&	Any		& Move\\
+116	&	Any		& Move\\
+117	&	Any		& Duplicate\\
 16	&	0--127		& Set Track Note Length (press Select to set, Back to cancel)\\
 17	&	0--127		& Set Track MIDI Out (press Select to set, Back to cancel)\\
 18	&	0--127		& Set Track Velocity (press Select to set, Back to cancel)\\
