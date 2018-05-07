@@ -110,57 +110,50 @@ void toggleBypass(uint8_t channel)
 // UPDATING.  We don't update the buttons or pots every tick, because it is expensive.  Instead
 // we update them every 4 ticks (the pots are updated a different tick than the buttons).
 
+#define NUM_BUTTONS (3)
+
 #define BACK_BUTTON 0
 #define MIDDLE_BUTTON 1
 #define SELECT_BUTTON 2
 
-GLOBAL uint8_t button[3];
-GLOBAL uint8_t buttonUpdated[3] = { NO_CHANGE, NO_CHANGE, NO_CHANGE };
-GLOBAL static uint8_t ignoreNextButtonRelease[3] = { false, false, false };
+GLOBAL uint8_t button[NUM_BUTTONS];
+GLOBAL uint8_t buttonUpdated[NUM_BUTTONS] = { NO_CHANGE, NO_CHANGE, NO_CHANGE };
+GLOBAL static uint8_t ignoreNextButtonRelease[NUM_BUTTONS] = { false, false, false };
 
+
+#ifdef INCLUDE_EXTENDED_CONTROLLER
+#define NUM_POTS (4)
+#else
+#define NUM_POTS (2)
+#endif
 
 #define LEFT_POT 0
 #define RIGHT_POT 1
 #define A2_POT 2
 #define A3_POT 3
 
-#ifdef INCLUDE_EXTENDED_CONTROLLER
-GLOBAL uint16_t pot[4];        // The current left pot value OR MIDI controlled value
-GLOBAL uint8_t potUpdated[4];       // has the left pot been updated?  CHANGED or NO_CHANGE
-GLOBAL static uint16_t potCurrent[4][3];     // The filtered current left pot value
-GLOBAL static uint16_t potCurrentFinal[4];    //  
-GLOBAL static uint16_t potLast[4];     // The last pot value submitted 
-#else
-GLOBAL uint16_t pot[2];        // The current left pot value OR MIDI controlled value
-GLOBAL uint8_t potUpdated[2];       // has the left pot been updated?  CHANGED or NO_CHANGE
-GLOBAL static uint16_t potCurrent[2][3];     // The filtered current left pot value
-GLOBAL static uint16_t potCurrentFinal[2];    //  
-GLOBAL static uint16_t potLast[2];     // The last pot value submitted 
-#endif
+GLOBAL uint16_t pot[NUM_POTS];        // The current pot value OR MIDI controlled value
+GLOBAL uint8_t potUpdated[NUM_POTS];       // has the pot been updated?  CHANGED or NO_CHANGE
+GLOBAL static uint16_t potCurrent[NUM_POTS][3];     // The filtered current pot value
+GLOBAL static uint16_t potCurrentFinal[NUM_POTS];    //  
+GLOBAL static uint16_t potLast[NUM_POTS];     // The last pot value submitted 
+
 
 // SETUP POTS
 // initializes the pots
 void setupPots()
     {
-#ifdef INCLUDE_EXTENDED_CONTROLLER
-    memset(potCurrent, 0, 4 * 3);
-    memset(potUpdated, NO_CHANGE, 4);
-    memset(pot, 0, 4);
-    memset(potCurrentFinal, 0, 4);
-    memset(potLast, 0, 4);
-#else
-    memset(potCurrent, 0, 2 * 3);
-    memset(potUpdated, NO_CHANGE, 2);
-    memset(pot, 0, 2);
-    memset(potCurrentFinal, 0, 2);
-    memset(potLast, 0, 2);
-#endif
+    memset(potCurrent, 0, NUM_POTS * 3);
+    memset(potUpdated, NO_CHANGE, NUM_POTS);
+    memset(pot, 0, NUM_POTS);
+    memset(potCurrentFinal, 0, NUM_POTS);
+    memset(potLast, 0, NUM_POTS);
     }
 
 //// Clears the 'released' and 'released long' flag on all buttons.
 void clearReleased()
     {
-    for(uint8_t i = BACK_BUTTON; i <= SELECT_BUTTON; i++)
+    for(uint8_t i = 0; i < NUM_BUTTONS; i++)
         for(uint8_t j = PRESSED; j <= RELEASED_LONG; j++)
             isUpdated(i, j);
     } 
