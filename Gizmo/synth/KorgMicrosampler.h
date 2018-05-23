@@ -46,7 +46,6 @@ struct _korgMicrosamplerLocal
 	uint16_t lastParameter;
 	uint16_t lastValue;
 	char data[KORG_MICROSAMPLER_SYSEX_LENGTH];
-	uint8_t countDown;
 	};
 
 

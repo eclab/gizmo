@@ -121,18 +121,7 @@ void sendKorgMicrosamplerSysex(uint16_t parameter, uint16_t value)
         }
     else return;
     
-    // If the timer was set, we have to wait.  Put the item in the queue.  This may
-    // displace any previous items placed in the queue.
-    if (local.synth.type.korgMicrosampler.countDown > 0)
-        {
-        memcpy(local.synth.type.korgMicrosampler.data, sysExArray, KORG_MICROSAMPLER_SYSEX_LENGTH);
-        }
-    else        // otherwise send it out immediately and set the timer for future items
-        {
-        MIDI.sendSysEx(KORG_MICROSAMPLER_SYSEX_LENGTH, sysExArray);
-        local.synth.type.korgMicrosampler.countDown = KORG_MICROSAMPLER_COUNTDOWN;
-        TOGGLE_OUT_LED();
-        }
+    sendDelayedSysex(sysExArray, KORG_MICROSAMPLER_SYSEX_LENGTH, value, KORG_MICROSAMPLER_COUNTDOWN);
     }
 
 
@@ -148,15 +137,8 @@ void stateSynthKorgMicrosampler()
         local.synth.type.korgMicrosampler.effectsParameter = 0;
         local.synth.type.korgMicrosampler.lastParameter = KORG_MICROSAMPLER_NO_PARAMETER;
         local.synth.type.korgMicrosampler.data[0] = 0;
-        local.synth.type.korgMicrosampler.countDown = 0;
         entry = false;
         }
-        
-    // count down.  If we reach 0 and something is in the queue (data[0] != 0),
-    // then send it and set the countown timer for future items.  Otherwise the countdown
-    // timer stays at 0 so future items can be sent immediately.
-    if (local.synth.type.korgMicrosampler.countDown > 0)
-        local.synth.type.korgMicrosampler.countDown--;
         
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
@@ -180,19 +162,16 @@ void stateSynthKorgMicrosampler()
             {
             local.synth.type.korgMicrosampler.effectsParameter = (itemValue >> 7);
             }
-        else if ((local.synth.type.korgMicrosampler.countDown == 0) && (local.synth.type.korgMicrosampler.data[0] != 0))
-            {
-            MIDI.sendSysEx(KORG_MICROSAMPLER_SYSEX_LENGTH, local.synth.type.korgMicrosampler.data);
-            local.synth.type.korgMicrosampler.data[0] = 0;  // null it out
-            local.synth.type.korgMicrosampler.countDown = KORG_MICROSAMPLER_COUNTDOWN;
-            TOGGLE_OUT_LED();
-            }
         else
             {
             sendKorgMicrosamplerSysex(itemNumber, itemValue);
             }
         }
 
+	synthUpdate();
+
+	// we're gonna overwrite the parameters anyway
+	
     if (updateDisplay)
         {
         clearScreen();

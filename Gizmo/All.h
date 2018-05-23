@@ -130,7 +130,7 @@
 #define INCLUDE_MEASURE
 
 //// NOTE: To include the Sysex dump facility, you not only uncomment the INCLUDE_SYSEX line below, but
-//// you ALSO must go into the "MIDI.h" file in the Forty Seven Effects MIDI library and change the line 
+//// you ALSO must go into the "midi_Settings.h" file in the Forty Seven Effects MIDI library and change the line 
 ////    static const unsigned SysExMaxSize = 0;
 //// to
 ////	static const unsigned SysExMaxSize = 787;   // the size of the MIDI Dump of a Slot
@@ -155,6 +155,7 @@
 //// in TopLevel.cpp case STATE_SYNTH to match properly
 #define INCLUDE_SYNTH_WALDORF_BLOFELD
 #define INCLUDE_SYNTH_KAWAI_K4
+#define INCLUDE_SYNTH_KAWAI_K5
 #define INCLUDE_SYNTH_OBERHEIM_MATRIX_1000
 #define INCLUDE_SYNTH_KORG_MICROSAMPLER
 #define INCLUDE_SYNTH_YAMAHA_TX81Z
@@ -163,7 +164,7 @@
 
 #if defined(__UNO__)
 #define INCLUDE_ARPEGGIATOR
-#define INCLUDE_STEP_SEQUENCER
+#define INCLUDE_EXTENDED_STEP_SEQUENCER
 #define INCLUDE_RECORDER
 #define INCLUDE_GAUGE
 #endif

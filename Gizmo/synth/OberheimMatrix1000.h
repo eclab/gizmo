@@ -12,16 +12,7 @@
 
 struct _oberheimMatrix1000Local
 	{
-	uint8_t lastParameter;
-	uint8_t lastValue;
-	
-	uint8_t storedParameter;
-	uint8_t storedValue;
-	uint8_t storedChannel;
-	uint8_t countDown;
 	};
-
-#define OBERHEIM_MATRIX_1000_NO_PARAMETER	255
 
 // Incoming CC values are 3 to 5 times faster than outgoing NRPN 
 // (we never send the LSB because we only have 100 NRPN paramters)

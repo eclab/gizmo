@@ -1001,13 +1001,19 @@ void go()
 #ifdef INCLUDE_SYNTH
         case STATE_SYNTH:
             {
-            const char* menuItems[5] = { 
+            local.synth.countDown = 0;
+            local.synth.parameterDisplay = DISPLAY_NOTHING;
+            
+            const char* menuItems[6] = { 
 #ifdef INCLUDE_SYNTH_WALDORF_BLOFELD
                 PSTR("WALDORF BLOFELD"),
 #endif INCLUDE_SYNTH_WALDORF_BLOFELD
 #ifdef INCLUDE_SYNTH_KAWAI_K4
                 PSTR("KAWAI K4"),
 #endif INCLUDE_SYNTH_KAWAI_K4
+#ifdef INCLUDE_SYNTH_KAWAI_K5
+                PSTR("KAWAI K5A"),
+#endif INCLUDE_SYNTH_KAWAI_K5
 #ifdef INCLUDE_SYNTH_OBERHEIM_MATRIX_1000
                 PSTR("OBERHEIM MATRIX 1000"),
 #endif INCLUDE_SYNTH_OBERHEIM_MATRIX_1000

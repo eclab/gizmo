@@ -10,19 +10,29 @@
 #include "../TopLevel.h"
 #include <Arduino.h>
 
-#define YAMAHA_TX81Z_SYSEX_LENGTH (7)
+
+/**
+	NRPN MAPPING
+	
+	LSB ONLY
+	
+	0...93		VCED Parameter
+	94...117	ACED Parameter 0...22
+
+	MSB ONLY
+	
+	0...127		Value
+
+*/
+
+
 struct _yamahaTX81ZLocal
 	{
-	uint16_t lastParameter;
-	uint16_t lastValue;
-	uint16_t countDown;
-	char data[YAMAHA_TX81Z_SYSEX_LENGTH];
-	uint8_t dataLength;
 	};
 
 
-#define YAMAHA_TX81Z_BAD_PARAMETER	(5000)
-#define YAMAHA_TX81Z_COUNTDOWN		(32)
+// We need to pause about 50ms, sadly.
+#define YAMAHA_TX81Z_COUNTDOWN		(150)
 
 void stateSynthYamahaTX81Z();
 
