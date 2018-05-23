@@ -2032,12 +2032,11 @@ void playStepSequencer()
 			if (local.stepSequencer.currentPlayPosition == 0)
 				{
 				// pick a random track				
-				local.stepSequencer.shouldPlay[track] = ((local.stepSequencer.pattern[track] >> (local.stepSequencer.countup & 3)) & 1);
 				if (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE)
 					{
 					local.stepSequencer.shouldPlay[track] = (track == exclusiveTrack);
 					}
-				if (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_3_4)
+				else if (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_3_4)
 					{
 					local.stepSequencer.shouldPlay[track] = (random() < (RANDOM_MAX / 4) * 3);
 					}
@@ -2053,7 +2052,10 @@ void playStepSequencer()
 					{
 					local.stepSequencer.shouldPlay[track] = (random() < (RANDOM_MAX / 8));
 					}
-				
+				else
+					{
+					local.stepSequencer.shouldPlay[track] = ((local.stepSequencer.pattern[track] >> (local.stepSequencer.countup & 3)) & 1);			
+					}
 				if (!local.stepSequencer.shouldPlay[track]) 
 					clearNoteOnTrack(track);
 				}
