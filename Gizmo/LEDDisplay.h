@@ -36,11 +36,6 @@
 
 
 // SCROLLING DELAY
-
-// Lots of text scrolls in this system.  The INITIAL delay before scrolling starts is
-// FIRST_SCROLL_DELAY, that is after 1 second (3125 / 4 = 781 ticks).  Thereafter the DEFAULT
-// delay before the next column is scrolled in is 60ms, thus about 13 ticks.
-#define SCROLL_DEFAULT_DELAY 26
 #define NO_SCROLLING 65535                      // never scroll
 
 
@@ -422,6 +417,9 @@ uint8_t scrollBuffer(unsigned char* mat, unsigned char* mat2);
 
 // Set the very *first* delay for which the scroll is written,
 // and the *default* delay used thereafter.
+// Delays are measured in 32/3125 ~ 1/100 second (because a display happens only once ever 32 ticks, 
+// and a tick is 1/3125 sec)
+// If a delay is NO_SCROLLING, then this is an infinite delay
 void setScrollDelays(uint16_t firstDelay, uint16_t defaultDelay);
 
 // Returns the total buffer length at present

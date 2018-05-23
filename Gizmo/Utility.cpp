@@ -1271,19 +1271,27 @@ void doClick()
 ///// 
 
 
-////// We only redraw once every 4 ticks.
-////// Thus a delay of X means 4 * X ticks
-////// A tick is 1/3125 sec, so a delay of 78 means is about 1/10 sec
-////// I find that faster than 1/20 sec the screen becomes hard to watch.
-////// So I'm going with 40
+////// We only redraw once every 32 ticks.  A tick is 1/3125 sec.
+////// The rule is that the delay value is multplied by 12, unless it is HIGH_MENU_DELAY, which is infinite,
+////// and NO_MENU_DELAY, which is the same as the default text scroll interval.
+////// So for example a delay of 1 = 1 * 12 * 32 / 3125 - 0.12288 ~ 0.125 sec.
 
 GLOBAL static uint8_t menuDelays[11] = { NO_MENU_DELAY, EIGHTH_MENU_DELAY, QUARTER_MENU_DELAY, THIRD_MENU_DELAY, HALF_MENU_DELAY, DEFAULT_MENU_DELAY, DOUBLE_MENU_DELAY, TREBLE_MENU_DELAY, QUADRUPLE_MENU_DELAY, EIGHT_TIMES_MENU_DELAY, HIGH_MENU_DELAY };
 
 // SET MENU DELAY
-// Changes the menu delay to a desired value (between 0: no menu delay, and 11: infinite menu delay).  The default is 5
+// Changes the menu delay to a desired value (between 0: no menu delay, and 11: infinite menu delay).  
+// The default is 5
 void setMenuDelay(uint8_t index)
     {
     if (index > 10) index = 5;
-    setScrollDelays(menuDelays[index], DEFAULT_SHORT_DELAY);
+    uint16_t val = menuDelays[index];
+    if (val == 0)
+    	val = DEFAULT_SHORT_DELAY;
+    else if (val == HIGH_MENU_DELAY) 
+    	val = NO_SCROLLING;
+    else 
+    	val = 12 * val;
+    setScrollDelays(val, DEFAULT_SHORT_DELAY);
     }
+    
 #endif

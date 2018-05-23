@@ -1742,6 +1742,9 @@ void clearBuffer() { resetBuffer(1); bufferLength = 0; }
 
 // Set the very *first* delay for which the scroll is written,
 // and the *default* delay used thereafter.
+// Delays are measured in 32/3125 ~ 1/100 second (because a display happens only once ever 32 ticks, 
+// and a tick is 1/3125 sec)
+// If a delay is NO_SCROLLING, then this is an infinite delay
 void setScrollDelays(uint16_t firstDelay, uint16_t defaultDelay) { firstScrollDelay = firstDelay; defaultScrollDelay = defaultDelay; }
 
 // Returns the total buffer length at present
@@ -1788,14 +1791,15 @@ uint8_t scrollBuffer(unsigned char* mat, unsigned char* mat2)
     writeToMatrix(mat, bufferPos + LED_WIDTH);
         
     // Do we shift next time?
-    if (scrollDelay < NO_SCROLLING)              // Do not scroll at all, so NO
+    if (scrollDelay < NO_SCROLLING)              // Maybe scroll
         {
-        if (--scrollDelay > 0)                   // Don't scroll until our countdown is complete
+        if (scrollDelay > 0)                   // Don't scroll until our countdown is complete
             {
+            scrollDelay--;
             return (scrollStarted? NOT_SCROLLED : NOT_STARTED);  // don't update the buffer
             }
         }
-    else return (scrollStarted? NOT_SCROLLED : NOT_STARTED);  // don't update the buffer
+    else return (scrollStarted? NOT_SCROLLED : NOT_STARTED);  // never update the buffer
     
     // should we bother scrolling at all?
     if (bufferLength <= LED_WIDTH * 2)
