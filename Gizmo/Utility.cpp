@@ -1151,6 +1151,11 @@ void playApplication()
             playMeasure();
             break;
 #endif
+#ifdef INCLUDE_THRU
+        case STATE_THRU_PLAY:
+            playThru();
+            break;
+#endif
         }
     }
         

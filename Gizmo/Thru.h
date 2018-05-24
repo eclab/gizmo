@@ -69,5 +69,7 @@ struct _thruLocal
 
 
 void stateThruPlay();
+void playThru();
+
 
 #endif // __THRU_H__

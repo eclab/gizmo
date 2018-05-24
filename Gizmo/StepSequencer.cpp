@@ -720,6 +720,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
 	// is our track scheduled to play?
 	if (local.stepSequencer.shouldPlay[local.stepSequencer.currentTrack])
 		setPoint(led, 4, 1);
+		
 	// draw pattern position
 	drawRange(led, 0, 1, 4, local.stepSequencer.countup & 3);
 #endif
@@ -1985,14 +1986,15 @@ void playStepSequencer()
 	        	else
 	        		{ loadSequence(nextSequence - 1); }  // maybe this will work out of the box?  hmmm
 	        	}
-	        else if (local.stepSequencer.currentPlayPosition == 0 && local.stepSequencer.countdown != 255)  // not forever
+	        else if (local.stepSequencer.countdown != 255)  // not forever
 	        	{
 				local.stepSequencer.countdown--;
-	        	}
-			if (local.stepSequencer.currentPlayPosition == 0)
-				{
-				local.stepSequencer.countup++;
-				}
+	        	}	        	
+			}
+
+		if (local.stepSequencer.currentPlayPosition == 0)
+			{
+			local.stepSequencer.countup++;
 			}
 
 // pick an exclusive random track
@@ -2056,6 +2058,7 @@ void playStepSequencer()
 					{
 					local.stepSequencer.shouldPlay[track] = ((local.stepSequencer.pattern[track] >> (local.stepSequencer.countup & 3)) & 1);			
 					}
+					
 				if (!local.stepSequencer.shouldPlay[track]) 
 					clearNoteOnTrack(track);
 				}

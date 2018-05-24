@@ -147,22 +147,8 @@ void performThruPolyAftertouch(uint8_t note, uint8_t velocity, uint8_t channel)
     }
 
 
-void stateThruPlay()
-    {
-    if (entry)
-        {
-        sendAllSoundsOff();
-        resetDistributionNotes();
-        local.thru.debounceState = DEBOUNCE_STATE_OFF;
-        entry = false;
-        }
-                        
-    if (updateDisplay)
-        {
-        clearScreen();
-        write3x5Glyphs(GLYPH_PLAY);
-        }
-        
+void playThru()
+	{
     // here we check if it's time to submit a NOTE OFF
     if (local.thru.debounceState == DEBOUNCE_STATE_FIRST_NOTE_UP_IGNORED && 
         local.thru.debounceTime + ((uint32_t)options.thruDebounceMilliseconds) * 1000 <= currentTime)
@@ -170,20 +156,8 @@ void stateThruPlay()
         performThruNoteOff(local.thru.debounceNote, 127, options.channelOut);
         local.thru.debounceState = DEBOUNCE_STATE_OFF;
         }
-
-    if (isUpdated(BACK_BUTTON, RELEASED))
-        {
-        goUpState(STATE_THRU);
-        sendAllSoundsOff();
-        }
         
-    else if (isUpdated(SELECT_BUTTON, PRESSED))
-    	{
-    	goDownState(STATE_OPTIONS);
-        optionsReturnState = STATE_THRU_PLAY;
-    	}
-        
-    else if (!bypass && newItem && options.channelOut != CHANNEL_OFF && 
+    if (!bypass && newItem && options.channelOut != CHANNEL_OFF && 
         (itemChannel == options.channelIn || options.channelIn == CHANNEL_OMNI || itemChannel == options.thruMergeChannelIn))
         {
         uint8_t channel = options.channelOut;
@@ -293,73 +267,36 @@ itemType = MIDI_NRPN_14_BIT;
                     case MIDI_CC_14_BIT:
                         {
                         sendControllerCommand(CONTROL_TYPE_CC, itemNumber, itemValue, channel);
-//                        MIDI.sendControlChange(itemNumber, (uint8_t)(itemValue >> 7), channel);                 // MSB
-//                        if ((itemValue & 127) != 0)
-//                            MIDI.sendControlChange(itemNumber + 32, (uint8_t)(itemValue & 127), channel);  // LSB
                         }
                     break;
                     case MIDI_NRPN_14_BIT:
                         {
                         sendControllerCommand(CONTROL_TYPE_NRPN, itemNumber, itemValue, channel);
-//                        MIDI.sendControlChange(99, itemNumber >> 7, channel);
-//                        MIDI.sendControlChange(98, itemNumber & 127, channel);
-//                        MIDI.sendControlChange(6, (uint8_t)(itemValue >> 7), channel);  // MSB
-//                        if ((itemValue & 127) != 0)
-//                            MIDI.sendControlChange(38, (uint8_t)(itemValue & 127), channel);  // LSB
-//                        MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
-//                        MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command
                         }
                     break;
                     case MIDI_RPN_14_BIT:
                         {
                         sendControllerCommand(CONTROL_TYPE_RPN, itemNumber, itemValue, channel);
-                        //                       MIDI.sendControlChange(101, itemNumber >> 7, channel);
-                        //                       MIDI.sendControlChange(100, itemNumber & 127, channel);
-                        //                      MIDI.sendControlChange(6, (uint8_t)(itemValue >> 7), channel);  // MSB
-                        //                      if ((itemValue & 127) != 0)
-//                            MIDI.sendControlChange(38, (uint8_t)(itemValue & 127), channel);  // LSB
-//                        MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
-//                        MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command
                         }
                     break;
                     case MIDI_NRPN_INCREMENT:
                         {
                         sendControllerCommand(CONTROL_TYPE_NRPN, itemNumber, CONTROL_VALUE_INCREMENT << 7, channel);
-//                        MIDI.sendControlChange(99, itemNumber >> 7, channel);
-//                        MIDI.sendControlChange(98, itemNumber & 127, channel);
-//                        MIDI.sendControlChange(96, 1, channel);
-//                        MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
-//                        MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command
                         }
                     break;
                     case MIDI_RPN_INCREMENT:
                         {
                         sendControllerCommand(CONTROL_TYPE_RPN, itemNumber, CONTROL_VALUE_INCREMENT << 7, channel);
-//                        MIDI.sendControlChange(101, itemNumber >> 7, channel);
-//                        MIDI.sendControlChange(100, itemNumber & 127, channel);
-//                        MIDI.sendControlChange(96, 1, channel);
-//                        MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
-//                        MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command
                         }
                     break;
                     case MIDI_NRPN_DECREMENT:
                         {
                         sendControllerCommand(CONTROL_TYPE_NRPN, itemNumber, CONTROL_VALUE_DECREMENT << 7, channel);
-//                        MIDI.sendControlChange(99, itemNumber >> 7, channel);
-//                        MIDI.sendControlChange(98, itemNumber & 127, channel);
-//                        MIDI.sendControlChange(97, 1, channel);
-//                        MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
-//                       MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command
                         }
                     break;
                     case MIDI_RPN_DECREMENT:
                         {
                         sendControllerCommand(CONTROL_TYPE_RPN, itemNumber, CONTROL_VALUE_DECREMENT << 7, channel);
-//                        MIDI.sendControlChange(101, itemNumber >> 7, channel);
-//                        MIDI.sendControlChange(100, itemNumber & 127, channel);
-//                        MIDI.sendControlChange(97, 2, channel);
-//                        MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
-//                        MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command
                         }
                     break;
                     }
@@ -368,6 +305,40 @@ itemType = MIDI_NRPN_14_BIT;
             }
         }
     }
+    
+
+void stateThruPlay()
+    {
+    if (entry)
+        {
+        sendAllSoundsOff();
+        resetDistributionNotes();
+        local.thru.debounceState = DEBOUNCE_STATE_OFF;
+        entry = false;
+        }
+                        
+    if (updateDisplay)
+        {
+        clearScreen();
+        write3x5Glyphs(GLYPH_PLAY);
+        }
+        
+    if (isUpdated(BACK_BUTTON, RELEASED))
+        {
+        goUpState(STATE_THRU);
+        sendAllSoundsOff();
+        }
+        
+    else if (isUpdated(SELECT_BUTTON, PRESSED))
+    	{
+    	goDownState(STATE_OPTIONS);
+        optionsReturnState = STATE_THRU_PLAY;
+    	}
+        
+    playThru();
+	}
+	
+	
 
 #endif
 
