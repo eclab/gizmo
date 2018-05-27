@@ -1,3 +1,8 @@
+////// Copyright 2016 by Sean Luke
+////// Licensed under the Apache 2.0 License
+//////
+
+
 #ifndef __KAWAI_K4_H__
 #define __KAWAI_K4_H__
 

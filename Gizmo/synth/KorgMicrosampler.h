@@ -1,3 +1,9 @@
+////// Copyright 2016 by Sean Luke
+////// Licensed under the Apache 2.0 License
+//////
+
+
+
 #ifndef __KORG_MICROSAMPLER_H__
 #define __KORG_MICROSAMPLER_H__
 

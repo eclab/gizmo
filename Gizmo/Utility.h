@@ -246,28 +246,12 @@ void setMenuDelay(uint8_t index);
 // The index values passed into setMenuDelay correspond to the following delays (but these
 // constants may NOT be passed into setMenuDelay).
 
-/*
-#define DEFAULT_SHORT_DELAY (60 >> 3)
-#define NO_MENU_DELAY  (DEFAULT_SHORT_DELAY)
-#define EIGHTH_MENU_DELAY (109 >> 3)
-#define QUARTER_MENU_DELAY (205 >> 3)
-#define THIRD_MENU_DELAY (269 >> 3)
-#define HALF_MENU_DELAY (397 >> 3)
-#define DEFAULT_MENU_DELAY (781 >> 3)
-#define DOUBLE_MENU_DELAY (1549 >> 3)
-#define TREBLE_MENU_DELAY (2317 >> 3)
-#define QUADRUPLE_MENU_DELAY (3085 >> 3)
-#define EIGHT_TIMES_MENU_DELAY (6157 >> 3)
-#define HIGH_MENU_DELAY  (NO_SCROLLING)
-*/
-
 #define DEFAULT_SHORT_DELAY (7)		// this is measured in 1/100 of a second
 
 // These are measured in approximately 1/8 of a second
 #define NO_MENU_DELAY  (0)
-#define EIGHTH_MENU_DELAY (1)
 #define QUARTER_MENU_DELAY (2)
-#define THIRD_MENU_DELAY (3)		// really 3/8 delay
+#define THIRD_MENU_DELAY (3)   			// really, it's 3/8
 #define HALF_MENU_DELAY (4)
 #define DEFAULT_MENU_DELAY (8)
 #define DOUBLE_MENU_DELAY (16)
@@ -275,6 +259,7 @@ void setMenuDelay(uint8_t index);
 #define QUADRUPLE_MENU_DELAY (32)
 #define EIGHT_TIMES_MENU_DELAY (64)
 #define HIGH_MENU_DELAY (255)
+#define SLOW_MENU_DELAY (254)
 
 
 

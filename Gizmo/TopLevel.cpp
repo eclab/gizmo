@@ -2358,7 +2358,6 @@ void go()
                 backupOptions = options; 
                 const uint8_t _glyphs[11] = { 
                     (FONT_3x5) + GLYPH_3x5_0,
-                    (FONT_8x5) + GLYPH_8x5_ONE_EIGHTH,
                     (FONT_8x5) + GLYPH_8x5_ONE_FOURTH,
                     (FONT_8x5) + GLYPH_8x5_ONE_THIRD,
                     (FONT_8x5) + GLYPH_8x5_ONE_HALF,
@@ -2367,7 +2366,8 @@ void go()
                     (FONT_3x5) + GLYPH_3x5_3,
                     (FONT_3x5) + GLYPH_3x5_4,
                     (FONT_3x5) + GLYPH_3x5_8,
-                    (FONT_8x5) + GLYPH_8x5_INFINITY 
+                    (FONT_8x5) + GLYPH_8x5_INFINITY,
+                    (FONT_3x5) + GLYPH_3x5_S
                     };
                 result = doGlyphDisplay(_glyphs, 11, NO_GLYPH, options.menuDelay );
                 }

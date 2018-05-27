@@ -1,3 +1,8 @@
+////// Copyright 2016 by Sean Luke
+////// Licensed under the Apache 2.0 License
+//////
+
+
 #ifndef __MEASURE_H__
 #define __MEASURE_H__
 
