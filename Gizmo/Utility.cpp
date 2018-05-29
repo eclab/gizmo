@@ -1303,7 +1303,7 @@ void setMenuDelay(uint8_t index)
     else if (val == SLOW_MENU_DELAY)
     	{
     	val = 12 * DEFAULT_MENU_DELAY;
-    	del = DEFAULT_SHORT_DELAY * 4;
+    	del = DEFAULT_SHORT_DELAY * 2;
     	}
     else 
     	{
