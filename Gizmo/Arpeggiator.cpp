@@ -473,7 +473,9 @@ void stateArpeggiatorPlay()
 
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
-        sendAllSoundsOff();
+        sendAllSoundsOff(options.channelOut);
+        sendNoteOff(local.arp.noteOff, 127, options.channelOut);
+		local.arp.noteOff = NO_NOTE;
         goUpState(STATE_ARPEGGIATOR);
         }
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
@@ -487,8 +489,8 @@ void stateArpeggiatorPlay()
             for(int i = 0; i < NUM_ARPS; i++)
             	{
 	            local.arp.number++;
-	            if (local.arp.number >= NUM_ARPS)
-	            	local.arp.number = 0;
+	            if (local.arp.number > NUM_ARPS + ARPEGGIATOR_NUMBER_CHORD_REPEAT)
+	            	local.arp.number = ARPEGGIATOR_NUMBER_CHORD_REPEAT + 1;
 	            if (ARPEGGIO_IS_NONEMPTY(local.arp.number - ARPEGGIATOR_NUMBER_CHORD_REPEAT - 1))
 	            	{
 	           		LOAD_ARPEGGIO(local.arp.number - ARPEGGIATOR_NUMBER_CHORD_REPEAT - 1);
@@ -500,19 +502,49 @@ void stateArpeggiatorPlay()
 #endif
     else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
         {
-        goDownState(STATE_ARPEGGIATOR_MENU);
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+         if (button[MIDDLE_BUTTON])
+        	{
+        	isUpdated(MIDDLE_BUTTON, PRESSED);  // kill the long release on the middle button
+			if (local.arp.playAlong)
+				{
+				uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+				if (channelOut == 0)
+					channelOut = options.channelOut;
+				sendAllSoundsOff(channelOut);
+				}
+			local.arp.playAlong = !local.arp.playAlong;
+			}
+		else
+#endif
+       goDownState(STATE_ARPEGGIATOR_MENU);
         }
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
     else if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
         {
-        if (local.arp.playAlong)
+        if (button[SELECT_BUTTON])
         	{
-        	uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
-        	if (channelOut == 0)
-        		channelOut = options.channelOut;
-        	sendAllSoundsOff(channelOut);
-        	}
-        local.arp.playAlong = !local.arp.playAlong;
+        	isUpdated(SELECT_BUTTON, PRESSED);  // kill the long release on the select button
+			if (local.arp.playAlong)
+				{
+				uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+				if (channelOut == 0)
+					channelOut = options.channelOut;
+				sendAllSoundsOff(channelOut);
+				}
+			local.arp.playAlong = !local.arp.playAlong;
+			}
+		else
+			{
+			if (getClockState() == CLOCK_RUNNING)
+				{
+				stopClock(true);
+				}
+			else
+				{
+				startClock(true);
+				}
+			}
         }
 #endif
     else if (isUpdated(MIDDLE_BUTTON, RELEASED))

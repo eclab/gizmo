@@ -1021,6 +1021,7 @@ struct _controlParser
     
 #ifdef INCLUDE_PROVIDE_RAW_CC
     uint8_t parseRawCC = false;
+    uint8_t parse14BitCC = false;
 #endif
     };
         
@@ -1034,6 +1035,10 @@ GLOBAL struct _controlParser midiControlParser;
 void setParseRawCC(uint8_t val)
     {
     midiInParser.parseRawCC = val;
+    }
+void setParse14BitCC(uint8_t val)
+    {
+    midiInParser.parse14BitCC = val;
     }
 #endif
 
@@ -1073,7 +1078,14 @@ void parse(_controlParser* parser, byte channel, byte number, byte value)
             
             if (parser->status == CC)
                 {
-                handleControlChange(channel, number, (((uint16_t)parser->controllerValueMSB) << 7) | value, VALUE);
+                if (parser->parse14BitCC)
+	                {
+	                handleControlChange(channel, number, (((uint16_t)parser->controllerValueMSB) << 7) | value, VALUE);
+	                }
+	            else
+	            	{
+            		handleControlChange(channel, number, value, VALUE_7_BIT_ONLY);
+	            	}
                 }
             else parser->status = INVALID;
             }

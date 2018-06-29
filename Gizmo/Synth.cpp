@@ -14,6 +14,10 @@
 #include "synth/KawaiK4.cpp"
 #endif
 
+#ifdef INCLUDE_SYNTH_KAWAI_K5
+#include "synth/KawaiK5.cpp"
+#endif
+
 #ifdef INCLUDE_SYNTH_OBERHEIM_MATRIX_1000
 #include "synth/OberheimMatrix1000.cpp"
 #endif
@@ -110,7 +114,7 @@ void sendDelayedCC(uint8_t parameter, uint8_t value, uint8_t channel, uint8_t co
         }
     }
 
-void sendDelayedSysex(uint8_t* sysex, uint8_t length, uint16_t displayValue, uint8_t countdown)
+void sendDelayedSysex(uint8_t* sysex, uint8_t length, int16_t displayValue, uint8_t countdown)
     {
     if (local.synth.countDown > 0 && length <= MAX_SYNTH_SYSEX_OUTPUT)
         {

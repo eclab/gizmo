@@ -13,16 +13,15 @@ void stateSynthKawaiK5()
         entry = false;
         }
     
-    	synthUpdate();
+    synthUpdate();
     
-
-    if (newItem && (itemType == MIDI_NRPN_14_BIT)
+    if (newItem && (itemType == MIDI_NRPN_14_BIT))
         {
         // unpack
         uint8_t cursor = (uint8_t)(itemNumber & 255);
         uint8_t subStatus = (uint8_t)((itemNumber >> 8) & 2);
-        uint8_t valueLo = (uint8)(itemValue & 15);
-        uint8_t valueHi = (uint8)((itemValue >> 4) & 15);
+        uint8_t valueLo = (uint8_t)(itemValue & 15);
+        uint8_t valueHi = (uint8_t)((itemValue >> 4) & 15);
         
         if (subStatus == 3) subStatus = 2;
         

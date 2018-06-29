@@ -10,8 +10,20 @@
 #include "../TopLevel.h"
 #include <Arduino.h>
 
+#define OBERHEIM_MATRIX_MODNUM 102
+#define OBERHEIM_MATRIX_SOURCE 103
+#define OBERHEIM_MATRIX_DESTINATION 104
+#define OBERHEIM_MATRIX_VALUE 105
+#define OBERHEIM_MATRIX_PARAM_6 106
+#define OBERHEIM_MATRIX_PARAM_38 107
+#define OBERHEIM_MATRIX_PARAM_98 108
+
 struct _oberheimMatrix1000Local
 	{
+	uint8_t modnum;
+	uint8_t source;
+	uint8_t destination;
+	int8_t value;
 	};
 
 // Incoming CC values are 3 to 5 times faster than outgoing NRPN 

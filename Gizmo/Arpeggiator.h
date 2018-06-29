@@ -14,7 +14,7 @@
 //
 // The arpeggiator is a basic arpeggiator which can do any of the following:
 //
-// 1. UP, DOWN, UP-DOWN, RANDOM, and CHORD arpeggios.  A CHORD arpeggio just plays the chord rapidly.
+// 1. UP, DOWN, UP-DOWN, RANDOM, ASSIGN, and CHORD arpeggios.  A CHORD arpeggio just plays the chord rapidly.
 //    The UP, DOWN, UP-DOWN, and RANDOM arpeggios can be affected by the number of OCTAVES (options.arpeggiatorPlayOctaves)
 //    When octaves > 1, the arpeggios will play not only the given chord notes but transposed notes from some number of 
 //    octaves above the chord.  The length of the arpeggio is a function of the number of keys being held down.

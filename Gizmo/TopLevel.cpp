@@ -1001,6 +1001,13 @@ void go()
 #ifdef INCLUDE_SYNTH
         case STATE_SYNTH:
             {
+            if (entry)
+            	{
+				for(uint8_t i = 0; i < 25; i++)
+					local.synth.passMIDIData[i] = true;
+            	entry = false;
+            	}
+            
             local.synth.countDown = 0;
             local.synth.parameterDisplay = DISPLAY_NOTHING;
             
@@ -1012,7 +1019,7 @@ void go()
                 PSTR("KAWAI K4"),
 #endif INCLUDE_SYNTH_KAWAI_K4
 #ifdef INCLUDE_SYNTH_KAWAI_K5
-                PSTR("KAWAI K5A"),
+                PSTR("KAWAI K5"),
 #endif INCLUDE_SYNTH_KAWAI_K5
 #ifdef INCLUDE_SYNTH_OBERHEIM_MATRIX_1000
                 PSTR("OBERHEIM MATRIX 1000"),
@@ -2539,9 +2546,17 @@ void go()
             }
         break;
 #endif INCLUDE_SYNTH_KAWAI_K4
+#ifdef INCLUDE_SYNTH_KAWAI_K5
+        case STATE_SYNTH_KAWAI_K5:
+            {
+            stateSynthKawaiK5();
+            }
+        break;
+#endif INCLUDE_SYNTH_KAWAI_K5
 #ifdef INCLUDE_SYNTH_OBERHEIM_MATRIX_1000
         case STATE_SYNTH_OBERHEIM_MATRIX_1000:
             {
+            debug(100);
             stateSynthOberheimMatrix1000();
             }
         break;

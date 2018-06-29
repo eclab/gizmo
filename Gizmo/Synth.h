@@ -21,7 +21,7 @@ NOTES ON COUNTDOWNS
 
 The countdown facility is how many ticks we should wait before we're
 allowed to SEND another parameter.  A tick is exactly the amount of time
-to send a single MIDI byte.  This is 1/3125 seconds.  Basically 1/3 of a ms.
+to send a single MIDI byte.  This Sis 1/3125 seconds.  Basically 1/3 of a ms.
 
 You might need to slow things down for two reasons:
 
@@ -56,7 +56,7 @@ struct _synthLocal
 	uint8_t datatype;
 
 	// display facility
-	uint16_t valueDisplay;
+	int16_t valueDisplay;
 #define DISPLAY_NOTHING (254)
 #define DISPLAY_ONLY_VALUE (255)
 	uint8_t parameterDisplay;
@@ -80,7 +80,7 @@ struct _synthLocal
 void synthUpdate();
 void sendDelayedNRPN(uint16_t parameter, uint16_t value, uint8_t channel, uint8_t countdown);
 void sendDelayedCC(uint8_t parameter, uint8_t value, uint8_t channel, uint8_t countdown);
-void sendDelayedSysex(uint8_t* sysex, uint8_t length, uint16_t displayValue, uint8_t countdown);
+void sendDelayedSysex(uint8_t* sysex, uint8_t length, int16_t displayValue, uint8_t countdown);
 
 
 #endif

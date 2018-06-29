@@ -330,6 +330,7 @@ void handleSysex(unsigned char* bytes, int len);
 
 #ifdef INCLUDE_PROVIDE_RAW_CC
 void setParseRawCC(uint8_t val);
+void setParse14BitCC(uint8_t val);
 #endif
 
 
