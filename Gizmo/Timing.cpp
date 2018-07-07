@@ -390,7 +390,7 @@ void setPulseRate(uint16_t bpm)
 
 
 //// Table of note pulse rates corresponding to each note speed (such as NOTE_SPEED_QUARTER)
-GLOBAL static uint8_t notePulseRateTable[16] = { 1, 2, 3, 4, 6, 8, 12, 24, 32, 36, 48, 60, 72, 96, 144, 198 };
+GLOBAL static uint8_t notePulseRateTable[16] = { 1, 2, 3, 4, 6, 8, 12, 24, 32, 36, 48, 60, 72, 96, 144, 192 };
 
 ///// SET NOTE PULSE RATE
 ///// Given a note speed type (various NOTE_SPEED_* values defined in LEDDisplay.h), sets up
