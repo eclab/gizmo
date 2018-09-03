@@ -23,19 +23,19 @@ void setPinsAndMasks(uint8_t pin, uint8_t mode, uint8_t &mask)
 
 void setup()
     {
-    fullReset();
+    initLED();
+    setBlinkOnOff(1, 4);   // as fast as we can go.  This is good because we're only redrawing every 32 ticks (about 100 times a second).  It's also faster than 999 BPM (our maximum).
 
     // Show the welcome message
     write8x5Glyph(led2, GLYPH_8x5_GIZMO_PT1);
     write8x5Glyph(led, GLYPH_8x5_GIZMO_PT2);
-    rotateMatrix(led2, DIR_180);
-    rotateMatrix(led, DIR_180);
     sendMatrix(led, led2);
     delay(2000);
-	
+
+    // reset and display it
+    fullReset();
+    clearScreen();
     write3x5Glyphs(GLYPH_SYSTEM_RESET);
-    rotateMatrix(led2, DIR_180);
-    rotateMatrix(led, DIR_180);
     sendMatrix(led, led2);
     }
 
@@ -82,7 +82,9 @@ void setup()
 			{
 	      fullReset();
   		}
-		}
+
+		soft_restart();
+    }
 
     // Turn the board LEDs off
     digitalWrite(PIN_LED_RED, 1);
@@ -115,8 +117,6 @@ void setup()
     // Show the welcome message
     write8x5Glyph(led2, GLYPH_8x5_GIZMO_PT1);
     write8x5Glyph(led, GLYPH_8x5_GIZMO_PT2);
-    //rotateMatrix(led2, DIR_180);
-    //rotateMatrix(led, DIR_180);
     sendMatrix(led, led2);
     delay(2000);
 

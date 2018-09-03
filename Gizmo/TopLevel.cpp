@@ -400,7 +400,6 @@ void semiReset()
     {
     resetOptions();
     saveOptions();
-    soft_restart();
     }
 
 

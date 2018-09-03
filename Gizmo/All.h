@@ -41,7 +41,7 @@
 // a reset without holding the three buttons down (because you have no buttons!) 
 //#define HEADLESS_RESET
 //
-// If you turn on this define, Gizmo will eliminate the option of OFF for it's MIDI Control so you
+// If you turn on this define, Gizmo will eliminate the option of OFF for its MIDI Control so you
 // can't possibly lock yourself out by accident.  You can then control Gizmo entirely via NRPN
 // without ever touching the knobs or buttons (which you might not have).
 //#define HEADLESS
