@@ -350,7 +350,12 @@ When you start the arpeggiator, you are presented with a menu of six preset arpe
 When in the play mode, the arpeggiator will play an arpeggio for a chord as long as you hold down the keys in the chord.  Alternatively if you toggle the {\bf latch}, then the playing will continue after you have released the keys, and will only shift to a new chord when you release all notes and then hold down an entirely new chord.  Latch mode is toggled by pressing the Middle button.  When Latch mode is engaged, an LED will light as shown in Figure~\ref{arpeggiator}.  Latch mode is stored permanently in memory, so next time you start up the Arpeggiator, your option will be remembered.  Note that you can stop the current notes from playing by toggling Latch mode again.
 
 
-(Mega Only) The arpeggiator also has a {\bf play-along mode} which you toggle by Long-Pressing the Middle and Select buttons simultaneously.  In this mode, if you press notes on the keyboard, they are not sent to the arpeggiator, but instead are routed out a MIDI channel of your choosing.  This is useful in three contexts.  First, you can use it as a lightweight bypass mode of sorts.  Second, you can use it to suddenly start playing a different synthesizer than the one on which you're doing arpeggios.   Third, and most importantly, you can use this in combination with latch mode: enter latch mode, get an arpeggio going, and then switch to play-along mode to use the keyboard for other purposes (playing along with the arpeggio for example).
+(Mega Only) The arpeggiator also has a {\bf performance mode} which you toggle by Long-Pressing the Middle and Select buttons simultaneously.  In this mode, if you press notes on the keyboard, they are not sent to the arpeggiator, but instead are used for one of two things:
+	\begin{itemize}
+	\item {\bf Transposing the arpeggio.}  Here, as soon as you enter performance mode, you will be asked to enter the key of the arpeggio chord (as note).  Thereafter, if you press other keys, the arpeggio will be transposed from that key to the other keys (including shifting it by multiple octaves if your keys are far away).  This really only makes sense if you've latched an arpeggio first.
+	\item {\bf Playing along.}  As you play notes, they will be routed out a MIDI channel of your choosing.  This is useful in three contexts.  First, you can use it as a lightweight bypass mode of sorts.  Second, you can use it to suddenly start playing a different synthesizer than the one on which you're doing arpeggios.   Third, and most importantly, you can use this in combination with latch mode: enter latch mode, get an arpeggio going, and then switch to play-along mode to use the keyboard for other purposes (playing along with the arpeggio for example).
+	\end{itemize}
+You can chose which of these items occurs when you enter performance mode choosing the menu option {\bf Performance}.
 
 (Mega Only) In some situations, you may need to manually {\bf start or stop} the clock during arpeggiation.  You can do this by Long-Pressing the Middle button.
 
@@ -405,6 +410,10 @@ The last menu option in the top-level Arpeggiator menu is {\bf Create}.  If you 
 
 The first question you will be asked is \texttt{NOTE}:\ the Arpeggiator is asking you to specify the note in your arpeggio pattern which will correspond to the root (lowest) note in a played chord.  This allows you to make a pattern which plays notes both above and below the played chord.  Consider the above pattern (C3 E3 G3 E3 G2, thus 2 3 4 3 1).  If you assigned C3 (thus 2) to be the root, then the Arpeggiator will play its final note (1) {\it below} the lowest not in your played chord.
 
+After you have entered the root, the Arpeggiator will wait for you to start playing notes.  You can enter a sequence of up to 32 notes, including 15 unique notes (14 on the Mega).  If you enter too many unique notes, or more than 32 notes in total, the Arpeggiator will simply refuse to accept the next note.  You can also enter rests by pressing the Middle button.  On the Mega you can also enter ties (stretching the last note) by long-pressing the Middle button.  The first note may not be a tie: what would it be tying?
+
+As you enter notes, they are displayed in the left half of the LED, and the latest note pitch is displayed in the right half. Figure~\ref{arpeggioediting} shows different arpeggio patterns.  If you have eight or fewer unique notes in your pattern, then they will be displayed in {\it sparse mode} as shown at right.  If you have over eight notes, they will be displayed in {\it dense mode} in order to show all of the notes.  The LEDs don't show the notes per se, but rather the consecutive numbers that the notes represent.  For example, the ascending notes shown at right could be C, D, E, F, G, A, B, C, or they could be C, C\(\sharp\), D, D\(\sharp\), E, F, F\(\sharp\), B.
+
 \begin{wrapfigure}{r}{3.5in}
 \begin{center}
 \vspace{-2.5em}
@@ -414,11 +423,6 @@ The first question you will be asked is \texttt{NOTE}:\ the Arpeggiator is askin
 \vspace{-2em}
 \label{arpeggionotes}
 \end{wrapfigure}
-
-
-After you have entered the root, the Arpeggiator will wait for you to start playing notes.  You can enter a sequence of up to 32 notes, including 15 unique notes (14 on the Mega).  If you enter too many unique notes, or more than 32 notes in total, the Arpeggiator will simply refuse to accept the next note.  You can also enter rests by pressing the Middle button.  On the Mega you can also enter ties (stretching the last note) by long-pressing the Middle button.  The first note may not be a tie: what would it be tying?
-
-As you enter notes, they are displayed in the left half of the LED, and the latest note pitch is displayed in the right half. Figure~\ref{arpeggioediting} shows different arpeggio patterns.  If you have eight or fewer unique notes in your pattern, then they will be displayed in {\it sparse mode} as shown at right.  If you have over eight notes, they will be displayed in {\it dense mode} in order to show all of the notes.  The LEDs don't show the notes per se, but rather the consecutive numbers that the notes represent.  For example, the ascending notes shown at right could be C, D, E, F, G, A, B, C, or they could be C, C\(\sharp\), D, D\(\sharp\), E, F, F\(\sharp\), B.
 
 If you don't like the latest portion of your arpeggio, you can scroll the cursor back to an earlier section by turning the right knob.  Then if you start playing, the later notes will be discarded and the arpeggio pattern will continue from where the cursor was.  You can also scroll to view your past notes, then scroll all the way back to continue.
 
@@ -457,7 +461,7 @@ Of particular interest to you may be Length and Tempo.  And Swing!
 One note regarding the {\bf Note Length} option.  If the Note Length is set to 100 (and {\it only} 100), the Arpeggiator behaves specially: each note will extend until the next note (or rest) is played, regardless of how long that is.  Thus if you have Swing turned on, notes will extend until the next syncopated (delayed) note even if their time is up. This provides a fully legato feel.
 
 
-\paragraph{The Left and Right Knobs}  When playing an arpeggio, turning the left knob will transport you directly to the Tempo menu option, so you can easily change the note tempo.  Similarly, turning the right knob will send you to the Note Length menu option.  You'll have to turn a lot to get this to happen (as a safety precaution).\footnote{{\it What about Arpeggio Key Velocity?  Swing?  Note Speed? Velocity or Transpose?}\qquad Arpeggio Key Velocity's easy: it's the first menu item.  For the others you'll have to go through the options menu, sorry.  Though it's easy to modify Gizmo to change this.}  Once you're done changing the tempo or note length, press the Select button to save it, or the Back button to cancel and return to your previous value.
+\paragraph{The Left and Right Knobs}  When playing an arpeggio, turning the left knob will transport you directly to the Tempo menu option, so you can easily change the note tempo.  Similarly, turning the right knob will send you to the Note Length menu option.  You'll have to turn a lot to get this to happen (as a safety precaution).\footnote{{\it What about Arpeggio Key Velocity?  Swing?  Note Speed? Velocity or Transpose?}\qquad Arpeggio Key Velocity's easy: it's the first menu item.  For the others you'll have to go through the options menu, or remote-control the arpeggiator via CC.}  Once you're done changing the tempo or note length, press the Select button to save it, or the Back button to cancel and return to your previous value.
 
 \paragraph{Controls Summary}  Here's what the arpeggiator's controls do in different contexts.
 
@@ -482,6 +486,28 @@ Keystrokes, CC, etc.			& Enter Arpeggio Chord & Enter Arpeggio Notes\\
 \end{tabular}
 }
 \end{center}
+
+\paragraph{Remote Control over CC}  If you have a remote control surface, you can directly access a number of the Arpeggiator's play or arpeggio creation capabilities by sending CC messages over Gizmo's Control MIDI Channel.    These operations are on top of the CC Control Midi operations (Section \ref{options}, see ``Control MIDI''), and in fact replicate a few of them.
+
+\vspace{1em}
+\noindent {\small
+\begin{center}\begin{tabular}{@{}rlll@{}}
+\it CC Number & \it CC Value & \it When Creating a User Arpeggio	& \it When Playing an Arpeggio \\
+\hline\\[-0.5em]
+88	&	Any	 & Enter Rest	& Toggle Latch\\
+89	&	Any	 & Enter Tie 	& Toggle Start/Stop Clock\\
+90	&	Any	&	& Toggle Performance Mode\\
+91	&	Any	&	& Advance to Next User Arpeggio\\
+21	&	0--127	&	& Set Gizmo's Tempo (press Select to set, Back to cancel)\\
+22	&	0--127	&	& Set Gizmo's Transpose (press Select to set, Back to cancel)\\
+23	&	0--127	&	& Set Gizmo's Volume (press Select to set, Back to cancel)\\
+24	&	0--127	&	& Set Gizmo's Note Speed (press Select to set, Back to cancel)\\
+25	&	0--127	&	& Set Gizmo's Play Length (press Select to set, Back to cancel)\\
+26	&	0--127	&	& Set Gizmo's Swing (press Select to set, Back to cancel)\\
+27	&	0--127	&	& Set Performance Mode (press Select to set, Back to cancel)\\
+\end{tabular}
+\end{center}
+}
 
 \clearpage
 
@@ -1278,12 +1304,13 @@ I might add more unusual transformers later.  Anyway, here are your options:
 
 \paragraph{Caveats} While you are sending NRPN this way, you can also send some CC messages, but not for CC numbers 6, 32--63, or 98--101: you'll need to send the NRPN equivalents for those.  The Blofeld seems to drop some Sysex packets if you send them too fast.  Significantly increasing \texttt{WALDORF\_BLOFELD\_COUNTDOWN} helps things but at the cost of lag and discretization.  It's probably better to just turn your encoder dial more slowly.
 
-\subsection{Kawai K4 / K4r}  {\color{red} This code is not yet tested}\quad The K4 is only accessible via Sysex.  Gizmo maps NRPN messages to corresponding Kawai K4 Sysex parameter change messages, which allows you to tweak all of the K4's (non-Multi) parameters over NRPN.  The K4 has 88 parameters, broken into Single (0--69), Drum (70--81), and Effect (82--88) parameters.  Single parameters require that you first specify the {\it source} via NRPN parameter 100: source 1 is value 0, source 2 is value 1, source 3 is value 2, and source 4 is value 3.  Drum parameters require that you first specify the {\it drum key} via NRPN parameter 101: the key values are 0--60, left to right.  And Effect parameters require that you first specify the {\it submix / output channel} via NRPN parameter 101: channel values are 0--7.  
+\subsection{Kawai K4 / K4r}\quad The K4 is only accessible via Sysex.  Gizmo maps CC messages to corresponding Kawai K4 Sysex parameter change messages, which allows you to tweak all of the K4's (non-Multi) parameters over CC.  The K4 has 89 parameters, broken into Single (0--69), Drum (70--81), and Effect (82--88) parameters.  You can send any of these parameters as a CC message number 0...88.  
 
-For more information, see the PDF file \texttt{docs/synth/KawaiK4CorrectedMIDIImplementation.pdf}.  In particular, look at to the breakout of parameters as specified in Section 5-6 and the parameter list proper in Section 6 (pay attention to the ``Parameter No'' column).   Note that one parameter (\#17) combines four mute values and vibrato shape into a single number.  This means you can't change one of them without changing the others.  Gizmo handles this by letting you set each of them separately, and it keeps track of what settings you used previously.  Set all of them one time each, then as you continue to set them it'll update with the old values of the others.  Mutes 1--4 are set with NRPN parameter 103--106, and Vibrato Shape is set with NRPN parameter 107.  See Parameter \#17 in Section 6 of the file for appropriate values of these.
+Some of these parameters allow not 128 but 256 different values.  You can toggle Gizmo to sending values in the range 128...255 rather than 0...127 (or not) with a CC message sent to parameter number 100.
 
-\paragraph{Display}  If you are setting the Vibrato Shape or Mute 1...4, then \texttt{VS}, \texttt{M1}, \texttt{M2}, \texttt{M3}, or \texttt{M4} are displayed respectively, along with the value.  If you are setting the Source, Drum, or Effects Parameter, then \texttt{S}, \texttt{D}, or \texttt{FX} are displayed respectively along with the value.  Otherwise, just the value is displayed.
+Finally, the K4's parameters 0--69 require a {\it source} value (0...4, representing s1, s2, s3, or s4 respectively); while parameters 70--81 require a {\it key note} (one of 0...60), and finally parameters 82--88 require a {\it submix} or {\it output channel} (a value 0...7.  You specify the source, key note, or submix/output channel by sending it as a value to CC parameter 101.
 
+For more information, see the PDF file \texttt{docs/synth/KawaiK4CorrectedMIDIImplementation.pdf}.  In particular, look at to the breakout of parameters as specified in Section 5-6 and the parameter list proper in Section 6 (pay attention to the ``Parameter No'' column). 
 
 \subsection{Oberheim Matrix 1000}  {\color{red} This code is not yet tested}\quad This machine is dramatically opened up by new firmware (Gligli's v1.16, and Bob Grieb's v1.20), which adds quasi-real-time parameter changes and NRPN support.\footnote{I strongly suggest you install Bob Grieb's, it's only \$30.  http:/\!/tauntek.com/Matrix1000Firmware.htm\quad By the way, if you have a Matrix 6 or 6R, check out http:/\!/tauntek.com/Matrix6Firmware.htm though it doesn't support NRPN.}  Gizmo's facility supports two items:
 
