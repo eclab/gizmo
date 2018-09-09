@@ -45,7 +45,7 @@ void synthUpdate()
 				}
 			else if (local.synth.datatype == TYPE_CC)
 				{
-        sendControllerCommand(CONTROL_TYPE_CC, local.synth.parameter, local.synth.value, local.synth.channel);
+        		sendControllerCommand(CONTROL_TYPE_CC, local.synth.parameter, local.synth.value, local.synth.channel);
 				local.synth.parameterDisplay = local.synth.parameter;
 				local.synth.valueDisplay = local.synth.value;
 				}
@@ -69,6 +69,11 @@ void synthUpdate()
 		else if (local.synth.parameterDisplay == DISPLAY_ONLY_VALUE)
 			{
 			writeNumber(led, led2, local.synth.valueDisplay);
+			}
+		else if (local.synth.parameterDisplay >= 128)
+			{
+			write3x5Glyph(led2, local.synth.parameterDisplay - 128, 0);
+			writeShortNumber(led, local.synth.valueDisplay, true);
 			}
 		else
 			{

@@ -8,22 +8,22 @@
 
 /*** NOTES ON THE KAWAI K4
 
-NRPN MAPPING
 
-PARAMETER
-MSB		Parameter number (0...88)
-LSB		Source 0=s1 1=s2 2=s3 3=s4 (if parameter is 0-69)
-		or Drum Key 0-60 (if parameter is 70-81)
-		or Submix/Output Channel 0-7 (if parameter is 82-88)
-
-VALUE
-LSB+MSB	many values have ranges over 0...127
+101:	NUMBER	0=s1 1=s2 2=s3 3=s4  Source
+				0=f1 1=f2 Filter
+				0...60 Drum Key
+				0...7 Submix/Output Channel
 ***/
 
 #define KAWAI_K4_COUNTDOWN			(0)
 
+#define KAWAI_K4_NUMBER_PARAM	(100)
+#define KAWAI_K4_HIGH_PARAM		(101)
+
 struct _kawaiK4Local
 	{
+	uint8_t number;
+	uint8_t high;
 	};
 
 void stateSynthKawaiK4();

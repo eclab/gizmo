@@ -998,39 +998,32 @@ void go()
         break;
 #endif
 #ifdef INCLUDE_SYNTH
+#define INCLUDE_SYNTH_WALDORF_BLOFELD
+#define INCLUDE_SYNTH_KAWAI_K4
+#define INCLUDE_SYNTH_KAWAI_K5
+#define INCLUDE_SYNTH_OBERHEIM_MATRIX_1000
+#define INCLUDE_SYNTH_KORG_MICROSAMPLER
+#define INCLUDE_SYNTH_YAMAHA_TX81Z
         case STATE_SYNTH:
             {
             if (entry)
             	{
 				for(uint8_t i = 0; i < 25; i++)
 					local.synth.passMIDIData[i] = true;
-            	entry = false;
             	}
             
             local.synth.countDown = 0;
             local.synth.parameterDisplay = DISPLAY_NOTHING;
             
             const char* menuItems[6] = { 
-#ifdef INCLUDE_SYNTH_WALDORF_BLOFELD
-                PSTR("WALDORF BLOFELD"),
-#endif INCLUDE_SYNTH_WALDORF_BLOFELD
-#ifdef INCLUDE_SYNTH_KAWAI_K4
-                PSTR("KAWAI K4"),
-#endif INCLUDE_SYNTH_KAWAI_K4
-#ifdef INCLUDE_SYNTH_KAWAI_K5
-                PSTR("KAWAI K5"),
-#endif INCLUDE_SYNTH_KAWAI_K5
-#ifdef INCLUDE_SYNTH_OBERHEIM_MATRIX_1000
-                PSTR("OBERHEIM MATRIX 1000"),
-#endif INCLUDE_SYNTH_OBERHEIM_MATRIX_1000
-#ifdef INCLUDE_SYNTH_KORG_MICROSAMPLER
-                PSTR("KORG MICROSAMPLER"),
-#endif INCLUDE_SYNTH_KORG_MICROSAMPLER
-#ifdef INCLUDE_SYNTH_YAMAHA_TX81Z
-                PSTR("YAMAHA TX81Z"),
-#endif INCLUDE_SYNTH_YAMAHA_TX81Z
+                PSTR("BLOFELD)"),
+                PSTR("K4"),
+                PSTR("K5"),
+                PSTR("MATRIX 1000"),
+                PSTR("MICROSAMPLER"),
+                PSTR("TX81Z")
                 };
-            doMenuDisplay(menuItems, 4, STATE_SYNTH_WALDORF_BLOFELD, STATE_ROOT, 1);
+            doMenuDisplay(menuItems, 6, STATE_SYNTH_WALDORF_BLOFELD, STATE_ROOT, 1);
             }
         break;
 #endif
@@ -1278,11 +1271,25 @@ void go()
 #endif
 
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
-        case STATE_ARPEGGIATOR_PLAY_ALONG:
+        case STATE_ARPEGGIATOR_PLAY_PERFORMANCE:
             {
             // 0 is DEFAULT
-            stateNumerical(0, 16, options.arpeggiatorPlayAlongChannel, backupOptions.arpeggiatorPlayAlongChannel, true, false, GLYPH_NONE,  STATE_ARPEGGIATOR_MENU);
+            // 17 is TRANSPOSE
+            stateNumerical(0, 17, options.arpeggiatorPlayAlongChannel, backupOptions.arpeggiatorPlayAlongChannel, true, false, GLYPH_TRANSPOSE,  STATE_ARPEGGIATOR_MENU);
             playArpeggio();
+            }
+        break;
+        case STATE_ARPEGGIATOR_PLAY_TRANSPOSE:
+            {
+			local.arp.performanceMode = false;  // it's false until we say it's true
+			uint8_t note = stateEnterNote(STATE_ARPEGGIATOR_PLAY);
+			if (note != NO_NOTE)  // it's a real note
+				{
+				local.arp.transposeRoot = note;
+				goUpState(STATE_ARPEGGIATOR_PLAY);
+				local.arp.performanceMode = true;
+				}
+			playArpeggio();
             }
         break;
 #endif
@@ -2531,49 +2538,38 @@ void go()
 
 //// SYNTHS
 
-#ifdef INCLUDE_SYNTH_WALDORF_BLOFELD
+#ifdef INCLUDE_SYNTH
         case STATE_SYNTH_WALDORF_BLOFELD:
             {
             stateSynthWaldorfBlofeld();
             }
         break;
-#endif INCLUDE_SYNTH_WALDORF_BLOFELD
-#ifdef INCLUDE_SYNTH_KAWAI_K4
         case STATE_SYNTH_KAWAI_K4:
             {
             stateSynthKawaiK4();
             }
         break;
-#endif INCLUDE_SYNTH_KAWAI_K4
-#ifdef INCLUDE_SYNTH_KAWAI_K5
         case STATE_SYNTH_KAWAI_K5:
             {
             stateSynthKawaiK5();
             }
         break;
-#endif INCLUDE_SYNTH_KAWAI_K5
-#ifdef INCLUDE_SYNTH_OBERHEIM_MATRIX_1000
         case STATE_SYNTH_OBERHEIM_MATRIX_1000:
             {
-            debug(100);
             stateSynthOberheimMatrix1000();
             }
         break;
-#endif INCLUDE_SYNTH_OBERHEIM_MATRIX_1000
-#ifdef INCLUDE_SYNTH_KORG_MICROSAMPLER
         case STATE_SYNTH_KORG_MICROSAMPLER:
             {
             stateSynthKorgMicrosampler();
             }
         break;
-#endif INCLUDE_SYNTH_KORG_MICROSAMPLER
-#ifdef INCLUDE_SYNTH_YAMAHA_TX81Z
         case STATE_SYNTH_YAMAHA_TX81Z:
             {
             stateSynthYamahaTX81Z();
             }
         break;
-#endif INCLUDE_SYNTH_YAMAHA_TX81Z
+#endif
         
         
         

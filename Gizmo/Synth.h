@@ -57,8 +57,8 @@ struct _synthLocal
 
 	// display facility
 	int16_t valueDisplay;
-#define DISPLAY_NOTHING (254)
-#define DISPLAY_ONLY_VALUE (255)
+#define DISPLAY_NOTHING (253)
+#define DISPLAY_ONLY_VALUE (254)
 	uint8_t parameterDisplay;
 
 #define MAX_SYNTH_SYSEX_OUTPUT (32)

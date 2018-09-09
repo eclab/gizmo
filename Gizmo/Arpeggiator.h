@@ -147,6 +147,7 @@
 
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
 #define ARP_POT_SLOP (32)
+#define ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE (17)
 #endif
 
 
@@ -170,7 +171,9 @@ struct _arpLocal
     uint8_t currentRightPot;                                        	// What is the most recent right pot value for editing (-1 ... 32 or so).  
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
     uint8_t backup;      		// used for backing up data to restore it                                                           // used to back up various values when the user cancels
-	uint8_t playAlong;
+	uint8_t performanceMode;
+	int8_t transpose;
+	uint8_t transposeRoot;
 	uint16_t oldLeftPot;
 	uint16_t oldRightPot;
 #endif

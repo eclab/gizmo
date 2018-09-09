@@ -217,12 +217,16 @@ void handleNoteOff(byte channel, byte note, byte velocity)
             if (application == STATE_ARPEGGIATOR && local.arp.playing && !bypass)
             {
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
-				if (local.arp.playAlong)
+				if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
 					{
 					uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
 					if (channelOut == 0)
 						channelOut = options.channelOut;
 					sendNoteOff(note, velocity, channelOut);
+					}
+				else if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel == ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+					{
+					// do nothing
 					}
 				else
 #endif             
@@ -350,16 +354,23 @@ void handleNoteOn(byte channel, byte note, byte velocity)
         if (updateMIDI(channel, MIDI_NOTE_ON, note, velocity))
             {
 #ifdef INCLUDE_ARPEGGIATOR
-            if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing))
+            if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && state != STATE_ARPEGGIATOR_PLAY_TRANSPOSE))
                 {
                 // the arpeggiation velocity shall be the velocity of the most recently added note
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
-				if (local.arp.playAlong)
+				if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
 					{
 					uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
 					if (channelOut == 0)
 						channelOut = options.channelOut;
 					sendNoteOn(note, velocity, channelOut);
+					}
+				else if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel == ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+					{
+					int16_t tr = note - (int16_t)(local.arp.transposeRoot);
+					while (tr < -128) tr += 12;
+					while (tr > 127) tr -= 12;
+					local.arp.transpose = (int8_t) tr;
 					}
 				else
 #endif             
@@ -432,7 +443,6 @@ void handleNoteOn(byte channel, byte note, byte velocity)
                 }
     }
   
-
 void handleAfterTouchPoly(byte channel, byte note, byte pressure)
     {
     // (We don't have space for this on the Uno :-(  )
@@ -440,7 +450,7 @@ void handleAfterTouchPoly(byte channel, byte note, byte pressure)
     if (updateMIDI(channel, MIDI_AFTERTOUCH_POLY, note, pressure))
         {
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
-		if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && local.arp.playAlong))
+		if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE))
 			{
 			uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
 			if (channelOut == 0)
@@ -1358,7 +1368,7 @@ void handleAfterTouchChannel(byte channel, byte pressure)
     if (!bypass) 
         {
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
-		if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && local.arp.playAlong))
+		if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE))
 			{
 			uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
 			if (channelOut == 0)
@@ -1422,7 +1432,7 @@ void handlePitchBend(byte channel, int bend)
     if (!bypass) 
         {
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
-		if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && local.arp.playAlong))
+		if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE))
 			{
 			uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
 			if (channelOut == 0)
