@@ -498,6 +498,11 @@ void stateArpeggiatorPlay()
 #ifdef INCLUDE_IMMEDIATE_RETURN
     immediateReturn = false;
 #endif
+
+#ifdef INCLUDE_CC_LEFT_POT_PARAMETER_EQUIVALENTS
+		// always do this
+		leftPotParameterEquivalent = false;
+#endif
     
     if (updateDisplay)
         {    
