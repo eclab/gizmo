@@ -420,7 +420,7 @@ As you enter notes, they are displayed in the left half of the LED, and the late
 \includegraphics[width=3.5in]{arpeggionotes.pdf}\\
 \end{center}
 \vspace{-1em}\caption{Displayed arpeggio notes.  If you have entered more than 7 unique notes, the arpeggio will switch to ``dense mode'' to display them.}
-\vspace{-2em}
+\vspace{-1em}
 \label{arpeggionotes}
 \end{wrapfigure}
 
@@ -443,7 +443,7 @@ What happens if your arpeggio is designed for five notes but you hold down only 
 
 Also, because they are fixed in size, user-created arpeggios do not respond to the octaves option.
 
-(Mega Only) If you're currently playing a user-created arpeggio, and you press the Select button, you will immediately {\bf advance to the next non-empty user-created arpeggio}.  You might use this to shift between a sequence of arpeggios of interest.
+(Mega Only) If you're playing a user-created arpeggio, and you press the Select button, Gizmo will schedule an {\bf advance to the next non-empty user-created arpeggio} after the current arpeggio has finished.\footnote{Which brings up the question: how do you delete a user-created arpeggio?  Maybe you have some junk you don't want to advance to.  The answer is: go to CREATE an arpeggio, then while it's still empty, save it to the slot you want to delete.}
 
 \paragraph{More Arpeggiator Options}
 
@@ -477,7 +477,7 @@ Back Button (Long)			& Toggle Bypass  \\
 Middle Button				& Toggle Latch				& Rest \\
 Middle Button (Long)			& Start/Stop Clock 			& Tie \\
 Select Button				& Advance to Next User Arpeggio \\
-						& (only if currently in a user arpeggio) \\
+						& {\it (only if currently in a user arpeggio)}\\
 Select Button (Long)			& Menu & Save Arpeggio\\
 Select + Middle Button (Long) 	& Toggle Play-along Mode \\
 Left Knob					& Change Tempo  \\

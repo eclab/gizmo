@@ -173,6 +173,7 @@ struct _arpLocal
     uint8_t backup;      		// used for backing up data to restore it                                                           // used to back up various values when the user cancels
 	uint8_t performanceMode;
 	int8_t transpose;
+	uint8_t advance;
 	uint8_t transposeRoot;
 	uint16_t oldLeftPot;
 	uint16_t oldRightPot;

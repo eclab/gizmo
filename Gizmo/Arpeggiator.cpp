@@ -112,6 +112,29 @@ void playArpeggiatorNote(uint16_t note)
     }
     
 
+void loadNextUserArpeggio()
+	{
+        // Load the arpeggiator data
+        if (local.arp.number > ARPEGGIATOR_NUMBER_CHORD_REPEAT)
+            {
+            // search toroidally for a nonempty arpeggio and load it.  If we fail, we wind up
+            // back where we are.
+            for(int i = 0; i < NUM_ARPS; i++)
+            	{
+	            local.arp.number++;
+	            if (local.arp.number > NUM_ARPS + ARPEGGIATOR_NUMBER_CHORD_REPEAT)
+	            	local.arp.number = ARPEGGIATOR_NUMBER_CHORD_REPEAT + 1;
+	            if (ARPEGGIO_IS_NONEMPTY(local.arp.number - ARPEGGIATOR_NUMBER_CHORD_REPEAT - 1))
+	            	{
+	           		LOAD_ARPEGGIO(local.arp.number - ARPEGGIATOR_NUMBER_CHORD_REPEAT - 1);
+	           		local.arp.advance = false;
+	           		break;
+	           		}
+	            }
+            }
+	}
+
+
 
 // Continue to play the arpeggio
 void playArpeggio()
@@ -248,7 +271,14 @@ void playArpeggio()
                     {
                     local.arp.currentPosition++;
                     if (local.arp.currentPosition >= data.arp.length)
+                    	{
                         local.arp.currentPosition = 0;
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+                        // maybe advance
+                        if (local.arp.advance)
+                        	loadNextUserArpeggio();
+#endif
+                        }
 
                     int8_t octave = 0;  // note that this is signed
                     int8_t notei = ARP_NOTEX(local.arp.currentPosition);
@@ -277,7 +307,10 @@ void playArpeggio()
                     }                                                       
                 }
             }
-        else local.arp.currentPosition = ARP_POSITION_START;
+        else 
+        	{
+        	local.arp.currentPosition = ARP_POSITION_START;
+        	}
         }
     }
 
@@ -374,6 +407,14 @@ void arpeggiatorToggleLatch()
 				saveOptions();
 	}
 
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+void arpeggiatorSetLatch()
+	{
+				options.arpeggiatorLatch = true;
+//				saveOptions();
+	}
+#endif
+
 void arpeggiatorStartStopClock()
 	{
 	if (getClockState() == CLOCK_RUNNING)
@@ -401,27 +442,6 @@ void arpeggiatorEnterPerformanceMode()
 		}
 	}
 	
-void loadNextUserArpeggio()
-	{
-        // Load the arpeggiator data
-        if (local.arp.number > ARPEGGIATOR_NUMBER_CHORD_REPEAT)
-            {
-            // search toroidally for a nonempty arpeggio and load it.  If we fail, we wind up
-            // back where we are.
-            for(int i = 0; i < NUM_ARPS; i++)
-            	{
-	            local.arp.number++;
-	            if (local.arp.number > NUM_ARPS + ARPEGGIATOR_NUMBER_CHORD_REPEAT)
-	            	local.arp.number = ARPEGGIATOR_NUMBER_CHORD_REPEAT + 1;
-	            if (ARPEGGIO_IS_NONEMPTY(local.arp.number - ARPEGGIATOR_NUMBER_CHORD_REPEAT - 1))
-	            	{
-	           		LOAD_ARPEGGIO(local.arp.number - ARPEGGIATOR_NUMBER_CHORD_REPEAT - 1);
-	           		break;
-	           		}
-	            }
-            }
-	}
-
 // Choose an arpeggiation, or to create one
 void stateArpeggiator()
     {
@@ -567,7 +587,7 @@ void stateArpeggiatorPlay()
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
     else if (isUpdated(SELECT_BUTTON, RELEASED))
         {
-        loadNextUserArpeggio();
+        local.arp.advance = true;
         }
 #endif
     else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
@@ -645,7 +665,7 @@ void stateArpeggiatorPlay()
 				}
 			case CC_EXTRA_PARAMETER_2:
 				{
-        		loadNextUserArpeggio();
+				local.arp.advance = true;
 				break;
 				}
 			
