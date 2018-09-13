@@ -546,7 +546,6 @@ void write3x5GlyphPair(uint8_t glyph1, uint8_t glyph2)
 GLOBAL uint8_t state = STATE_ROOT;                     // The current state
 GLOBAL uint8_t application = FIRST_APPLICATION;           // The top state (the application, so to speak): we display a dot indicating this.
 GLOBAL uint8_t entry = 1;  
-GLOBAL uint8_t optionsReturnState;
 GLOBAL uint8_t defaultState = STATE_NONE;
 #ifdef INCLUDE_EXTENDED_MENU_DEFAULTS
 // Explanation.  While doNumericalDisplay uses defaultState for its defaults, doMenuDisplay cannot because
@@ -555,9 +554,6 @@ GLOBAL uint8_t defaultState = STATE_NONE;
 // to interpret this as a default *value*.  So this hack allows us to specify a default value for a menu
 // that's not stateful.  Yuck.
 GLOBAL uint8_t defaultMenuValue = 0;
-#endif
-#ifdef INCLUDE_IMMEDIATE_RETURN
-GLOBAL uint8_t immediateReturn = false;
 #endif
 
 ////// GO()
@@ -598,7 +594,7 @@ void go()
             {
             if (entry)
                 {
-                optionsReturnState = STATE_ROOT;
+                immediateReturnState = STATE_ROOT;
                 }
 #if defined(__MEGA__)
 #if defined(INCLUDE_SYSEX)
@@ -1168,7 +1164,7 @@ void go()
                                           PSTR("MENU DELAY"),
                                           PSTR("AUTO RETURN"),
                                           PSTR("GIZMO V6 (C) 2018 SEAN LUKE") };
-            doMenuDisplay(menuItems, 16, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
+            doMenuDisplay(menuItems, 16, STATE_OPTIONS_TEMPO, immediateReturnState, 1);
 #endif
 #if defined(__UNO__)
             const char* menuItems[11] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), 
@@ -1176,7 +1172,7 @@ void go()
                                           ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
                                           PSTR("BRIGHTNESS"),
                                           PSTR("GIZMO V6 (C) 2018 SEAN LUKE") };
-            doMenuDisplay(menuItems, 11, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
+            doMenuDisplay(menuItems, 11, STATE_OPTIONS_TEMPO, immediateReturnState, 1);
 #endif
 
             playApplication(); 
@@ -1314,7 +1310,7 @@ void go()
 #ifdef INCLUDE_IMMEDIATE_RETURN
             // 17 represents DEFAULT channel
             uint8_t val = stateNumerical(0, 17, local.stepSequencer.outMIDI[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, true, GLYPH_DEFAULT, 
-            	immediateReturn ? STATE_STEP_SEQUENCER_PLAY : STATE_STEP_SEQUENCER_MENU);
+            	immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);
 #else
             uint8_t val = stateNumerical(0, 17, local.stepSequencer.outMIDI[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, true, GLYPH_DEFAULT, STATE_STEP_SEQUENCER_MENU);
 #endif
@@ -1328,7 +1324,7 @@ void go()
 #ifdef INCLUDE_IMMEDIATE_RETURN
             // 0 represents FREE velocity
             stateNumerical(0, 127, local.stepSequencer.velocity[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, true, GLYPH_NONE,
-            	immediateReturn ? STATE_STEP_SEQUENCER_PLAY : STATE_STEP_SEQUENCER_MENU);
+            	immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);
 #else
             stateNumerical(0, 127, local.stepSequencer.velocity[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, true, GLYPH_NONE, STATE_STEP_SEQUENCER_MENU);
 #endif
@@ -1339,7 +1335,7 @@ void go()
             {
 #ifdef INCLUDE_IMMEDIATE_RETURN
             stateNumerical(0, 31, local.stepSequencer.fader[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_NONE, 
-            	immediateReturn ? STATE_STEP_SEQUENCER_PLAY : STATE_STEP_SEQUENCER_MENU);
+            	immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);
 #else
             stateNumerical(0, 31, local.stepSequencer.fader[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_NONE, 
             	STATE_STEP_SEQUENCER_MENU);
@@ -1352,7 +1348,7 @@ void go()
             // 101 represents DEFAULT length
 #ifdef INCLUDE_IMMEDIATE_RETURN
             stateNumerical(0, 101, local.stepSequencer.noteLength[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_DEFAULT,
-            	immediateReturn ? STATE_STEP_SEQUENCER_PLAY : STATE_STEP_SEQUENCER_MENU);
+            	immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);
 #else
             stateNumerical(0, 101, local.stepSequencer.noteLength[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_DEFAULT, STATE_STEP_SEQUENCER_MENU);
 #endif
@@ -1427,7 +1423,7 @@ void go()
         case STATE_STEP_SEQUENCER_MENU_PERFORMANCE:
             {
             const char* menuItems[3] = { PSTR("KEYBOARD"), PSTR("REPEAT SEQUENCE"), PSTR("NEXT SEQUENCE") };
-            doMenuDisplay(menuItems, 3, STATE_STEP_SEQUENCER_MENU_PERFORMANCE_KEYBOARD, STATE_STEP_SEQUENCER_MENU, 1);
+            doMenuDisplay(menuItems, 3, STATE_STEP_SEQUENCER_MENU_PERFORMANCE_KEYBOARD, immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU, 1);
 		    playStepSequencer();
             }
         break;
@@ -1449,7 +1445,7 @@ void go()
         case STATE_STEP_SEQUENCER_MENU_NO:
             {
             const char* menuItems[1] = { PSTR("NO") };
-            doMenuDisplay(menuItems, 1, immediateReturn ? STATE_STEP_SEQUENCER_PLAY : STATE_STEP_SEQUENCER_MENU, immediateReturn ? STATE_STEP_SEQUENCER_PLAY : STATE_STEP_SEQUENCER_MENU, 1);
+            doMenuDisplay(menuItems, 1, immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU, immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU, 1);
 		    playStepSequencer();
             }
         break;
@@ -2017,7 +2013,7 @@ void go()
                 case MENU_CANCELLED:
 #ifdef INCLUDE_IMMEDIATE_RETURN
                     if (immediateReturn)
-                        goUpStateWithBackup(optionsReturnState);
+                        goUpStateWithBackup(immediateReturnState);
                     else
                         goUpStateWithBackup(STATE_OPTIONS);
 #else
@@ -2031,7 +2027,7 @@ void go()
         break;
         case STATE_OPTIONS_NOTE_SPEED:
             {
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
      if (entry)
         {
         setAutoReturnTime();
@@ -2048,15 +2044,15 @@ void go()
                 }
             uint8_t i = isUpdated(SELECT_BUTTON, PRESSED);
             if (isUpdated(BACK_BUTTON, RELEASED) || i 
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
 || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime)
-#endif INCLUDE_OPTIONS_AUTO_RETURN
+#endif INCLUDE_IMMEDIATE_RETURN
             )
                 {
                 if (i 
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
 || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime)
-#endif INCLUDE_OPTIONS_AUTO_RETURN
+#endif INCLUDE_IMMEDIATE_RETURN
                 )  // we don't want to call isUpdated(SELECT_BUTTON, ...) again as it resets things
                     {
                     if (backupOptions.noteSpeedType != options.noteSpeedType)
@@ -2065,14 +2061,14 @@ void go()
                         }
                     }
 
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
         removeAutoReturnTime();
 #endif
                             
                 // at any rate...
 #ifdef INCLUDE_IMMEDIATE_RETURN
                     if (immediateReturn)
-                        goUpStateWithBackup(optionsReturnState);
+                        goUpStateWithBackup(immediateReturnState);
                     else
                         goUpStateWithBackup(STATE_OPTIONS);
 #else
@@ -2087,7 +2083,7 @@ void go()
                 options.noteSpeedType = (uint8_t) (pot[LEFT_POT] / potDivisor); //((potUpdated[LEFT_POT] ? pot[LEFT_POT] : pot[RIGHT_POT]) / potDivisor);
                 if (oldOptionsNoteSpeedType != options.noteSpeedType) 
                     setNotePulseRate(options.noteSpeedType);
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
         setAutoReturnTime();
 #endif
                 }
@@ -2113,7 +2109,7 @@ void go()
                 case MENU_CANCELLED:
 #ifdef INCLUDE_IMMEDIATE_RETURN
                     if (immediateReturn)
-                        goUpStateWithBackup(optionsReturnState);
+                        goUpStateWithBackup(immediateReturnState);
                     else
                         goUpStateWithBackup(STATE_OPTIONS);
 #else
@@ -2155,7 +2151,7 @@ void go()
                     {
 #ifdef INCLUDE_IMMEDIATE_RETURN
                     if (immediateReturn)
-                        goUpStateWithBackup(optionsReturnState);
+                        goUpStateWithBackup(immediateReturnState);
                     else
                         goUpStateWithBackup(STATE_OPTIONS);
 #else
@@ -2198,7 +2194,7 @@ void go()
                 case MENU_CANCELLED:
 #ifdef INCLUDE_IMMEDIATE_RETURN
                     if (immediateReturn)
-                        goUpStateWithBackup(optionsReturnState);
+                        goUpStateWithBackup(immediateReturnState);
                     else
                         goUpStateWithBackup(STATE_OPTIONS);
 #else
@@ -2215,7 +2211,7 @@ void go()
             {
 #ifdef INCLUDE_IMMEDIATE_RETURN
             stateNumerical(0, 100, options.noteLength, backupOptions.noteLength, true, false, GLYPH_NONE, 
-                immediateReturn ? optionsReturnState : STATE_OPTIONS);
+                immediateReturn ? immediateReturnState : STATE_OPTIONS);
 #else
             stateNumerical(0, 100, options.noteLength, backupOptions.noteLength, true, false, GLYPH_NONE, STATE_OPTIONS);
 #endif
@@ -2310,7 +2306,7 @@ void go()
                     saveOptions();
 #ifdef INCLUDE_IMMEDIATE_RETURN
                     if (immediateReturn)
-                        goUpState(optionsReturnState);
+                        goUpState(immediateReturnState);
                     else
                     	goUpState(STATE_OPTIONS);
 #else
@@ -2330,7 +2326,7 @@ void go()
                     saveOptions();
 #ifdef INCLUDE_IMMEDIATE_RETURN
                     if (immediateReturn)
-                        goUpState(optionsReturnState);
+                        goUpState(immediateReturnState);
                     else
                     	goUpState(STATE_OPTIONS);
 #else
@@ -2423,7 +2419,7 @@ void go()
         break;
 #endif
 
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
         case STATE_OPTIONS_AUTO_RETURN:
             {
 			stateNumerical(0, 16, options.autoReturnInterval, backupOptions.autoReturnInterval, true, true, GLYPH_NONE, STATE_OPTIONS);

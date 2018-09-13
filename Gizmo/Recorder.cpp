@@ -153,7 +153,7 @@ void stateRecorderPlay()
     // the long select button pops up the options  
     else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
         {
-        optionsReturnState = STATE_RECORDER_PLAY;  
+        immediateReturnState = STATE_RECORDER_PLAY;  
 #ifdef INCLUDE_EXTENDED_RECORDER
         goDownState(STATE_RECORDER_MENU);
 #else
@@ -414,7 +414,7 @@ void stateRecorderMenu()
                 break;
                 case RECORDER_MENU_OPTIONS:
                     {
-                    optionsReturnState = STATE_RECORDER_MENU;
+                    immediateReturnState = STATE_RECORDER_MENU;
                     goDownState(STATE_OPTIONS);
                     }
                 break;

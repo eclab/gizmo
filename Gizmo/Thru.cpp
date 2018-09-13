@@ -332,7 +332,7 @@ void stateThruPlay()
     else if (isUpdated(SELECT_BUTTON, PRESSED))
     	{
     	goDownState(STATE_OPTIONS);
-        optionsReturnState = STATE_THRU_PLAY;
+        immediateReturnState = STATE_THRU_PLAY;
     	}
         
     playThru();

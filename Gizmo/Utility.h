@@ -355,16 +355,49 @@ uint8_t gatherByte(uint16_t pos);		// used by step sequencer also
 void stripHighBits();
 #endif
 
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
-#define ALLOW_AUTO_RETURN() allowAutoReturn()
-void allowAutoReturn();
-void setAutoReturnTime();
+
+////// IMMEDIATE RETURN FACILITY
+//////
+////// This facility is for situations where you enter a state (often options) from some
+////// alternative route -- for example, twisting a knob in the arpeggiator might take you
+////// directly to an options state.  Gizmo needs to know where to go back.  To do this
+////// it uses a global variable called immediateReturnState.  
+////// 
+////// STATE_OPTIONS is a special case: by setting this you can
+////// instruct a STATE_OPTIONS to go back directly to immediateReturnState
+////// 
+////// But a variety of other options states will also go back to immediateReturnState, but you
+////// should use a different approach: instead of setting immediateReturnState, just call
+////// IMMEDIATE_RETURN(state), and you can jump to them and return directly to state.
+//////
+////// Often these states are directly entered by turning a knob, which immediately jumps to them.
+////// In this case you'd like Gizmo to automatically return to them after a certain timeout.
+////// So instead of IMMEDIATE_RETURN(state), you'd call AUTO_RETURN(state)
+
+
+#ifdef INCLUDE_IMMEDIATE_RETURN
+
+extern uint8_t immediateReturnState;
+extern uint8_t immediateReturn;
+#define AUTO_RETURN(state) allowAutoReturn(state)
+#define IMMEDIATE_RETURN(state) allowImmediateReturn(state)
+
+// Use AUTO_RETURN instead of this.
+void allowAutoReturn(uint8_t state);
+// Use IMMEDIATE_RETURN instead of this
+void allowImmediateReturn(uint8_t state);
+
+// The following four items are exposed only so SET_NOTE_SPEED can use them in TopLevel.cpp.  
+// Ignore all of them.
+void setAutoReturnTime();		
 void removeAutoReturnTime();
 extern uint32_t autoReturnTime;
 #define NO_AUTO_RETURN_TIME_SET (0)
+
 #else
-#define ALLOW_AUTO_RETURN() 
-#endif
+#define AUTO_RETURN(state) 
+#define IMMEDIATE_RETURN(state)
+#endif INCLUDE_IMMEDIATE_RETURN
 
 
 #endif __UTILITY_H__

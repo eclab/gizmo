@@ -53,7 +53,7 @@ void stateMeasureMenu()
                 break;
                 case MEASURE_OPTIONS:
                     {
-                    optionsReturnState = STATE_MEASURE_MENU;
+                    immediateReturnState = STATE_MEASURE_MENU;
                     goDownState(STATE_OPTIONS);
                     }
                 break;

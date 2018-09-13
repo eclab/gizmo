@@ -629,21 +629,14 @@ void stateArpeggiatorPlay()
             ((pot[LEFT_POT] > local.arp.oldLeftPot && pot[LEFT_POT] - local.arp.oldLeftPot > ARP_POT_SLOP) ||
             (local.arp.oldLeftPot > pot[LEFT_POT] && local.arp.oldLeftPot - pot[LEFT_POT] > ARP_POT_SLOP)))
         {
-#ifdef INCLUDE_IMMEDIATE_RETURN
-        immediateReturn = true;
-#endif
-		ALLOW_AUTO_RETURN();
-        optionsReturnState = STATE_ARPEGGIATOR_PLAY;
+		AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
         goDownState(STATE_OPTIONS_PLAY_LENGTH);
         }
     else if (potUpdated[RIGHT_POT] &&
             ((pot[RIGHT_POT] > local.arp.oldRightPot && pot[RIGHT_POT] - local.arp.oldRightPot > ARP_POT_SLOP) ||
             (local.arp.oldRightPot > pot[RIGHT_POT] && local.arp.oldRightPot - pot[RIGHT_POT] > ARP_POT_SLOP)))
         {
-#ifdef INCLUDE_IMMEDIATE_RETURN
-        immediateReturn = true;
-#endif
-        optionsReturnState = STATE_ARPEGGIATOR_PLAY;
+		AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
         goDownState(STATE_OPTIONS_TEMPO);
         }
 #endif
@@ -681,70 +674,57 @@ void stateArpeggiatorPlay()
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_3:		// same as "track velocity" on Sequencer
 				{
 				leftPotParameterEquivalent = true;
-		        immediateReturn = true;
-		        ALLOW_AUTO_RETURN();
+		        AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
 				goDownState(STATE_ARPEGGIATOR_PLAY_VELOCITY);
 				break;
 				}
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_6:
 				{
 				leftPotParameterEquivalent = true;
-		        immediateReturn = true;
-		        ALLOW_AUTO_RETURN();
-				optionsReturnState = STATE_ARPEGGIATOR_PLAY;
+		        AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
+				immediateReturnState = STATE_ARPEGGIATOR_PLAY;
 				goDownState(STATE_OPTIONS_TEMPO);
 				break;
 				}
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_7:
 				{
 				leftPotParameterEquivalent = true;
-		        immediateReturn = true;
-		        ALLOW_AUTO_RETURN();
-				optionsReturnState = STATE_ARPEGGIATOR_PLAY;
+		        AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
 				goDownState(STATE_OPTIONS_TRANSPOSE);
 				break;
 				}
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_8:
 				{
 				leftPotParameterEquivalent = true;
-		        immediateReturn = true;
-		        ALLOW_AUTO_RETURN();
-				optionsReturnState = STATE_ARPEGGIATOR_PLAY;
+		        AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
 				goDownState(STATE_OPTIONS_VOLUME);
 				break;
 				}
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_9:
 				{
 				leftPotParameterEquivalent = true;
-		        immediateReturn = true;
-		        ALLOW_AUTO_RETURN();
-				optionsReturnState = STATE_ARPEGGIATOR_PLAY;
+		        AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
 				goDownState(STATE_OPTIONS_NOTE_SPEED);
 				break;
 				}
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_10:
 				{
 				leftPotParameterEquivalent = true;
-		        immediateReturn = true;
-		        ALLOW_AUTO_RETURN();
-				optionsReturnState = STATE_ARPEGGIATOR_PLAY;
+		        AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
 				goDownState(STATE_OPTIONS_PLAY_LENGTH);
 				break;
 				}
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_11:
 				{
 				leftPotParameterEquivalent = true;
-		        immediateReturn = true;
-		        ALLOW_AUTO_RETURN();
-				optionsReturnState = STATE_ARPEGGIATOR_PLAY;
+		        AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
 				goDownState(STATE_OPTIONS_SWING);
 				break;
 				}
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_12:		// same as "performance mode" on Sequencer
 				{
 				leftPotParameterEquivalent = true;
-		        ALLOW_AUTO_RETURN();
-		        immediateReturn = true;
+		        AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
 				goDownState(STATE_ARPEGGIATOR_PLAY_PERFORMANCE);
 				break;
 				}
@@ -753,8 +733,7 @@ void stateArpeggiatorPlay()
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_15:
 				{
 				leftPotParameterEquivalent = true;
-		        immediateReturn = true;
-		        ALLOW_AUTO_RETURN();
+		        AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
 				goDownState(STATE_ARPEGGIATOR_PLAY_OCTAVES);
 				}
 			break;
@@ -816,7 +795,7 @@ void stateArpeggiatorMenu()
 #endif
                 case ARPEGGIATOR_PLAY_OPTIONS:
                     {
-                    optionsReturnState = STATE_ARPEGGIATOR_MENU;
+                    immediateReturnState = STATE_ARPEGGIATOR_MENU;
                     goDownState(STATE_OPTIONS);
                     }
                 break;                    

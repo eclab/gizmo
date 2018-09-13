@@ -11,24 +11,23 @@
 #include "All.h"
 
 
-/// Auto Return works as follows.
-/// If you want auto return, you call allowAutoReturn once prior to calling doMenuDisplay etc. as:
-///      if (entry) { ALLOW_AUTO_RETURN(); }
-/// Internally doMenuDisplay etc. will check for allowAutoReturn().  If it is true, and
-/// the options return interval isn't 0 (indicating "none"), then they will
-/// set up a return time and reset autoreturn to false.  If it is false, they will not set up
-/// a return time, and reset autoreturn to false.
-///
-/// Thereafter if there is a return time, and the menu hasn't been changed in that time interval,
-/// then we auto-return.
-///  
+/// IMMEDIATE RETURN FACILITY
 
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
 #define NO_AUTO_RETURN (0)
-uint32_t autoReturnTime;  // any value other than ALLOW_AUTO_RETURN and we are not permitted to set it.
-uint8_t autoReturn;
-void allowAutoReturn()
+GLOBAL uint32_t autoReturnTime;
+GLOBAL uint8_t autoReturn;
+GLOBAL uint8_t immediateReturn;
+GLOBAL uint8_t immediateReturnState;
+
+void allowImmediateReturn(uint8_t state)
 	{
+	immediateReturnState = state;
+	immediateReturn = true;
+	}
+void allowAutoReturn(uint8_t state)
+	{
+	allowImmediateReturn(state);
 	autoReturn = true;
 	}
 void removeAutoReturnTime()
@@ -50,7 +49,7 @@ void setAutoReturnTime()
 		}
 	autoReturn = false;
 	}
-#endif INCLUDE_OPTIONS_AUTO_RETURN
+#endif INCLUDE_IMMEDIATE_RETURN
 
 
 
@@ -138,7 +137,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
         newDisplay = FORCE_NEW_DISPLAY;                                         // This tells us that we MUST compute a new display
         entry = false;
         defaultState = STATE_NONE;                                              // We're done with this
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
         setAutoReturnTime();
 #endif
         }
@@ -152,7 +151,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
             newDisplay = (uint8_t) (pot[LEFT_POT] / potDivisor); //(uint8_t)((potUpdated[LEFT_POT] ? pot[LEFT_POT] : pot[RIGHT_POT]) / potDivisor);
             if (newDisplay >= menuLen)        // this can happen because potDivisor is discrete
                 newDisplay = menuLen - 1; 
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
         setAutoReturnTime();
 #endif
             }
@@ -162,7 +161,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
             newDisplay++;
             if (newDisplay >= menuLen)
                 newDisplay = 0; 
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
         setAutoReturnTime();
 #endif
             }
@@ -186,7 +185,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
 
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
         removeAutoReturnTime();
 #endif
         if (baseState != STATE_NONE)
@@ -198,12 +197,12 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
         return MENU_CANCELLED;
         }
     else if (isUpdated(SELECT_BUTTON, RELEASED)
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
 || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime)
-#endif INCLUDE_OPTIONS_AUTO_RETURN
+#endif INCLUDE_IMMEDIATE_RETURN
     )
         {
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
         removeAutoReturnTime();
 #endif
       if (baseState != STATE_NONE)
@@ -312,7 +311,7 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
             potDivisor = 1024 / (maxValue - minValue + 1);
             }
         potFineTune = 0;
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
         setAutoReturnTime();
 #endif
         entry = false;
@@ -320,18 +319,18 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
     
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
         removeAutoReturnTime();
 #endif
         return MENU_CANCELLED;
         }
     else if (isUpdated(SELECT_BUTTON, PRESSED)
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
 || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime)
-#endif INCLUDE_OPTIONS_AUTO_RETURN
+#endif INCLUDE_IMMEDIATE_RETURN
     )
         {
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
         removeAutoReturnTime();
 #endif
         return MENU_SELECTED;
@@ -349,7 +348,7 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
             {
             currentDisplay = boundValue((pot[LEFT_POT] * (-potDivisor)) + minValue, minValue, maxValue);
             }
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
         setAutoReturnTime();
 #endif
         }
@@ -359,7 +358,7 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
         currentDisplay++;
         if (currentDisplay > maxValue)
             currentDisplay = minValue; 
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
         setAutoReturnTime();
 #endif
         }
@@ -544,7 +543,7 @@ void drawGlyphForGlyphDisplay(uint8_t* mat, const uint8_t glyph)
 
 uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t otherGlyph, int16_t defaultValue)
     {
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
      if (entry)
         {
         setAutoReturnTime();
@@ -558,18 +557,18 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
     
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
         removeAutoReturnTime();
 #endif
         return MENU_CANCELLED;
         }
     else if (isUpdated(SELECT_BUTTON, PRESSED)
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
 || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime)
-#endif INCLUDE_OPTIONS_AUTO_RETURN
+#endif INCLUDE_IMMEDIATE_RETURN
     )
         {
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
         removeAutoReturnTime();
 #endif
         return MENU_SELECTED;
@@ -580,7 +579,7 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
         currentDisplay = (uint8_t) (pot[LEFT_POT] / potDivisor); // ((potUpdated[LEFT_POT] ? pot[LEFT_POT] : pot[RIGHT_POT]) / potDivisor);
         if (currentDisplay >= numGlyphs)
             currentDisplay = numGlyphs - 1;
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
         setAutoReturnTime();
 #endif
         }
@@ -590,7 +589,7 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
         currentDisplay++;
         if (currentDisplay  >= numGlyphs)
             currentDisplay = 0; 
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
         setAutoReturnTime();
 #endif
         }
@@ -1218,7 +1217,7 @@ uint8_t stateEnterChord(uint8_t* chord, uint8_t maxChordNotes, uint8_t backState
 
 void playApplication()
     {
-    switch(optionsReturnState)
+    switch(immediateReturnState)
         {
 #ifdef INCLUDE_ARPEGGIATOR
         case STATE_ARPEGGIATOR_MENU:

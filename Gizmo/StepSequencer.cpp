@@ -31,7 +31,7 @@ void stateStepSequencerMenuEditMark()
 	if (local.stepSequencer.markPosition < 0)
 		local.stepSequencer.markPosition = 0;
 #ifdef INCLUDE_IMMEDIATE_RETURN
-    goUpState(STATE_STEP_SEQUENCER_PLAY);
+    goUpState(immediateReturnState);
 #else
 	goUpState(STATE_STEP_SEQUENCER_MENU_EDIT);
 #endif
@@ -66,7 +66,7 @@ void stateStepSequencerMenuEditDuplicate()
 	local.stepSequencer.currentEditPosition = backupEditPosition;
 	
 #ifdef INCLUDE_IMMEDIATE_RETURN
-     goUpState(STATE_STEP_SEQUENCER_PLAY);
+     goUpState(immediateReturnState);
 #else
 	goUpState(STATE_STEP_SEQUENCER_MENU_EDIT);
 #endif
@@ -137,7 +137,7 @@ void stateStepSequencerMenuEditCopy(uint8_t splat, uint8_t move)
     sendAllSoundsOff();
 			
 #ifdef INCLUDE_IMMEDIATE_RETURN
-            goUpState(STATE_STEP_SEQUENCER_PLAY);
+            goUpState(immediateReturnState);
 #else
 		goUpState(STATE_STEP_SEQUENCER_MENU_EDIT);
 #endif
@@ -218,8 +218,8 @@ void advanceSolo()
 
 static void setPots(uint16_t* potVals)
 	{
-	potVals[0] = pot[0];
-	potVals[1] = pot[1];
+	potVals[LEFT_POT] = pot[LEFT_POT];
+	potVals[RIGHT_POT] = pot[RIGHT_POT];
 	}
 	
 static uint8_t potChangedBy(uint16_t* potVals, uint8_t potNum, uint16_t amount)
@@ -258,7 +258,7 @@ void stateStepSequencerMenuPattern()
         case MENU_CANCELLED:
             {
 #ifdef INCLUDE_IMMEDIATE_RETURN
-            goUpState(STATE_STEP_SEQUENCER_PLAY);
+            goUpState(immediateReturnState);
 #else
             goUpState(STATE_STEP_SEQUENCER_MENU);
 #endif
@@ -291,22 +291,22 @@ void stateStepSequencerMenuPerformanceKeyboard()
             sendAllSoundsOff();
             // get rid of any residual select button calls, so we don't stop when exiting here
             isUpdated(SELECT_BUTTON, RELEASED);
-//#ifdef INCLUDE_IMMEDIATE_RETURN
-//            goUpState(STATE_STEP_SEQUENCER_PLAY);
-//#else
+#ifdef INCLUDE_IMMEDIATE_RETURN
+            goUpState(immediateReturnState);
+#else
             goUpState(STATE_STEP_SEQUENCER_MENU);
-//#endif
+#endif
             }
         break;
         case MENU_CANCELLED:
             {
             // get rid of any residual select button calls, so we don't stop when exiting here
             isUpdated(SELECT_BUTTON, RELEASED);
-//#ifdef INCLUDE_IMMEDIATE_RETURN
-//            goUpState(STATE_STEP_SEQUENCER_PLAY);
-//#else
+#ifdef INCLUDE_IMMEDIATE_RETURN
+            goUpState(immediateReturnState);
+#else
             goUpState(STATE_STEP_SEQUENCER_MENU);
-//#endif
+#endif
             }
         break;
         }
@@ -335,20 +335,20 @@ void stateStepSequencerMenuPerformanceRepeat()
         case MENU_SELECTED:
             {
             data.slot.data.stepSequencer.repeat = ((data.slot.data.stepSequencer.repeat & 0xF0) | (currentDisplay & 0x0F));
-//#ifdef INCLUDE_IMMEDIATE_RETURN
-//            goUpState(STATE_STEP_SEQUENCER_PLAY);
-//#else
+#ifdef INCLUDE_IMMEDIATE_RETURN
+            goUpState(immediateReturnState);
+#else
             goUpState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE);
-//#endif
+#endif
             }
         break;
         case MENU_CANCELLED:
             {
-//#ifdef INCLUDE_IMMEDIATE_RETURN
-//            goUpState(STATE_STEP_SEQUENCER_PLAY);
-//#else
+#ifdef INCLUDE_IMMEDIATE_RETURN
+            goUpState(immediateReturnState);
+#else
             goUpState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE);
-//#endif
+#endif
             }
         break;
         }
@@ -371,20 +371,20 @@ void stateStepSequencerMenuPerformanceNext()
         case MENU_SELECTED:
             {
             data.slot.data.stepSequencer.repeat = ((data.slot.data.stepSequencer.repeat & 0x0F) | ((currentDisplay + 1) << 4));
-//#ifdef INCLUDE_IMMEDIATE_RETURN
-//            goUpState(STATE_STEP_SEQUENCER_PLAY);
-//#else
+#ifdef INCLUDE_IMMEDIATE_RETURN
+            goUpState(immediateReturnState);
+#else
             goUpState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE);
-//#endif
+#endif
             }
         break;
         case MENU_CANCELLED:
             {
-//#ifdef INCLUDE_IMMEDIATE_RETURN
-//            goUpState(STATE_STEP_SEQUENCER_PLAY);
-//#else
+#ifdef INCLUDE_IMMEDIATE_RETURN
+            goUpState(immediateReturnState);
+#else
             goUpState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE);
-//#endif
+#endif
             }
         break;
         }
@@ -919,6 +919,10 @@ void stateStepSequencerPlay()
 #endif
         }
 
+#ifdef INCLUDE_IMMEDIATE_RETURN
+    immediateReturn = false;
+#endif
+
 #ifdef INCLUDE_CC_LEFT_POT_PARAMETER_EQUIVALENTS
 		// always do this
 		leftPotParameterEquivalent = false;
@@ -1139,11 +1143,7 @@ void stateStepSequencerPlay()
 #define BIG_POT_UPDATE (32)
 			if (potChangedBy(local.stepSequencer.pots, RIGHT_POT, BIG_POT_UPDATE))
 				{
-#ifdef INCLUDE_IMMEDIATE_RETURN
-	        immediateReturn = true;
-#endif
-		ALLOW_AUTO_RETURN();
-				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
+		AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
 			    goDownState(STATE_OPTIONS_TEMPO);
 			    }
 		    }
@@ -1475,43 +1475,37 @@ void stateStepSequencerPlay()
 				}
 			case CC_EXTRA_PARAMETER_3:
 				{
-		        immediateReturn = true;
-				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
+				IMMEDIATE_RETURN(STATE_STEP_SEQUENCER_PLAY);
 				goDownState(STATE_OPTIONS_CLICK);
 				break;
 				}
 			case CC_EXTRA_PARAMETER_4:
 				{
-		        immediateReturn = true;
-				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
+				IMMEDIATE_RETURN(STATE_STEP_SEQUENCER_PLAY);
 				goDownState(STATE_STEP_SEQUENCER_MENU_EDIT_MARK);
 				break;
 				}
 			case CC_EXTRA_PARAMETER_5:
 				{
-		        immediateReturn = true;
-				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
+				IMMEDIATE_RETURN(STATE_STEP_SEQUENCER_PLAY);
 				goDownState(STATE_STEP_SEQUENCER_MENU_EDIT_COPY);
 				break;
 				}
 			case CC_EXTRA_PARAMETER_6:
 				{
-		        immediateReturn = true;
-				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
+				IMMEDIATE_RETURN(STATE_STEP_SEQUENCER_PLAY);
 				goDownState(STATE_STEP_SEQUENCER_MENU_EDIT_SPLAT);
 				break;
 				}
 			case CC_EXTRA_PARAMETER_7:
 				{
-		        immediateReturn = true;
-				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
+				IMMEDIATE_RETURN(STATE_STEP_SEQUENCER_PLAY);
 				goDownState(STATE_STEP_SEQUENCER_MENU_EDIT_MOVE);
 				break;
 				}
 			case CC_EXTRA_PARAMETER_8:
 				{
-		        immediateReturn = true;
-				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
+				IMMEDIATE_RETURN(STATE_STEP_SEQUENCER_PLAY);
 				goDownState(STATE_STEP_SEQUENCER_MENU_EDIT_DUPLICATE);
 				break;
 				}
@@ -1522,8 +1516,7 @@ void stateStepSequencerPlay()
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_1:
 				{
 				// length
-		        immediateReturn = true;
-		ALLOW_AUTO_RETURN();
+		AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
 				leftPotParameterEquivalent = true;
 				goDownState(STATE_STEP_SEQUENCER_LENGTH);
 				break;
@@ -1531,8 +1524,7 @@ void stateStepSequencerPlay()
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_2:
 				{
 				// midi out
-		        immediateReturn = true;
-		ALLOW_AUTO_RETURN();
+		AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
 				leftPotParameterEquivalent = true;
 				goDownState(STATE_STEP_SEQUENCER_MIDI_CHANNEL_OUT);
 				break;
@@ -1540,8 +1532,7 @@ void stateStepSequencerPlay()
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_3:
 				{
 				// velocity
-		        immediateReturn = true;
-		ALLOW_AUTO_RETURN();
+		AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
 				leftPotParameterEquivalent = true;
 				goDownState(STATE_STEP_SEQUENCER_VELOCITY);
 				break;
@@ -1549,8 +1540,7 @@ void stateStepSequencerPlay()
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_4:
 				{
 				// fader
-		        immediateReturn = true;
-		ALLOW_AUTO_RETURN();
+		AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
 				leftPotParameterEquivalent = true;
 				goDownState(STATE_STEP_SEQUENCER_FADER);
 				break;
@@ -1558,8 +1548,7 @@ void stateStepSequencerPlay()
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_5:
 				{
 				// pattern
-		        immediateReturn = true;
-		ALLOW_AUTO_RETURN();
+		AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
 				leftPotParameterEquivalent = true;
 				goDownState(STATE_STEP_SEQUENCER_MENU_PATTERN);
 				break;
@@ -1567,78 +1556,72 @@ void stateStepSequencerPlay()
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_6:
 				{
 				leftPotParameterEquivalent = true;
-		        immediateReturn = true;
-		ALLOW_AUTO_RETURN();
-				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
+		AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
+				immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
 				goDownState(STATE_OPTIONS_TEMPO);
 				break;
 				}
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_7:
 				{
 				leftPotParameterEquivalent = true;
-		        immediateReturn = true;
-		ALLOW_AUTO_RETURN();
-				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
+		AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
+				immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
 				goDownState(STATE_OPTIONS_TRANSPOSE);
 				break;
 				}
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_8:
 				{
 				leftPotParameterEquivalent = true;
-		        immediateReturn = true;
-		ALLOW_AUTO_RETURN();
-				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
+		AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
+				immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
 				goDownState(STATE_OPTIONS_VOLUME);
 				break;
 				}
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_9:
 				{
 				leftPotParameterEquivalent = true;
-		        immediateReturn = true;
-		ALLOW_AUTO_RETURN();
-				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
+		AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
+				immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
 				goDownState(STATE_OPTIONS_NOTE_SPEED);
 				break;
 				}
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_10:
 				{
 				leftPotParameterEquivalent = true;
-		        immediateReturn = true;
-		ALLOW_AUTO_RETURN();
-				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
+		AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
+				immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
 				goDownState(STATE_OPTIONS_PLAY_LENGTH);
 				break;
 				}
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_11:
 				{
 				leftPotParameterEquivalent = true;
-		        immediateReturn = true;
-		ALLOW_AUTO_RETURN();
-				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
+		AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
+				immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
 				goDownState(STATE_OPTIONS_SWING);
 				break;
 				}
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_12:
 				{
 				leftPotParameterEquivalent = true;
-		        immediateReturn = true;
-		ALLOW_AUTO_RETURN();
+		AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
+				immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
 				goDownState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE_KEYBOARD);
 				break;
 				}
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_13:
 				{
 				leftPotParameterEquivalent = true;
-		        immediateReturn = true;
-		ALLOW_AUTO_RETURN();
+		AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
+				immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
 				goDownState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE_REPEAT);
 				break;
 				}
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_14:
 				{
 				leftPotParameterEquivalent = true;
-		        immediateReturn = true;
-		ALLOW_AUTO_RETURN();
+		AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
+				immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
 				goDownState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE_NEXT);
 				break;
 				}
@@ -1810,7 +1793,7 @@ void stateStepSequencerMenu()
                 break;
                 case STEP_SEQUENCER_MENU_PERFORMANCE:
                     {
-                    optionsReturnState = STATE_STEP_SEQUENCER_MENU;
+                    immediateReturnState = STATE_STEP_SEQUENCER_MENU;
                     goDownState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE);
                     }
                 break;
@@ -1822,7 +1805,7 @@ void stateStepSequencerMenu()
                 break;
                 case STEP_SEQUENCER_MENU_OPTIONS:
                     {
-                    optionsReturnState = STATE_STEP_SEQUENCER_MENU;
+                    immediateReturnState = STATE_STEP_SEQUENCER_MENU;
                     goDownState(STATE_OPTIONS);
                     }
                 break;
@@ -1849,7 +1832,7 @@ void stateStepSequencerMenuType()
     
     const char* menuItems[8] = { PSTR("NOTE"), PSTR("CC"), PSTR("14 BIT CC"), PSTR("NRPN"), PSTR("RPN"), 
                                  PSTR("PC"), PSTR("BEND"), PSTR("AFTERTOUCH") };
-    result = doMenuDisplay(menuItems, 8, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
+    result = doMenuDisplay(menuItems, 8, STATE_OPTIONS_TEMPO, immediateReturnState, 1);
 
     playStepSequencer();
     switch (result)

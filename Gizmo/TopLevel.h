@@ -204,7 +204,7 @@ typedef enum _State: uint8_t
 	STATE_OPTIONS_MENU_DELAY,
 #endif
 
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
 	STATE_OPTIONS_AUTO_RETURN,
 #endif
 
@@ -254,10 +254,8 @@ extern uint8_t defaultState;              // If we have just BACKed up into a me
 #ifdef INCLUDE_EXTENDED_MENU_DEFAULTS
 extern uint8_t defaultMenuValue;
 #endif
+
 extern uint8_t entry;                     // Are we just entering a state?
-#ifdef INCLUDE_IMMEDIATE_RETURN
-extern uint8_t immediateReturn;
-#endif
 
 // top-level state machine
 void go();
