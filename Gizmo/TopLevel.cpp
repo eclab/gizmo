@@ -998,12 +998,6 @@ void go()
         break;
 #endif
 #ifdef INCLUDE_SYNTH
-#define INCLUDE_SYNTH_WALDORF_BLOFELD
-#define INCLUDE_SYNTH_KAWAI_K4
-#define INCLUDE_SYNTH_KAWAI_K5
-#define INCLUDE_SYNTH_OBERHEIM_MATRIX_1000
-#define INCLUDE_SYNTH_KORG_MICROSAMPLER
-#define INCLUDE_SYNTH_YAMAHA_TX81Z
         case STATE_SYNTH:
             {
             if (entry)
@@ -1167,13 +1161,14 @@ void go()
 #endif
                         
 #if defined(__MEGA__)
-            const char* menuItems[15] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
+            const char* menuItems[16] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
                                           PSTR("VOLUME"), PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), PSTR("DIVIDE"),
                                           ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
                                           PSTR("BRIGHTNESS"), 
                                           PSTR("MENU DELAY"),
+                                          PSTR("AUTO RETURN"),
                                           PSTR("GIZMO V6 (C) 2018 SEAN LUKE") };
-            doMenuDisplay(menuItems, 15, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
+            doMenuDisplay(menuItems, 16, STATE_OPTIONS_TEMPO, optionsReturnState, 1);
 #endif
 #if defined(__UNO__)
             const char* menuItems[11] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), 
@@ -2036,8 +2031,11 @@ void go()
         break;
         case STATE_OPTIONS_NOTE_SPEED:
             {
-            if (entry)
-                {
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+     if (entry)
+        {
+        setAutoReturnTime();
+#endif
                 // can't avoid a divide :-(
                 potDivisor = 1024 / (NOTE_SPEED_DOUBLE_WHOLE - NOTE_SPEED_EIGHTH_TRIPLET + 1);
                 backupOptions = options; 
@@ -2049,15 +2047,27 @@ void go()
                 writeNoteSpeed(led, options.noteSpeedType);
                 }
             uint8_t i = isUpdated(SELECT_BUTTON, PRESSED);
-            if (isUpdated(BACK_BUTTON, RELEASED) || i)
+            if (isUpdated(BACK_BUTTON, RELEASED) || i 
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+|| (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime)
+#endif INCLUDE_OPTIONS_AUTO_RETURN
+            )
                 {
-                if (i)  // we don't want to call isUpdated(SELECT_BUTTON, ...) again as it resets things
+                if (i 
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+|| (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime)
+#endif INCLUDE_OPTIONS_AUTO_RETURN
+                )  // we don't want to call isUpdated(SELECT_BUTTON, ...) again as it resets things
                     {
                     if (backupOptions.noteSpeedType != options.noteSpeedType)
                         {
                         saveOptions();
                         }
                     }
+
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+        removeAutoReturnTime();
+#endif
                             
                 // at any rate...
 #ifdef INCLUDE_IMMEDIATE_RETURN
@@ -2077,6 +2087,9 @@ void go()
                 options.noteSpeedType = (uint8_t) (pot[LEFT_POT] / potDivisor); //((potUpdated[LEFT_POT] ? pot[LEFT_POT] : pot[RIGHT_POT]) / potDivisor);
                 if (oldOptionsNoteSpeedType != options.noteSpeedType) 
                     setNotePulseRate(options.noteSpeedType);
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+        setAutoReturnTime();
+#endif
                 }
             playApplication();       
             }
@@ -2171,7 +2184,6 @@ void go()
                     (FONT_3x5) + GLYPH_3x5_8
                     };
                 result = doGlyphDisplay(_glyphs, 7, NO_GLYPH, options.volume );
-                entry = false;
                 }
             else result = doGlyphDisplay(NULL, 7, NO_GLYPH, options.volume);
             switch (result)
@@ -2411,6 +2423,15 @@ void go()
         break;
 #endif
 
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+        case STATE_OPTIONS_AUTO_RETURN:
+            {
+			stateNumerical(0, 16, options.autoReturnInterval, backupOptions.autoReturnInterval, true, true, GLYPH_NONE, STATE_OPTIONS);
+			playApplication();
+            }
+        break;
+#endif  
+
         case STATE_OPTIONS_ABOUT:
             {
             goUpState(STATE_OPTIONS);
@@ -2533,8 +2554,7 @@ void go()
             playApplication();
             }
         break;
-        
-        
+#endif
 
 //// SYNTHS
 
@@ -2571,9 +2591,6 @@ void go()
         break;
 #endif
         
-        
-        
-#endif
         // END SWITCH       
         }
         

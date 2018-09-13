@@ -1142,6 +1142,7 @@ void stateStepSequencerPlay()
 #ifdef INCLUDE_IMMEDIATE_RETURN
 	        immediateReturn = true;
 #endif
+		ALLOW_AUTO_RETURN();
 				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
 			    goDownState(STATE_OPTIONS_TEMPO);
 			    }
@@ -1522,6 +1523,7 @@ void stateStepSequencerPlay()
 				{
 				// length
 		        immediateReturn = true;
+		ALLOW_AUTO_RETURN();
 				leftPotParameterEquivalent = true;
 				goDownState(STATE_STEP_SEQUENCER_LENGTH);
 				break;
@@ -1530,6 +1532,7 @@ void stateStepSequencerPlay()
 				{
 				// midi out
 		        immediateReturn = true;
+		ALLOW_AUTO_RETURN();
 				leftPotParameterEquivalent = true;
 				goDownState(STATE_STEP_SEQUENCER_MIDI_CHANNEL_OUT);
 				break;
@@ -1538,6 +1541,7 @@ void stateStepSequencerPlay()
 				{
 				// velocity
 		        immediateReturn = true;
+		ALLOW_AUTO_RETURN();
 				leftPotParameterEquivalent = true;
 				goDownState(STATE_STEP_SEQUENCER_VELOCITY);
 				break;
@@ -1546,6 +1550,7 @@ void stateStepSequencerPlay()
 				{
 				// fader
 		        immediateReturn = true;
+		ALLOW_AUTO_RETURN();
 				leftPotParameterEquivalent = true;
 				goDownState(STATE_STEP_SEQUENCER_FADER);
 				break;
@@ -1554,6 +1559,7 @@ void stateStepSequencerPlay()
 				{
 				// pattern
 		        immediateReturn = true;
+		ALLOW_AUTO_RETURN();
 				leftPotParameterEquivalent = true;
 				goDownState(STATE_STEP_SEQUENCER_MENU_PATTERN);
 				break;
@@ -1562,6 +1568,7 @@ void stateStepSequencerPlay()
 				{
 				leftPotParameterEquivalent = true;
 		        immediateReturn = true;
+		ALLOW_AUTO_RETURN();
 				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
 				goDownState(STATE_OPTIONS_TEMPO);
 				break;
@@ -1570,6 +1577,7 @@ void stateStepSequencerPlay()
 				{
 				leftPotParameterEquivalent = true;
 		        immediateReturn = true;
+		ALLOW_AUTO_RETURN();
 				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
 				goDownState(STATE_OPTIONS_TRANSPOSE);
 				break;
@@ -1578,6 +1586,7 @@ void stateStepSequencerPlay()
 				{
 				leftPotParameterEquivalent = true;
 		        immediateReturn = true;
+		ALLOW_AUTO_RETURN();
 				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
 				goDownState(STATE_OPTIONS_VOLUME);
 				break;
@@ -1586,6 +1595,7 @@ void stateStepSequencerPlay()
 				{
 				leftPotParameterEquivalent = true;
 		        immediateReturn = true;
+		ALLOW_AUTO_RETURN();
 				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
 				goDownState(STATE_OPTIONS_NOTE_SPEED);
 				break;
@@ -1594,6 +1604,7 @@ void stateStepSequencerPlay()
 				{
 				leftPotParameterEquivalent = true;
 		        immediateReturn = true;
+		ALLOW_AUTO_RETURN();
 				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
 				goDownState(STATE_OPTIONS_PLAY_LENGTH);
 				break;
@@ -1602,6 +1613,7 @@ void stateStepSequencerPlay()
 				{
 				leftPotParameterEquivalent = true;
 		        immediateReturn = true;
+		ALLOW_AUTO_RETURN();
 				optionsReturnState = STATE_STEP_SEQUENCER_PLAY;
 				goDownState(STATE_OPTIONS_SWING);
 				break;
@@ -1610,6 +1622,7 @@ void stateStepSequencerPlay()
 				{
 				leftPotParameterEquivalent = true;
 		        immediateReturn = true;
+		ALLOW_AUTO_RETURN();
 				goDownState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE_KEYBOARD);
 				break;
 				}
@@ -1617,6 +1630,7 @@ void stateStepSequencerPlay()
 				{
 				leftPotParameterEquivalent = true;
 		        immediateReturn = true;
+		ALLOW_AUTO_RETURN();
 				goDownState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE_REPEAT);
 				break;
 				}
@@ -1624,6 +1638,7 @@ void stateStepSequencerPlay()
 				{
 				leftPotParameterEquivalent = true;
 		        immediateReturn = true;
+		ALLOW_AUTO_RETURN();
 				goDownState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE_NEXT);
 				break;
 				}

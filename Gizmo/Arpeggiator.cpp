@@ -439,6 +439,10 @@ void arpeggiatorEnterPerformanceMode()
 			{
 			goDownState(STATE_ARPEGGIATOR_PLAY_TRANSPOSE);
 			}
+		if (!options.arpeggiatorLatch)
+			{
+    		arpeggiatorToggleLatch();
+			}
 		}
 	}
 	
@@ -628,6 +632,7 @@ void stateArpeggiatorPlay()
 #ifdef INCLUDE_IMMEDIATE_RETURN
         immediateReturn = true;
 #endif
+		ALLOW_AUTO_RETURN();
         optionsReturnState = STATE_ARPEGGIATOR_PLAY;
         goDownState(STATE_OPTIONS_PLAY_LENGTH);
         }
@@ -658,23 +663,34 @@ void stateArpeggiatorPlay()
 				arpeggiatorStartStopClock();
 				break;
 				}
-			case CC_EXTRA_PARAMETER_1:
-				{
-				arpeggiatorEnterPerformanceMode();
-				break;
-				}
 			case CC_EXTRA_PARAMETER_2:
 				{
 				local.arp.advance = true;
 				break;
 				}
 			
+			// discontinuity
+			case CC_EXTRA_PARAMETER_9:
+				{
+				arpeggiatorEnterPerformanceMode();
+				break;
+				}
+				
 			// this is a discontinuity, hope compiler can handle it
 			
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_3:		// same as "track velocity" on Sequencer
+				{
+				leftPotParameterEquivalent = true;
+		        immediateReturn = true;
+		        ALLOW_AUTO_RETURN();
+				goDownState(STATE_ARPEGGIATOR_PLAY_VELOCITY);
+				break;
+				}
 			case CC_LEFT_POT_PARAMETER_EQUIVALENT_6:
 				{
 				leftPotParameterEquivalent = true;
 		        immediateReturn = true;
+		        ALLOW_AUTO_RETURN();
 				optionsReturnState = STATE_ARPEGGIATOR_PLAY;
 				goDownState(STATE_OPTIONS_TEMPO);
 				break;
@@ -683,6 +699,7 @@ void stateArpeggiatorPlay()
 				{
 				leftPotParameterEquivalent = true;
 		        immediateReturn = true;
+		        ALLOW_AUTO_RETURN();
 				optionsReturnState = STATE_ARPEGGIATOR_PLAY;
 				goDownState(STATE_OPTIONS_TRANSPOSE);
 				break;
@@ -691,6 +708,7 @@ void stateArpeggiatorPlay()
 				{
 				leftPotParameterEquivalent = true;
 		        immediateReturn = true;
+		        ALLOW_AUTO_RETURN();
 				optionsReturnState = STATE_ARPEGGIATOR_PLAY;
 				goDownState(STATE_OPTIONS_VOLUME);
 				break;
@@ -699,6 +717,7 @@ void stateArpeggiatorPlay()
 				{
 				leftPotParameterEquivalent = true;
 		        immediateReturn = true;
+		        ALLOW_AUTO_RETURN();
 				optionsReturnState = STATE_ARPEGGIATOR_PLAY;
 				goDownState(STATE_OPTIONS_NOTE_SPEED);
 				break;
@@ -707,6 +726,7 @@ void stateArpeggiatorPlay()
 				{
 				leftPotParameterEquivalent = true;
 		        immediateReturn = true;
+		        ALLOW_AUTO_RETURN();
 				optionsReturnState = STATE_ARPEGGIATOR_PLAY;
 				goDownState(STATE_OPTIONS_PLAY_LENGTH);
 				break;
@@ -715,17 +735,29 @@ void stateArpeggiatorPlay()
 				{
 				leftPotParameterEquivalent = true;
 		        immediateReturn = true;
+		        ALLOW_AUTO_RETURN();
 				optionsReturnState = STATE_ARPEGGIATOR_PLAY;
 				goDownState(STATE_OPTIONS_SWING);
 				break;
 				}
-			case CC_LEFT_POT_PARAMETER_EQUIVALENT_12:
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_12:		// same as "performance mode" on Sequencer
 				{
 				leftPotParameterEquivalent = true;
+		        ALLOW_AUTO_RETURN();
 		        immediateReturn = true;
 				goDownState(STATE_ARPEGGIATOR_PLAY_PERFORMANCE);
 				break;
 				}
+
+			// another discontinuity
+			case CC_LEFT_POT_PARAMETER_EQUIVALENT_15:
+				{
+				leftPotParameterEquivalent = true;
+		        immediateReturn = true;
+		        ALLOW_AUTO_RETURN();
+				goDownState(STATE_ARPEGGIATOR_PLAY_OCTAVES);
+				}
+			break;
 			}
 		}
 #endif

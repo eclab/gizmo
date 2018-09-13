@@ -397,9 +397,13 @@ GLOBAL static uint8_t notePulseRateTable[16] = { 1, 2, 3, 4, 6, 8, 12, 24, 32, 3
 ///// the global variables such that the system issues a NOTE PULSE at that rate.
 void setNotePulseRate(uint8_t noteSpeedType)
     {
+    uint8_t oldNotePulseRate = notePulseRate;
     notePulseRate = notePulseRateTable[noteSpeedType];
-    notePulseCountdown = ((uint8_t)(pulseCount % notePulseRate)) + 1;
-    drawNotePulseToggle = (uint8_t)((pulseCount / notePulseRate) & 1);          // that is, %2
+    if (oldNotePulseRate != notePulseRate)  // no need to create a new countdown, and the blip with it
+    	{
+	    notePulseCountdown = ((uint8_t)(pulseCount % notePulseRate)) + 1;
+	    drawNotePulseToggle = (uint8_t)((pulseCount / notePulseRate) & 1);          // that is, %2
+	    }
     }
 
 uint32_t getMicrosecsPerPulse()

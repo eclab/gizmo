@@ -355,5 +355,16 @@ uint8_t gatherByte(uint16_t pos);		// used by step sequencer also
 void stripHighBits();
 #endif
 
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#define ALLOW_AUTO_RETURN() allowAutoReturn()
+void allowAutoReturn();
+void setAutoReturnTime();
+void removeAutoReturnTime();
+extern uint32_t autoReturnTime;
+#define NO_AUTO_RETURN_TIME_SET (0)
+#else
+#define ALLOW_AUTO_RETURN() 
+#endif
+
 
 #endif __UTILITY_H__

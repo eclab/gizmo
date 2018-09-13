@@ -11,8 +11,46 @@
 #include "All.h"
 
 
+/// Auto Return works as follows.
+/// If you want auto return, you call allowAutoReturn once prior to calling doMenuDisplay etc. as:
+///      if (entry) { ALLOW_AUTO_RETURN(); }
+/// Internally doMenuDisplay etc. will check for allowAutoReturn().  If it is true, and
+/// the options return interval isn't 0 (indicating "none"), then they will
+/// set up a return time and reset autoreturn to false.  If it is false, they will not set up
+/// a return time, and reset autoreturn to false.
+///
+/// Thereafter if there is a return time, and the menu hasn't been changed in that time interval,
+/// then we auto-return.
+///  
 
-
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#define NO_AUTO_RETURN (0)
+uint32_t autoReturnTime;  // any value other than ALLOW_AUTO_RETURN and we are not permitted to set it.
+uint8_t autoReturn;
+void allowAutoReturn()
+	{
+	autoReturn = true;
+	}
+void removeAutoReturnTime()
+	{
+	autoReturnTime = NO_AUTO_RETURN_TIME_SET;
+	}
+void setAutoReturnTime()
+	{
+	if (entry)
+		{
+		if (autoReturn && (options.autoReturnInterval != NO_AUTO_RETURN))
+			{
+			autoReturnTime = tickCount + ((uint32_t)3125) * (uint32_t)(options.autoReturnInterval);
+			}
+		else 
+			{
+			removeAutoReturnTime();
+			}
+		}
+	autoReturn = false;
+	}
+#endif INCLUDE_OPTIONS_AUTO_RETURN
 
 
 
@@ -58,7 +96,7 @@ GLOBAL int16_t potDivisor;
 
 
 GLOBAL static const char* menu[MAX_MENU_ITEMS];                        // This is an array of pointers into PROGMEM
-GLOBAL int16_t currentDisplay;                     // currently displayed menu item
+GLOBAL int16_t currentDisplay;                     					   // currently displayed menu item
 
 // NOTE: This creates a temporary char buffer of length MAX_MENU_ITEM_LENGTH.
 // It's better than storing a buffer 8xMAX_MENU_ITEM_LENGTH though.
@@ -100,6 +138,9 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
         newDisplay = FORCE_NEW_DISPLAY;                                         // This tells us that we MUST compute a new display
         entry = false;
         defaultState = STATE_NONE;                                              // We're done with this
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+        setAutoReturnTime();
+#endif
         }
     else
         {
@@ -111,6 +152,9 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
             newDisplay = (uint8_t) (pot[LEFT_POT] / potDivisor); //(uint8_t)((potUpdated[LEFT_POT] ? pot[LEFT_POT] : pot[RIGHT_POT]) / potDivisor);
             if (newDisplay >= menuLen)        // this can happen because potDivisor is discrete
                 newDisplay = menuLen - 1; 
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+        setAutoReturnTime();
+#endif
             }
 #ifdef INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU
         else if (isUpdated(MIDDLE_BUTTON, RELEASED))
@@ -118,6 +162,9 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
             newDisplay++;
             if (newDisplay >= menuLen)
                 newDisplay = 0; 
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+        setAutoReturnTime();
+#endif
             }
 #endif
         }
@@ -139,6 +186,9 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
 
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+        removeAutoReturnTime();
+#endif
         if (baseState != STATE_NONE)
             {
             if (state == STATE_ROOT)
@@ -147,9 +197,16 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
             }
         return MENU_CANCELLED;
         }
-    else if (isUpdated(SELECT_BUTTON, RELEASED))
+    else if (isUpdated(SELECT_BUTTON, RELEASED)
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+|| (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime)
+#endif INCLUDE_OPTIONS_AUTO_RETURN
+    )
         {
-        if (baseState != STATE_NONE)
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+        removeAutoReturnTime();
+#endif
+      if (baseState != STATE_NONE)
             {
             state = baseState + currentDisplay;
             entry = true;
@@ -255,15 +312,28 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
             potDivisor = 1024 / (maxValue - minValue + 1);
             }
         potFineTune = 0;
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+        setAutoReturnTime();
+#endif
         entry = false;
         }
     
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+        removeAutoReturnTime();
+#endif
         return MENU_CANCELLED;
         }
-    else if (isUpdated(SELECT_BUTTON, PRESSED))
+    else if (isUpdated(SELECT_BUTTON, PRESSED)
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+|| (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime)
+#endif INCLUDE_OPTIONS_AUTO_RETURN
+    )
         {
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+        removeAutoReturnTime();
+#endif
         return MENU_SELECTED;
         }
     
@@ -279,6 +349,9 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
             {
             currentDisplay = boundValue((pot[LEFT_POT] * (-potDivisor)) + minValue, minValue, maxValue);
             }
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+        setAutoReturnTime();
+#endif
         }
 #ifdef INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU
     else if (isUpdated(MIDDLE_BUTTON, RELEASED))
@@ -286,6 +359,9 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
         currentDisplay++;
         if (currentDisplay > maxValue)
             currentDisplay = minValue; 
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+        setAutoReturnTime();
+#endif
         }
 #endif
     
@@ -468,8 +544,11 @@ void drawGlyphForGlyphDisplay(uint8_t* mat, const uint8_t glyph)
 
 uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t otherGlyph, int16_t defaultValue)
     {
-    if (_glyphs != NULL)
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+     if (entry)
         {
+        setAutoReturnTime();
+#endif
         currentDisplay = defaultValue;
         // can't avoid a divide this time!
         potDivisor = 1024 / numGlyphs;
@@ -479,10 +558,20 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
     
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+        removeAutoReturnTime();
+#endif
         return MENU_CANCELLED;
         }
-    else if (isUpdated(SELECT_BUTTON, PRESSED))
+    else if (isUpdated(SELECT_BUTTON, PRESSED)
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+|| (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime)
+#endif INCLUDE_OPTIONS_AUTO_RETURN
+    )
         {
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+        removeAutoReturnTime();
+#endif
         return MENU_SELECTED;
         }
     else if (potUpdated[LEFT_POT])
@@ -491,6 +580,9 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
         currentDisplay = (uint8_t) (pot[LEFT_POT] / potDivisor); // ((potUpdated[LEFT_POT] ? pot[LEFT_POT] : pot[RIGHT_POT]) / potDivisor);
         if (currentDisplay >= numGlyphs)
             currentDisplay = numGlyphs - 1;
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+        setAutoReturnTime();
+#endif
         }
 #ifdef INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU
     else if (isUpdated(MIDDLE_BUTTON, RELEASED))
@@ -498,6 +590,9 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
         currentDisplay++;
         if (currentDisplay  >= numGlyphs)
             currentDisplay = 0; 
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+        setAutoReturnTime();
+#endif
         }
 #endif
                 

@@ -101,6 +101,10 @@ struct _options
     uint8_t menuDelay;
 #endif
 
+#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+    uint8_t autoReturnInterval;
+#endif
+
 #ifdef INCLUDE_OPTIONS_TRANSPOSE_AND_VOLUME
     int8_t transpose;
     uint8_t volume;
