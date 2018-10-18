@@ -1438,12 +1438,12 @@ Gizmo's sysex dump format is simple.  Bytes 0--6 are as follows:\quad\texttt{0xF
 			Sixteenth Note\>\(\myfrac{1}{4}\)\>Beat\\
 			Triplet\>\(\myfrac{1}{3}\)\>Beat\\
 			Eighth Note\>\(\myfrac{1}{2}\)\>Beat\>\smash{\includegraphics[width=2in]{NoteSpeed2.pdf}}\\
-			Quarter Note\>\(1\)\>Beat (duh)\\
+			Quarter Note Triplet\>\(\myfrac{2}{3}\)\>Beat\\
 			\\
-			Quarter Note Tied to Triplet\>\(1\ \, \myfrac{1}{3}\)\>Beats\\
-			Dotted Quarter Note\>\(1\ \, \myfrac{1}{2}\)\>Beats\\
-			Half Note\>\(2\)\>Beats\>\smash{\includegraphics[width=2in]{NoteSpeed3.pdf}}\\
-			Half Note Tied to Two Triplets\>\(2\ \, \myfrac{2}{3}\)\>Beats\\
+			Dotted Eighth Note\>\(\myfrac{3}{4}\)\>Beat\\
+			Quarter Note\>\(1\)\>Beat\\
+			Dotted Quarter Note\>\(1\ \, \myfrac{1}{2}\)\>Beats\>\smash{\includegraphics[width=2in]{NoteSpeed3.pdf}}\\
+			Half Note\>\(2\)\>Beats\\
 			\\
 			Dotted Half Note\>\(3\)\>Beats\\
 			Whole Note\>\(4\)\>Beats\\
@@ -1452,6 +1452,32 @@ Gizmo's sysex dump format is simple.  Bytes 0--6 are as follows:\quad\texttt{0xF
 			\end{tabbing}
 		\end{description}
 		}
+
+
+%	\begin{center}\begin{tabular}{@{}lr@{}}
+%	{\it Note Speed}&{\it Divisor}\\
+%					\hline\\[-0.9em]
+%	
+%	Eighth Triplet (Triplet 64th Note)	&1\\
+%	Quarter Triplet (Triplet 32nd Note)	&2\\
+%	Thirty-Second Note				&3\\
+%	Half Triplet (Triplet 16th Note)		&4\\
+%	Sixteenth Note					&6\\
+%	Triplet						&8\\
+%	Eighth Note					&12\\
+%	Quarter Note Triplet				&16\\			% add
+%	Dotted Eighth Note				&18\\			% do we include this?
+%	Quarter Note					&24\\
+%	Half Note Triplet				&32\\			% Was: Quarter Note Tied to Triplet.   Delete?
+%	Dotted Quarter Note				&36\\
+%	Half Note						&48\\
+%	Whole Note Triplet				&64\\			% Was: Half Note Tied to Two Triplets.  Delete?
+%	Dotted Half Note				&72\\
+%	Whole Note					&96\\
+%	Dotted Whole Note				&144\\
+%	Double Whole Note				&192\\
+%	\end{tabular}\end{center}
+
 
 	\item{\bf Swing}\\
 			Swing, or {\bf syncopation}, is the degree to which every other note is delayed.  0\% means no swing at all.  100\% means so much swing that the odd note plays at the same time as the next even note.  That's a lot.
@@ -1554,29 +1580,6 @@ Why is this useful?  Here's an example scenario.  You have a sequencer on Device
 			\begin{description}
 					\item{\bf \textit{Choose}}: 2 ... 16 (the value for \(N\)) when using {\bf Divide}, or None\hspace{1.45in}\smash{\includegraphics[width=1in]{none.pdf}}
 			\end{description}
-
-
-%	\begin{center}\begin{tabular}{@{}lr@{}}
-%	{\it Note Speed}&{\it Divisor}\\
-%					\hline\\[-0.9em]
-%	
-%	Eighth Triplet (Triplet 64th Note)	&1\\
-%	Quarter Triplet (Triplet 32nd Note)	&2\\
-%	Thirty-Second Note				&3\\
-%	Half Triplet (Triplet 16th Note)		&4\\
-%	Sixteenth Note					&6\\
-%	Triplet						&8\\
-%	Eighth Note					&12\\
-%	Quarter Note					&24\\
-%	Quarter Note Tied to Triplet		&32\\
-%	Dotted Quarter Note				&36\\
-%	Half Note						&48\\
-%	Half Note Tied to Two Triplets		&64\\
-%	Dotted Half Note				&72\\
-%	Whole Note					&96\\
-%	Dotted Whole Note				&144\\
-%	Double Whole Note				&192\\
-%	\end{tabular}\end{center}
 
 		
 	\item{\bf Click} or {\bf No Click}\\

@@ -577,6 +577,26 @@ const char PROGMEM font_8x5[
             A11111A,
             A00000A,
             },
+            { // 1/4 (triplet)  [16 MIDI beats]
+            A11000A,
+            A11000A,
+            A11111A,
+            A00000A,
+            A00000A,
+            A00001A,
+            A00111A,
+            A00001A,
+            },
+            { // Dotted 1/8   [18 MIDI beats]
+            A11000A,
+            A11111A,
+            A00011A,
+            A00110A,
+            A00000A,
+            A00000A,
+            A10000A,
+            A00000A,
+            },
             { // 1/4   [24 MIDI beats]
             A11000A,
             A11000A,
@@ -587,7 +607,8 @@ const char PROGMEM font_8x5[
             A00000A,
             A00000A,
             },
-            { // 1/4 tied to triplet (32 MIDI beats)
+            /*
+            { // 1/4 tied to triplet (32 MIDI beats)  [half note triplet]
             A11000A,
             A11000A,
             A11111A,
@@ -597,6 +618,7 @@ const char PROGMEM font_8x5[
             A00111A,
             A00001A,
             },
+            */
             { // Dotted 1/4 note (36 MIDI beats)
             A11000A,
             A11000A,
@@ -617,7 +639,8 @@ const char PROGMEM font_8x5[
             A00000A,
             A00000A,
             },
-            { // 1/2 tied to two triplets (60 MIDI beats)
+            /*
+            { // 1/2 tied to two triplets (64 MIDI beats) [whole note triplet
             A11100A,
             A10100A,
             A11111A,
@@ -627,6 +650,7 @@ const char PROGMEM font_8x5[
             A00111A,
             A00001A,
             },
+            */
             { // Dotted half note (72 MIDI beats)
             A11100A,
             A10100A,
