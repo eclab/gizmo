@@ -112,6 +112,7 @@ void playArpeggiatorNote(uint16_t note)
     }
     
 
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
 void loadNextUserArpeggio()
 	{
         // Load the arpeggiator data
@@ -133,6 +134,7 @@ void loadNextUserArpeggio()
 	            }
             }
 	}
+ #endif
 
 
 
@@ -427,6 +429,7 @@ void arpeggiatorStartStopClock()
 		}
 	}
 	
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
 void arpeggiatorEnterPerformanceMode()
 	{
 	if (!local.arp.performanceMode)
@@ -445,7 +448,8 @@ void arpeggiatorEnterPerformanceMode()
 			}
 		}
 	}
-	
+#endif
+
 // Choose an arpeggiation, or to create one
 void stateArpeggiator()
     {
@@ -795,7 +799,9 @@ void stateArpeggiatorMenu()
 #endif
                 case ARPEGGIATOR_PLAY_OPTIONS:
                     {
+#ifdef INCLUDE_IMMEDIATE_RETURN
                     immediateReturnState = STATE_ARPEGGIATOR_MENU;
+#endif
                     goDownState(STATE_OPTIONS);
                     }
                 break;                    
@@ -876,6 +882,7 @@ void arpeggiatorEnterRest()
             }
 	}
 	
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
 void arpeggiatorEnterTie()
 	{
         local.arp.currentRightPot = (uint8_t) ((pot[RIGHT_POT] * ((uint16_t) data.arp.length + 1)) >> 10);  //  / 1024);
@@ -891,6 +898,7 @@ void arpeggiatorEnterTie()
             data.arp.length = local.arp.currentPosition;
             }
 	}
+#endif
 
 // Handle the screen for editing an arpeggio.
 void stateArpeggiatorCreateEdit()

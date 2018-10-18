@@ -1805,7 +1805,9 @@ void stateStepSequencerMenu()
                 break;
                 case STEP_SEQUENCER_MENU_OPTIONS:
                     {
+#ifdef INCLUDE_IMMEDIATE_RETURN
                     immediateReturnState = STATE_STEP_SEQUENCER_MENU;
+#endif
                     goDownState(STATE_OPTIONS);
                     }
                 break;

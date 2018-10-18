@@ -594,7 +594,9 @@ void go()
             {
             if (entry)
                 {
+#ifdef INCLUDE_IMMEDIATE_RETURN
                 immediateReturnState = STATE_ROOT;
+#endif
                 }
 #if defined(__MEGA__)
 #if defined(INCLUDE_SYSEX)
@@ -1172,7 +1174,7 @@ void go()
                                           ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
                                           PSTR("BRIGHTNESS"),
                                           PSTR("GIZMO V6 (C) 2018 SEAN LUKE") };
-            doMenuDisplay(menuItems, 11, STATE_OPTIONS_TEMPO, immediateReturnState, 1);
+            doMenuDisplay(menuItems, 11, STATE_OPTIONS_TEMPO, STATE_OPTIONS, 1);
 #endif
 
             playApplication(); 
@@ -2031,6 +2033,8 @@ void go()
      if (entry)
         {
         setAutoReturnTime();
+#else
+	{
 #endif
                 // can't avoid a divide :-(
                 potDivisor = 1024 / (NOTE_SPEED_DOUBLE_WHOLE - NOTE_SPEED_EIGHTH_TRIPLET + 1);
@@ -2426,7 +2430,7 @@ void go()
 			playApplication();
             }
         break;
-#endif  
+#endif
 
         case STATE_OPTIONS_ABOUT:
             {

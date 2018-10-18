@@ -291,16 +291,36 @@ extern const char* options_p;
 
 union _local
     {
+#ifdef INCLUDE_STEP_SEQUENCER
     struct _stepSequencerLocal stepSequencer;
+#endif
+#ifdef INCLUDE_ARPEGGIATOR
     struct _arpLocal arp;
+#endif
+#ifdef INCLUDE_RECORDER
     struct _recorderLocal recorder;
+#endif
+#ifdef INCLUDE_GAUGE
     struct _gaugeLocal gauge;
+#endif
+#ifdef INCLUDE_THRU
     struct _thruLocal thru;
+#endif
+#ifdef INCLUDE_CONTROLLER
     struct _controlLocal control;
+#endif
+#ifdef INCLUDE_MEASURE
     struct _measureLocal measure;
+#endif
+#ifdef INCLUDE_SPLIT
     struct _splitLocal split;
+#endif
+#ifdef INCLUDE_SYNTH
     struct _synthLocal synth;
+#endif
+#ifdef INCLUDE_SYSEX    
     struct _sysexLocal sysex;
+#endif
     };
         
 extern _local local;

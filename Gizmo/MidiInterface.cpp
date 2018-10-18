@@ -354,7 +354,11 @@ void handleNoteOn(byte channel, byte note, byte velocity)
         if (updateMIDI(channel, MIDI_NOTE_ON, note, velocity))
             {
 #ifdef INCLUDE_ARPEGGIATOR
-            if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && state != STATE_ARPEGGIATOR_PLAY_TRANSPOSE))
+            if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing 
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+            && state != STATE_ARPEGGIATOR_PLAY_TRANSPOSE
+#endif
+      ))
                 {
                 // the arpeggiation velocity shall be the velocity of the most recently added note
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
@@ -1088,12 +1092,14 @@ void parse(_controlParser* parser, byte channel, byte number, byte value)
             
             if (parser->status == CC)
                 {
-                if (parser->parse14BitCC)
+#ifdef INCLUDE_PROVIDE_RAW_CC
+if (parser->parse14BitCC)
 	                {
 	                handleControlChange(channel, number, (((uint16_t)parser->controllerValueMSB) << 7) | value, VALUE);
 	                }
 	            else
-	            	{
+#endif
+{
             		handleControlChange(channel, number, value, VALUE_7_BIT_ONLY);
 	            	}
                 }

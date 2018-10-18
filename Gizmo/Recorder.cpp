@@ -153,7 +153,9 @@ void stateRecorderPlay()
     // the long select button pops up the options  
     else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
         {
+#ifdef INCLUDE_IMMEDIATE_RETURN
         immediateReturnState = STATE_RECORDER_PLAY;  
+#endif
 #ifdef INCLUDE_EXTENDED_RECORDER
         goDownState(STATE_RECORDER_MENU);
 #else

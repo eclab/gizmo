@@ -101,7 +101,7 @@ struct _options
     uint8_t menuDelay;
 #endif
 
-#ifdef INCLUDE_OPTIONS_AUTO_RETURN
+#ifdef INCLUDE_IMMEDIATE_RETURN
     uint8_t autoReturnInterval;
 #endif
 

@@ -547,6 +547,8 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
      if (entry)
         {
         setAutoReturnTime();
+#else
+{
 #endif
         currentDisplay = defaultValue;
         // can't avoid a divide this time!
@@ -1217,7 +1219,7 @@ uint8_t stateEnterChord(uint8_t* chord, uint8_t maxChordNotes, uint8_t backState
 
 void playApplication()
     {
-    switch(immediateReturnState)
+    switch(application)
         {
 #ifdef INCLUDE_ARPEGGIATOR
         case STATE_ARPEGGIATOR_MENU:
