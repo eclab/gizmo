@@ -168,10 +168,10 @@ void stateSynthKorgMicrosampler()
             }
         }
 
-	synthUpdate();
+    synthUpdate();
 
-	// we're gonna overwrite the parameters anyway
-	
+    // we're gonna overwrite the parameters anyway
+        
     if (updateDisplay)
         {
         clearScreen();

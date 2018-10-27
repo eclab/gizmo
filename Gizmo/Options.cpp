@@ -98,14 +98,14 @@ void resetOptions()
 #endif 
 
 #ifdef INCLUDE_EXTENDED_CONTROLLER
-	// Length values for waves 2 through 8 are OFF by default.
-	// Length value for wave 1 is 0 by default, hence we start at 3.
-	for(uint8_t i = 3; i < 16; i+=2)
-		{
-		options.waveEnvelope[i] = 255;
-		}
-	options.randomInitialValue = 64;
-	options.randomRange = 127;
+    // Length values for waves 2 through 8 are OFF by default.
+    // Length value for wave 1 is 0 by default, hence we start at 3.
+    for(uint8_t i = 3; i < 16; i+=2)
+        {
+        options.waveEnvelope[i] = 255;
+        }
+    options.randomInitialValue = 64;
+    options.randomRange = 127;
 #endif
     }
 

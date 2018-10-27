@@ -36,30 +36,30 @@ uint8_t updateMIDI(byte channel, uint8_t _itemType, uint16_t _itemNumber, uint16
     else 
 #endif
 #ifdef INCLUDE_EXTENDED_CONTROLLER
-    if (state == STATE_CONTROLLER_PLAY_WAVE_ENVELOPE && 
-    	(channel == options.channelIn || options.channelIn == CHANNEL_OMNI) &&
-    	_itemType != MIDI_NOTE_ON &&
-    	_itemType != MIDI_NOTE_OFF)
-        {
-        newItem = NO_NEW_ITEM;
-		return 0;
-        }
-    else 
-#endif
-        if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
-            {
-            newItem = NEW_ITEM;
-            itemType = _itemType;
-            itemNumber = _itemNumber;
-            itemValue = _itemValue;
-            itemChannel = channel;
-            return 1;
-            }
-        else 
+        if (state == STATE_CONTROLLER_PLAY_WAVE_ENVELOPE && 
+            (channel == options.channelIn || options.channelIn == CHANNEL_OMNI) &&
+            _itemType != MIDI_NOTE_ON &&
+            _itemType != MIDI_NOTE_OFF)
             {
             newItem = NO_NEW_ITEM;
             return 0;
             }
+        else 
+#endif
+            if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
+                {
+                newItem = NEW_ITEM;
+                itemType = _itemType;
+                itemNumber = _itemNumber;
+                itemValue = _itemValue;
+                itemChannel = channel;
+                return 1;
+                }
+            else 
+                {
+                newItem = NO_NEW_ITEM;
+                return 0;
+                }
     }
 
 
@@ -215,23 +215,23 @@ void handleNoteOff(byte channel, byte note, byte velocity)
             {
 #ifdef INCLUDE_ARPEGGIATOR
             if (application == STATE_ARPEGGIATOR && local.arp.playing && !bypass)
-            {
+                {
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
-				if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
-					{
-					uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
-					if (channelOut == 0)
-						channelOut = options.channelOut;
-					sendNoteOff(note, velocity, channelOut);
-					}
-				else if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel == ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
-					{
-					// do nothing
-					}
-				else
+                if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                    {
+                    uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+                    if (channelOut == 0)
+                        channelOut = options.channelOut;
+                    sendNoteOff(note, velocity, channelOut);
+                    }
+                else if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel == ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                    {
+                    // do nothing
+                    }
+                else
 #endif             
-                arpeggiatorRemoveNote(note);
-            }
+                    arpeggiatorRemoveNote(note);
+                }
             else
 #endif
 
@@ -356,29 +356,29 @@ void handleNoteOn(byte channel, byte note, byte velocity)
 #ifdef INCLUDE_ARPEGGIATOR
             if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing 
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
-            && state != STATE_ARPEGGIATOR_PLAY_TRANSPOSE
+                    && state != STATE_ARPEGGIATOR_PLAY_TRANSPOSE
 #endif
-            ))
+                    ))
                 {
                 // the arpeggiation velocity shall be the velocity of the most recently added note
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
-				if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
-					{
-					uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
-					if (channelOut == 0)
-						channelOut = options.channelOut;
-					sendNoteOn(note, velocity, channelOut);
-					}
-				else if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel == ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
-					{
-					int16_t tr = note - (int16_t)(local.arp.transposeRoot);
-					while (tr < -128) tr += 12;
-					while (tr > 127) tr -= 12;
-					local.arp.transpose = (int8_t) tr;
-					}
-				else
+                if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                    {
+                    uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+                    if (channelOut == 0)
+                        channelOut = options.channelOut;
+                    sendNoteOn(note, velocity, channelOut);
+                    }
+                else if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel == ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                    {
+                    int16_t tr = note - (int16_t)(local.arp.transposeRoot);
+                    while (tr < -128) tr += 12;
+                    while (tr > 127) tr -= 12;
+                    local.arp.transpose = (int8_t) tr;
+                    }
+                else
 #endif             
-                arpeggiatorAddNote(note, velocity);
+                    arpeggiatorAddNote(note, velocity);
                 }
             else
 #endif
@@ -454,40 +454,40 @@ void handleAfterTouchPoly(byte channel, byte note, byte pressure)
     if (updateMIDI(channel, MIDI_AFTERTOUCH_POLY, note, pressure))
         {
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
-		if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE))
-			{
-			uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
-			if (channelOut == 0)
-				channelOut = options.channelOut;
-			sendPolyPressure(note, pressure, channelOut);
-			}
-		else
-#endif
-
-#ifdef INCLUDE_SPLIT
-        if ((application == STATE_SPLIT) && local.split.playing && !bypass)
+        if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE))
             {
-            if (options.splitControls == SPLIT_MIX)
-                {
-                sendPolyPressure(note, pressure, options.channelOut);
-                sendPolyPressure(note, pressure, options.splitChannel);
-                TOGGLE_OUT_LED();
-                }
-            else
-                {
-                uint8_t sent = 0;
-                if (note >= options.splitNote)
-                    { sendPolyPressure((uint8_t) note, pressure, options.channelOut); sent++; }
-                if (((options.splitLayerNote != NO_NOTE) && (note <= options.splitLayerNote)) ||
-                    note < options.splitNote)
-                    { sendPolyPressure((uint8_t) note, pressure,options.splitChannel); sent++; }
-                if (sent == 2)
-                    TOGGLE_OUT_LED();
-                }
+            uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+            if (channelOut == 0)
+                channelOut = options.channelOut;
+            sendPolyPressure(note, pressure, channelOut);
             }
         else
 #endif
-            { }
+
+#ifdef INCLUDE_SPLIT
+            if ((application == STATE_SPLIT) && local.split.playing && !bypass)
+                {
+                if (options.splitControls == SPLIT_MIX)
+                    {
+                    sendPolyPressure(note, pressure, options.channelOut);
+                    sendPolyPressure(note, pressure, options.splitChannel);
+                    TOGGLE_OUT_LED();
+                    }
+                else
+                    {
+                    uint8_t sent = 0;
+                    if (note >= options.splitNote)
+                        { sendPolyPressure((uint8_t) note, pressure, options.channelOut); sent++; }
+                    if (((options.splitLayerNote != NO_NOTE) && (note <= options.splitLayerNote)) ||
+                        note < options.splitNote)
+                        { sendPolyPressure((uint8_t) note, pressure,options.splitChannel); sent++; }
+                    if (sent == 2)
+                        TOGGLE_OUT_LED();
+                    }
+                }
+            else
+#endif
+                { }
         }
     else
 #ifdef INCLUDE_THRU
@@ -590,127 +590,127 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
         {
         lockoutPots = 1;
 
-		if ((number >= 64 && number < 96) ||
-			(number >= 116 && number < 119))
-				{
-            	newItem = NEW_ITEM;
-            	itemType = MIDI_CUSTOM_CONTROLLER;
-            	itemNumber = number;
-            	itemValue = value;
-            	itemChannel = channel;
-				}                    
-        else switch (number)
+        if ((number >= 64 && number < 96) ||
+            (number >= 116 && number < 119))
             {
-            case CC_LEFT_POT_PARAMETER:
-                {
-                pot[LEFT_POT] = (value >> 4); 
-                potUpdated[LEFT_POT] = CHANGED;
-                }
-            break;
-            case CC_RIGHT_POT_PARAMETER:
-                {
-                pot[RIGHT_POT] = (value >> 4); 
-                potUpdated[RIGHT_POT] = CHANGED;
-                }
-            break;
+            newItem = NEW_ITEM;
+            itemType = MIDI_CUSTOM_CONTROLLER;
+            itemNumber = number;
+            itemValue = value;
+            itemChannel = channel;
+            }                    
+        else switch (number)
+                 {
+                 case CC_LEFT_POT_PARAMETER:
+                     {
+                     pot[LEFT_POT] = (value >> 4); 
+                     potUpdated[LEFT_POT] = CHANGED;
+                     }
+                 break;
+                 case CC_RIGHT_POT_PARAMETER:
+                     {
+                     pot[RIGHT_POT] = (value >> 4); 
+                     potUpdated[RIGHT_POT] = CHANGED;
+                     }
+                 break;
 #ifdef INCLUDE_CC_LEFT_POT_PARAMETER_EQUIVALENTS
-			case CC_LEFT_POT_PARAMETER_EQUIVALENT_1:
-			case CC_LEFT_POT_PARAMETER_EQUIVALENT_2:
-			case CC_LEFT_POT_PARAMETER_EQUIVALENT_3:
-			case CC_LEFT_POT_PARAMETER_EQUIVALENT_4:
-			case CC_LEFT_POT_PARAMETER_EQUIVALENT_5:
-			case CC_LEFT_POT_PARAMETER_EQUIVALENT_6:
-			case CC_LEFT_POT_PARAMETER_EQUIVALENT_7:
-			case CC_LEFT_POT_PARAMETER_EQUIVALENT_8:
-			case CC_LEFT_POT_PARAMETER_EQUIVALENT_9:
-			case CC_LEFT_POT_PARAMETER_EQUIVALENT_10:
-			case CC_LEFT_POT_PARAMETER_EQUIVALENT_11:
-			case CC_LEFT_POT_PARAMETER_EQUIVALENT_12:
-			case CC_LEFT_POT_PARAMETER_EQUIVALENT_13:
-			case CC_LEFT_POT_PARAMETER_EQUIVALENT_14:
-			case CC_LEFT_POT_PARAMETER_EQUIVALENT_15:
-			case CC_LEFT_POT_PARAMETER_EQUIVALENT_16:
-				{
-				if (leftPotParameterEquivalent)
-					{
-                	pot[LEFT_POT] = (value >> 4); 
-                	potUpdated[LEFT_POT] = CHANGED;
-					}
-				else
-					{
-					newItem = NEW_ITEM;
-					itemType = MIDI_CUSTOM_CONTROLLER;
-					itemNumber = number;
-					itemValue = value;
-					itemChannel = channel;
-					}
-				}
-			break;
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_1:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_2:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_3:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_4:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_5:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_6:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_7:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_8:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_9:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_10:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_11:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_12:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_13:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_14:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_15:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_16:
+                     {
+                     if (leftPotParameterEquivalent)
+                         {
+                         pot[LEFT_POT] = (value >> 4); 
+                         potUpdated[LEFT_POT] = CHANGED;
+                         }
+                     else
+                         {
+                         newItem = NEW_ITEM;
+                         itemType = MIDI_CUSTOM_CONTROLLER;
+                         itemNumber = number;
+                         itemValue = value;
+                         itemChannel = channel;
+                         }
+                     }
+                 break;
 #endif
-            case CC_BACK_BUTTON_PARAMETER:
-                {
-                buttonState[BACK_BUTTON] = (value != 0);
-                updateButtons(buttonState); 
-                }
-            break;
-            case CC_MIDDLE_BUTTON_PARAMETER:
-                {
-                buttonState[MIDDLE_BUTTON] = (value != 0);
-                updateButtons(buttonState); 
-                }
-            break;
-            case CC_SELECT_BUTTON_PARAMETER:
-                {
-                buttonState[SELECT_BUTTON] = (value != 0);
-                updateButtons(buttonState); 
-                }
-            break;
-            case CC_BYPASS_PARAMETER:
-                {
-                toggleBypass(CHANNEL_OMNI);
-                }
-            break;
-            case CC_UNLOCK_PARAMETER:
-                {
-                lockoutPots = 0;
-                }
-            break;
-            case CC_START_PARAMETER:
-                {
-                startClock(true);
-                }
-            break;
-            case CC_STOP_PARAMETER:
-                {
-                stopClock(true);
-                }
-            break;
-            case CC_CONTINUE_PARAMETER:
-                {
-                continueClock(true);
-                }
-            break;
-            /*
-            case CC_LEFT_POT_RELATIVE_PARAMETER:
-                {
-                int16_t v = pot[LEFT_POT] + (int16_t)(value - 64) * MINIMUM_POT_DEVIATION;
-                if (v < 0) v = 0;
-                if (v > 1023) v = 1023;
-                pot[LEFT_POT] = (uint16_t) v; 
-                potUpdated[LEFT_POT] = CHANGED;
-                }
-            break;
-            case CC_RIGHT_POT_RELATIVE_PARAMETER:
-                {
-                int16_t v = pot[RIGHT_POT] + (int16_t)(value - 64) * MINIMUM_POT_DEVIATION;
-                if (v < 0) v = 0;
-                if (v > 1023) v = 1023;
-                pot[RIGHT_POT] = (uint16_t) v; 
-                potUpdated[RIGHT_POT] = CHANGED;
-                }
-            break;
-            */
-            }
+                 case CC_BACK_BUTTON_PARAMETER:
+                     {
+                     buttonState[BACK_BUTTON] = (value != 0);
+                     updateButtons(buttonState); 
+                     }
+                 break;
+                 case CC_MIDDLE_BUTTON_PARAMETER:
+                     {
+                     buttonState[MIDDLE_BUTTON] = (value != 0);
+                     updateButtons(buttonState); 
+                     }
+                 break;
+                 case CC_SELECT_BUTTON_PARAMETER:
+                     {
+                     buttonState[SELECT_BUTTON] = (value != 0);
+                     updateButtons(buttonState); 
+                     }
+                 break;
+                 case CC_BYPASS_PARAMETER:
+                     {
+                     toggleBypass(CHANNEL_OMNI);
+                     }
+                 break;
+                 case CC_UNLOCK_PARAMETER:
+                     {
+                     lockoutPots = 0;
+                     }
+                 break;
+                 case CC_START_PARAMETER:
+                     {
+                     startClock(true);
+                     }
+                 break;
+                 case CC_STOP_PARAMETER:
+                     {
+                     stopClock(true);
+                     }
+                 break;
+                 case CC_CONTINUE_PARAMETER:
+                     {
+                     continueClock(true);
+                     }
+                 break;
+                 /*
+                   case CC_LEFT_POT_RELATIVE_PARAMETER:
+                   {
+                   int16_t v = pot[LEFT_POT] + (int16_t)(value - 64) * MINIMUM_POT_DEVIATION;
+                   if (v < 0) v = 0;
+                   if (v > 1023) v = 1023;
+                   pot[LEFT_POT] = (uint16_t) v; 
+                   potUpdated[LEFT_POT] = CHANGED;
+                   }
+                   break;
+                   case CC_RIGHT_POT_RELATIVE_PARAMETER:
+                   {
+                   int16_t v = pot[RIGHT_POT] + (int16_t)(value - 64) * MINIMUM_POT_DEVIATION;
+                   if (v < 0) v = 0;
+                   if (v > 1023) v = 1023;
+                   pot[RIGHT_POT] = (uint16_t) v; 
+                   potUpdated[RIGHT_POT] = CHANGED;
+                   }
+                   break;
+                 */
+                 }
         }
 #endif
 
@@ -1094,14 +1094,14 @@ void parse(_controlParser* parser, byte channel, byte number, byte value)
                 {
 #ifdef INCLUDE_PROVIDE_RAW_CC
                 if (parser->parse14BitCC)
-	                {
-	                handleControlChange(channel, number, (((uint16_t)parser->controllerValueMSB) << 7) | value, VALUE);
-	                }
-	            else
+                    {
+                    handleControlChange(channel, number, (((uint16_t)parser->controllerValueMSB) << 7) | value, VALUE);
+                    }
+                else
 #endif
-	            	{
-            		handleControlChange(channel, number, value, VALUE_7_BIT_ONLY);
-	            	}
+                    {
+                    handleControlChange(channel, number, value, VALUE_7_BIT_ONLY);
+                    }
                 }
             else parser->status = INVALID;
             }
@@ -1311,58 +1311,58 @@ void handleProgramChange(byte channel, byte number)
     if (!bypass) 
         {
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
-		if (state == STATE_ARPEGGIATOR_PLAY && number < ARPEGGIATOR_NUMBER_CREATE && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
-			{
-			if (local.arp.number == ARPEGGIATOR_NUMBER_CHORD_REPEAT)
-        		sendAllSoundsOff();
-			local.arp.number = number;
-			local.arp.currentPosition = 0;
-			}
-		else	
+        if (state == STATE_ARPEGGIATOR_PLAY && number < ARPEGGIATOR_NUMBER_CREATE && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
+            {
+            if (local.arp.number == ARPEGGIATOR_NUMBER_CHORD_REPEAT)
+                sendAllSoundsOff();
+            local.arp.number = number;
+            local.arp.currentPosition = 0;
+            }
+        else    
 #endif
 #ifdef INCLUDE_SPLIT
-        // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
-        if (application == STATE_SPLIT && local.split.playing && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
-            {
-            if ((options.splitControls == SPLIT_CONTROLS_RIGHT) || (options.splitControls == SPLIT_MIX))
-                MIDI.sendProgramChange(number, options.channelOut);
-            else
-                MIDI.sendProgramChange(number, options.splitChannel);
-            TOGGLE_OUT_LED();
-            }
-        else
-#endif
-#ifdef INCLUDE_THRU
-            if (state == STATE_THRU_PLAY)
+            // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
+            if (application == STATE_SPLIT && local.split.playing && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
                 {
-                // only pass through if the data's NOT coming in the default channel
-                if ((channel != options.channelIn) && (options.channelIn != CHANNEL_OMNI)
-                    && channel != options.thruMergeChannelIn)
-                    {
-                    MIDI.sendProgramChange(number, channel);
-                    TOGGLE_OUT_LED();
-                    }
-                else if (channel == options.thruMergeChannelIn)  //  merge hasn't been sent to newitem yet
-                    {
-                    newItem = NEW_ITEM;
-                    itemType = MIDI_PROGRAM_CHANGE;
-                    itemNumber = number;
-                    itemValue = 1;
-                    itemChannel = channel;
-                    }
+                if ((options.splitControls == SPLIT_CONTROLS_RIGHT) || (options.splitControls == SPLIT_MIX))
+                    MIDI.sendProgramChange(number, options.channelOut);
+                else
+                    MIDI.sendProgramChange(number, options.splitChannel);
+                TOGGLE_OUT_LED();
                 }
             else
 #endif
-                if (!isChannelIn)
-                    {
 #ifdef INCLUDE_THRU
-                    if (state != STATE_THRU_PLAY || !options.thruBlockOtherChannels)
-#endif
+                if (state == STATE_THRU_PLAY)
+                    {
+                    // only pass through if the data's NOT coming in the default channel
+                    if ((channel != options.channelIn) && (options.channelIn != CHANNEL_OMNI)
+                        && channel != options.thruMergeChannelIn)
                         {
                         MIDI.sendProgramChange(number, channel);
                         TOGGLE_OUT_LED();
                         }
+                    else if (channel == options.thruMergeChannelIn)  //  merge hasn't been sent to newitem yet
+                        {
+                        newItem = NEW_ITEM;
+                        itemType = MIDI_PROGRAM_CHANGE;
+                        itemNumber = number;
+                        itemValue = 1;
+                        itemChannel = channel;
+                        }
                     }
+                else
+#endif
+                    if (!isChannelIn)
+                        {
+#ifdef INCLUDE_THRU
+                        if (state != STATE_THRU_PLAY || !options.thruBlockOtherChannels)
+#endif
+                            {
+                            MIDI.sendProgramChange(number, channel);
+                            TOGGLE_OUT_LED();
+                            }
+                        }
         }
     else
         TOGGLE_OUT_LED();
@@ -1374,59 +1374,59 @@ void handleAfterTouchChannel(byte channel, byte pressure)
     if (!bypass) 
         {
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
-		if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE))
-			{
-			uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
-			if (channelOut == 0)
-				channelOut = options.channelOut;
-			MIDI.sendAfterTouch(pressure, channelOut);
-			}
-		else
-#endif
-
-#ifdef INCLUDE_SPLIT
-        // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
-        if (application == STATE_SPLIT && local.split.playing && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
+        if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE))
             {
-            if ((options.splitControls == SPLIT_CONTROLS_RIGHT) || (options.splitControls == SPLIT_MIX))
-                MIDI.sendAfterTouch(pressure, options.channelOut);
-            else
-                MIDI.sendAfterTouch(pressure, options.splitChannel);
-            TOGGLE_OUT_LED();
+            uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+            if (channelOut == 0)
+                channelOut = options.channelOut;
+            MIDI.sendAfterTouch(pressure, channelOut);
             }
         else
 #endif
-#ifdef INCLUDE_THRU
-            if (state == STATE_THRU_PLAY)
+
+#ifdef INCLUDE_SPLIT
+            // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
+            if (application == STATE_SPLIT && local.split.playing && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
                 {
-                // only pass through if the data's NOT coming in the default channel
-                if ((channel != options.channelIn) && (options.channelIn != CHANNEL_OMNI)
-                    && channel != options.thruMergeChannelIn)
-                    {
-                    MIDI.sendAfterTouch(pressure, channel);
-                    TOGGLE_OUT_LED();
-                    }
-                else if (channel == options.thruMergeChannelIn)  //  merge hasn't been sent to newitem yet
-                    {
-                    newItem = NEW_ITEM;
-                    itemType = MIDI_AFTERTOUCH;
-                    itemNumber = 1;
-                    itemValue = pressure;
-                    itemChannel = channel;
-                    }
+                if ((options.splitControls == SPLIT_CONTROLS_RIGHT) || (options.splitControls == SPLIT_MIX))
+                    MIDI.sendAfterTouch(pressure, options.channelOut);
+                else
+                    MIDI.sendAfterTouch(pressure, options.splitChannel);
+                TOGGLE_OUT_LED();
                 }
             else
 #endif
-                if (!isChannelIn)
-                    { 
 #ifdef INCLUDE_THRU
-                    if (state != STATE_THRU_PLAY || !options.thruBlockOtherChannels)
-#endif
+                if (state == STATE_THRU_PLAY)
+                    {
+                    // only pass through if the data's NOT coming in the default channel
+                    if ((channel != options.channelIn) && (options.channelIn != CHANNEL_OMNI)
+                        && channel != options.thruMergeChannelIn)
                         {
                         MIDI.sendAfterTouch(pressure, channel);
                         TOGGLE_OUT_LED();
                         }
+                    else if (channel == options.thruMergeChannelIn)  //  merge hasn't been sent to newitem yet
+                        {
+                        newItem = NEW_ITEM;
+                        itemType = MIDI_AFTERTOUCH;
+                        itemNumber = 1;
+                        itemValue = pressure;
+                        itemChannel = channel;
+                        }
                     }
+                else
+#endif
+                    if (!isChannelIn)
+                        { 
+#ifdef INCLUDE_THRU
+                        if (state != STATE_THRU_PLAY || !options.thruBlockOtherChannels)
+#endif
+                            {
+                            MIDI.sendAfterTouch(pressure, channel);
+                            TOGGLE_OUT_LED();
+                            }
+                        }
         }
     else
         TOGGLE_OUT_LED();
@@ -1438,68 +1438,68 @@ void handlePitchBend(byte channel, int bend)
     if (!bypass) 
         {
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
-		if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE))
-			{
-			uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
-			if (channelOut == 0)
-				channelOut = options.channelOut;
-			MIDI.sendPitchBend(bend, channelOut);
-			}
-		else
-#endif
-
-#ifdef INCLUDE_SPLIT
-        // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
-        if (application == STATE_SPLIT && local.split.playing && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
+        if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE))
             {
-            if ((options.splitLayerNote == NO_NOTE) && (options.splitControls != SPLIT_MIX))
-                {
-                if (options.splitControls == SPLIT_CONTROLS_RIGHT)
-                    MIDI.sendPitchBend(bend, options.channelOut);
-                else
-                    MIDI.sendPitchBend(bend, options.splitChannel);
-                TOGGLE_OUT_LED();
-                }
-            else    // send to both
-                {
-                MIDI.sendPitchBend(bend, options.channelOut);
-                MIDI.sendPitchBend(bend, options.splitChannel);
-                TOGGLE_OUT_LED();
-                }
+            uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+            if (channelOut == 0)
+                channelOut = options.channelOut;
+            MIDI.sendPitchBend(bend, channelOut);
             }
         else
 #endif
-#ifdef INCLUDE_THRU
-            if (state == STATE_THRU_PLAY)
+
+#ifdef INCLUDE_SPLIT
+            // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
+            if (application == STATE_SPLIT && local.split.playing && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
                 {
-                // only pass through if the data's NOT coming in the default channel
-                if ((channel != options.channelIn) && (options.channelIn != CHANNEL_OMNI)
-                    && channel != options.thruMergeChannelIn)
+                if ((options.splitLayerNote == NO_NOTE) && (options.splitControls != SPLIT_MIX))
                     {
-                    MIDI.sendPitchBend(bend, channel);
+                    if (options.splitControls == SPLIT_CONTROLS_RIGHT)
+                        MIDI.sendPitchBend(bend, options.channelOut);
+                    else
+                        MIDI.sendPitchBend(bend, options.splitChannel);
                     TOGGLE_OUT_LED();
                     }
-                else if (channel == options.thruMergeChannelIn)  //  merge hasn't been sent to newitem yet
+                else    // send to both
                     {
-                    newItem = NEW_ITEM;
-                    itemType = MIDI_PITCH_BEND;
-                    itemNumber = 1;
-                    itemValue = (uint16_t) bend + 8192;
-                    itemChannel = channel;
+                    MIDI.sendPitchBend(bend, options.channelOut);
+                    MIDI.sendPitchBend(bend, options.splitChannel);
+                    TOGGLE_OUT_LED();
                     }
                 }
             else
 #endif
-                if (!isChannelIn)
-                    { 
 #ifdef INCLUDE_THRU
-                    if (state != STATE_THRU_PLAY || !options.thruBlockOtherChannels)
-#endif
+                if (state == STATE_THRU_PLAY)
+                    {
+                    // only pass through if the data's NOT coming in the default channel
+                    if ((channel != options.channelIn) && (options.channelIn != CHANNEL_OMNI)
+                        && channel != options.thruMergeChannelIn)
                         {
                         MIDI.sendPitchBend(bend, channel);
                         TOGGLE_OUT_LED();
                         }
+                    else if (channel == options.thruMergeChannelIn)  //  merge hasn't been sent to newitem yet
+                        {
+                        newItem = NEW_ITEM;
+                        itemType = MIDI_PITCH_BEND;
+                        itemNumber = 1;
+                        itemValue = (uint16_t) bend + 8192;
+                        itemChannel = channel;
+                        }
                     }
+                else
+#endif
+                    if (!isChannelIn)
+                        { 
+#ifdef INCLUDE_THRU
+                        if (state != STATE_THRU_PLAY || !options.thruBlockOtherChannels)
+#endif
+                            {
+                            MIDI.sendPitchBend(bend, channel);
+                            TOGGLE_OUT_LED();
+                            }
+                        }
         }
     else
         TOGGLE_OUT_LED();
@@ -1704,7 +1704,7 @@ void sendAllSoundsOff(uint8_t channel)
 // COMMAND      NUMBERS         VALUES          NOTES
 // OFF          [everything is ignored, this is just a NOP]
 // CC           0-31            0-16383         1. If you send 7-bit data (zero-padded, shifted << 7) then the LSB will not be sent.
-//												   Also LSB not sent if DONT_SEND_14_BIT_CC is defined (which is the default).  So this normally doesn't occur.
+//                                                                                                 Also LSB not sent if DONT_SEND_14_BIT_CC is defined (which is the default).  So this normally doesn't occur.
 // CC           32-127          0-127           1. Zero-pad your 7-bit data (shift it << 7).
 //                                                                      2. Some numbers are meant for special functions.  Unless you know what you're doing,
 //                                                                         it'd be wise not to send on numbers 6, 32--63, 96--101, or 120--127
@@ -1726,8 +1726,8 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t
     uint8_t lsb = fullValue & 127;
     
     if (bypassOut)
-    	return;
-    	
+        return;
+        
     // amazingly, putting this here reduces the code by 4 bytes.  Though it could
     // easily be removed as the switch below handles it!
     if (commandType == CONTROL_TYPE_OFF)
@@ -1842,182 +1842,182 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t
 #ifdef INCLUDE_SYSEX
         
 void loadHeader(uint8_t bytes[])
-	{
-	bytes[0] = 0xF0;
-	bytes[1] = 0x7D;
-	bytes[2] = 'G';
-	bytes[3] = 'I';
-	bytes[4] = 'Z';
-	bytes[5] = 'M';
-	bytes[6] = 'O';
-	bytes[7] = SYSEX_VERSION;
-	}
-	
+    {
+    bytes[0] = 0xF0;
+    bytes[1] = 0x7D;
+    bytes[2] = 'G';
+    bytes[3] = 'I';
+    bytes[4] = 'Z';
+    bytes[5] = 'M';
+    bytes[6] = 'O';
+    bytes[7] = SYSEX_VERSION;
+    }
+        
 void sendSlotSysex()
-	{
-	loadSlot(local.sysex.slot);
+    {
+    loadSlot(local.sysex.slot);
 
-	// Our format is:
-	// 0xF0
-	// 0x7D				[Private, Test, Educational Use]
-	// G I Z M O
-	// Version number 	[Currently 0]
-	// Sysex Type		[ 0 = slot, 1 = Arp]
-	// Nybblized Data, high nybble first
-	// checksum, just sum of data
-	// 0xF7
-	uint8_t bytes[sizeof(struct _slot) * 2 + 11];
-	loadHeader(bytes);
-	bytes[8] = SYSEX_TYPE_SLOT;
-	uint8_t sum = 0;
-	for(uint16_t i = 0; i < sizeof(struct _slot); i++)
-		{
-		bytes[9 + i * 2] = (uint8_t)((data.bytes[i] >> 4) & 0xF);  // unsigned char right shifts are probably logical shifts, but we mask anyway
-		bytes[9 + i * 2 + 1] = (uint8_t)(data.bytes[i] & 0xF);
-		sum += bytes[9 + i * 2];
-		sum += bytes[9 + i * 2 + 1];
+    // Our format is:
+    // 0xF0
+    // 0x7D                         [Private, Test, Educational Use]
+    // G I Z M O
+    // Version number       [Currently 0]
+    // Sysex Type           [ 0 = slot, 1 = Arp]
+    // Nybblized Data, high nybble first
+    // checksum, just sum of data
+    // 0xF7
+    uint8_t bytes[sizeof(struct _slot) * 2 + 11];
+    loadHeader(bytes);
+    bytes[8] = SYSEX_TYPE_SLOT;
+    uint8_t sum = 0;
+    for(uint16_t i = 0; i < sizeof(struct _slot); i++)
+        {
+        bytes[9 + i * 2] = (uint8_t)((data.bytes[i] >> 4) & 0xF);  // unsigned char right shifts are probably logical shifts, but we mask anyway
+        bytes[9 + i * 2 + 1] = (uint8_t)(data.bytes[i] & 0xF);
+        sum += bytes[9 + i * 2];
+        sum += bytes[9 + i * 2 + 1];
 
-		if (data.bytes[i] != ((uint8_t)(bytes[9 + i * 2] << 4) | (bytes[9 + i * 2 + 1] & 0xF)))
-			debug(999);
-		}
-	bytes[sizeof(struct _slot) * 2 + 11 - 2] = (sum & 127);
-	bytes[sizeof(struct _slot) * 2 + 11 - 1] = 0xF7;
-	MIDI.sendSysEx(sizeof(struct _slot) * 2 + 11, bytes, true);
-	}        
+        if (data.bytes[i] != ((uint8_t)(bytes[9 + i * 2] << 4) | (bytes[9 + i * 2 + 1] & 0xF)))
+            debug(999);
+        }
+    bytes[sizeof(struct _slot) * 2 + 11 - 2] = (sum & 127);
+    bytes[sizeof(struct _slot) * 2 + 11 - 1] = 0xF7;
+    MIDI.sendSysEx(sizeof(struct _slot) * 2 + 11, bytes, true);
+    }        
 
 void sendArpSysex()
-	{
-	LOAD_ARPEGGIO(local.sysex.slot);
+    {
+    LOAD_ARPEGGIO(local.sysex.slot);
 
-	// Our format is:
-	// 0xF0
-	// 0x7D				[Private, Test, Educational Use]
-	// G I Z M O
-	// Version number 	[Currently 0]
-	// Sysex Type		[ 0 = slot, 1 = Arp]
-	// Nybblized Data, high nybble first
-	// checksum, just sum of data
-	// 0xF7
-	uint8_t bytes[sizeof(struct _arp) * 2 + 11];
-	loadHeader(bytes);
-	bytes[8] = SYSEX_TYPE_ARP;
-	uint8_t sum = 0;
-	for(uint16_t i = 0; i < sizeof(struct _arp); i++)
-		{
-		bytes[9 + i * 2] = (uint8_t)((data.bytes[i] >> 4) & 0xF);  // unsigned char right shifts are probably logical shifts, but we mask anyway
-		bytes[9 + i * 2 + 1] = (uint8_t)(data.bytes[i] & 0xF);
-		sum += bytes[9 + i * 2];
-		sum += bytes[9 + i * 2 + 1];
-		}
-	bytes[sizeof(struct _arp) * 2 + 11 - 2] = (sum & 127);
-	bytes[sizeof(struct _arp) * 2 + 11 - 1] = 0xF7;
-	MIDI.sendSysEx(sizeof(struct _arp) * 2 + 11, bytes, true);
-	}        
-	
+    // Our format is:
+    // 0xF0
+    // 0x7D                         [Private, Test, Educational Use]
+    // G I Z M O
+    // Version number       [Currently 0]
+    // Sysex Type           [ 0 = slot, 1 = Arp]
+    // Nybblized Data, high nybble first
+    // checksum, just sum of data
+    // 0xF7
+    uint8_t bytes[sizeof(struct _arp) * 2 + 11];
+    loadHeader(bytes);
+    bytes[8] = SYSEX_TYPE_ARP;
+    uint8_t sum = 0;
+    for(uint16_t i = 0; i < sizeof(struct _arp); i++)
+        {
+        bytes[9 + i * 2] = (uint8_t)((data.bytes[i] >> 4) & 0xF);  // unsigned char right shifts are probably logical shifts, but we mask anyway
+        bytes[9 + i * 2 + 1] = (uint8_t)(data.bytes[i] & 0xF);
+        sum += bytes[9 + i * 2];
+        sum += bytes[9 + i * 2 + 1];
+        }
+    bytes[sizeof(struct _arp) * 2 + 11 - 2] = (sum & 127);
+    bytes[sizeof(struct _arp) * 2 + 11 - 1] = 0xF7;
+    MIDI.sendSysEx(sizeof(struct _arp) * 2 + 11, bytes, true);
+    }        
+        
 uint8_t receiveSlotSysex(unsigned char* bytes)
-	{
-	// verify checksum
-	uint8_t sum = 0;
-	for(uint16_t i = 0; i < sizeof(struct _slot); i++)
-		{
-		sum += bytes[9 + i * 2];
-		sum += bytes[9 + i * 2 + 1];
-		}
-	if ((sum & 127) != bytes[sizeof(struct _slot) * 2 + 11 - 2]) // second to last
-		return false;
-	
-	// load
-	for(uint16_t i = 0; i < sizeof(struct _slot); i++)
-		{
-		data.bytes[i] = (uint8_t)(bytes[9 + i * 2] << 4) | (bytes[9 + i * 2 + 1] & 0xF);
-		}
-	saveSlot(local.sysex.slot);
-	return true;
-	}
+    {
+    // verify checksum
+    uint8_t sum = 0;
+    for(uint16_t i = 0; i < sizeof(struct _slot); i++)
+        {
+        sum += bytes[9 + i * 2];
+        sum += bytes[9 + i * 2 + 1];
+        }
+    if ((sum & 127) != bytes[sizeof(struct _slot) * 2 + 11 - 2]) // second to last
+        return false;
+        
+    // load
+    for(uint16_t i = 0; i < sizeof(struct _slot); i++)
+        {
+        data.bytes[i] = (uint8_t)(bytes[9 + i * 2] << 4) | (bytes[9 + i * 2 + 1] & 0xF);
+        }
+    saveSlot(local.sysex.slot);
+    return true;
+    }
 
 uint8_t receiveArpSysex(unsigned char* bytes)
-	{
-	// verify checksum
-	uint8_t sum = 0;
-	for(uint16_t i = 0; i < sizeof(struct _arp); i++)
-		{
-		sum += bytes[9 + i * 2];
-		sum += bytes[9 + i * 2 + 1];
-		}
-	if ((sum & 127) != bytes[sizeof(struct _arp) * 2 + 11 - 2]) // second to last
-		return false;
-	
-	// load
-	for(uint16_t i = 0; i < sizeof(struct _arp); i++)
-		{
-		data.bytes[i] = (uint8_t)(bytes[9 + i * 2] << 4) | (bytes[9 + i * 2 + 1] & 0xF);
-		}
-	SAVE_ARPEGGIO(local.sysex.slot);
-	return true;
-	}
+    {
+    // verify checksum
+    uint8_t sum = 0;
+    for(uint16_t i = 0; i < sizeof(struct _arp); i++)
+        {
+        sum += bytes[9 + i * 2];
+        sum += bytes[9 + i * 2 + 1];
+        }
+    if ((sum & 127) != bytes[sizeof(struct _arp) * 2 + 11 - 2]) // second to last
+        return false;
+        
+    // load
+    for(uint16_t i = 0; i < sizeof(struct _arp); i++)
+        {
+        data.bytes[i] = (uint8_t)(bytes[9 + i * 2] << 4) | (bytes[9 + i * 2 + 1] & 0xF);
+        }
+    SAVE_ARPEGGIO(local.sysex.slot);
+    return true;
+    }
 
 
 void handleSysex(unsigned char* bytes, int len)
-	{
-	// We only process incoming sysex *at all*, even if to generate an error message, if we're
-	// in STATE_SYSEX_GO.
-	if (state != STATE_SYSEX_GO) return;
+    {
+    // We only process incoming sysex *at all*, even if to generate an error message, if we're
+    // in STATE_SYSEX_GO.
+    if (state != STATE_SYSEX_GO) return;
 
-	// Our format is:
-	// 0xF0
-	// 0x7D				[Private, Test, Educational Use]
-	// G I Z M O
-	// Version number 	[Currently 0]
-	// Sysex Type		[ 0 = slot, 1 = Arp]
-	// Nybblized Data, high nybble first
-	// checksum, just sum of data
-	// 0xF7
-	
-	if (bytes[1] == 0x7D && 
-		bytes[2] == 'G' && 
-		bytes[3] == 'I' && 
-		bytes[4] == 'Z' && 
-		bytes[5] == 'M' && 
-		bytes[6] == 'O' && 
-		bytes[7] == SYSEX_VERSION)  // it's me
-		{
-		if (local.sysex.type == SYSEX_TYPE_SLOT && bytes[8] == SYSEX_TYPE_SLOT)
-			{
-			if (len != sizeof(struct _slot) * 2 + 11 || !receiveSlotSysex(bytes))
-				{
-				local.sysex.received = RECEIVED_BAD;
-				}
-			else
-				{
-				local.sysex.received++;
-				if (local.sysex.received <= 0)  // previous was BAD or WRONG, or we wrapped around
-					local.sysex.received = 1;
-				}
-			}
-		else if (local.sysex.type == SYSEX_TYPE_ARP && bytes[8] == SYSEX_TYPE_ARP)
-			{
-			if (len != sizeof(struct _arp) * 2 + 11 | !receiveArpSysex(bytes))
-				{
-				local.sysex.received = RECEIVED_BAD;
-				}
-			else
-				{
-				local.sysex.received++;
-				if (local.sysex.received <= 0)  // previous was BAD or WRONG, or we wrapped around
-					local.sysex.received = 1;
-				}
-			}
-		else
-			{
-			local.sysex.received = RECEIVED_WRONG;  // we're not the right type (slot vs. arp) to receive
-			}
-		}
-	else
-		{
-		local.sysex.received = RECEIVED_BAD;
-		}
-    }	
-    	
+    // Our format is:
+    // 0xF0
+    // 0x7D                         [Private, Test, Educational Use]
+    // G I Z M O
+    // Version number       [Currently 0]
+    // Sysex Type           [ 0 = slot, 1 = Arp]
+    // Nybblized Data, high nybble first
+    // checksum, just sum of data
+    // 0xF7
+        
+    if (bytes[1] == 0x7D && 
+        bytes[2] == 'G' && 
+        bytes[3] == 'I' && 
+        bytes[4] == 'Z' && 
+        bytes[5] == 'M' && 
+        bytes[6] == 'O' && 
+        bytes[7] == SYSEX_VERSION)  // it's me
+        {
+        if (local.sysex.type == SYSEX_TYPE_SLOT && bytes[8] == SYSEX_TYPE_SLOT)
+            {
+            if (len != sizeof(struct _slot) * 2 + 11 || !receiveSlotSysex(bytes))
+                {
+                local.sysex.received = RECEIVED_BAD;
+                }
+            else
+                {
+                local.sysex.received++;
+                if (local.sysex.received <= 0)  // previous was BAD or WRONG, or we wrapped around
+                    local.sysex.received = 1;
+                }
+            }
+        else if (local.sysex.type == SYSEX_TYPE_ARP && bytes[8] == SYSEX_TYPE_ARP)
+            {
+            if (len != sizeof(struct _arp) * 2 + 11 | !receiveArpSysex(bytes))
+                {
+                local.sysex.received = RECEIVED_BAD;
+                }
+            else
+                {
+                local.sysex.received++;
+                if (local.sysex.received <= 0)  // previous was BAD or WRONG, or we wrapped around
+                    local.sysex.received = 1;
+                }
+            }
+        else
+            {
+            local.sysex.received = RECEIVED_WRONG;  // we're not the right type (slot vs. arp) to receive
+            }
+        }
+    else
+        {
+        local.sysex.received = RECEIVED_BAD;
+        }
+    }   
+        
 #endif INCLUDE_SYSEX
 
 

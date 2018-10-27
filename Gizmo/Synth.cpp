@@ -31,61 +31,61 @@
 #endif
 
 void synthUpdate()
-	{
-	if (local.synth.countDown > 0)
-		{
-		local.synth.countDown--;
-		if (local.synth.countDown == 0)
-			{
-			if (local.synth.datatype == TYPE_NRPN)
-				{
-	        	sendControllerCommand(CONTROL_TYPE_NRPN, local.synth.parameter, local.synth.value, local.synth.channel);
-				local.synth.parameterDisplay = DISPLAY_ONLY_VALUE;
-				local.synth.valueDisplay = local.synth.value;
-				}
-			else if (local.synth.datatype == TYPE_CC)
-				{
-        		sendControllerCommand(CONTROL_TYPE_CC, local.synth.parameter, local.synth.value, local.synth.channel);
-				local.synth.parameterDisplay = local.synth.parameter;
-				local.synth.valueDisplay = local.synth.value;
-				}
-			else if (local.synth.datatype == TYPE_SYSEX)
-				{
-       			MIDI.sendSysEx(local.synth.parameter, local.synth.sysex, true);
-				local.synth.parameterDisplay = DISPLAY_ONLY_VALUE;
-				local.synth.valueDisplay = local.synth.value;
-				}
-			}
-		}
-	
-	if (updateDisplay)
-		{
-		clearScreen();
-	
-		if (local.synth.parameterDisplay == DISPLAY_NOTHING)
-			{
-			write3x5Glyphs(GLYPH_OFF);
-			}
-		else if (local.synth.parameterDisplay == DISPLAY_ONLY_VALUE)
-			{
-			writeNumber(led, led2, local.synth.valueDisplay);
-			}
-		else if (local.synth.parameterDisplay >= 128)
-			{
-			write3x5Glyph(led2, local.synth.parameterDisplay - 128, 0);
-			writeShortNumber(led, local.synth.valueDisplay, true);
-			}
-		else
-			{
-			writeShortNumber(led, local.synth.valueDisplay, true);
-			writeShortNumber(led2, local.synth.parameterDisplay, false);
-			}
-		}
-	}
+    {
+    if (local.synth.countDown > 0)
+        {
+        local.synth.countDown--;
+        if (local.synth.countDown == 0)
+            {
+            if (local.synth.datatype == TYPE_NRPN)
+                {
+                sendControllerCommand(CONTROL_TYPE_NRPN, local.synth.parameter, local.synth.value, local.synth.channel);
+                local.synth.parameterDisplay = DISPLAY_ONLY_VALUE;
+                local.synth.valueDisplay = local.synth.value;
+                }
+            else if (local.synth.datatype == TYPE_CC)
+                {
+                sendControllerCommand(CONTROL_TYPE_CC, local.synth.parameter, local.synth.value, local.synth.channel);
+                local.synth.parameterDisplay = local.synth.parameter;
+                local.synth.valueDisplay = local.synth.value;
+                }
+            else if (local.synth.datatype == TYPE_SYSEX)
+                {
+                MIDI.sendSysEx(local.synth.parameter, local.synth.sysex, true);
+                local.synth.parameterDisplay = DISPLAY_ONLY_VALUE;
+                local.synth.valueDisplay = local.synth.value;
+                }
+            }
+        }
+        
+    if (updateDisplay)
+        {
+        clearScreen();
+        
+        if (local.synth.parameterDisplay == DISPLAY_NOTHING)
+            {
+            write3x5Glyphs(GLYPH_OFF);
+            }
+        else if (local.synth.parameterDisplay == DISPLAY_ONLY_VALUE)
+            {
+            writeNumber(led, led2, local.synth.valueDisplay);
+            }
+        else if (local.synth.parameterDisplay >= 128)
+            {
+            write3x5Glyph(led2, local.synth.parameterDisplay - 128, 0);
+            writeShortNumber(led, local.synth.valueDisplay, true);
+            }
+        else
+            {
+            writeShortNumber(led, local.synth.valueDisplay, true);
+            writeShortNumber(led2, local.synth.parameterDisplay, false);
+            }
+        }
+    }
 
 void sendDelayedNRPN(uint16_t parameter, uint16_t value, uint8_t channel, uint8_t countdown)
     {
-    if (local.synth.countDown > 0)	// overwrite
+    if (local.synth.countDown > 0)      // overwrite
         {
         local.synth.parameter = parameter;
         local.synth.value = value;
@@ -96,8 +96,8 @@ void sendDelayedNRPN(uint16_t parameter, uint16_t value, uint8_t channel, uint8_
         {
         sendControllerCommand(CONTROL_TYPE_NRPN, parameter, value, channel);
         local.synth.countDown = countdown;
-		local.synth.parameterDisplay = DISPLAY_ONLY_VALUE;
-		local.synth.valueDisplay = local.synth.value;
+        local.synth.parameterDisplay = DISPLAY_ONLY_VALUE;
+        local.synth.valueDisplay = local.synth.value;
         }
     }
 
@@ -114,8 +114,8 @@ void sendDelayedCC(uint8_t parameter, uint8_t value, uint8_t channel, uint8_t co
         {
         sendControllerCommand(CONTROL_TYPE_CC, parameter, value, channel);
         local.synth.countDown = countdown;
-		local.synth.parameterDisplay = parameter;
-		local.synth.valueDisplay = local.synth.value;
+        local.synth.parameterDisplay = parameter;
+        local.synth.valueDisplay = local.synth.value;
         }
     }
 
@@ -133,8 +133,8 @@ void sendDelayedSysex(uint8_t* sysex, uint8_t length, int16_t displayValue, uint
         MIDI.sendSysEx(length, sysex, true);
         TOGGLE_OUT_LED();
         local.synth.countDown = countdown;
-		local.synth.parameterDisplay = DISPLAY_ONLY_VALUE;
-		local.synth.valueDisplay = displayValue;
+        local.synth.parameterDisplay = DISPLAY_ONLY_VALUE;
+        local.synth.valueDisplay = displayValue;
         }
     }
 

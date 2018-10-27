@@ -607,18 +607,18 @@ const char PROGMEM font_8x5[
             A00000A,
             A00000A,
             },
-            /*
-            { // 1/4 tied to triplet (32 MIDI beats)  [half note triplet]
-            A11000A,
-            A11000A,
-            A11111A,
-            A00000A,
-            A10000A,
-            A00001A,
-            A00111A,
-            A00001A,
-            },
-            */
+        /*
+          { // 1/4 tied to triplet (32 MIDI beats)  [half note triplet]
+          A11000A,
+          A11000A,
+          A11111A,
+          A00000A,
+          A10000A,
+          A00001A,
+          A00111A,
+          A00001A,
+          },
+        */
             { // Dotted 1/4 note (36 MIDI beats)
             A11000A,
             A11000A,
@@ -639,18 +639,18 @@ const char PROGMEM font_8x5[
             A00000A,
             A00000A,
             },
-            /*
-            { // 1/2 tied to two triplets (64 MIDI beats) [whole note triplet
-            A11100A,
-            A10100A,
-            A11111A,
-            A00000A,
-            A10000A,
-            A00001A,
-            A00111A,
-            A00001A,
-            },
-            */
+        /*
+          { // 1/2 tied to two triplets (64 MIDI beats) [whole note triplet
+          A11100A,
+          A10100A,
+          A11111A,
+          A00000A,
+          A10000A,
+          A00001A,
+          A00111A,
+          A00001A,
+          },
+        */
             { // Dotted half note (72 MIDI beats)
             A11100A,
             A10100A,
@@ -1587,7 +1587,7 @@ void writeNumber(unsigned char* mat1, unsigned char* mat2, int16_t val)
         { memcpy_P(mat1 + 1, font_3x5[GLYPH_3x5_MINUS], 3); }   // no need for this: // neg = 1; }
 
     if (b[4] != ' ')
-    	memcpy_P(mat1 + 5, font_3x5[GLYPH_3x5_0 + b[4] - '0'], 3);
+        memcpy_P(mat1 + 5, font_3x5[GLYPH_3x5_0 + b[4] - '0'], 3);
     }
         
         

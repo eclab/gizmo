@@ -400,10 +400,10 @@ void setNotePulseRate(uint8_t noteSpeedType)
     uint8_t oldNotePulseRate = notePulseRate;
     notePulseRate = notePulseRateTable[noteSpeedType];
     if (oldNotePulseRate != notePulseRate)  // no need to create a new countdown, and the blip with it
-    	{
-	    notePulseCountdown = ((uint8_t)(pulseCount % notePulseRate)) + 1;
-	    drawNotePulseToggle = (uint8_t)((pulseCount / notePulseRate) & 1);          // that is, %2
-	    }
+        {
+        notePulseCountdown = ((uint8_t)(pulseCount % notePulseRate)) + 1;
+        drawNotePulseToggle = (uint8_t)((pulseCount / notePulseRate) & 1);          // that is, %2
+        }
     }
 
 uint32_t getMicrosecsPerPulse()

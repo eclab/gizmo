@@ -6,8 +6,8 @@
 
 #ifdef INCLUDE_SYNTH_YAMAHA_TX81Z
 
-#define VCED_GROUP	18
-#define ACED_GROUP	19
+#define VCED_GROUP      18
+#define ACED_GROUP      19
 
 void stateSynthYamahaTX81Z()
     {
@@ -16,7 +16,7 @@ void stateSynthYamahaTX81Z()
         entry = false;
         }
     
-	synthUpdate();
+    synthUpdate();
     
     if (newItem && (itemType == MIDI_NRPN_14_BIT))
         {
@@ -31,15 +31,15 @@ void stateSynthYamahaTX81Z()
         sysex[5] = value;
 
         if (parameter <= 93)  // VCED
-        	{
-        	sysex[3] = VCED_GROUP;
-        	sysex[4] = parameter;
-        	}
+            {
+            sysex[3] = VCED_GROUP;
+            sysex[4] = parameter;
+            }
         else
-        	{
-        	sysex[3] = ACED_GROUP;
-        	sysex[4] = parameter - 94;
-        	} 
+            {
+            sysex[3] = ACED_GROUP;
+            sysex[4] = parameter - 94;
+            } 
         
         sendDelayedSysex(sysex, 7, itemValue, YAMAHA_TX81Z_COUNTDOWN);
         }

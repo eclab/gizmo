@@ -165,6 +165,13 @@
 
 // You can include these but one or more other items will have to be jettisoned as a result.
 // IMPORTANT NOTE: If you include another application or a different one will also have to modify 
+// The menu array on around Line 616 of TopLevel.cpp, where it states which applications are available.
+// You need to make sure that the array length stays correct (for example, it says menuItems[5],
+// and if you remove an app, it needs to say menuItems[4]).  Similarly, the second argument in doMenuDisplay(...)
+// (currently a 5) would need to change to a 4.
+//
+// Whatever applications you install need to be ordered in this order in that menu:
+// Arpeggiator, Step Sequencer, Recorder, Gauge, Controller, Split, Thru, Synth, Measure, Sysex, [Options]
 
 // --- Additional applications
 // #define INCLUDE_GAUGE
@@ -192,6 +199,9 @@
 // #define INCLUDE_CC_CONTROL
 // #define INCLUDE_CLOCK_IN_OPTIONS
 // #define INCLUDE_BUFFERED_CURSOR_X_POS
+
+// Sysex isn't an available option on the Uno: it doesn't have enough memory
+
 #endif
 
 

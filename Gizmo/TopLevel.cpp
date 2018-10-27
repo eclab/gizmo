@@ -46,15 +46,15 @@ GLOBAL uint8_t bypass = BYPASS_OFF;                       // This is set when we
 #endif
 
 GLOBAL uint8_t bypassOut = BYPASS_OFF;                    // This is set when we are preventing Gizmo's applications from writing out
-GLOBAL uint8_t dontBypassOut = 0;				 // An application can set this to allow writing out, but he must afterwards say 
+GLOBAL uint8_t dontBypassOut = 0;                                // An application can set this to allow writing out, but he must afterwards say 
 
 void toggleBypass(uint8_t channel)
-	{
+    {
 #ifdef TOPLEVEL_BYPASS
-	// the first time through bypass is BYPASS_FIRST_ON.
-	// only after it's been turned off (or back on again) do we start doing all-sounds-off.
-	if (bypass !=  BYPASS_FIRST_ON)
-		sendAllSoundsOffDisregardBypass(channel);
+    // the first time through bypass is BYPASS_FIRST_ON.
+    // only after it's been turned off (or back on again) do we start doing all-sounds-off.
+    if (bypass !=  BYPASS_FIRST_ON)
+        sendAllSoundsOffDisregardBypass(channel);
 #else
     sendAllSoundsOffDisregardBypass(channel);
 #endif
@@ -62,7 +62,7 @@ void toggleBypass(uint8_t channel)
 #ifndef HEADLESS
     if (!bypass) 
         {
-	    // clear the LEDs
+        // clear the LEDs
         *port_LED_GREEN |= LED_GREEN_mask;
         *port_LED_RED |= LED_RED_mask;
         }
@@ -72,8 +72,8 @@ void toggleBypass(uint8_t channel)
     else MIDI.turnThruOff();
 
     bypassOut = (bypass && !dontBypassOut);
-	}
-	
+    }
+        
 
 
 
@@ -201,7 +201,7 @@ void updateButtons(uint8_t buttonPressed[])
                 button[i] = buttonPressed[i];
                 }
             }
-        else                            			// button used to be pressed
+        else                                                    // button used to be pressed
             {
             if (!buttonPressed[i])                  // button was released or released long
                 {
@@ -338,9 +338,9 @@ uint8_t update()
             // pots, and then changes the buttonPressed[] array appropriately.  This line prevents update() from erasing that
             // freshly-minted buttonPressed[] array, unless the user is actually pressing a physical button on Gizmo.
             if (!lockoutPots)
-            	{
-            	updateButtons(buttonPressed);
-            	}
+                {
+                updateButtons(buttonPressed);
+                }
 #endif // HEADLESS
             return 0;  // don't update the display
             }
@@ -352,7 +352,7 @@ uint8_t update()
                 potUpdated[LEFT_POT] = updatePot(pot[LEFT_POT], potCurrent[LEFT_POT], potCurrentFinal[LEFT_POT], potLast[LEFT_POT], A0);
 #endif // HEADLESS
 #ifdef INCLUDE_EXTENDED_CONTROLLER
-                potUpdated[A2_POT] = updatePot(pot[A2_POT], potCurrent[A2_POT], potCurrentFinal[A2_POT], potLast[A2_POT], A14);
+            potUpdated[A2_POT] = updatePot(pot[A2_POT], potCurrent[A2_POT], potCurrentFinal[A2_POT], potLast[A2_POT], A14);
 #endif
             return 0;  // don't update the display
             }
@@ -364,7 +364,7 @@ uint8_t update()
                 potUpdated[RIGHT_POT] = updatePot(pot[RIGHT_POT], potCurrent[RIGHT_POT], potCurrentFinal[RIGHT_POT], potLast[RIGHT_POT], A1);
 #endif // HEADLESS
 #ifdef INCLUDE_EXTENDED_CONTROLLER
-                potUpdated[A3_POT] = updatePot(pot[A3_POT], potCurrent[A3_POT], potCurrentFinal[A3_POT], potLast[A3_POT], A15);
+            potUpdated[A3_POT] = updatePot(pot[A3_POT], potCurrent[A3_POT], potCurrentFinal[A3_POT], potLast[A3_POT], A15);
 #endif
             return 0;  // don't update the display
             }
@@ -603,25 +603,25 @@ void go()
             const char* menuItems[11] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), PSTR("SYSEX"), options_p };
             if (doMenuDisplay(menuItems, 11, FIRST_APPLICATION, STATE_ROOT, 1) == MENU_SELECTED)
 #else
-            const char* menuItems[10] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), options_p };
+                const char* menuItems[10] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), options_p };
             if (doMenuDisplay(menuItems, 10, FIRST_APPLICATION, STATE_ROOT, 1) == MENU_SELECTED)
 #endif
-            	{
+                {
 #if defined(TOPLEVEL_BYPASS)
-				if (bypass == BYPASS_FIRST_ON)
-					toggleBypass(0); // the channel doesn't matter, it'll get ignored
+                if (bypass == BYPASS_FIRST_ON)
+                    toggleBypass(0); // the channel doesn't matter, it'll get ignored
 #endif
-            	}
+                }
 #endif
 #if defined(__UNO__)
-            const char* menuItems[5] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), /* PSTR("GAUGE"), */ PSTR("CONTROLLER"), options_p };
+            const char* menuItems[5] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("CONTROLLER"), options_p };
             if (doMenuDisplay(menuItems, 5, FIRST_APPLICATION, STATE_ROOT, 1) == MENU_SELECTED)
-            	{
+                {
 #if defined(TOPLEVEL_BYPASS)
-				if (bypass == BYPASS_FIRST_ON)
-					toggleBypass(0); // the channel doesn't matter, it'll get ignored
+                if (bypass == BYPASS_FIRST_ON)
+                    toggleBypass(0); // the channel doesn't matter, it'll get ignored
 #endif
-            	}
+                }
 #endif
             }
         break;  
@@ -999,10 +999,10 @@ void go()
         case STATE_SYNTH:
             {
             if (entry)
-            	{
-				for(uint8_t i = 0; i < 25; i++)
-					local.synth.passMIDIData[i] = true;
-            	}
+                {
+                for(uint8_t i = 0; i < 25; i++)
+                    local.synth.passMIDIData[i] = true;
+                }
             
             local.synth.countDown = 0;
             local.synth.parameterDisplay = DISPLAY_NOTHING;
@@ -1050,12 +1050,12 @@ void go()
                 case NO_MENU_SELECTED:
                     break;
                 case MENU_SELECTED:
-                	local.sysex.slot = currentDisplay;
-                	goDownState(STATE_SYSEX_GO);
-                	break;
+                    local.sysex.slot = currentDisplay;
+                    goDownState(STATE_SYSEX_GO);
+                    break;
                 case MENU_CANCELLED:
-                	goUpState(STATE_SYSEX);
-                	break;
+                    goUpState(STATE_SYSEX);
+                    break;
                 }
             }
         break;
@@ -1072,12 +1072,12 @@ void go()
                 case NO_MENU_SELECTED:
                     break;
                 case MENU_SELECTED:
-                	local.sysex.slot = currentDisplay;
-                	goDownState(STATE_SYSEX_GO);
-                	break;
+                    local.sysex.slot = currentDisplay;
+                    goDownState(STATE_SYSEX_GO);
+                    break;
                 case MENU_CANCELLED:
-                	goUpState(STATE_SYSEX);
-                	break;
+                    goUpState(STATE_SYSEX);
+                    break;
                 }
             }
         break;
@@ -1086,45 +1086,45 @@ void go()
             {
             // display
             if (local.sysex.received == RECEIVED_NONE)
-            	{
-				clearScreen();  // is this necessary?
-            	write3x5Glyphs(GLYPH_OFF);
-            	}
+                {
+                clearScreen();  // is this necessary?
+                write3x5Glyphs(GLYPH_OFF);
+                }
             else if (local.sysex.received == RECEIVED_WRONG)
-            	{
-				clearScreen();  // is this necessary?
-            	write3x5Glyphs(GLYPH_SYSEX);
-            	}
+                {
+                clearScreen();  // is this necessary?
+                write3x5Glyphs(GLYPH_SYSEX);
+                }
             else if (local.sysex.received == RECEIVED_BAD)
-            	{
-				clearScreen();  // is this necessary?
-            	write3x5Glyphs(GLYPH_FAIL);
-            	}
+                {
+                clearScreen();  // is this necessary?
+                write3x5Glyphs(GLYPH_FAIL);
+                }
             else
-            	{
-				clearScreen();
-				writeShortNumber(led, ((uint8_t)local.sysex.received), false);
-            	}
-            	
+                {
+                clearScreen();
+                writeShortNumber(led, ((uint8_t)local.sysex.received), false);
+                }
+                
             // handle buttons
             if (isUpdated(BACK_BUTTON, RELEASED))
-            	{
-            	goUpState(local.sysex.type == SYSEX_TYPE_SLOT ? STATE_SYSEX_SLOT : STATE_SYSEX_ARP);
-            	}
+                {
+                goUpState(local.sysex.type == SYSEX_TYPE_SLOT ? STATE_SYSEX_SLOT : STATE_SYSEX_ARP);
+                }
             else if (isUpdated(SELECT_BUTTON, PRESSED))
-            	{
-            	if (local.sysex.type == SYSEX_TYPE_SLOT)
-            		{
-            		sendSlotSysex();
-            		}
-            	else
-            		{
-            		sendArpSysex();
-            		}
-				local.sysex.received++;
-				if (local.sysex.received <= 0)  // previous was BAD or WRONG, or we wrapped around
-					local.sysex.received = 1;
-            	}
+                {
+                if (local.sysex.type == SYSEX_TYPE_SLOT)
+                    {
+                    sendSlotSysex();
+                    }
+                else
+                    {
+                    sendArpSysex();
+                    }
+                local.sysex.received++;
+                if (local.sysex.received <= 0)  // previous was BAD or WRONG, or we wrapped around
+                    local.sysex.received = 1;
+                }
             }
         break;
 #endif
@@ -1241,13 +1241,13 @@ void go()
         break;
         case STATE_ARPEGGIATOR_CREATE:
             {
-			uint8_t note = stateEnterNote(STATE_ARPEGGIATOR);
-			if (note != NO_NOTE)  // it's a real note
-				{
-				data.arp.root = note;
-				state = STATE_ARPEGGIATOR_CREATE_EDIT;
-				entry = true;
-				}
+            uint8_t note = stateEnterNote(STATE_ARPEGGIATOR);
+            if (note != NO_NOTE)  // it's a real note
+                {
+                data.arp.root = note;
+                state = STATE_ARPEGGIATOR_CREATE_EDIT;
+                entry = true;
+                }
             }
         break;
         case STATE_ARPEGGIATOR_CREATE_EDIT:
@@ -1278,15 +1278,15 @@ void go()
         break;
         case STATE_ARPEGGIATOR_PLAY_TRANSPOSE:
             {
-			local.arp.performanceMode = false;  // it's false until we say it's true
-			uint8_t note = stateEnterNote(STATE_ARPEGGIATOR_PLAY);
-			if (note != NO_NOTE)  // it's a real note
-				{
-				local.arp.transposeRoot = note;
-				goUpState(STATE_ARPEGGIATOR_PLAY);
-				local.arp.performanceMode = true;
-				}
-			playArpeggio();
+            local.arp.performanceMode = false;  // it's false until we say it's true
+            uint8_t note = stateEnterNote(STATE_ARPEGGIATOR_PLAY);
+            if (note != NO_NOTE)  // it's a real note
+                {
+                local.arp.transposeRoot = note;
+                goUpState(STATE_ARPEGGIATOR_PLAY);
+                local.arp.performanceMode = true;
+                }
+            playArpeggio();
             }
         break;
 #endif
@@ -1316,7 +1316,7 @@ void go()
 #ifdef INCLUDE_IMMEDIATE_RETURN
             // 17 represents DEFAULT channel
             uint8_t val = stateNumerical(0, 17, local.stepSequencer.outMIDI[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, true, GLYPH_DEFAULT, 
-            	immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);
+                immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);
 #else
             uint8_t val = stateNumerical(0, 17, local.stepSequencer.outMIDI[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, true, GLYPH_DEFAULT, STATE_STEP_SEQUENCER_MENU);
 #endif
@@ -1330,7 +1330,7 @@ void go()
 #ifdef INCLUDE_IMMEDIATE_RETURN
             // 0 represents FREE velocity
             stateNumerical(0, 127, local.stepSequencer.velocity[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, true, GLYPH_NONE,
-            	immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);
+                immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);
 #else
             stateNumerical(0, 127, local.stepSequencer.velocity[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, true, GLYPH_NONE, STATE_STEP_SEQUENCER_MENU);
 #endif
@@ -1341,10 +1341,10 @@ void go()
             {
 #ifdef INCLUDE_IMMEDIATE_RETURN
             stateNumerical(0, 31, local.stepSequencer.fader[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_NONE, 
-            	immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);
+                immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);
 #else
             stateNumerical(0, 31, local.stepSequencer.fader[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_NONE, 
-            	STATE_STEP_SEQUENCER_MENU);
+                STATE_STEP_SEQUENCER_MENU);
 #endif
             playStepSequencer();
             }
@@ -1354,7 +1354,7 @@ void go()
             // 101 represents DEFAULT length
 #ifdef INCLUDE_IMMEDIATE_RETURN
             stateNumerical(0, 101, local.stepSequencer.noteLength[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_DEFAULT,
-            	immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);
+                immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);
 #else
             stateNumerical(0, 101, local.stepSequencer.noteLength[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_DEFAULT, STATE_STEP_SEQUENCER_MENU);
 #endif
@@ -1395,7 +1395,7 @@ void go()
             {
             const char* menuItems[5] = { PSTR("MARK"), PSTR("COPY"), PSTR("SPLAT"), PSTR("MOVE"), PSTR("DUPLICATE") };
             doMenuDisplay(menuItems, 5, STATE_STEP_SEQUENCER_MENU_EDIT_MARK, STATE_STEP_SEQUENCER_MENU, 1);
-		    playStepSequencer();
+            playStepSequencer();
             }
         break;
         case STATE_STEP_SEQUENCER_MENU_EDIT_MARK:
@@ -1406,53 +1406,53 @@ void go()
         case STATE_STEP_SEQUENCER_MENU_EDIT_COPY:
             {
             stateStepSequencerMenuEditCopy(false, false);
-			playStepSequencer();
+            playStepSequencer();
             }
         break;
         case STATE_STEP_SEQUENCER_MENU_EDIT_SPLAT:
             {
             stateStepSequencerMenuEditCopy(true, false);
-			playStepSequencer();
+            playStepSequencer();
             }
         break;
         case STATE_STEP_SEQUENCER_MENU_EDIT_MOVE:
             {
             stateStepSequencerMenuEditCopy(false, true);
-			playStepSequencer();
+            playStepSequencer();
             }
         break;
         case STATE_STEP_SEQUENCER_MENU_EDIT_DUPLICATE:
-        	{
+            {
             stateStepSequencerMenuEditDuplicate();
-			playStepSequencer();
-        	}
+            playStepSequencer();
+            }
         case STATE_STEP_SEQUENCER_MENU_PERFORMANCE:
             {
             const char* menuItems[3] = { PSTR("KEYBOARD"), PSTR("REPEAT SEQUENCE"), PSTR("NEXT SEQUENCE") };
             doMenuDisplay(menuItems, 3, STATE_STEP_SEQUENCER_MENU_PERFORMANCE_KEYBOARD, immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU, 1);
-		    playStepSequencer();
+            playStepSequencer();
             }
         break;
         case STATE_STEP_SEQUENCER_MENU_PERFORMANCE_KEYBOARD:
             {
-			stateStepSequencerMenuPerformanceKeyboard();
+            stateStepSequencerMenuPerformanceKeyboard();
             }
         break;
         case STATE_STEP_SEQUENCER_MENU_PERFORMANCE_REPEAT:
             {
-			stateStepSequencerMenuPerformanceRepeat();
+            stateStepSequencerMenuPerformanceRepeat();
             }
         break;
         case STATE_STEP_SEQUENCER_MENU_PERFORMANCE_NEXT:
             {
-			stateStepSequencerMenuPerformanceNext();
+            stateStepSequencerMenuPerformanceNext();
             }
         break;
         case STATE_STEP_SEQUENCER_MENU_NO:
             {
             const char* menuItems[1] = { PSTR("NO") };
             doMenuDisplay(menuItems, 1, immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU, immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU, 1);
-		    playStepSequencer();
+            playStepSequencer();
             }
         break;
 #endif
@@ -1498,22 +1498,22 @@ void go()
                 local.control.displayValue = -1;
                 local.control.displayType = CONTROL_TYPE_OFF;
 #ifdef INCLUDE_EXTENDED_CONTROLLER
-				local.control.potWaiting[0] = 0;
-				local.control.potWaiting[1] = 0;
-				local.control.potWaiting[2] = 0;
-				local.control.potWaiting[3] = 0;
+                local.control.potWaiting[0] = 0;
+                local.control.potWaiting[1] = 0;
+                local.control.potWaiting[2] = 0;
+                local.control.potWaiting[3] = 0;
 #endif
                 entry = false;
                 dontBypassOut = true;
-    			// update bypassOut on entry
-    			bypassOut = (bypass && !dontBypassOut);
+                // update bypassOut on entry
+                bypassOut = (bypass && !dontBypassOut);
                 }
 
             if (isUpdated(BACK_BUTTON, RELEASED))
                 {
                 dontBypassOut = false;
-    			// update bypassOut on exit
-    			bypassOut = (bypass && !dontBypassOut);
+                // update bypassOut on exit
+                bypassOut = (bypass && !dontBypassOut);
                 goUpState(STATE_CONTROLLER);
                 }
             else
@@ -1615,10 +1615,10 @@ void go()
                     local.control.displayValue = local.control.displayValue << 4;
                     
                     if (local.control.potUpdateValue[LEFT_POT] != local.control.displayValue)
-                    	{
-                    	local.control.potUpdateValue[LEFT_POT] = local.control.displayValue;
-	                    local.control.potWaiting[LEFT_POT] = 1;
-	                    }
+                        {
+                        local.control.potUpdateValue[LEFT_POT] = local.control.displayValue;
+                        local.control.potWaiting[LEFT_POT] = 1;
+                        }
                     }
           
                 if (potUpdated[RIGHT_POT] && (options.rightKnobControlType != CONTROL_TYPE_OFF))
@@ -1630,13 +1630,13 @@ void go()
                     local.control.displayValue = local.control.displayValue << 4;
                     
                     if (local.control.potUpdateValue[RIGHT_POT] != local.control.displayValue)
-                    	{
-   	                 	local.control.potUpdateValue[RIGHT_POT] = local.control.displayValue;
-   	                 	local.control.potWaiting[RIGHT_POT] = 1;
-						}
+                        {
+                        local.control.potUpdateValue[RIGHT_POT] = local.control.displayValue;
+                        local.control.potWaiting[RIGHT_POT] = 1;
+                        }
                     }
-	
-                 if (potUpdated[A2_POT] && (options.a2ControlType != CONTROL_TYPE_OFF))
+        
+                if (potUpdated[A2_POT] && (options.a2ControlType != CONTROL_TYPE_OFF))
                     {
                     local.control.displayValue = pot[A2_POT];            
                     // at this point local.control.displayValue is 0...1023
@@ -1645,10 +1645,10 @@ void go()
                     local.control.displayValue = local.control.displayValue << 4;
                     
                     if (local.control.potUpdateValue[A2_POT] != local.control.displayValue)
-                    	{
-                    	local.control.potUpdateValue[A2_POT] = local.control.displayValue;
-                    	local.control.potWaiting[A2_POT] = 1;
-                    	}
+                        {
+                        local.control.potUpdateValue[A2_POT] = local.control.displayValue;
+                        local.control.potWaiting[A2_POT] = 1;
+                        }
                     }
 
                 if (potUpdated[A3_POT] && (options.a3ControlType != CONTROL_TYPE_OFF))
@@ -1660,61 +1660,61 @@ void go()
                     local.control.displayValue = local.control.displayValue << 4;
 
                     if (local.control.potUpdateValue[A3_POT] != local.control.displayValue)
-                    	{
-                    	local.control.potUpdateValue[A3_POT] = local.control.displayValue;
-                    	local.control.potWaiting[A3_POT] = 1;
-                    	}
+                        {
+                        local.control.potUpdateValue[A3_POT] = local.control.displayValue;
+                        local.control.potWaiting[A3_POT] = 1;
+                        }
                     }
 
-				// figure out who has been waiting the longest, if any.  The goal here is to only allow one out at a time and yet prevent starvation
+                // figure out who has been waiting the longest, if any.  The goal here is to only allow one out at a time and yet prevent starvation
 
-				int8_t winner = -1;
-				uint32_t winnerTime = 0;
-				if (local.control.potWaiting[LEFT_POT] && (currentTime - local.control.potUpdateTime[LEFT_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
-					{
-					if (local.control.potUpdateTime[LEFT_POT] - currentTime > winnerTime) { winner = LEFT_POT; winnerTime = currentTime - local.control.potUpdateTime[LEFT_POT]; }
-					}
+                int8_t winner = -1;
+                uint32_t winnerTime = 0;
+                if (local.control.potWaiting[LEFT_POT] && (currentTime - local.control.potUpdateTime[LEFT_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
+                    {
+                    if (local.control.potUpdateTime[LEFT_POT] - currentTime > winnerTime) { winner = LEFT_POT; winnerTime = currentTime - local.control.potUpdateTime[LEFT_POT]; }
+                    }
 
                 if (local.control.potWaiting[RIGHT_POT] && (currentTime - local.control.potUpdateTime[RIGHT_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
-					{
-					if (local.control.potUpdateTime[RIGHT_POT] - currentTime > winnerTime) { winner = RIGHT_POT; winnerTime = currentTime - local.control.potUpdateTime[RIGHT_POT]; }
-					}
+                    {
+                    if (local.control.potUpdateTime[RIGHT_POT] - currentTime > winnerTime) { winner = RIGHT_POT; winnerTime = currentTime - local.control.potUpdateTime[RIGHT_POT]; }
+                    }
 
                 if (local.control.potWaiting[A2_POT] && (currentTime - local.control.potUpdateTime[A2_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
-					{
-					if (local.control.potUpdateTime[A2_POT] - currentTime > winnerTime) { winner = A2_POT; winnerTime = currentTime - local.control.potUpdateTime[A2_POT]; }
-					}
+                    {
+                    if (local.control.potUpdateTime[A2_POT] - currentTime > winnerTime) { winner = A2_POT; winnerTime = currentTime - local.control.potUpdateTime[A2_POT]; }
+                    }
 
                 if (local.control.potWaiting[A3_POT] && (currentTime - local.control.potUpdateTime[A3_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
-					{
-					if (local.control.potUpdateTime[A3_POT] - currentTime > winnerTime) { winner = A3_POT; winnerTime = currentTime - local.control.potUpdateTime[A3_POT]; }
-					}
-					
-				// here we go
+                    {
+                    if (local.control.potUpdateTime[A3_POT] - currentTime > winnerTime) { winner = A3_POT; winnerTime = currentTime - local.control.potUpdateTime[A3_POT]; }
+                    }
+                                        
+                // here we go
                 if (winner == LEFT_POT)
-                    	{
-                    	sendControllerCommand( local.control.displayType = options.leftKnobControlType, options.leftKnobControlNumber, local.control.potUpdateValue[LEFT_POT], options.channelOut);
-                    	local.control.potUpdateTime[LEFT_POT] = currentTime;
-                    	local.control.potWaiting[LEFT_POT] = 0;
-						}
+                    {
+                    sendControllerCommand( local.control.displayType = options.leftKnobControlType, options.leftKnobControlNumber, local.control.potUpdateValue[LEFT_POT], options.channelOut);
+                    local.control.potUpdateTime[LEFT_POT] = currentTime;
+                    local.control.potWaiting[LEFT_POT] = 0;
+                    }
                 else if (winner == RIGHT_POT)
-                    	{
-                    	sendControllerCommand( local.control.displayType = options.rightKnobControlType, options.rightKnobControlNumber, local.control.potUpdateValue[RIGHT_POT], options.channelOut);
-                    	local.control.potUpdateTime[RIGHT_POT] = currentTime;
-                    	local.control.potWaiting[RIGHT_POT] = 0;
-						}
+                    {
+                    sendControllerCommand( local.control.displayType = options.rightKnobControlType, options.rightKnobControlNumber, local.control.potUpdateValue[RIGHT_POT], options.channelOut);
+                    local.control.potUpdateTime[RIGHT_POT] = currentTime;
+                    local.control.potWaiting[RIGHT_POT] = 0;
+                    }
                 else if (winner == A2_POT)
-                    	{
-                    	sendControllerCommand( local.control.displayType = options.a2ControlType, options.a2ControlNumber, local.control.potUpdateValue[A2_POT], options.channelOut);
-                    	local.control.potUpdateTime[A2_POT] = currentTime;
-                    	local.control.potWaiting[A2_POT] = 0;
-						}
+                    {
+                    sendControllerCommand( local.control.displayType = options.a2ControlType, options.a2ControlNumber, local.control.potUpdateValue[A2_POT], options.channelOut);
+                    local.control.potUpdateTime[A2_POT] = currentTime;
+                    local.control.potWaiting[A2_POT] = 0;
+                    }
                 else if (winner == A3_POT)
-                    	{
-                    	sendControllerCommand( local.control.displayType = options.a3ControlType, options.a3ControlNumber, local.control.potUpdateValue[A3_POT], options.channelOut);
-                    	local.control.potUpdateTime[A3_POT] = currentTime;
-                    	local.control.potWaiting[A3_POT] = 0;
-						}
+                    {
+                    sendControllerCommand( local.control.displayType = options.a3ControlType, options.a3ControlNumber, local.control.potUpdateValue[A3_POT], options.channelOut);
+                    local.control.potUpdateTime[A3_POT] = currentTime;
+                    local.control.potWaiting[A3_POT] = 0;
+                    }
                 
 #else
                 if (potUpdated[LEFT_POT] && (options.leftKnobControlType != CONTROL_TYPE_OFF))
@@ -1777,9 +1777,9 @@ void go()
                         }
                     }
                 else
-                	{
-                	write3x5Glyphs(GLYPH_OFF);
-                	}
+                    {
+                    write3x5Glyphs(GLYPH_OFF);
+                    }
                 }
             }
         break;
@@ -1890,17 +1890,17 @@ void go()
         break;
         case STATE_CONTROLLER_RANDOM_SET_RANGE:
             {
-			stateNumerical(1, 127, options.randomRange, backupOptions.randomRange, true, false, GLYPH_NONE, STATE_CONTROLLER_RANDOM);
+            stateNumerical(1, 127, options.randomRange, backupOptions.randomRange, true, false, GLYPH_NONE, STATE_CONTROLLER_RANDOM);
             }
         break;
         case STATE_CONTROLLER_RANDOM_SET_INITIAL_VALUE:
             {
-			stateNumerical(0, 127, options.randomInitialValue, backupOptions.randomInitialValue, true, false, GLYPH_NONE, STATE_CONTROLLER_RANDOM);
+            stateNumerical(0, 127, options.randomInitialValue, backupOptions.randomInitialValue, true, false, GLYPH_NONE, STATE_CONTROLLER_RANDOM);
             }
         break;
         case STATE_CONTROLLER_RANDOM_SET_LENGTH:
             {
-			stateNumerical(0, 255, options.randomLength, backupOptions.randomLength, true, false, GLYPH_HIGH, STATE_CONTROLLER_RANDOM);
+            stateNumerical(0, 255, options.randomLength, backupOptions.randomLength, true, false, GLYPH_HIGH, STATE_CONTROLLER_RANDOM);
             }
         break;
         case STATE_CONTROLLER_RANDOM_SET_CLOCK:
@@ -1993,7 +1993,7 @@ void go()
                         newTempo = newTempo + 1;
                     options.tempo = max(min(((options.tempo + newTempo) >> 1), 999), 1);  // saves a tiny bit of code space!
 
-					setPulseRate(options.tempo);
+                    setPulseRate(options.tempo);
                     entry = true;
                     }
                 lastTempoTapTime = currentTime;
@@ -2033,10 +2033,10 @@ void go()
         break;
         case STATE_OPTIONS_NOTE_SPEED:
             {
-     if (entry)
-        {
+            if (entry)
+                {
 #ifdef INCLUDE_IMMEDIATE_RETURN
-        setAutoReturnTime();
+                setAutoReturnTime();
 #endif INCLUDE_IMMEDIATE_RETURN
                 // can't avoid a divide :-(
                 potDivisor = 1024 / (NOTE_SPEED_DOUBLE_WHOLE - NOTE_SPEED_EIGHTH_TRIPLET + 1);
@@ -2051,15 +2051,15 @@ void go()
             uint8_t i = isUpdated(SELECT_BUTTON, PRESSED);
             if (isUpdated(BACK_BUTTON, RELEASED) || i 
 #ifdef INCLUDE_IMMEDIATE_RETURN
-|| (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime)
+                || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime)
 #endif INCLUDE_IMMEDIATE_RETURN
-            )
+                )
                 {
                 if (i 
 #ifdef INCLUDE_IMMEDIATE_RETURN
-|| (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime)
+                    || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime)
 #endif INCLUDE_IMMEDIATE_RETURN
-                )  // we don't want to call isUpdated(SELECT_BUTTON, ...) again as it resets things
+                    )  // we don't want to call isUpdated(SELECT_BUTTON, ...) again as it resets things
                     {
                     if (backupOptions.noteSpeedType != options.noteSpeedType)
                         {
@@ -2068,17 +2068,17 @@ void go()
                     }
 
 #ifdef INCLUDE_IMMEDIATE_RETURN
-        removeAutoReturnTime();
+                removeAutoReturnTime();
 #endif INCLUDE_IMMEDIATE_RETURN
                             
                 // at any rate...
 #ifdef INCLUDE_IMMEDIATE_RETURN
-                    if (immediateReturn)
-                        goUpStateWithBackup(immediateReturnState);
-                    else
-                        goUpStateWithBackup(STATE_OPTIONS);
-#else
+                if (immediateReturn)
+                    goUpStateWithBackup(immediateReturnState);
+                else
                     goUpStateWithBackup(STATE_OPTIONS);
+#else
+                goUpStateWithBackup(STATE_OPTIONS);
 #endif
                 setNotePulseRate(options.noteSpeedType);
                 }
@@ -2090,7 +2090,7 @@ void go()
                 if (oldOptionsNoteSpeedType != options.noteSpeedType) 
                     setNotePulseRate(options.noteSpeedType);
 #ifdef INCLUDE_IMMEDIATE_RETURN
-        setAutoReturnTime();
+                setAutoReturnTime();
 #endif
                 }
             playApplication();       
@@ -2314,7 +2314,7 @@ void go()
                     if (immediateReturn)
                         goUpState(immediateReturnState);
                     else
-                    	goUpState(STATE_OPTIONS);
+                        goUpState(STATE_OPTIONS);
 #else
                     goUpState(STATE_OPTIONS);
 #endif
@@ -2334,7 +2334,7 @@ void go()
                     if (immediateReturn)
                         goUpState(immediateReturnState);
                     else
-                    	goUpState(STATE_OPTIONS);
+                        goUpState(STATE_OPTIONS);
 #else
                     goUpState(STATE_OPTIONS);
 #endif
@@ -2428,8 +2428,8 @@ void go()
 #ifdef INCLUDE_IMMEDIATE_RETURN
         case STATE_OPTIONS_AUTO_RETURN:
             {
-			stateNumerical(0, 16, options.autoReturnInterval, backupOptions.autoReturnInterval, true, true, GLYPH_NONE, STATE_OPTIONS);
-			playApplication();
+            stateNumerical(0, 16, options.autoReturnInterval, backupOptions.autoReturnInterval, true, true, GLYPH_NONE, STATE_OPTIONS);
+            playApplication();
             }
         break;
 #endif

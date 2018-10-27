@@ -148,7 +148,7 @@ void performThruPolyAftertouch(uint8_t note, uint8_t velocity, uint8_t channel)
 
 
 void playThru()
-	{
+    {
     // here we check if it's time to submit a NOTE OFF
     if (local.thru.debounceState == DEBOUNCE_STATE_FIRST_NOTE_UP_IGNORED && 
         local.thru.debounceTime + ((uint32_t)options.thruDebounceMilliseconds) * 1000 <= currentTime)
@@ -330,15 +330,15 @@ void stateThruPlay()
         }
         
     else if (isUpdated(SELECT_BUTTON, PRESSED))
-    	{
-    	goDownState(STATE_OPTIONS);
+        {
+        goDownState(STATE_OPTIONS);
         immediateReturnState = STATE_THRU_PLAY;
-    	}
+        }
         
     playThru();
-	}
-	
-	
+    }
+        
+        
 
 #endif
 

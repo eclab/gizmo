@@ -13,7 +13,7 @@ void stateSynthWaldorfBlofeld()
         entry = false;
         }
     
-	synthUpdate();
+    synthUpdate();
     
     if (newItem && (itemType == MIDI_NRPN_14_BIT))
         {
@@ -23,9 +23,9 @@ void stateSynthWaldorfBlofeld()
         uint8_t value = (uint8_t)(itemNumber & 127);
         
         uint8_t sysex[10] = { 0xF0, 0x3E, 0x13, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0xF7 };
-		sysex[6] = indexHi;
-		sysex[7] = indexLo;
-		sysex[8] = value;
+        sysex[6] = indexHi;
+        sysex[7] = indexLo;
+        sysex[8] = value;
 
         sendDelayedSysex(sysex, 10, value, WALDORF_BLOFELD_COUNTDOWN);
         }
