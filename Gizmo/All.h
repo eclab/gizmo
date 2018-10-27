@@ -128,6 +128,15 @@
 #define INCLUDE_THRU
 #define INCLUDE_SYNTH
 #define INCLUDE_MEASURE
+#define INCLUDE_OPTIONS_TRANSPOSE_AND_VOLUME
+#define INCLUDE_OPTIONS_MIDI_CLOCK_DIVIDE
+#define INCLUDE_OPTIONS_MENU_DELAY
+#define INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU
+#define INCLUDE_CLOCK_CONTINUE_IN_OPTIONS
+#define INCLUDE_PROVIDE_RAW_CC
+#define INCLUDE_CC_CONTROL
+#define INCLUDE_CLOCK_IN_OPTIONS
+#define INCLUDE_BUFFERED_CURSOR_X_POS
 
 //// NOTE: To include the Sysex dump facility, you not only uncomment the INCLUDE_SYSEX line below, but
 //// you ALSO must go into the "midi_Settings.h" file in the Forty Seven Effects MIDI library and change the line 
@@ -137,30 +146,52 @@
 
 //#define INCLUDE_SYSEX
 
-#define USE_ALL_NOTES_OFF
 
-#define INCLUDE_OPTIONS_TRANSPOSE_AND_VOLUME
-#define INCLUDE_OPTIONS_MIDI_CLOCK_DIVIDE		// interestingly, cutting this out *increases* memory usage
-#define INCLUDE_OPTIONS_MENU_DELAY
-#define INCLUDE_IMMEDIATE_RETURN
-
-#define INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU
-#define INCLUDE_CLOCK_CONTINUE_IN_OPTIONS
-#define INCLUDE_PROVIDE_RAW_CC
-#define INCLUDE_CC_CONTROL
-#define INCLUDE_CLOCK_IN_OPTIONS
-#define INCLUDE_BUFFERED_CURSOR_X_POS
 #endif
 
 
 
 
 
+
 #if defined(__UNO__)
+
+// This is a useful set
 #define INCLUDE_ARPEGGIATOR
 #define INCLUDE_STEP_SEQUENCER
 #define INCLUDE_RECORDER
-#define INCLUDE_GAUGE
+#define INCLUDE_CONTROLLER
+
+
+// You can include these but one or more other items will have to be jettisoned as a result.
+// IMPORTANT NOTE: If you include another application or a different one will also have to modify 
+
+// --- Additional applications
+// #define INCLUDE_GAUGE
+// #define INCLUDE_SPLIT
+// #define INCLUDE_THRU
+// #define INCLUDE_SYNTH
+// #define INCLUDE_MEASURE
+
+// -- Extended versions of applications
+// #define INCLUDE_EXTENDED_ARPEGGIATOR
+// #define INCLUDE_EXTENDED_STEP_SEQUENCER
+// #define INCLUDE_EXTENDED_RECORDER
+// #define INCLUDE_EXTENDED_GAUGE
+// #define INCLUDE_EXTENDED_CONTROLLER
+
+// -- Additional Options features
+// #define INCLUDE_OPTIONS_TRANSPOSE_AND_VOLUME
+// #define INCLUDE_OPTIONS_MIDI_CLOCK_DIVIDE
+// #define INCLUDE_OPTIONS_MENU_DELAY
+
+// -- Additional Global features
+// #define INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU
+// #define INCLUDE_CLOCK_CONTINUE_IN_OPTIONS
+// #define INCLUDE_PROVIDE_RAW_CC
+// #define INCLUDE_CC_CONTROL
+// #define INCLUDE_CLOCK_IN_OPTIONS
+// #define INCLUDE_BUFFERED_CURSOR_X_POS
 #endif
 
 
@@ -187,6 +218,7 @@
 
 #ifdef INCLUDE_EXTENDED_RECORDER
 #define INCLUDE_RECORDER
+#define INCLUDE_IMMEDIATE_RETURN
 #endif
 
 #ifdef INCLUDE_EXTENDED_CONTROLLER

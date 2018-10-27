@@ -111,7 +111,7 @@ void playArpeggiatorNote(uint16_t note)
     updateNoteOffTime();     
     }
     
-
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
 void loadNextUserArpeggio()
 	{
@@ -134,8 +134,7 @@ void loadNextUserArpeggio()
 	            }
             }
 	}
- #endif
-
+#endif
 
 
 // Continue to play the arpeggio

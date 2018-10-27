@@ -614,8 +614,8 @@ void go()
             	}
 #endif
 #if defined(__UNO__)
-            const char* menuItems[6] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), options_p };
-            if (doMenuDisplay(menuItems, 6, FIRST_APPLICATION, STATE_ROOT, 1) == MENU_SELECTED)
+            const char* menuItems[5] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), /* PSTR("GAUGE"), */ PSTR("CONTROLLER"), options_p };
+            if (doMenuDisplay(menuItems, 5, FIRST_APPLICATION, STATE_ROOT, 1) == MENU_SELECTED)
             	{
 #if defined(TOPLEVEL_BYPASS)
 				if (bypass == BYPASS_FIRST_ON)
@@ -1174,7 +1174,11 @@ void go()
                                           ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
                                           PSTR("BRIGHTNESS"),
                                           PSTR("GIZMO V6 (C) 2018 SEAN LUKE") };
+#ifdef INCLUDE_IMMEDIATE_RETURN
+            doMenuDisplay(menuItems, 11, STATE_OPTIONS_TEMPO, immediateReturnState, 1);
+#else
             doMenuDisplay(menuItems, 11, STATE_OPTIONS_TEMPO, STATE_OPTIONS, 1);
+#endif
 #endif
 
             playApplication(); 
@@ -2029,13 +2033,11 @@ void go()
         break;
         case STATE_OPTIONS_NOTE_SPEED:
             {
-#ifdef INCLUDE_IMMEDIATE_RETURN
      if (entry)
         {
+#ifdef INCLUDE_IMMEDIATE_RETURN
         setAutoReturnTime();
-#else
-	{
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
                 // can't avoid a divide :-(
                 potDivisor = 1024 / (NOTE_SPEED_DOUBLE_WHOLE - NOTE_SPEED_EIGHTH_TRIPLET + 1);
                 backupOptions = options; 
@@ -2067,7 +2069,7 @@ void go()
 
 #ifdef INCLUDE_IMMEDIATE_RETURN
         removeAutoReturnTime();
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
                             
                 // at any rate...
 #ifdef INCLUDE_IMMEDIATE_RETURN

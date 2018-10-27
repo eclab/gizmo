@@ -543,9 +543,9 @@ void drawGlyphForGlyphDisplay(uint8_t* mat, const uint8_t glyph)
 
 uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t otherGlyph, int16_t defaultValue)
     {
-#ifdef INCLUDE_IMMEDIATE_RETURN
      if (entry)
         {
+#ifdef INCLUDE_IMMEDIATE_RETURN
         setAutoReturnTime();
 #else
 {
@@ -1219,7 +1219,11 @@ uint8_t stateEnterChord(uint8_t* chord, uint8_t maxChordNotes, uint8_t backState
 
 void playApplication()
     {
-    switch(application)
+#ifdef INCLUDE_IMMEDIATE_RETURN
+    switch(immediateReturnState)
+#else
+	switch(application)
+#endif
         {
 #ifdef INCLUDE_ARPEGGIATOR
         case STATE_ARPEGGIATOR_MENU:
