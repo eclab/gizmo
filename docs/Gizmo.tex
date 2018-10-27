@@ -30,29 +30,30 @@ Gizmo is the unholy union of an Arduino Uno or Arduino Mega 2560,\footnote{http:
 
 This is a software project: the hardware is just three off-the-shelf boards and four wires.  There's no enclosure, no custom board.  If you'd like to make an enclosure, I'd love to see it.
 
-Gizmo comes built-in with the following applications and other capabilities:
+Gizmo comes built-in with a number of applications and other capabilities.  All of these capabilities are modular, because the Arduino Uno cannot many of them at one time (the Mega can fit all of them easily: you really ought to use a Mega).  Applications and capabilities which are on the Mega by but not on the Uno by default will be labeled with {\bf Mega}: you can run these on the Uno but something else will have to be jettisoned from the standard collection (see the line {\tt \#if defined(\_\_UNO\_\_)} in the file \texttt{All.h}).
+
 
 \paragraph{Applications}
 \begin{itemize}
-\item {\bf Arpeggiator.}\quad Gizmo's arpeggiator has built-in up, down, up/down, repeated chord, note-assign, and random arpeggios spanning one to three octaves.  Additionally, you can define up to ten additional arpeggiator patterns, each up to 32 notes long, involving up to 14 different chord notes, plus rests and (on the Mega) ties.  Arpeggios can be {\it latched} (or not), meaning that they may continue to play even after you have released the keys.  You can specify  the note value relative to the tempo (ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), whether or not the velocity is fixed, the output MIDI channel, and the degree of swing (syncopation).  Gizmo will show the arpeggio on-screen.
+\item {\bf Arpeggiator.}\quad Gizmo's arpeggiator has built-in up, down, up/down, repeated chord, note-assign, and random arpeggios spanning one to three octaves.  Additionally, you can define up to ten additional arpeggiator patterns, each up to 32 notes long, involving up to 14 different chord notes, plus rests and (Mega) ties.  Arpeggios can be {\it latched} (or not), meaning that they may continue to play even after you have released the keys.  You can specify  the note value relative to the tempo (ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), whether or not the velocity is fixed, the output MIDI channel, and the degree of swing (syncopation).  Gizmo will show the arpeggio on-screen.
 
-\item {\bf Step Sequencer.}\quad Gizmo's step sequencer can be organized as 12 16-note tracks, 8 24-note tracks, or 6 32-note tracks.  Each note in a track can have its own unique pitch and velocity, or be a rest, or continue (lengthen, tie) the previous note.  You can also fix the velocity for an entire track, mute tracks, fade their volume, specify their independent output MIDI channels, specify the note value relative to the tempo (again ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), and the degree of swing (syncopation).   In addition to note data, you can sequence CC, RPN/NRPN, Pitch Bend, Aftertouch, or PC data.  The step sequencer lets you edit in two modes: either by triggering independent steps like a classic drum sequencer, or by playing a sequence of notes.  The Arduino Uno can store up to two sequences in its slots (shared with the Recorder, discussed next).  Gizmo will show and edit sequences on-screen.  {\bf Extended Version on the Mega:} The extended version also permits 4 48-note tracks or 3 64-note tracks.  You can specify a mute-pattern for each track along four bars of the sequencer.  There's also a ``performance mode'' which allows sequence chaining, playing along, and transposition, among other things.  You can stipulate whether starting/stopping the sequencer will also start/stop the MIDI clock.  You can also have the Sequencer avoid playing notes out as they are entered.  The Mega can store up to nine sequences.
+\item {\bf Step Sequencer.}\quad Gizmo's step sequencer can be organized as 12 16-note tracks, 8 24-note tracks, or 6 32-note tracks.  Each note in a track can have its own unique pitch and velocity, or be a rest, or continue (lengthen, tie) the previous note.  You can also fix the velocity for an entire track, mute tracks, fade their volume, specify their independent output MIDI channels, specify the note value relative to the tempo (again ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), and the degree of swing (syncopation).   In addition to note data, you can sequence CC, RPN/NRPN, Pitch Bend, Aftertouch, or PC data.  The step sequencer lets you edit in two modes: either by triggering independent steps like a classic drum sequencer, or by playing a sequence of notes.  The Arduino Uno can store up to two sequences in its slots (shared with the Recorder, discussed next).  Gizmo will show and edit sequences on-screen.  {\bf Mega:} The extended version also permits 4 48-note tracks or 3 64-note tracks.  You can specify a mute-pattern for each track along four bars of the sequencer.  There's also a ``performance mode'' which allows sequence chaining, playing along, and transposition, among other things.  You can stipulate whether starting/stopping the sequencer will also start/stop the MIDI clock.  You can also have the Sequencer avoid playing notes out as they are entered.  The Mega can store up to nine sequences.
 
-\item {\bf Recorder.}\quad The Arduino doesn't have a lot of memory, but we provide a note recorder which records and plays back up to 64 notes (pitch and velocity) played over 21 measures. The recorder has 16-voice polyphony.   It's enough to record a very short ditty.  You can also set the recorder to loop the recording while playing, and to provide a click track.  The Arduino Uno can store up to two recordings in its slots (shared with the Step Sequencer).   {\bf Extended Version on the Mega:}  The extended recorder gives you the option of auto-repeating a recording or stopping when it is finished.  The Mega can store up to nine recordings.
+\item {\bf Recorder.}\quad The Arduino doesn't have a lot of memory, but we provide a note recorder which records and plays back up to 64 notes (pitch and velocity) played over 21 measures. The recorder has 16-voice polyphony.   It's enough to record a very short ditty.  You can also set the recorder to loop the recording while playing, and to provide a click track.  The Arduino Uno can store up to two recordings in its slots (shared with the Step Sequencer).   {\bf Mega:}  The extended recorder gives you the option of auto-repeating a recording or stopping when it is finished.  The Mega can store up to nine recordings.
 
-\item {\bf MIDI Gauge.}\quad The gauge will display all incoming MIDI information on one or all channels.  Note on, note off, and polyphonic aftertouch are shown with pitch and velocity (or pressure).  Channel aftertouch is shown with the appropriate pitch.  Program changes indicate the number.  Pitch bends indicate the value in full 14-bit.  Control Change, Channel Mode, NRPN, and RPN messages display the number, value, and whether the value is being set, incremented, or decremented.  Sysex, song position, song select, tune request, start, continue, stop, and system reset are simply noted.  Rapid-fire MIDI signals such as MIDI clock, active sensing, and time code just turn on individual LEDs. {\bf Extended Version on the Mega:}  The extended version lets you read raw Control Change messages (that is, not parsed into NRPN etc.), and provides more useful information on Channel Mode messages.  The Mega can store up to nine recordings.
+\item {\bf MIDI Gauge.}\quad The gauge will display all incoming MIDI information on one or all channels.  Note on, note off, and polyphonic aftertouch are shown with pitch and velocity (or pressure).  Channel aftertouch is shown with the appropriate pitch.  Program changes indicate the number.  Pitch bends indicate the value in full 14-bit.  Control Change, Channel Mode, NRPN, and RPN messages display the number, value, and whether the value is being set, incremented, or decremented.  Sysex, song position, song select, tune request, start, continue, stop, and system reset are simply noted.  Rapid-fire MIDI signals such as MIDI clock, active sensing, and time code just turn on individual LEDs. {\bf Mega:}  The extended version lets you read raw Control Change messages (that is, not parsed into NRPN etc.), and provides more useful information on Channel Mode messages.  The Mega can store up to nine recordings.
 
 \item {\bf MIDI Control Surface.}\quad Gizmo has two potentiometers and two buttons.  Each can be configured to send a unique Program Change, Control Change, NRPN, or RPN commands.  The potentiometers can send up to 10 bits of data (MSB + partial LSB).   {\bf Extended Version on the Mega:}  The extended version also can send pitch bend, and aftertouch.%, and control voltage values via either of two DACs.   
 The extended version also contains an {\bf 8-stage loopable envelope} reminiscent of the wave envelope in the Microwave synthesizers, and also a {\bf random LFO}, both of which can manipulate any of these commands as well.
 
-\item {\bf \textit{Mega Only:}\quad Keyboard Splitter.}\quad You can split incoming MIDI notes by pitch and route them to different MIDI out channels.  You can also fade notes between two channels depending on note velocity.
+\item {\bf \textit{Mega:}\quad Keyboard Splitter.}\quad You can split incoming MIDI notes by pitch and route them to different MIDI out channels.  You can also fade notes between two channels depending on note velocity.
 
-\item {\bf \textit{Mega Only}\quad MIDI Thru}\quad Gizmo can do magic with incoming notes.  It can {\it merge} and {\it block} channels%, and can map CC to NRPN
+\item {\bf \textit{Mega}\quad MIDI Thru}\quad Gizmo can do magic with incoming notes.  It can {\it merge} and {\it block} channels%, and can map CC to NRPN
 .  It can also {\it distribute} notes to different MIDI channels as you play: this lets you play multiple mono synths as if they were polyphonic, for example.  Gizmo can also {\it layer} notes: when you play a note, Gizmo will send some \(N>1\) note-on messages instead of one.  This lets you use a polyphonic synthesizer to play a note with more than one voice, making it fatter, but not going all the way to unison.  Gizmo can also perform {\it chord memory}, playing a transposed chord of your choosing starting at a note you are currently playing.  Last, Gizmo can {\it debounce} notes (typically from drum pads), refusing to play a second identical note if it happens to soon after the first one.  You can do all of these simultaneously.
 
-\item {\bf \textit{Mega Only:}\quad Measure Counter.}\quad You can count elapsed beats, measures (bars), and phrases; and alternatively count eighths of a second, seconds, and minutes.  The counter also responds to external MIDI clock directives.
+\item {\bf \textit{Mega:}\quad Measure Counter.}\quad You can count elapsed beats, measures (bars), and phrases; and alternatively count eighths of a second, seconds, and minutes.  The counter also responds to external MIDI clock directives.
 
-\item {\bf \textit{Mega Only:}\quad Synth MIDI Helpers.}\quad Utilities designed to improve the MIDI of specific synthesizers.  At present Gizmo comes with helpers for the Waldorf Blofeld, Korg Microsampler, Oberheim Matrix 1000 (firmware 1.2) and Yamaha TX81Z.
+\item {\bf \textit{Mega:}\quad Synth MIDI Helpers.}\quad Utilities designed to improve the MIDI of specific synthesizers.  At present Gizmo comes with helpers for the Waldorf Blofeld, Korg Microsampler, Oberheim Matrix 1000 (firmware 1.2) and Yamaha TX81Z.
 
 \end{itemize}
 
@@ -73,13 +74,13 @@ Gizmo applications can also be set with a {\it note value} (or {\it note speed})
 
 \item {\bf Screen Brightness.}\quad You can change the screen brightness.  
 
-%\item {\bf  \textit{Mega Only} Control Voltage / Gate.}\quad You can configure Gizmo to output control voltage (CV) values from 0--5V, as well as trigger a 5V gate, and output 0--5V in response to another signal, either velocity or aftertouch, all in response to notes being played. 
+%\item {\bf  \textit{Mega} Control Voltage / Gate.}\quad You can configure Gizmo to output control voltage (CV) values from 0--5V, as well as trigger a 5V gate, and output 0--5V in response to another signal, either velocity or aftertouch, all in response to notes being played. 
 
-\item {\bf \textit{Mega Only}\quad Transposition and Volume Control.}\quad You can transpose all of Gizmo's MIDI output pitch by anywhere from \(-60...60\) steps.  Additionally you can multiply the MIDI output velocity (volume) by multiples of two ranging from \(1/8\) to \(8\).
+\item {\bf \textit{Mega}\quad Transposition and Volume Control.}\quad You can transpose all of Gizmo's MIDI output pitch by anywhere from \(-60...60\) steps.  Additionally you can multiply the MIDI output velocity (volume) by multiples of two ranging from \(1/8\) to \(8\).
 
-\item {\bf \textit{Mega Only}\quad Menu Delay.}\quad Many of Gizmo's menus display the first few letters of a menu item, then pause for some interval of time before they start scrolling the full item.  You can change this interval.
+\item {\bf \textit{Mega}\quad Menu Delay.}\quad Many of Gizmo's menus display the first few letters of a menu item, then pause for some interval of time before they start scrolling the full item.  You can change this interval.
 
-\item {\bf \textit{Mega Only}\quad Sysex Dumps.}\quad Arpeggios, Step Sequences, and Recordings can be uploaded and downloaded to your computer.
+\item {\bf \textit{Mega}\quad Sysex Dumps.}\quad Arpeggios, Step Sequences, and Recordings can be uploaded and downloaded to your computer.
 
 \end{itemize} 
 
@@ -160,7 +161,7 @@ This procedure initializes the memory, options, and files in the device.  Now yo
 
 \subsection{Customizing Your Arduino}
 
-Gizmo is fairly modular: you can choose which applications you want to have on your device, as well as various features.  This allows us to (for example) have more applications and features on the Mega than on the Uno.  If you want to port to a device with a somewhat tighter memory footprint (such as the Arduino Mini), or want to make room on the Uno for your own application, you just need to change which options are installed.  See the file \texttt{All.h}
+Gizmo is fairly modular: you can choose which applications you want to have on your device, as well as various features.  This allows us to (for example) have more applications and features on the Mega than on the Uno.  If you want to port to a device with a somewhat tighter memory footprint (such as the Arduino Mini), or want to make room on the Uno for your own application, you just need to change which options are installed.  See the line {\tt \#if defined(\_\_UNO\_\_)} in the file \texttt{All.h}).
 
 \subsection{Buttons, Shield Quality, and Debouncing}
 \label{debouncing}
@@ -350,14 +351,14 @@ When you start the arpeggiator, you are presented with a menu of six preset arpe
 When in the play mode, the arpeggiator will play an arpeggio for a chord as long as you hold down the keys in the chord.  Alternatively if you toggle the {\bf latch}, then the playing will continue after you have released the keys, and will only shift to a new chord when you release all notes and then hold down an entirely new chord.  Latch mode is toggled by pressing the Middle button.  When Latch mode is engaged, an LED will light as shown in Figure~\ref{arpeggiator}.  Latch mode is stored permanently in memory, so next time you start up the Arpeggiator, your option will be remembered.  Note that you can stop the current notes from playing by toggling Latch mode again.
 
 
-(Mega Only) The arpeggiator also has a {\bf performance mode} which you toggle by Long-Pressing the Middle and Select buttons simultaneously.  In this mode, if you press notes on the keyboard, they are not sent to the arpeggiator, but instead are used for one of two things:
+(Mega) The arpeggiator also has a {\bf performance mode} which you toggle by Long-Pressing the Middle and Select buttons simultaneously.  In this mode, if you press notes on the keyboard, they are not sent to the arpeggiator, but instead are used for one of two things:
 	\begin{itemize}
 	\item {\bf Transposing the arpeggio.}  Here, as soon as you enter performance mode, you will be asked to enter the key of the arpeggio chord (as note).  Thereafter, if you press other keys, the arpeggio will be transposed from that key to the other keys (including shifting it by multiple octaves if your keys are far away).  This really only makes sense if you've latched an arpeggio first.  The Performance Mode LED will blink.
 	\item {\bf Playing along.}  As you play notes, they will be routed out a MIDI channel of your choosing.  This is useful in three contexts.  First, you can use it as a lightweight bypass mode of sorts.  Second, you can use it to suddenly start playing a different synthesizer than the one on which you're doing arpeggios.   Third, and most importantly, you can use this in combination with latch mode: enter latch mode, get an arpeggio going, and then switch to play-along mode to use the keyboard for other purposes (playing along with the arpeggio for example).  The Performance Mode LED will be solid.
 	\end{itemize}
 You can chose which of these items occurs when you enter performance mode choosing the menu option {\bf Performance}.
 
-(Mega Only) In some situations, you may need to manually {\bf start or stop} the clock during arpeggiation.  You can do this by Long-Pressing the Middle button.
+(Mega) In some situations, you may need to manually {\bf start or stop} the clock during arpeggiation.  You can do this by Long-Pressing the Middle button.
 
 
 \begin{wrapfigure}{r}{2.7in}
@@ -443,7 +444,7 @@ What happens if your arpeggio is designed for five notes but you hold down only 
 
 Also, because they are fixed in size, user-created arpeggios do not respond to the octaves option.
 
-(Mega Only) If you're playing a user-created arpeggio, and you press the Select button, Gizmo will schedule an {\bf advance to the next non-empty user-created arpeggio} after the current arpeggio has finished.\footnote{Which brings up the question: how do you delete a user-created arpeggio?  Maybe you have some junk you don't want to advance to.  The answer is: go to CREATE an arpeggio, then while it's still empty, save it to the slot you want to delete.}
+(Mega) If you're playing a user-created arpeggio, and you press the Select button, Gizmo will schedule an {\bf advance to the next non-empty user-created arpeggio} after the current arpeggio has finished.\footnote{Which brings up the question: how do you delete a user-created arpeggio?  Maybe you have some junk you don't want to advance to.  The answer is: go to CREATE an arpeggio, then while it's still empty, save it to the slot you want to delete.}
 
 \paragraph{More Arpeggiator Options}
 
@@ -596,7 +597,7 @@ You can tell you're in play position mode because the play position cursor has c
 
 You can get out of play position mode just by turning the right knob so that the edit cursor is once again on-screen.
 
-\paragraph{Performance Mode {\rm (Mega Only)}} If you simultaneously Long-Press the Select and Middle buttons when in either Edit or Play Position Mode, you'll enter Performance Mode.  This mode is meant to support performing with completed sequences.  Here, if you play notes or CC values different things might happen, depending on how you've configured things: either the notes will be entered on the track (which will be cleared first if a bar just transpired or the user just switched tracks), or the notes will be routed to some channel in MIDI Out, or the notes will be used to {\it transpose} the sequence as it's playing.  A track is transposed only if you have turned its ``Transpose'' option on (see Menu Options below).
+\paragraph{Performance Mode {\rm (Mega)}} If you simultaneously Long-Press the Select and Middle buttons when in either Edit or Play Position Mode, you'll enter Performance Mode.  This mode is meant to support performing with completed sequences.  Here, if you play notes or CC values different things might happen, depending on how you've configured things: either the notes will be entered on the track (which will be cleared first if a bar just transpired or the user just switched tracks), or the notes will be routed to some channel in MIDI Out, or the notes will be used to {\it transpose} the sequence as it's playing.  A track is transposed only if you have turned its ``Transpose'' option on (see Menu Options below).
 
 In Performance Mode, a number of controls change their function  Pressing the Back Button doesn't exit the Step Sequencer: but rather, it exits Performance Mode back into whatever previous Mode you had used.  Pressing the Middle Button toggles muting of  the track.  Long-Pressing the Middle Button toggles Soloing: only your current track is played.  You can tell you're in Solo mode because every track {\it except} for the soloed one appears to be muted (LEDs at each end of the tracks are blinking).  Pressing the Select button starts and stops playing as usual, and long-pressing the Select button brings up the menu.  The Left Knob changes tracks as usual, but the Right Knob changes the {\bf tempo}.
 
@@ -635,9 +636,9 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 \item {\bf Out MIDI (Track)}\quad This specifies the MIDI Out Channel for notes in the track,    You can choose a value 1...16, or choose \texttt{DFLT}, which tells the Step Sequencer to use the default MIDI Out Channel specified in the Options menu (see Section \ref{options}).
 \item {\bf Velocity (Track)}\quad This lets you specify a key velocity\footnote{By velocity we mean in the MIDI sense: how fast the key is struck; this basically translates to loudness.} that {\it all} notes in the track will use (as a value 1...127).  If you would instead prefer that each note in the track use its own independent key velocity as you had entered them, you can choose {\it none}.
 \item {\bf Fader (Track)}\quad This lets you specify a volume modifier which is multiplied against the velocities of the notes in the track.  Possible values are 0...31, where 0 completely hushes the notes, 16 lets them play at their specified velocities, and 31 is roughly twice their velocity.  8 is one half-velocity, 4 is one quarter velocity, and so on.  In general, values larger than or smaller than 16 will make the notes louder or quieter respectively.
-\item {\bf Type (Track)} (Mega only) \quad Lets you specify the type of data stored in this track.  See discussion of {\bf Edit Mode} above.
-\item {\bf Pattern (Track)} (Mega only)\quad Lets you specify the four-bar pattern for this track.  An {\tt O} indicates that the track will be played, and a {\tt -} indicates that it will be hushed.  Your options are: \texttt{OOOO, O-O-, -O-O, OOO-, ---O, O--O, -OO-, OO--, --OO, OO-O, --O-, R1/8, R1/4, R1/2, R3/4,} or\ \ {\tt EXCL}.  The four which start with {\tt R} hush at random: the fraction indicates the probability that the track will be played.  {\tt EXCL} is {\it exclusive random:} if multiple tracks are designated as {\tt EXCL} then at any time exactly one of them will be played (and the others will be hushed).  If only one track is {\tt EXCL}, it's always played.  Note that many of the non-random patterns are in pairs so you can swap the track being played.
-\item {\bf Edit} (Mega only)\quad A submenu for some simple cut/copy/paste-like operations:
+\item {\bf Type (Track)} (Mega) \quad Lets you specify the type of data stored in this track.  See discussion of {\bf Edit Mode} above.
+\item {\bf Pattern (Track)} (Mega)\quad Lets you specify the four-bar pattern for this track.  An {\tt O} indicates that the track will be played, and a {\tt -} indicates that it will be hushed.  Your options are: \texttt{OOOO, O-O-, -O-O, OOO-, ---O, O--O, -OO-, OO--, --OO, OO-O, --O-, R1/8, R1/4, R1/2, R3/4,} or\ \ {\tt EXCL}.  The four which start with {\tt R} hush at random: the fraction indicates the probability that the track will be played.  {\tt EXCL} is {\it exclusive random:} if multiple tracks are designated as {\tt EXCL} then at any time exactly one of them will be played (and the others will be hushed).  If only one track is {\tt EXCL}, it's always played.  Note that many of the non-random patterns are in pairs so you can swap the track being played.
+\item {\bf Edit} (Mega)\quad A submenu for some simple cut/copy/paste-like operations:
 \begin{itemize}
 \item {\bf Mark}\quad Records the current track and edit position as the {\it mark position}.
 \item {\bf Copy}\quad Copies the data at the mark position to the current track starting at the current edit position.  The copied data is wrapped around when it goes beyond the end of the current track.
@@ -645,11 +646,11 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 \item {\bf Move}\quad Works like Copy, except that the mark position track is then erased.
 \item {\bf Duplicate}\quad Duplicate absolutely all of the data in the mark track to the current track (including note data, volume, MIDI out, etc.).  The specific mark (note) position is ignored.
 \end{itemize}
-\item {\bf Transpose (Track)} (or {\bf No Transpose (Track)}) (Mega only) \quad This toggles whether this track responds to the user transposing the sequencer during performance mode.
-\item {\bf Clock Control} (or {\bf No Clock Control}) (Mega only) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note that regardless of the setting of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.
-\item {\bf No Echo} (or {\bf Echo}) (Mega only) \quad This toggles {\it no-echo mode}.  Normally when you enter a note, it's automatically played so you get some feedback.  But in some circumstances this isn't desirable: for example, if you're entering {\it and} playing notes from the same keyboard, then this default behavior will cause two notes to be played whenever you enter a note.  {\bf No Echo} will turn this off.\footnote{The Mega also has another closely related feature: if you're in play position mode and you have entered a note slightly before its time, Gizmo won't play it (the first time) when its time comes up, because you just played it yourself.  This isn't the case on the Uno: you'll hear a double-played note the first time.  There's not enough space on the Uno to add this feature, sorry.}
+\item {\bf Transpose (Track)} (or {\bf No Transpose (Track)}) (Mega) \quad This toggles whether this track responds to the user transposing the sequencer during performance mode.
+\item {\bf Clock Control} (or {\bf No Clock Control}) (Mega) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note that regardless of the setting of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.
+\item {\bf No Echo} (or {\bf Echo}) (Mega) \quad This toggles {\it no-echo mode}.  Normally when you enter a note, it's automatically played so you get some feedback.  But in some circumstances this isn't desirable: for example, if you're entering {\it and} playing notes from the same keyboard, then this default behavior will cause two notes to be played whenever you enter a note.  {\bf No Echo} will turn this off.\footnote{The Mega also has another closely related feature: if you're in play position mode and you have entered a note slightly before its time, Gizmo won't play it (the first time) when its time comes up, because you just played it yourself.  This isn't the case on the Uno: you'll hear a double-played note the first time.  There's not enough space on the Uno to add this feature, sorry.}
 
-\item {\bf Performance} (Mega only) \quad  This brings up the Performance Mode sub-menu.  You can select these menu items from any mode (not just Performance Mode), but the impact of your changes will only be felt in Performance Mode:
+\item {\bf Performance} (Mega) \quad  This brings up the Performance Mode sub-menu.  You can select these menu items from any mode (not just Performance Mode), but the impact of your changes will only be felt in Performance Mode:
 
 \begin{itemize}
 \item {\bf Keyboard}\quad  This menu option lets you specify what happens when you press keys or send other MIDI information during Performance Mode.  Your options are:
@@ -974,7 +975,7 @@ you would like to manipulate with the middle button.  If OFF, then pressing the 
 	
 	This submenu controls the Random LFO (see Section \ref{randomlfo}).
 
-	\item{\textit{[Mega Only]}\qquad }{\bf Analog Port 2} and {\bf Analog Port 3}\quad (\texttt{A2} and \texttt{A3})
+	\item{\textit{Mega]}\qquad }{\bf Analog Port 2} and {\bf Analog Port 3}\quad (\texttt{A2} and \texttt{A3})
 	
 	These submenus work exactly like the {\bf Left Knob} and {\bf Right Knob} menus, but they are for additional potentiometers or other devices which you can attach to ports A3 and A3, respectively, on your Arduino.  For example, I use them to get information from a joystick.\footnote{{\it Why not A4 and A5 too?\quad} Because A4 and A5 are used for I2C, which the screen uses.  You could of course add in A6...A12 too.}
 	
@@ -985,7 +986,7 @@ you would like to manipulate with the middle button.  If OFF, then pressing the 
 \subsection{The 8-Stage Wave Envelope}
 \label{waveenvelope}
 
-\textit{[Mega Only]}\qquad The Controller also sports an {\bf 8-stage envelope} to control any single control type (CC, NRPN, RPN, PC, Pitch Bend, Channel Aftertouch)%, Voltage)
+\textit{[Mega]}\qquad The Controller also sports an {\bf 8-stage envelope} to control any single control type (CC, NRPN, RPN, PC, Pitch Bend, Channel Aftertouch)%, Voltage)
 .  This envelope is modeled after the 8-stage ``Wave Envelope'' found on Waldorf Microwave synthesizers, designed to make cool modulations through a wavetable.  For some reason the Waldorf Blofeld lacks this envelope, and I wrote this for Gizmo to give the Blofeld a rough approximation.  But you may find it useful in other contexts as well!  You can also use this envelope to easily do an LFO with a triangle wave, a sawtooth wave, or a pulse wave, among others.
 
 \begin{wrapfigure}{r}{1in}
@@ -1149,7 +1150,7 @@ Last: if you're wondering why you can't select 0 as a length, this is because yo
 \label{splitter}
 \end{wrapfigure}
 
-\textit{[Mega Only]}\qquad The Splitter allows lets you (1) split your keyboard into two zones, each controlling a different MIDI channel; or (2) split your keyboard into {\it three} zones, two controlling different MIDI channels and the third (middle) zone playing both MIDI channels simultaneously\footnote{This is commonly known as {\it layering.}}; or (3) fade or balance your entire keyboard such that if you play a note quietly, one channel will predominate, but if you play loudly, the other channel will predominate.
+\textit{[Mega]}\qquad The Splitter allows lets you (1) split your keyboard into two zones, each controlling a different MIDI channel; or (2) split your keyboard into {\it three} zones, two controlling different MIDI channels and the third (middle) zone playing both MIDI channels simultaneously\footnote{This is commonly known as {\it layering.}}; or (3) fade or balance your entire keyboard such that if you play a note quietly, one channel will predominate, but if you play loudly, the other channel will predominate.
 
 The two MIDI channels in question are the Default MIDI Out Channel (defined in the Options, see Section \ref{options}), and an Alternative MIDI Out Channel which you specify in the Splitter.  If you're splitting your keyboard, you'll also specify up to two notes, {\bf Split Note A} and {\bf Split Note B}  (Split Note B is optional), and whether Control Change, Aftertouch, and the like go to the left split region or the right split region.
 
@@ -1220,7 +1221,7 @@ Long-pressing the Middle Button cycles through three options:
 \section{The Thru Facility}
 \label{thru}
 
-\textit{[Mega Only]}\qquad The {\bf Thru Facility} passes MIDI through the box, but if MIDI data comes in via certain channels, it applies various optional transformations to it before it sends it out:
+\textit{[Mega]}\qquad The {\bf Thru Facility} passes MIDI through the box, but if MIDI data comes in via certain channels, it applies various optional transformations to it before it sends it out:
 
 \begin{itemize}
 \item First, you can {\it merge} two incoming channels: the Default MIDI In channel and a {\bf Merge Channel}.  Additionally you can also merge {\it all} channels by simply setting the Default MIDI In channel to OMNI.  Additionally, channels other than Default MIDI and Merge are passed through, unless you {\it block} them.
@@ -1298,7 +1299,7 @@ I might add more unusual transformers later.  Anyway, here are your options:
 \section {Synthesizer MIDI Helpers}
 \label{synthesizer}
 
-\textit{[Mega Only]} Synthesizers often have weak spots in their MIDI implementations.  This application contains various submenus, one per synthesizer, designed to provide an assist for that particular model.\footnote{Why {\it these particular models?}  Because I own them. If you'd like me to write a helper for another machine here, send me a synth!}
+\textit{[Mega]} Synthesizers often have weak spots in their MIDI implementations.  This application contains various submenus, one per synthesizer, designed to provide an assist for that particular model.\footnote{Why {\it these particular models?}  Because I own them. If you'd like me to write a helper for another machine here, send me a synth!}
 
 \paragraph{A Note on Performance} Often these MIDI helpers are converting CC to NRPN, or converting NRPN to Sysex, and in the process they're emitting something bigger than they're getting (for example, an NRPN message could be between 3 and 5 times larger than a CC message).  This is a problem.  For example, if it receives CC at a very fast rate, Gizmo won't be able to send out corresponding NRPN fast enough and eventually Gizmo's serial input buffer will overflow.  To counter this, Gizmo sends out messages at a fixed rate (typically about 100 per second), and drops some on purpose if they arrive faster than that.   Gizmo will always send the most recent packet.  This is determined by some constant \texttt{\textit{SYNTH\_NAME}\_COUNTDOWN} in the appropriate file \texttt{synth/\textit{SynthName}.h} (lower values are faster rates).
 
@@ -1487,13 +1488,13 @@ Gizmo's sysex dump format is simple.  Bytes 0--6 are as follows:\quad\texttt{0xF
 
 		Swing is only applied if the Note Speed is set to thirty-second, sixteenth, eighth, quarter, or half-notes.
 
-	\item{\bf \textit{Mega Only:}\quad Transpose}\\
+	\item{\bf \textit{Mega:}\quad Transpose}\\
 		Here you can state that any notes generated by Gizmo be {\bf transposed} up or down by as much as 60 notes. If a note is transposed to the point that it exceeds the MIDI range, it is not played.  When appropriate, some applications (such as the MIDI Gauge) ignore this option. 
 		\begin{description}
 		\item{\bf \textit{Choose}}: \(-60\) ... 60 
 		\end{description}
 
-	\item{\bf \textit{Mega Only:}\quad Volume}\\
+	\item{\bf \textit{Mega:}\quad Volume}\\
 		Like Transpose, here you can state that any notes generated by Gizmo have their volume changed by multiplying their MIDI note velocity by some value.  If a resulting MIDI note velocity exceeds the maximum (127), it is bounded to 127.
 			
 			
@@ -1594,7 +1595,7 @@ Why is this useful?  Here's an example scenario.  You have a sequencer on Device
 		\end{description}
 		
 		
-	\item{\bf \textit{Mega Only:}\quad Menu Delay}\\
+	\item{\bf \textit{Mega:}\quad Menu Delay}\\
 		Gizmo often will display text (such as \texttt{SWING}) by filling the screen with the first few letters (in this case, \texttt{SWI}), then {\it delaying} for a certain interval, then scrolling through the whole word horizontally. You can specify how long that delay is.
 	
 		
@@ -1615,14 +1616,14 @@ Why is this useful?  Here's an example scenario.  You have a sequencer on Device
 			\end{tabbing}
 		\end{description}
 
-	\item{\bf \textit{Mega Only:}\quad Auto Return}\\
+	\item{\bf \textit{Mega:}\quad Auto Return}\\
 		In some applications, such as the Arpeggiator and Step Sequencer, you can immediately enter and change various parameters just by twisting a real or MIDI CC knob.  Normally you have to press Select or Back to exit.  But if you set Auto Return to some value (in seconds) other than None, you will automatically be exited after that number of seconds.
 
 			\begin{description}
 					\item{\bf \textit{Choose}}: 1 ... 16 (the number of seconds) or None\hspace{1.45in}\smash{\includegraphics[width=1in]{none.pdf}}
 			\end{description}
 
-%	\item{\bf  \textit{Mega Only:}\quad CV+Velocity \textit{or} CV+Aftertouch \textit{or} No CV}\\
+%	\item{\bf  \textit{Mega:}\quad CV+Velocity \textit{or} CV+Aftertouch \textit{or} No CV}\\
 %		Toggles whether Gizmo will send control voltage and gate information.  If {\bf CV+Velocity}, then control voltage will be sent out DAC A (I2C address 0x62), velocity will be sent out DAC B (I2C address 0x63), and digital pin 8 will be set HIGH (5V) when a note is played (or LOW (0V) when a note is released), thus acting as a Gate.\footnote{As mentioned in an earlier footnote, Gizmo assumes you're DACs of this kind: https:/\!/www.adafruit.com/product/935} If {\bf CV+Aftertouch}, then the same is done except that aftertouch will be sent out DAC B instead of velocity.  If {\bf No CV}, then nothing is sent.  Pitch Bend at present has no effect.	\footnote{Note that at present if you have set either knob in the Controller to control voltage, that DAC will be unavailable even outside the Controller.  I'll fix that soon.}
 		
 	\item{\bf The About Screen}\\
