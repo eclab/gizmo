@@ -12,12 +12,14 @@
 GLOBAL uint8_t _trackLength[5] = {16, 24, 32, 48, 64};
 // Used by GET_NUM_TRACKS to return the number of tracks in the current format
 GLOBAL uint8_t _numTracks[5] = {12, 8, 6, 4, 3};
-#else
+
+#else INCLUDE_EXTENDED_STEP_SEQUENCER
 // Used by GET_TRACK_LENGTH to return the length of tracks in the current format
 GLOBAL uint8_t _trackLength[3] = {16, 24, 32};
 // Used by GET_NUM_TRACKS to return the number of tracks in the current format
 GLOBAL uint8_t _numTracks[3] = {12, 8, 6};
-#endif
+
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
 
 
 
@@ -32,9 +34,9 @@ void stateStepSequencerMenuEditMark()
         local.stepSequencer.markPosition = 0;
 #ifdef INCLUDE_IMMEDIATE_RETURN
     goUpState(immediateReturnState);
-#else
+#else INCLUDE_IMMEDIATE_RETURN
     goUpState(STATE_STEP_SEQUENCER_MENU_EDIT);
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
     }
 
 void stateStepSequencerMenuEditDuplicate()
@@ -67,9 +69,9 @@ void stateStepSequencerMenuEditDuplicate()
         
 #ifdef INCLUDE_IMMEDIATE_RETURN
     goUpState(immediateReturnState);
-#else
+#else INCLUDE_IMMEDIATE_RETURN
     goUpState(STATE_STEP_SEQUENCER_MENU_EDIT);
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
     }
 
 
@@ -138,9 +140,9 @@ void stateStepSequencerMenuEditCopy(uint8_t splat, uint8_t move)
                         
 #ifdef INCLUDE_IMMEDIATE_RETURN
         goUpState(immediateReturnState);
-#else
+#else INCLUDE_IMMEDIATE_RETURN
         goUpState(STATE_STEP_SEQUENCER_MENU_EDIT);
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
         }
     else
         {
@@ -239,7 +241,7 @@ void stateStepSequencerMenuPattern()
         const uint8_t inverseMenuIndices[16] = {15, 11, 12, 7, 10, 1, 6, 3, 4, 5, 2, 9, 8, 13, 14, 0};
         defaultMenuValue = inverseMenuIndices[local.stepSequencer.pattern[local.stepSequencer.currentTrack]];
         }
-#endif
+#endif INCLUDE_EXTENDED_MENU_DEFAULTS
         
     uint8_t result = doMenuDisplay(menuItems, 16, STATE_NONE, 0, 1);
     playStepSequencer();
@@ -259,9 +261,9 @@ void stateStepSequencerMenuPattern()
             {
 #ifdef INCLUDE_IMMEDIATE_RETURN
             goUpState(immediateReturnState);
-#else
+#else INCLUDE_IMMEDIATE_RETURN
             goUpState(STATE_STEP_SEQUENCER_MENU);
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
             }
         break;
         }
@@ -293,9 +295,9 @@ void stateStepSequencerMenuPerformanceKeyboard()
             isUpdated(SELECT_BUTTON, RELEASED);
 #ifdef INCLUDE_IMMEDIATE_RETURN
             goUpState(immediateReturnState);
-#else
+#else INCLUDE_IMMEDIATE_RETURN
             goUpState(STATE_STEP_SEQUENCER_MENU);
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
             }
         break;
         case MENU_CANCELLED:
@@ -304,9 +306,9 @@ void stateStepSequencerMenuPerformanceKeyboard()
             isUpdated(SELECT_BUTTON, RELEASED);
 #ifdef INCLUDE_IMMEDIATE_RETURN
             goUpState(immediateReturnState);
-#else
+#else INCLUDE_IMMEDIATE_RETURN
             goUpState(STATE_STEP_SEQUENCER_MENU);
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
             }
         break;
         }
@@ -321,7 +323,7 @@ void stateStepSequencerMenuPerformanceRepeat()
         {
         defaultMenuValue = data.slot.data.stepSequencer.repeat & 0x0F;
         }
-#endif
+#endif INCLUDE_EXTENDED_MENU_DEFAULTS
     uint8_t result = doMenuDisplay(menuItems, 16, STATE_NONE, 0, 1);
                 
     playStepSequencer();
@@ -337,18 +339,18 @@ void stateStepSequencerMenuPerformanceRepeat()
             data.slot.data.stepSequencer.repeat = ((data.slot.data.stepSequencer.repeat & 0xF0) | (currentDisplay & 0x0F));
 #ifdef INCLUDE_IMMEDIATE_RETURN
             goUpState(immediateReturnState);
-#else
+#else INCLUDE_IMMEDIATE_RETURN
             goUpState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE);
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
             }
         break;
         case MENU_CANCELLED:
             {
 #ifdef INCLUDE_IMMEDIATE_RETURN
             goUpState(immediateReturnState);
-#else
+#else INCLUDE_IMMEDIATE_RETURN
             goUpState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE);
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
             }
         break;
         }
@@ -373,18 +375,18 @@ void stateStepSequencerMenuPerformanceNext()
             data.slot.data.stepSequencer.repeat = ((data.slot.data.stepSequencer.repeat & 0x0F) | ((currentDisplay + 1) << 4));
 #ifdef INCLUDE_IMMEDIATE_RETURN
             goUpState(immediateReturnState);
-#else
+#else INCLUDE_IMMEDIATE_RETURN
             goUpState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE);
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
             }
         break;
         case MENU_CANCELLED:
             {
 #ifdef INCLUDE_IMMEDIATE_RETURN
             goUpState(immediateReturnState);
-#else
+#else INCLUDE_IMMEDIATE_RETURN
             goUpState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE);
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
             }
         break;
         }
@@ -507,7 +509,7 @@ void loadSequence(uint8_t slot)
         }
     }
     
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
        
 
 
@@ -522,7 +524,7 @@ void resetTrack(uint8_t track)
     local.stepSequencer.lastControlValue[track] = 0;
     local.stepSequencer.pattern[track] = STEP_SEQUENCER_PATTERN_ALL;
     local.stepSequencer.transposable[track] = 1;
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
     local.stepSequencer.outMIDI[track] = MIDI_OUT_DEFAULT;  // default
     local.stepSequencer.noteLength[track] = PLAY_LENGTH_USE_DEFAULT;
     local.stepSequencer.muted[track] = STEP_SEQUENCER_NOT_MUTED;
@@ -553,13 +555,13 @@ uint8_t shouldMuteTrack(uint8_t track)
         (solo && track != local.stepSequencer.currentTrack) ||
         // We're muted if solo is NOT on and OUR mute is on
         (!solo && muted);
-#else
+#else INCLUDE_EXTENDED_STEP_SEQUENCER
     return 
         // We're muted if solo is on and we're not the current track
         (local.stepSequencer.solo && track != local.stepSequencer.currentTrack) ||
         // We're muted if solo is NOT on and OUR mute is on
         (!local.stepSequencer.solo && (local.stepSequencer.muted[track] == STEP_SEQUENCER_MUTED));
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
     }
 
 // Draws the sequence with the given track length, number of tracks, and skip size
@@ -602,7 +604,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
             if ((vel == 0) && (data.slot.data.stepSequencer.buffer[pos] == 1)
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
                 && (local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_NOTE)
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
                 )
                 vel = 1;  // so we draw it
                 
@@ -610,7 +612,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
             else if ((local.stepSequencer.data[local.stepSequencer.currentTrack] != STEP_SEQUENCER_DATA_NOTE) &&
                 ((vel & 127) | ((data.slot.data.stepSequencer.buffer[pos] & 127) << 7)) != 0)
                 vel = 1;  // so we draw it
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
 
             if (shouldDrawMuted)
                 vel = 0;
@@ -620,19 +622,19 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
                     ((local.stepSequencer.playState != PLAY_STATE_STOPPED) && (d == local.stepSequencer.currentPlayPosition)
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
                     && !local.stepSequencer.performanceMode
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
                     ) ||   // main cursor
                 // draw play position cursor, plus the crosshatch, always if we're in play position mode
                     ((local.stepSequencer.currentEditPosition < 0 
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
                         || local.stepSequencer.performanceMode
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
                         ) && ((d == local.stepSequencer.currentPlayPosition) ||  ((t == local.stepSequencer.currentTrack) && (abs(d - local.stepSequencer.currentPlayPosition) == 2)))) ||  // crosshatch
                 // draw edit cursor
                     ((t == local.stepSequencer.currentTrack) && (d == local.stepSequencer.currentEditPosition) 
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
                     && !local.stepSequencer.performanceMode
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
                     ) ||
                 
                 // draw mute or solo indicator.  Solo overrides mute.
@@ -694,7 +696,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
                             }
                         }
                     }
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
                 }
             }
         y -= skip;
@@ -723,7 +725,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
                 
     // draw pattern position
     drawRange(led, 0, 1, 4, local.stepSequencer.countup & 3);
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
 
     // Do we have a fader value != FADER_IDENDITY_VALUE ?
     if (local.stepSequencer.fader[local.stepSequencer.currentTrack] != FADER_IDENTITY_VALUE)
@@ -749,10 +751,10 @@ void stateStepSequencerFormat()
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
     const char* menuItems[5] = {  PSTR("16 NOTES"), PSTR("24 NOTES"), PSTR("32 NOTES"), PSTR("48 NOTES"), PSTR("64 NOTES") };
     result = doMenuDisplay(menuItems, 5, STATE_NONE, 0, 1);
-#else
+#else INCLUDE_EXTENDED_STEP_SEQUENCER
     const char* menuItems[3] = {  PSTR("16 NOTES"), PSTR("24 NOTES"), PSTR("32 NOTES") };
     result = doMenuDisplay(menuItems, 3, STATE_NONE, 0, 1);
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
     switch (result)
         {
         case NO_MENU_SELECTED:
@@ -766,7 +768,7 @@ void stateStepSequencerFormat()
             data.slot.data.stepSequencer.format = currentDisplay;
 #ifdef INCLUDE_PROVIDE_RAW_CC
             setParseRawCC(false);
-#endif
+#endif INCLUDE_PROVIDE_RAW_CC
             memset(data.slot.data.stepSequencer.buffer, 0, STEP_SEQUENCER_BUFFER_SIZE);
             for(uint8_t i = 0; i < GET_NUM_TRACKS(); i++)
                 {
@@ -782,7 +784,7 @@ void stateStepSequencerFormat()
             local.stepSequencer.performanceMode = 0;
             local.stepSequencer.goNextSequence = 0;
             local.stepSequencer.clearTrack = CLEAR_TRACK;
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
             local.stepSequencer.solo = 0;
             local.stepSequencer.currentTrack = 0;
             local.stepSequencer.currentEditPosition = 0;
@@ -803,7 +805,7 @@ void removeSuccessiveTies(uint8_t p, uint8_t trackLen)
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
     if (local.stepSequencer.data[local.stepSequencer.currentTrack] != STEP_SEQUENCER_DATA_NOTE)
         return;
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
 
     p = incrementAndWrap(p, trackLen);
     uint16_t v = (((uint16_t)trackLen) * local.stepSequencer.currentTrack + p) * 2 ;
@@ -859,7 +861,7 @@ int16_t getNewCursorXPos(uint8_t trackLen)
     return val;
     }
 
-#else
+#else INCLUDE_BUFFERED_CURSOR_X_POS
 
 // Uno version -- no buffer so we scroll right to -1 immediately.  But it saves us
 // 20 bytes or so, which matters now.  ;-(
@@ -870,7 +872,7 @@ int16_t getNewCursorXPos(uint8_t trackLen)
     return ((int16_t)(((pot[RIGHT_POT] >> 1) * (trackLen + 1)) >> 9)) - 1;  ///  / 1024 - 1;
     }
     
-#endif
+#endif INCLUDE_BUFFERED_CURSOR_X_POS
 
 
 void resetStepSequencer()
@@ -878,7 +880,7 @@ void resetStepSequencer()
     local.stepSequencer.currentPlayPosition = GET_TRACK_LENGTH() - 1;
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
     resetStepSequencerCountdown();
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
     }
         
 void stopStepSequencer()
@@ -916,17 +918,17 @@ void stateStepSequencerPlay()
         local.stepSequencer.currentRightPot = -1;
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
         setPots(local.stepSequencer.pots);
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
         }
 
 #ifdef INCLUDE_IMMEDIATE_RETURN
     immediateReturn = false;
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
 
 #ifdef INCLUDE_CC_LEFT_POT_PARAMETER_EQUIVALENTS
     // always do this
     leftPotParameterEquivalent = false;
-#endif
+#endif INCLUDE_CC_LEFT_POT_PARAMETER_EQUIVALENTS
 
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
@@ -936,25 +938,25 @@ void stateStepSequencerPlay()
             local.stepSequencer.performanceMode = false;
 #ifdef INCLUDE_PROVIDE_RAW_CC
             setParseRawCC(local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_CC);
-#endif
+#endif INCLUDE_PROVIDE_RAW_CC
             }
         else
             {
 #ifdef INCLUDE_PROVIDE_RAW_CC
             setParseRawCC(false);
-#endif
+#endif INCLUDE_PROVIDE_RAW_CC
             goUpState(STATE_STEP_SEQUENCER_SURE);
             }
-#else
+#else INCLUDE_EXTENDED_STEP_SEQUENCER
         goUpState(STATE_STEP_SEQUENCER_SURE);
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
         }
     else if (isUpdated(MIDDLE_BUTTON, RELEASED))
         {
         if (local.stepSequencer.currentEditPosition >= 0 
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
             && !local.stepSequencer.performanceMode
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
             )
             {
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
@@ -968,7 +970,7 @@ void stateStepSequencerPlay()
                 local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
                 }
             else
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
                 {
                 // add a rest
                 loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + local.stepSequencer.currentEditPosition, 0, 0);
@@ -984,7 +986,7 @@ void stateStepSequencerPlay()
                 advanceMute(local.stepSequencer.currentTrack);
                 }
             else
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
                 {
                 local.stepSequencer.muted[local.stepSequencer.currentTrack] = !local.stepSequencer.muted[local.stepSequencer.currentTrack];
                 }       
@@ -1002,7 +1004,7 @@ void stateStepSequencerPlay()
                 resetStepSequencerCountdown();  // otherwise we'll miss jumps to other sequences
 #ifdef INCLUDE_PROVIDE_RAW_CC
                 setParseRawCC(true);
-#endif
+#endif INCLUDE_PROVIDE_RAW_CC
                 }
             else
                 {
@@ -1016,7 +1018,7 @@ void stateStepSequencerPlay()
                 }
             else
 
-#endif     
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
                 if (local.stepSequencer.currentEditPosition >= 0)
                     {
                     // add a tie.
@@ -1041,7 +1043,7 @@ void stateStepSequencerPlay()
                         local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
                         }
                     else
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
                         // don't add if a rest precedes it or a tie is after it
                         if (((data.slot.data.stepSequencer.buffer[v + 1] == 0) &&           // rest before
                                 (data.slot.data.stepSequencer.buffer[v] == 0)) ||
@@ -1071,7 +1073,7 @@ void stateStepSequencerPlay()
             // we always stop the clock just in case, even if we're immediately restarting it
             stopClock(true);
             }
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
         switch(local.stepSequencer.playState)
             {
             case PLAY_STATE_STOPPED:
@@ -1086,7 +1088,7 @@ void stateStepSequencerPlay()
                     // will happen here consistently.
                     startClock(true);
                     }
-#endif                
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
                 }
             break;
             case PLAY_STATE_WAITING:
@@ -1110,7 +1112,7 @@ void stateStepSequencerPlay()
                 resetStepSequencerCountdown();    // otherwise we'll miss jumps to other sequences
 #ifdef INCLUDE_PROVIDE_RAW_CC
                 setParseRawCC(true);
-#endif
+#endif INCLUDE_PROVIDE_RAW_CC
                 }
             else
                 {
@@ -1118,7 +1120,7 @@ void stateStepSequencerPlay()
                 }
             }
         else
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
             {
             state = STATE_STEP_SEQUENCER_MENU;
             entry = true;
@@ -1130,10 +1132,10 @@ void stateStepSequencerPlay()
         local.stepSequencer.currentTrack = bound(local.stepSequencer.currentTrack, 0, numTracks);
 #ifdef INCLUDE_PROVIDE_RAW_CC
         setParseRawCC(local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_CC);
-#endif
+#endif INCLUDE_PROVIDE_RAW_CC
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
         local.stepSequencer.clearTrack = CLEAR_TRACK;
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
         }
     else if (potUpdated[RIGHT_POT])
         {
@@ -1148,7 +1150,7 @@ void stateStepSequencerPlay()
                 }
             }
         else
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
             {
             int16_t newPos = getNewCursorXPos(trackLen);
             if (lockoutPots ||      // using an external NRPN device, which is likely accurate
@@ -1249,14 +1251,14 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
 
         local.stepSequencer.transpose = ((int8_t)itemNumber) - (int8_t) MIDDLE_C;  // this can only range -60 ... 67
         }
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
 
 
 
     else if (newItem && (itemType == MIDI_NOTE_ON)  //// there is a note played
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
         && local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_NOTE
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
         )
         {
         TOGGLE_IN_LED();
@@ -1268,7 +1270,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
         uint8_t pos = (local.stepSequencer.currentEditPosition < 0 
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
             || (local.stepSequencer.performanceMode)
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
             ) ? 
             local.stepSequencer.currentPlayPosition + (notePulseCountdown <= (notePulseRate >> 1) ? 1 : 0) :
             local.stepSequencer.currentEditPosition;
@@ -1293,7 +1295,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
         }
 */
         
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
         // add a note
         loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + pos, note, velocity);
         removeSuccessiveTies(pos, trackLen);
@@ -1301,7 +1303,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
         if (local.stepSequencer.currentEditPosition >= 0
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
             && !(local.stepSequencer.performanceMode)
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
             )
             {
             local.stepSequencer.currentEditPosition = incrementAndWrap(local.stepSequencer.currentEditPosition, trackLen);
@@ -1314,7 +1316,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 {
                 sendTrackNote(note, velocity, local.stepSequencer.currentTrack);
                 }
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
             }
                         
         local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
@@ -1323,7 +1325,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
         && (!(local.stepSequencer.performanceMode) || options.stepSequencerPlayAlongChannel == CHANNEL_LAYER )
         && local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_NOTE
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
         )
         {
         sendTrackNote(itemNumber + 128, itemValue, local.stepSequencer.currentTrack);
@@ -1395,7 +1397,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
             local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = v + 1;
             }
         }
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
 
 #ifdef INCLUDE_STEP_SEQUENCER_CC
     else if (newItem && (itemType == MIDI_CUSTOM_CONTROLLER))
@@ -1627,7 +1629,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 }
             }
         }
-#endif
+#endif INCLUDE_STEP_SEQUENCER_CC
 
     playStepSequencer();
     if (updateDisplay)
@@ -1655,10 +1657,12 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
 #define STEP_SEQUENCER_MENU_PERFORMANCE 12
 #define STEP_SEQUENCER_MENU_SAVE 13
 #define STEP_SEQUENCER_MENU_OPTIONS 14
-#else
+
+#else INCLUDE_EXTENDED_STEP_SEQUENCER
 #define STEP_SEQUENCER_MENU_SAVE 6
 #define STEP_SEQUENCER_MENU_OPTIONS 7
-#endif
+
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
 
 
 // Gives other options
@@ -1685,7 +1689,7 @@ void stateStepSequencerMenu()
         options_p 
         };
     result = doMenuDisplay(menuItems, 15, STATE_NONE, STATE_NONE, 1);
-#else
+#else INCLUDE_EXTENDED_STEP_SEQUENCER
     const char* menuItems[8] = {    
         (local.stepSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),
         PSTR("RESET TRACK"),
@@ -1697,7 +1701,7 @@ void stateStepSequencerMenu()
         options_p 
         };
     result = doMenuDisplay(menuItems, 8, STATE_NONE, STATE_NONE, 1);
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
 
     playStepSequencer();
     switch (result)
@@ -1744,6 +1748,7 @@ void stateStepSequencerMenu()
                     state = STATE_STEP_SEQUENCER_FADER;
                     }
                 break;
+                
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
                 case STEP_SEQUENCER_MENU_TYPE:
                     {
@@ -1797,7 +1802,8 @@ void stateStepSequencerMenu()
                     goDownState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE);
                     }
                 break;
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
+
                 case STEP_SEQUENCER_MENU_SAVE:
                     {
                     state = STATE_STEP_SEQUENCER_SAVE;
@@ -1807,8 +1813,8 @@ void stateStepSequencerMenu()
                     {
 #ifdef INCLUDE_IMMEDIATE_RETURN
                     immediateReturnState = STATE_STEP_SEQUENCER_MENU;
-#endif
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
+
                     goDownState(STATE_OPTIONS);
                     }
                 break;
@@ -1899,7 +1905,7 @@ void stateStepSequencerMenuTypeParameter()
             break;
         }
     }
-#endif    
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
 
 
 // Turns off all notes
@@ -1955,7 +1961,7 @@ void playStepSequencer()
 
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
         uint8_t oldPlayPosition = local.stepSequencer.currentPlayPosition;
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
         local.stepSequencer.currentPlayPosition = incrementAndWrap(local.stepSequencer.currentPlayPosition, trackLen);
         
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
@@ -2016,7 +2022,7 @@ void playStepSequencer()
                 }
             }
                         
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
         for(uint8_t track = 0; track < numTracks; track++)
             {
             // data is stored per-track as
@@ -2065,9 +2071,9 @@ void playStepSequencer()
                 }
                                 
             uint8_t shouldPlay = local.stepSequencer.shouldPlay[track] ;
-#else
+#else INCLUDE_EXTENDED_STEP_SEQUENCER
             uint8_t shouldPlay = 1;  // looks like this will get optimized out.  Hope so!
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
 
 
 
@@ -2088,7 +2094,7 @@ void playStepSequencer()
                     }
                 }
             else
-#endif                        
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER                       
                 if (vel == 0 && note == 1 && shouldPlay)  // tie
                     {
                     local.stepSequencer.offTime[track] = currentTime + (div100(notePulseRate * getMicrosecsPerPulse() * noteLength));
@@ -2097,7 +2103,7 @@ void playStepSequencer()
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
                     && !local.stepSequencer.dontPlay[track]  // not a rest or tie
                     && local.stepSequencer.shouldPlay[track] 
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
                     //&& ((!local.stepSequencer.solo && local.stepSequencer.muted[track]) ||                 // If solo is off AND we're not muted......  OR...
                     //    (local.stepSequencer.solo && track == local.stepSequencer.currentTrack)))       // Solo is turned on we're the current track regardless of mute
                     && !shouldMuteTrack(track))
@@ -2119,7 +2125,7 @@ void playStepSequencer()
                             note = (uint8_t) newNote;
                             }
                         }
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
                     sendTrackNote(note, (uint8_t)newvel, track);         
                         
                     local.stepSequencer.offTime[track] = currentTime + (div100(notePulseRate * getMicrosecsPerPulse() * noteLength));
@@ -2133,7 +2139,7 @@ void playStepSequencer()
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
         // clear the dontPlay flags
         memset(local.stepSequencer.dontPlay, 0, numTracks);
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
         }
 
     // click track
@@ -2141,5 +2147,5 @@ void playStepSequencer()
     }
     
 
-#endif
+#endif INCLUDE_STEP_SEQUENCER
 

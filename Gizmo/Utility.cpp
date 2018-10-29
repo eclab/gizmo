@@ -14,6 +14,7 @@
 /// IMMEDIATE RETURN FACILITY
 
 #ifdef INCLUDE_IMMEDIATE_RETURN
+
 #define NO_AUTO_RETURN (0)
 GLOBAL uint32_t autoReturnTime;
 GLOBAL uint8_t autoReturn;
@@ -122,9 +123,9 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
 #ifdef INCLUDE_EXTENDED_MENU_DEFAULTS
             currentDisplay = defaultMenuValue;                                                                  // Display the first item unless the default state was specified
             defaultMenuValue = 0;
-#else
+#else INCLUDE_EXTENDED_MENU_DEFAULTS
             currentDisplay = 0;                                                                                                 // Display the first item unless the default state was specified
-#endif
+#endif INCLUDE_EXTENDED_MENU_DEFAULTS
             }
         else                                                                                                                                    // These are states
             {
@@ -139,7 +140,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
         defaultState = STATE_NONE;                                              // We're done with this
 #ifdef INCLUDE_IMMEDIATE_RETURN
         setAutoReturnTime();
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
         }
     else
         {
@@ -153,7 +154,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
                 newDisplay = menuLen - 1; 
 #ifdef INCLUDE_IMMEDIATE_RETURN
             setAutoReturnTime();
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
             }
 #ifdef INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU
         else if (isUpdated(MIDDLE_BUTTON, RELEASED))
@@ -163,9 +164,9 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
                 newDisplay = 0; 
 #ifdef INCLUDE_IMMEDIATE_RETURN
             setAutoReturnTime();
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
             }
-#endif
+#endif INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU
         }
 
     if (newDisplay != currentDisplay)                                           // we're starting fresh (FORCE_NEW_DISPLAY) or have something new
@@ -187,7 +188,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
         {
 #ifdef INCLUDE_IMMEDIATE_RETURN
         removeAutoReturnTime();
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
         if (baseState != STATE_NONE)
             {
             if (state == STATE_ROOT)
@@ -204,7 +205,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
         {
 #ifdef INCLUDE_IMMEDIATE_RETURN
         removeAutoReturnTime();
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
         if (baseState != STATE_NONE)
             {
             state = baseState + currentDisplay;
@@ -313,7 +314,7 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
         potFineTune = 0;
 #ifdef INCLUDE_IMMEDIATE_RETURN
         setAutoReturnTime();
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
         entry = false;
         }
     
@@ -321,7 +322,7 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
         {
 #ifdef INCLUDE_IMMEDIATE_RETURN
         removeAutoReturnTime();
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
         return MENU_CANCELLED;
         }
     else if (isUpdated(SELECT_BUTTON, PRESSED)
@@ -332,7 +333,7 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
         {
 #ifdef INCLUDE_IMMEDIATE_RETURN
         removeAutoReturnTime();
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
         return MENU_SELECTED;
         }
     
@@ -350,7 +351,7 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
             }
 #ifdef INCLUDE_IMMEDIATE_RETURN
         setAutoReturnTime();
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
         }
 #ifdef INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU
     else if (isUpdated(MIDDLE_BUTTON, RELEASED))
@@ -360,9 +361,9 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
             currentDisplay = minValue; 
 #ifdef INCLUDE_IMMEDIATE_RETURN
         setAutoReturnTime();
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
         }
-#endif
+#endif INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU
     
     // if we're doing a high-resolution number (> 128 basically) then
     // we check the right pot and use it as a fine-tuning
@@ -547,21 +548,20 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
         {
 #ifdef INCLUDE_IMMEDIATE_RETURN
         setAutoReturnTime();
-#else
-            {
-#endif
-            currentDisplay = defaultValue;
-            // can't avoid a divide this time!
-            potDivisor = 1024 / numGlyphs;
-            memcpy(glyphs, _glyphs, numGlyphs);
-            entry = false;
-            }
+#endif INCLUDE_IMMEDIATE_RETURN
+
+		currentDisplay = defaultValue;
+		// can't avoid a divide this time!
+		potDivisor = 1024 / numGlyphs;
+		memcpy(glyphs, _glyphs, numGlyphs);
+		entry = false;
+		}
     
         if (isUpdated(BACK_BUTTON, RELEASED))
             {
 #ifdef INCLUDE_IMMEDIATE_RETURN
             removeAutoReturnTime();
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
             return MENU_CANCELLED;
             }
         else if (isUpdated(SELECT_BUTTON, PRESSED)
@@ -572,7 +572,7 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
             {
 #ifdef INCLUDE_IMMEDIATE_RETURN
             removeAutoReturnTime();
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
             return MENU_SELECTED;
             }
         else if (potUpdated[LEFT_POT])
@@ -583,7 +583,7 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
                 currentDisplay = numGlyphs - 1;
 #ifdef INCLUDE_IMMEDIATE_RETURN
             setAutoReturnTime();
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
             }
 #ifdef INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU
         else if (isUpdated(MIDDLE_BUTTON, RELEASED))
@@ -593,9 +593,9 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
                 currentDisplay = 0; 
 #ifdef INCLUDE_IMMEDIATE_RETURN
             setAutoReturnTime();
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
             }
-#endif
+#endif INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU
                 
         if (updateDisplay)
             {
@@ -786,7 +786,7 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
             data.slot.data.stepSequencer.buffer[i] = (127 & data.slot.data.stepSequencer.buffer[i]);
         }
 
-#endif
+#endif INCLUDE_STEP_SEQUENCER
 
 
 
@@ -881,7 +881,7 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
                                 distributeByte(pos + 18, local.stepSequencer.outMIDI[i] << 3);
                                 distributeByte(pos + 23, local.stepSequencer.pattern[i] << 4);
                                 }
-#else
+#else INCLUDE_EXTENDED_STEP_SEQUENCER
                             //// 1 bit mute
                             //// 5 bits MIDI out channel (including "use default")
                             //// 7 bits length
@@ -894,7 +894,7 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
                             distributeByte(pos + 13, local.stepSequencer.velocity[i] << 1);      
                             distributeByte(pos + 20, local.stepSequencer.fader[i] << 3);
                             // there is no pattern, so we don't distribute it
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
 
 
                             }
@@ -902,14 +902,14 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
                         stripHighBits();                        
                         }
                     break;
-#endif
+#endif INCLUDE_STEP_SEQUENCER
 #ifdef INCLUDE_RECORDER
                     case STATE_RECORDER:
                         {
                         saveSlot(currentDisplay);
                         }
                     break;
-#endif
+#endif INCLUDE_RECORDER
                     }
                                         
                 goUpState(backState);
@@ -998,7 +998,7 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
                                     local.stepSequencer.outMIDI[i] = (gatherByte(pos + 18) >> 3);
                                     local.stepSequencer.pattern[i] = (gatherByte(pos + 23) >> 4);
                                     }
-#else
+#else INCLUDE_EXTENDED_STEP_SEQUENCER
                                 //// 1 bit mute
                                 //// 5 bits MIDI out channel (including "use default")
                                 //// 7 bits length
@@ -1009,7 +1009,7 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
                                 local.stepSequencer.noteLength[i] = (gatherByte(pos + 6) >> 1); // top 7 bits moved down 1
                                 local.stepSequencer.velocity[i] = (gatherByte(pos + 13) >> 1); // top 7 bits moved down 1
                                 local.stepSequencer.fader[i] = (gatherByte(pos + 20) >> 3);  // top 5 bits moved down 3
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
                                 }
                             
                             stripHighBits();
@@ -1018,9 +1018,9 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
                             local.stepSequencer.markTrack = 0;
                             local.stepSequencer.markPosition = 0;
                             resetStepSequencerCountdown();
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
                             }
-#endif
+#endif INCLUDE_STEP_SEQUENCER
                         }
                     }
 
@@ -1030,13 +1030,13 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
                 local.stepSequencer.currentTrack = 0;
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
                 local.stepSequencer.transpose = 0;
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
 #ifdef INCLUDE_PROVIDE_RAW_CC
                 setParseRawCC(local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_CC);
-#endif
+#endif INCLUDE_PROVIDE_RAW_CC
                 local.stepSequencer.currentEditPosition = 0;
                 stopStepSequencer();
-#endif
+#endif INCLUDE_STEP_SEQUENCER
                 
                 defaultState = STATE_NONE;
                 entry = true;
@@ -1214,48 +1214,48 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
         return NO_NOTE;
         }
 
-#endif
+#endif INCLUDE_ENTER_CHORD
 
 
     void playApplication()
         {
 #ifdef INCLUDE_IMMEDIATE_RETURN
         switch(immediateReturnState)
-#else
+#else INCLUDE_IMMEDIATE_RETURN
             switch(application)
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
                 {
 #ifdef INCLUDE_ARPEGGIATOR
                 case STATE_ARPEGGIATOR_MENU:
                 case STATE_ARPEGGIATOR_PLAY:
                     playArpeggio();          
                     break; 
-#endif
+#endif INCLUDE_ARPEGGIATOR
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
                 case STATE_STEP_SEQUENCER_PLAY:
-#endif
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
 #ifdef INCLUDE_STEP_SEQUENCER
                 case STATE_STEP_SEQUENCER_MENU:
                     playStepSequencer();
                     break;
-#endif
+#endif INCLUDE_STEP_SEQUENCER
 #ifdef INCLUDE_RECORDER
                 case STATE_RECORDER_PLAY:  // note not MENU: we go directly to options from PLAY
                     // This is a dummy function, which we include to keep the switch statement from growing by 100 bytes (!)
                     // Because we do NOT want to play the recorder in the background ever.
                     playRecorder();
                     break; 
-#endif
+#endif INCLUDE_RECORDER
 #ifdef INCLUDE_MEASURE
                 case STATE_MEASURE:
                     playMeasure();
                     break;
-#endif
+#endif INCLUDE_MEASURE
 #ifdef INCLUDE_THRU
                 case STATE_THRU_PLAY:
                     playThru();
                     break;
-#endif
+#endif INCLUDE_THRU
                 }
         }
         
@@ -1280,9 +1280,9 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
     GLOBAL static uint8_t glyphTable[
 #ifdef INCLUDE_EXTENDED_GLYPH_TABLE
         21
-#else
+#else INCLUDE_EXTENDED_GLYPH_TABLE
         15
-#endif
+#endif INCLUDE_EXTENDED_GLYPH_TABLE
         ][4] = 
         {
         // These first: ----, ALLC, DFLT, DECR, and INCR, must be the FIRST ones
@@ -1310,7 +1310,7 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
         {GLYPH_3x5_H, GLYPH_3x5_I, GLYPH_3x5_G, GLYPH_3x5_H},   // HIGH
         {GLYPH_3x5_T, GLYPH_3x5_R, GLYPH_3x5_A, GLYPH_3x5_N},   // TRAN
         {GLYPH_3x5_F, GLYPH_3x5_A, GLYPH_3x5_I, GLYPH_3x5_L},   // FAIL
-#endif
+#endif INCLUDE_EXTENDED_GLYPH_TABLE
 
         };
 
@@ -1412,4 +1412,4 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
         setScrollDelays(val, del);
         }
     
-#endif
+#endif INCLUDE_OPTIONS_MENU_DELAY

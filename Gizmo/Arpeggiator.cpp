@@ -21,7 +21,7 @@ void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len)
         uint8_t n = ARP_NOTEX(i);
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
         if (n == ARP_TIE) continue;  // don't count rests or ties as part of this
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
         if (n == ARP_REST) continue;  // don't count rests as part of this
         if (n > maxNote) maxNote = n;
         if (n < minNote) minNote = n;
@@ -29,9 +29,9 @@ void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len)
             
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
     if (minNote < ARP_TIE) // it's not all rests or ties (or empty)  -- actually it'd be impossible for it to be all ties or a mix of rests and ties...
-#else
+#else INCLUDE_EXTENDED_ARPEGGIATOR
         if (minNote < ARP_REST) // it's not all rests (or empty)
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
             {
             uint8_t interval = maxNote - minNote + 1;
 
@@ -52,9 +52,9 @@ void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len)
                     setPoint(mat, j, 7);
                     }
                 else if (interval > 7)
-#else
+#else INCLUDE_EXTENDED_ARPEGGIATOR
                 else if (interval > 8)
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
                     {
                     setPoint(mat, j, n >> 1);
                     if ((n & 1) == 1)  // it's odd, add another point
@@ -105,13 +105,12 @@ void playArpeggiatorNote(uint16_t note)
     int16_t n = note + (int16_t)local.arp.transpose;
     if (n >= 0 && n < 128)
         sendNoteOn(local.arp.steadyNoteOff = local.arp.noteOff = (uint8_t) (n), vel, options.channelOut);
-#else
+#else INCLUDE_EXTENDED_ARPEGGIATOR
     sendNoteOn(local.arp.steadyNoteOff = local.arp.noteOff = (uint8_t) (note), vel, options.channelOut);
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
     updateNoteOffTime();     
     }
     
-#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
 void loadNextUserArpeggio()
     {
@@ -134,7 +133,7 @@ void loadNextUserArpeggio()
             }
         }
     }
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
 
 
 // Continue to play the arpeggio
@@ -153,7 +152,7 @@ void playArpeggio()
         && !(                                                                                                                                                                                                                           // it's NOT the case that....
                 (local.arp.number > ARPEGGIATOR_NUMBER_CHORD_REPEAT &&                                                                                                                  // we're doing a custom arpeggio AND
                 ARP_NOTEX(local.arp.currentPosition + 1 >= data.arp.length ? 0 : local.arp.currentPosition + 1) == ARP_TIE))    // the next note is a TIE
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
         )
         {
         if (local.arp.number == ARPEGGIATOR_NUMBER_CHORD_REPEAT)
@@ -278,7 +277,7 @@ void playArpeggio()
                         // maybe advance
                         if (local.arp.advance)
                             loadNextUserArpeggio();
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
                         }
 
                     int8_t octave = 0;  // note that this is signed
@@ -289,7 +288,7 @@ void playArpeggio()
                         updateNoteOffTime();            // push note off to next timestep
                         }
                     else
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
                         if (notei != ARP_REST)
                             {
                             // this computes the interval between the largest and smallest notes, and rounds up to the nearest
@@ -414,7 +413,7 @@ void arpeggiatorSetLatch()
     options.arpeggiatorLatch = true;
 //                              saveOptions();
     }
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
 
 void arpeggiatorStartStopClock()
     {
@@ -447,7 +446,7 @@ void arpeggiatorEnterPerformanceMode()
             }
         }
     }
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
 
 // Choose an arpeggiation, or to create one
 void stateArpeggiator()
@@ -464,7 +463,7 @@ void stateArpeggiator()
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
         local.arp.performanceMode = 0;
         local.arp.transpose = 0;
-#endif        
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
         sendAllSoundsOff();
         }
     const char* menuItems[17] = { PSTR(STR_UP), PSTR(STR_DOWN), PSTR(STR_UP_DOWN), PSTR("RANDOM"), PSTR("ASSIGN"), PSTR("CHORD"), PSTR("0"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("CREATE")};
@@ -512,7 +511,7 @@ void stateArpeggiatorPlay()
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
         local.arp.oldLeftPot = pot[LEFT_POT];
         local.arp.oldRightPot = pot[RIGHT_POT]; 
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
         local.arp.playing = 1;
         // Load the arpeggiator data
         if (local.arp.number > ARPEGGIATOR_NUMBER_CHORD_REPEAT)
@@ -524,12 +523,12 @@ void stateArpeggiatorPlay()
         
 #ifdef INCLUDE_IMMEDIATE_RETURN
     immediateReturn = false;
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
 
 #ifdef INCLUDE_CC_LEFT_POT_PARAMETER_EQUIVALENTS
     // always do this
     leftPotParameterEquivalent = false;
-#endif
+#endif INCLUDE_CC_LEFT_POT_PARAMETER_EQUIVALENTS
     
     if (updateDisplay)
         {    
@@ -564,7 +563,7 @@ void stateArpeggiatorPlay()
             else
                 setPoint(led, 6, 1);
             }
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
 
 
         }
@@ -583,7 +582,7 @@ void stateArpeggiatorPlay()
             local.arp.transpose = 0;
             }
         else
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
             {
             sendAllSoundsOff(options.channelOut);
             sendNoteOff(local.arp.noteOff, 127, options.channelOut);
@@ -596,7 +595,7 @@ void stateArpeggiatorPlay()
         {
         local.arp.advance = true;
         }
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
     else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
         {
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
@@ -606,7 +605,7 @@ void stateArpeggiatorPlay()
             arpeggiatorEnterPerformanceMode();
             }
         else
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
             goDownState(STATE_ARPEGGIATOR_MENU);
         }
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
@@ -622,7 +621,7 @@ void stateArpeggiatorPlay()
             arpeggiatorStartStopClock();
             }
         }
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
     else if (isUpdated(MIDDLE_BUTTON, RELEASED))
         {
         arpeggiatorToggleLatch();
@@ -642,7 +641,7 @@ void stateArpeggiatorPlay()
         AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
         goDownState(STATE_OPTIONS_TEMPO);
         }
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
 
 #ifdef INCLUDE_ARPEGGIATOR_CC
     else if (newItem && (itemType == MIDI_CUSTOM_CONTROLLER))
@@ -742,7 +741,7 @@ void stateArpeggiatorPlay()
             break;
             }
         }
-#endif
+#endif INCLUDE_ARPEGGIATOR_CC
 
     playArpeggio();          
     }
@@ -753,10 +752,10 @@ void stateArpeggiatorMenu()
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
     const char* menuItems[4] = { PSTR("OCTAVES"), PSTR("VELOCITY"), PSTR("PERFORMANCE"), options_p };
     uint8_t result = doMenuDisplay(menuItems, 4, STATE_NONE, 0, 1);
-#else
+#else INCLUDE_EXTENDED_ARPEGGIATOR
     const char* menuItems[3] = { PSTR("OCTAVES"), PSTR("VELOCITY"), options_p };
     uint8_t result = doMenuDisplay(menuItems, 3, STATE_NONE, 0, 1);
-#endif        
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
     switch (result)
         {
         case NO_MENU_SELECTED:
@@ -773,11 +772,13 @@ void stateArpeggiatorMenu()
 #define ARPEGGIATOR_PLAY_VELOCITY 1
 #define ARPEGGIATOR_PLAY_PERFORMANCE 2
 #define ARPEGGIATOR_PLAY_OPTIONS 3
-#else
+
+#else INCLUDE_EXTENDED_ARPEGGIATOR
 #define ARPEGGIATOR_PLAY_OCTAVES 0
 #define ARPEGGIATOR_PLAY_VELOCITY 1
 #define ARPEGGIATOR_PLAY_OPTIONS 2
-#endif
+
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
 
                 case ARPEGGIATOR_PLAY_OCTAVES:
                     {
@@ -795,12 +796,12 @@ void stateArpeggiatorMenu()
                     goDownState(STATE_ARPEGGIATOR_PLAY_PERFORMANCE);
                     }
                 break;
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
                 case ARPEGGIATOR_PLAY_OPTIONS:
                     {
 #ifdef INCLUDE_IMMEDIATE_RETURN
                     immediateReturnState = STATE_ARPEGGIATOR_MENU;
-#endif
+#endif INCLUDE_IMMEDIATE_RETURN
                     goDownState(STATE_OPTIONS);
                     }
                 break;                    
@@ -897,7 +898,7 @@ void arpeggiatorEnterTie()
         data.arp.length = local.arp.currentPosition;
         }
     }
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
 
 // Handle the screen for editing an arpeggio.
 void stateArpeggiatorCreateEdit()
@@ -930,9 +931,9 @@ void stateArpeggiatorCreateEdit()
         }
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
     else if (isUpdated(MIDDLE_BUTTON, RELEASED))
-#else
+#else INCLUDE_EXTENDED_ARPEGGIATOR
     else if (isUpdated(MIDDLE_BUTTON, PRESSED))
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
         {
         arpeggiatorEnterRest();
         }
@@ -944,7 +945,7 @@ void stateArpeggiatorCreateEdit()
         {
         arpeggiatorEnterTie();
         }
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
     else if (newItem == NEW_ITEM && itemType == MIDI_NOTE_ON)
         {
         local.arp.currentRightPot = (uint8_t) ((pot[RIGHT_POT] * ((uint16_t) data.arp.length + 1)) >> 10);  //  / 1024);
@@ -1011,7 +1012,7 @@ void stateArpeggiatorCreateEdit()
                     if (notei != ARP_REST
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
                         && notei != ARP_TIE
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
                         )
                         {
                         uint8_t note = backupChordNotes[notei];
@@ -1075,7 +1076,7 @@ void stateArpeggiatorCreateEdit()
                 }
             }
         }
-#endif    
+#endif INCLUDE_ARPEGGIATOR_CC
     if (updateDisplay)
         {
         clearScreen();
@@ -1102,7 +1103,7 @@ void stateArpeggiatorCreateEdit()
                 {
                 write3x5Glyph(led, GLYPH_3x5_T, 1);
                 }
-#endif
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
             else
                 {
                 writeNotePitch(led, local.arp.chordNotes[val]);
@@ -1163,5 +1164,5 @@ void stateArpeggiatorCreateSave()
         }
     }
     
-#endif
+#endif INCLUDE_ARPEGGIATOR
 
