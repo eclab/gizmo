@@ -233,8 +233,8 @@ static uint8_t potChangedBy(uint16_t* potVals, uint8_t potNum, uint16_t amount)
 
 void stateStepSequencerMenuPattern()    
     {
-    const char* menuItems[16] = {               PSTR("OOOO"), PSTR("O-O-"), PSTR("-O-O"), PSTR("OOO-"), PSTR("---O"), PSTR("O--O"), PSTR("-OO-"), PSTR("OO--"), PSTR("--OO"), PSTR("OO-O"), PSTR("--O-"), PSTR("R1/8"), PSTR("R1/4"), PSTR("R1/2"), PSTR("R3/4"),  PSTR("EXCL") };
-    const uint8_t menuIndices[16] = {       15,                       5,                    10,                       7,                    8,                        9,                    6,                        3,                       12,                   11,               4,             1,                     2,                             13,                      14,               0    };
+    const char* menuItems[16] =     { PSTR("OOOO"), PSTR("O-O-"), PSTR("-O-O"), PSTR("OOO-"), PSTR("---O"), PSTR("O--O"), PSTR("-OO-"), PSTR("OO--"), PSTR("--OO"), PSTR("OO-O"), PSTR("--O-"), PSTR("R1/8"), PSTR("R1/4"), PSTR("R1/2"), PSTR("R3/4"),  PSTR("EXCL") };
+    const uint8_t menuIndices[16] = { 15,           5,            10,           7,            8,            9,            6,            3,            12,           11,           4,            1,            2,            13,           14,            0            };
 #ifdef INCLUDE_EXTENDED_MENU_DEFAULTS
     if (entry)
         {
@@ -255,15 +255,16 @@ void stateStepSequencerMenuPattern()
         case MENU_SELECTED:
             {
             local.stepSequencer.pattern[local.stepSequencer.currentTrack] = menuIndices[currentDisplay];
-            }
-        // Fall Thru
-        case MENU_CANCELLED:
-            {
 #ifdef INCLUDE_IMMEDIATE_RETURN
             goUpState(immediateReturnState);
 #else INCLUDE_IMMEDIATE_RETURN
             goUpState(STATE_STEP_SEQUENCER_MENU);
 #endif INCLUDE_IMMEDIATE_RETURN
+            }
+        break;
+        case MENU_CANCELLED:
+            {
+            goUpState(STATE_STEP_SEQUENCER_MENU);
             }
         break;
         }
@@ -1559,7 +1560,6 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 {
                 leftPotParameterEquivalent = true;
                 AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
-                immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
                 goDownState(STATE_OPTIONS_TEMPO);
                 break;
                 }
@@ -1567,7 +1567,6 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 {
                 leftPotParameterEquivalent = true;
                 AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
-                immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
                 goDownState(STATE_OPTIONS_TRANSPOSE);
                 break;
                 }
@@ -1575,7 +1574,6 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 {
                 leftPotParameterEquivalent = true;
                 AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
-                immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
                 goDownState(STATE_OPTIONS_VOLUME);
                 break;
                 }
@@ -1583,7 +1581,6 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 {
                 leftPotParameterEquivalent = true;
                 AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
-                immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
                 goDownState(STATE_OPTIONS_NOTE_SPEED);
                 break;
                 }
@@ -1591,7 +1588,6 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 {
                 leftPotParameterEquivalent = true;
                 AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
-                immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
                 goDownState(STATE_OPTIONS_PLAY_LENGTH);
                 break;
                 }
@@ -1599,7 +1595,6 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 {
                 leftPotParameterEquivalent = true;
                 AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
-                immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
                 goDownState(STATE_OPTIONS_SWING);
                 break;
                 }
@@ -1607,7 +1602,6 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 {
                 leftPotParameterEquivalent = true;
                 AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
-                immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
                 goDownState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE_KEYBOARD);
                 break;
                 }
@@ -1615,7 +1609,6 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 {
                 leftPotParameterEquivalent = true;
                 AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
-                immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
                 goDownState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE_REPEAT);
                 break;
                 }
@@ -1623,7 +1616,6 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 {
                 leftPotParameterEquivalent = true;
                 AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
-                immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
                 goDownState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE_NEXT);
                 break;
                 }
@@ -1757,6 +1749,7 @@ void stateStepSequencerMenu()
                 break;
                 case STEP_SEQUENCER_MENU_PATTERN:
                     {
+                    immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
                     state = STATE_STEP_SEQUENCER_MENU_PATTERN;
                     }
                 break;
