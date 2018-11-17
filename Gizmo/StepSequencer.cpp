@@ -240,6 +240,9 @@ void stateStepSequencerMenuPattern()
         {
         const uint8_t inverseMenuIndices[16] = {15, 11, 12, 7, 10, 1, 6, 3, 4, 5, 2, 9, 8, 13, 14, 0};
         defaultMenuValue = inverseMenuIndices[local.stepSequencer.pattern[local.stepSequencer.currentTrack]];
+#ifdef INCLUDE_IMMEDIATE_RETURN
+                setAutoReturnTime();
+#endif INCLUDE_IMMEDIATE_RETURN
         }
 #endif INCLUDE_EXTENDED_MENU_DEFAULTS
         
@@ -1551,8 +1554,8 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
             case CC_LEFT_POT_PARAMETER_EQUIVALENT_5:
                 {
                 // pattern
-                AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
                 leftPotParameterEquivalent = true;
+                AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
                 goDownState(STATE_STEP_SEQUENCER_MENU_PATTERN);
                 break;
                 }
