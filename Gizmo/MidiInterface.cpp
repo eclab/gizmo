@@ -545,48 +545,10 @@ void handleAfterTouchPoly(byte channel, byte note, byte pressure)
 #define DECREMENT 3
 #define VALUE_7_BIT_ONLY 4  // this is last so we have a contiguous switch for NRPN and RPN handlers, which don't use this
 
-
 void handleControlChange(byte channel, byte number, uint16_t value, byte type)
     {
-    // all values that come in are 14 bit with the MSB in the top 7 bits
-    // and either the LSB *or* ZERO in the bottom 7 bits, EXCEPT for VALUE_7_BIT_ONLY,
-    // which is just the raw number
-    if (updateMIDI(channel, MIDI_CC_14_BIT, number, value))
-        {
-        newItem = NEW_ITEM;
-        switch (type)
-            {
-            case VALUE:
-                {
-                itemType = MIDI_CC_14_BIT;
-                }
-            break;
-            case VALUE_MSB_ONLY:
-                {
-                itemType = MIDI_CC_14_BIT;
-                newItem = WAIT_FOR_A_SEC;
-                }
-            break;
-            case INCREMENT:
-                {
-                // never happens
-                }
-            // FALL THRU
-            case DECREMENT:
-                {
-                // never happens
-                }
-            // FALL THRU
-            case VALUE_7_BIT_ONLY:
-                {
-                itemType = MIDI_CC_7_BIT;
-                }
-            break;
-            }
-        }
-
 #ifdef INCLUDE_CC_CONTROL
-    else if (channel == options.channelControl)  // options.channelControl can be zero remember
+    if (channel == options.channelControl)  // options.channelControl can be zero remember
         {
         lockoutPots = 1;
 
@@ -712,7 +674,46 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
                  */
                  }
         }
+else
 #endif
+
+    // all values that come in are 14 bit with the MSB in the top 7 bits
+    // and either the LSB *or* ZERO in the bottom 7 bits, EXCEPT for VALUE_7_BIT_ONLY,
+    // which is just the raw number
+    if (updateMIDI(channel, MIDI_CC_14_BIT, number, value))
+        {
+        newItem = NEW_ITEM;
+        switch (type)
+            {
+            case VALUE:
+                {
+                itemType = MIDI_CC_14_BIT;
+                }
+            break;
+            case VALUE_MSB_ONLY:
+                {
+                itemType = MIDI_CC_14_BIT;
+                newItem = WAIT_FOR_A_SEC;
+                }
+            break;
+            case INCREMENT:
+                {
+                // never happens
+                }
+            // FALL THRU
+            case DECREMENT:
+                {
+                // never happens
+                }
+            // FALL THRU
+            case VALUE_7_BIT_ONLY:
+                {
+                itemType = MIDI_CC_7_BIT;
+                }
+            break;
+            }
+        }
+
 
 #if defined(INCLUDE_THRU) || defined(INCLUDE_SYNTH)
     else
@@ -737,35 +738,7 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
         
 void handleNRPN(byte channel, uint16_t parameter, uint16_t value, uint8_t valueType)
     {
-    if (updateMIDI(channel, MIDI_NRPN_14_BIT, parameter, value))
-        {
-        switch (valueType)
-            {
-            case VALUE:
-                {
-                itemType = MIDI_NRPN_14_BIT;
-                }
-            break;
-            case VALUE_MSB_ONLY:
-                {
-                itemType = MIDI_NRPN_14_BIT;
-                newItem = WAIT_FOR_A_SEC;
-                }
-            break;
-            case INCREMENT:
-                {
-                itemType = MIDI_NRPN_INCREMENT;
-                }
-            break;
-            case DECREMENT:
-                {
-                itemType = MIDI_NRPN_DECREMENT;
-                }
-            break;
-            }
-        }
-
-    else if (channel == options.channelControl)  // options.channelControl can be zero remember
+	if (channel == options.channelControl)  // options.channelControl can be zero remember
         {
         lockoutPots = 1;
                         
@@ -824,6 +797,33 @@ void handleNRPN(byte channel, uint16_t parameter, uint16_t value, uint8_t valueT
             case NRPN_CONTINUE_PARAMETER:
                 {
                 continueClock(true);
+                }
+            break;
+            }
+        }
+    else if (updateMIDI(channel, MIDI_NRPN_14_BIT, parameter, value))
+        {
+        switch (valueType)
+            {
+            case VALUE:
+                {
+                itemType = MIDI_NRPN_14_BIT;
+                }
+            break;
+            case VALUE_MSB_ONLY:
+                {
+                itemType = MIDI_NRPN_14_BIT;
+                newItem = WAIT_FOR_A_SEC;
+                }
+            break;
+            case INCREMENT:
+                {
+                itemType = MIDI_NRPN_INCREMENT;
+                }
+            break;
+            case DECREMENT:
+                {
+                itemType = MIDI_NRPN_DECREMENT;
                 }
             break;
             }
@@ -1877,8 +1877,10 @@ void sendSlotSysex()
         sum += bytes[9 + i * 2];
         sum += bytes[9 + i * 2 + 1];
 
+        /*
         if (data.bytes[i] != ((uint8_t)(bytes[9 + i * 2] << 4) | (bytes[9 + i * 2 + 1] & 0xF)))
             debug(999);
+        */
         }
     bytes[sizeof(struct _slot) * 2 + 11 - 2] = (sum & 127);
     bytes[sizeof(struct _slot) * 2 + 11 - 1] = 0xF7;
