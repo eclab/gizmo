@@ -105,7 +105,7 @@
 // -- EXPERIMENTAL JUNK --
 // INCLUDE_CONTROL_BY_NOTE					[In development] Should we allow control of Gizmo by playing notes on the Control channel?
 // INCLUDE_WAVES							[In development] Should we include LFO waves?  Don't turn this on yet.
-
+// INCLUDE_STEP_SEQUENCER_CC_MUTE_TOGGLES	[In development] Should we toggle mutes in the step sequencer?
 
 
 // -- OPTIONS --

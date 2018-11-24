@@ -1427,7 +1427,11 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                     }
                 else
                     {
+#ifdef INCLUDE_STEP_SEQUENCER_CC_MUTE_TOGGLES
+                    local.stepSequencer.muted[itemNumber - CC_EXTRA_PARAMETER_A] = itemValue;
+#else
                     local.stepSequencer.muted[itemNumber - CC_EXTRA_PARAMETER_A] = !local.stepSequencer.muted[itemNumber - CC_EXTRA_PARAMETER_A];
+#endif
                     }
                 break;
                 }

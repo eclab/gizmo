@@ -27,6 +27,7 @@
 ///// WHAT TYPE OF SCREEN ARE WE USING?
 
 #define SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK
+// #define SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK
 
 // We no longer support the following two options, though we have some gunk in the cpp file
 // regarding them.
@@ -37,7 +38,6 @@
 
 // SCROLLING DELAY
 #define NO_SCROLLING 65535                      // never scroll
-
 
 
 

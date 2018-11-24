@@ -12,7 +12,7 @@
 #include "LEDDisplay.h"
 #include "Division.h"
 
-#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_8x8_BACKPACK)
+#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_8x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK)
 #include <Wire.h>
 
 //// MODIFING THE I2C BUFFERS
@@ -1106,7 +1106,7 @@ void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
 GLOBAL uint8_t rotation = DIR_NONE;
 
 
-// Sets the rotation of the scren.  For a single 8x8 matrix, all four rotations
+// Sets the rotation of the screen.  For a single 8x8 matrix, all four rotations
 // make sense.  For a 16x8 matrix, only DIR_180 and DIR_NONE make sense; other
 // rotations will be ignored.
 void setRotation(uint8_t dir)
@@ -1118,11 +1118,11 @@ void setRotation(uint8_t dir)
 
 // Sends an the matrix to the LED  [that is, matrix must be 8 bytes]
 // matrix2 can be NULL only if we're using the 8x8 screens
-#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_8x8_BACKPACK)
+#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_8x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK)
 void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
     {
     // rotate as necessary
-#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK)
+#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK)
     uint8_t mat[8];
     uint8_t mat2[8];
 
@@ -1131,8 +1131,13 @@ void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
         {
         memcpy(mat, matrix, 8);
         memcpy(mat2, matrix2, 8);
+#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK)
         rotateMatrix(mat, DIR_COUNTERCLOCKWISE_90);
         rotateMatrix(mat2, DIR_COUNTERCLOCKWISE_90);
+#else // SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK
+        rotateMatrix(mat, DIR_NONE);
+        rotateMatrix(mat2, DIR_NONE);
+#endif
         matrix2 = mat;  // note we're flipping them
         matrix = mat2;
         }
@@ -1140,8 +1145,13 @@ void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
         {
         memcpy(mat, matrix, 8);
         memcpy(mat2, matrix2, 8);
+#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK)
         rotateMatrix(mat, DIR_CLOCKWISE_90);
         rotateMatrix(mat2, DIR_CLOCKWISE_90);
+#else // SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK
+        rotateMatrix(mat, DIR_180);
+        rotateMatrix(mat2, DIR_180);
+#endif
         matrix = mat;  // note we're NOT flipping them
         matrix2 = mat2;
         }
@@ -1158,7 +1168,7 @@ void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
     Wire.beginTransmission(I2C_ADDRESS);
     Wire.write(0);
 
-#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK)
+#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK)
     for (uint8_t i=0; i<8; i++) 
         {
         Wire.write(matrix2[i]);    
@@ -1191,7 +1201,7 @@ void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
 // Initializes the LED.  Call this in setup()
 void initLED()
     {
-#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_8x8_BACKPACK)
+#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_8x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK)
     Wire.begin();
     // Make I2C go faster (by default it's 100Hz).  The screens can handle it.
     Wire.setClock(400000L);
@@ -1848,7 +1858,7 @@ void writeBuffer(unsigned char* mat1, unsigned char* mat2)
     uint8_t len = bufferLength;
     if (len > 0)
         {
-#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK)
+#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK)
         memcpy(mat2, buffer, (len > LED_WIDTH ? LED_WIDTH : len));
         len -= LED_WIDTH;
         if (len > 0)
@@ -2065,7 +2075,7 @@ void setScreenBrightness(uint8_t brightness)
     {
     if (brightness > 15) return;
         
-#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_8x8_BACKPACK)
+#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_8x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK)
     Wire.beginTransmission(I2C_ADDRESS);
     Wire.write(LED_BRIGHTNESS_I2C | brightness);
     Wire.endTransmissionNonblocking();  
