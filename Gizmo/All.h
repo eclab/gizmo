@@ -140,7 +140,7 @@
 
 //// NOTE: To include the Sysex dump facility, you not only uncomment the INCLUDE_SYSEX line below, but
 //// you ALSO must go into the "midi_Settings.h" file in the Forty Seven Effects MIDI library and change the line 
-////    static const unsigned SysExMaxSize = 0;
+////    static const unsigned SysExMaxSize = 1;		// this should never be 0 due to a library bug
 //// to
 ////	static const unsigned SysExMaxSize = 787;   // the size of the MIDI Dump of a Slot
 
