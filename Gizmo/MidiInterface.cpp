@@ -1749,7 +1749,7 @@ void sendAllSoundsOff(uint8_t channel)
 // COMMAND      NUMBERS         VALUES          NOTES
 // OFF          [everything is ignored, this is just a NOP]
 // CC           0-31            0-16383         1. If you send 7-bit data (zero-padded, shifted << 7) then the LSB will not be sent.
-//                                                                                                 Also LSB not sent if DONT_SEND_14_BIT_CC is defined (which is the default).  So this normally doesn't occur.
+//                                                 Also LSB not sent if DONT_SEND_14_BIT_CC is defined (which is the default).  So this normally doesn't occur.
 // CC           32-127          0-127           1. Zero-pad your 7-bit data (shift it << 7).
 //                                                                      2. Some numbers are meant for special functions.  Unless you know what you're doing,
 //                                                                         it'd be wise not to send on numbers 6, 32--63, 96--101, or 120--127

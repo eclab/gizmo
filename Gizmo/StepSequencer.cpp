@@ -1198,8 +1198,13 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
 */
 
     // rerouting to new channel
-    if (newItem && (itemType != MIDI_CUSTOM_CONTROLLER) && (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE && options.stepSequencerPlayAlongChannel != CHANNEL_LAYER))
+    if (newItem && 
+    	itemType != MIDI_CUSTOM_CONTROLLER && 
+    	local.stepSequencer.performanceMode && 
+    	options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE && 
+    	options.stepSequencerPlayAlongChannel != CHANNEL_LAYER)
         {
+        
         TOGGLE_IN_LED();
         // figure out what the channel should be
         uint8_t channelOut = options.stepSequencerPlayAlongChannel;
@@ -1247,7 +1252,10 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
             }
         }
     // transposition
-    else if (newItem && (itemType == MIDI_NOTE_ON) && (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel == CHANNEL_TRANSPOSE))
+    else if (newItem && 
+    		itemType == MIDI_NOTE_ON &&
+    		local.stepSequencer.performanceMode && 
+    		options.stepSequencerPlayAlongChannel == CHANNEL_TRANSPOSE)
         {
         TOGGLE_IN_LED();
 
@@ -1367,6 +1375,9 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
             {
             local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = (itemValue << 7) + 1;
             }
+        
+         // pass through -- hope this is right
+        sendControllerCommand(CONTROL_TYPE_CC, itemNumber, itemValue, options.channelOut);
         }
     else if (newItem && (itemType == MIDI_CC_14_BIT))
         {
@@ -1377,7 +1388,10 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
             if (v == CONTROL_VALUE_EMPTY)
                 v = MAX_CONTROL_VALUE;
             local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = v + 1;
-            }
+ 
+         // pass through -- hope this is right
+    	sendControllerCommand(CONTROL_TYPE_CC, itemNumber, itemValue, options.channelOut);
+           }
         }
     else if (newItem && (itemType == MIDI_NRPN_14_BIT))
         {
@@ -1389,6 +1403,8 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 v = MAX_CONTROL_VALUE;
             local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = v + 1;
             }
+         // pass through -- hope this is right
+    	sendControllerCommand(CONTROL_TYPE_NRPN, itemNumber, itemValue, options.channelOut);
         }
     else if (newItem && (itemType == MIDI_RPN_14_BIT))
         {
@@ -1400,6 +1416,8 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 v = MAX_CONTROL_VALUE;
             local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = v + 1;
             }
+         // pass through -- hope this is right
+    	sendControllerCommand(CONTROL_TYPE_RPN, itemNumber, itemValue, options.channelOut);
         }
 #endif INCLUDE_EXTENDED_STEP_SEQUENCER
 
