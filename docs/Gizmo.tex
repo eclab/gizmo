@@ -92,7 +92,7 @@ Gizmo applications can also be set with a {\it note value} (or {\it note speed})
 
 \begin{enumerate}
 
-\item {\bf Assemble the Hardware}\quad Gizmo consists of an Arduino Uno or Arduino Mega, a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898}, and an Adafruit 16x8 LED Matrix\footnote{This matrix comes in various colors LED shapes (round, square), and matrix sizes (0.8 inch, 1.2 inch).  I personally use a 1.2 inch round red matrix.  The URL for my model is https:/\!/www.adafruit.com/products/2037} attached via four wires (I2C).  The SparkFun MIDI Shield does not come with headers to plug into the Arduino, and you'll need to get those too: it's assumed you'll either use plain headers, or use stackable headers.  I use stackable headers as it makes it easy for me to plug my four I2C wires into it.  See Section \ref{debouncing} for a warning about the low-quality buttons supplied with the MIDI Shield and what to do about it.
+\item {\bf Assemble the Hardware}\quad Gizmo consists of an Arduino Uno or Arduino Mega, a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898}, and an Adafruit 16x8 LED Matrix\footnote{This matrix comes in various colors LED shapes (round, square), and matrix sizes (0.8 inch, 1.2 inch).  I personally use a 1.2 inch round red matrix.  The URL for my model is https:/\!/www.adafruit.com/products/2037\quad I also have a round green matrix: it looks cool but it's significantly louder and has more electrical noise.  I prefer the red.} attached via four wires (I2C).  The SparkFun MIDI Shield does not come with headers to plug into the Arduino, and you'll need to get those too: it's assumed you'll either use plain headers, or use stackable headers.  I use stackable headers as it makes it easy for me to plug my four I2C wires into it.  See Section \ref{debouncing} for a warning about the low-quality buttons supplied with the MIDI Shield and what to do about it.
 
 Attach the four wires for SDA, SCL, 5V (VCC), and GND between the MIDI Shield and the LED Matrix.  
 
@@ -304,9 +304,9 @@ The current application LEDs light up right-to-left in a certain pattern with in
 
 Also shown in Figure~\ref{HighLevelGizmoLayout} are the {\bf Beat/Bypass} light and the {\bf Note Pulse} light.  The Beat/Bypass turns on and off every {\it beat} (quarter note).  This shows the current {\bf tempo}.\footnote{A beat occurs every 24 {\it pulses} of a MIDI Clock or Gizmo's internal clock.}  The Note Pulse light turns on and off every {\it note pulse}: this is the speed you have chosen for the arpeggiator, step sequencer, etc.  Note pulses are defined in terms of note value: for example, if the note pulse is presently in sixteenth notes, then this light will turn on and off four times faster than the beat light, which is in quarter notes. The note pulse light is also affected by the degree of swing (syncopation) you have defined.
 
-If Gizmo's clock is presently {\bf stopped}, either because you have stopped it internally or because Gizmo is being driven by an external MIDI clock which is currently stopped, then {\bf both the Beat/Bypass and the Note Pulse lights will be off} (though if Bypass mode is on, then Beat/Bypass will still blink rapidly).  See Section \ref{startingclock} for more information about starting and stopping the clock.
+If Gizmo's clock is presently {\bf stopped}, either because you have stopped it internally or because Gizmo is being driven by an external MIDI clock which is currently stopped, then {\bf both the Beat/Bypass and the Note Pulse lights will be off} (though if Bypass mode is on, then Beat/Bypass will still blink rapidly: read on for more information about that).  See Section \ref{startingclock} for more information about starting and stopping the clock.
 
-The reset of the screen is given over to the application.  In many cases an application will display text and other data in the {\bf Application Display} region, and light certain status LEDs in the {\bf Application Footer}.
+The rest of the screen is given over to the application.  In many cases an application will display text and other data in the {\bf Application Display} region, and light certain status LEDs in the {\bf Application Footer}.
 
 You wend your way through menus, choose applications, and manipulate them using Gizmo's three buttons and two potentiometers as follows:
 
@@ -318,11 +318,11 @@ Buttons do different things.  Here are certain common items:
 \begin{itemize}
 \item {\bf Pressing the Back Button}\quad This is the ``escape'' or ``cancel'' button: it {\bf always goes back up the menu hierarchy.}  Thus you can't ever get lost\,---\,just keep pressing the Back button and you'll eventually find yourself at the root menu.
 
-\item {\bf Long-Pressing the Back Button}\quad This toggles {\bf bypass mode}, where Gizmo tries hard to act as if it's just a MIDI THRU coupler between its input and output MIDI wires: it passes through all the MIDI it receives, and with one exception (the Controller, see Section \ref{controller}) it doesn't output any new data.  In bypass mode, the {\bf Beat/Bypass} light (Figure~\ref{HighLevelGizmoLayout}) will stop beating and instead will flash rapidly.  Bypass mode also sends an ``all sounds off'' command to all outgoing MIDI channels, so if you need to shut up a misbehaving synth, you can enter bypass mode and then leave it again.\footnote{By default Gizmo starts up with Bypass turned on in a special way: when you select your very first application, Gizmo will automatically turn Bypass off (without sending an ``all sounds off''), enter that application, and thereafter treat Bypass normally.  This only happens on selecting your first application, and that's it.  Also if you toggle Bypass manually, Gizmo will automatically start treating Bypass normally.  The point of this is to allow Gizmo to be in Bypass mode unintrusively as soon as it's powered up so you can have it attached to your keyboard all the time even if you don't use it that often.  If you would prefer that Gizmo start up with Bypass turned {\it off}, in \texttt{All.h} change the line \texttt{\#define TOPLEVEL{\textunderscore}BYPASS}\quad to\quad\texttt{// \#define TOPLEVEL{\textunderscore}BYPASS}\quad and rebuild Gizmo.}
+\item {\bf Long-Pressing the Back Button}\quad This toggles {\bf bypass mode}, where Gizmo tries hard to act as if it's just a MIDI THRU coupler between its input and output MIDI wires: it passes through all the MIDI it receives,\footnote{Except Sysex, which is too much for the Arduino's tiny memory.} and with one exception (the Controller, see Section \ref{controller}) it doesn't output any new data.  In bypass mode, the {\bf Beat/Bypass} light (Figure~\ref{HighLevelGizmoLayout}) will stop beating and instead will flash rapidly.  Bypass mode also sends an ``all sounds off'' command to all outgoing MIDI channels, so if you need to shut up a misbehaving synth, you can enter bypass mode and then leave it again.\footnote{By default Gizmo starts up with Bypass turned on in a special way: when you select your very first application, Gizmo will automatically turn Bypass off (without sending an ``all sounds off''), enter that application, and thereafter treat Bypass normally.  This only happens on selecting your first application, and that's it.  Also if you toggle Bypass manually, Gizmo will automatically start treating Bypass normally.  The point of this is to allow Gizmo to be in Bypass mode unintrusively as soon as it's powered up so you can have it attached to your keyboard all the time even if you don't use it that often.  If you would prefer that Gizmo start up with Bypass turned {\it off}, in \texttt{All.h} change the line \texttt{\#define TOPLEVEL{\textunderscore}BYPASS}\quad to\quad\texttt{// \#define TOPLEVEL{\textunderscore}BYPASS}\quad and rebuild Gizmo.}
 
 \item {\bf Pressing the Select Button}\quad If you're being presented with a menu of options, or a number to choose, or a glyph to choose, the Select button will select the currently-displayed option.  In some applications (such as the Step Sequencer, Arpeggiator, and Recorder) the Select Button is assigned other tasks.
 
-\item {\bf Pressing the Middle Button}\quad Likewise if you're being presented with a menu of options, or a number to choose, or a glyph to choose, the Middle button will increment the current display (but not select it). 
+\item {\bf Pressing the Middle Button}\quad Likewise if you're being presented with a menu of options, or a number to choose, or a glyph to choose, the Middle button will increment the current display (but not select it).   The Middle button does lots of other things as needed.
 \end{itemize}
 
 \paragraph{Potentiometers}
@@ -343,11 +343,13 @@ Gizmo listens for certain kinds of incoming MIDI data, then hands it to an {\bf 
 
 \vspace{-0.5em}\paragraph{Clock Data} Gizmo can follow clock data or ignore it and generate its own clock.  Furthermore Gizmo can pass incoming clock data through to MIDI Out, or block it.  Gizmo can also emit its own clock data.
 
+\vspace{-0.5em}\paragraph{Sysex Data} Sysex is generally not passed through: it requires too large a buffer in the underlying MIDI library.
+
 \vspace{-0.5em}\paragraph{Other Data} Most other data is simply passed through from MIDI In to MIDI Out.
 
-\vspace{-0.5em}\paragraph{Bypass Mode} When bypass mode is engaged, all data received is simply passed to MIDI Out.  Applications may still listen to 
+\vspace{-0.5em}\paragraph{Bypass Mode} When bypass mode is engaged, all data received is simply passed to MIDI Out.  Applications may still listen to the data.  One application (the Controller) may send data during bypass mode.
 
-\vspace{-0.5em}\paragraph{Controlling Gizmo} One incoming channel can be defined as the {\bf default MIDI Control Channel}.  Data on this channel is used only to manipulate Gizmo (via NRPN or CC), for example, changing a parameter.
+\vspace{-0.5em}\paragraph{Controlling Gizmo} One incoming channel can be defined as the {\bf default MIDI Control Channel}.  Data on this channel is used only to manipulate Gizmo (via NRPN or CC), for example, changing a Gizmo parameter.
 
 
 \clearpage
@@ -548,7 +550,7 @@ Keystrokes, CC, etc.			& Enter Arpeggio Chord & Enter Arpeggio Notes\\
 \section {The Step Sequencer}
 \label{stepsequencersec}
 
-The Step Sequencer makes it easy to create multitrack loops common on devices like drum machines.  On the Uno, you can have twelve 16-note tracks, eight 24-note tracks, or six 32-note tracks.  On the Mega you can additionally have four 48-note tracks, three 64-note tracks.
+The Step Sequencer makes it easy to create multitrack loops common on devices like drum machines.  On the Uno, you can have twelve 16-note tracks, eight 24-note tracks, or six 32-note tracks.  On the Mega you can additionally have four 48-note tracks and three 64-note tracks.
 
 \begin{wrapfigure}{r}{1in}
 \vspace{-1em}\includegraphics[width=1in]{none.pdf}
