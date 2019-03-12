@@ -408,12 +408,11 @@ void arpeggiatorToggleLatch()
     }
 
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
-void arpeggiatorSetLatch()
+void arpeggiatorClearLatch()
     {
-    options.arpeggiatorLatch = true;
-//                              saveOptions();
+    local.arp.numChordNotes = 0;  // reset arpeggiation
     }
-#endif INCLUDE_EXTENDED_ARPEGGIATOR
+#endif
 
 void arpeggiatorStartStopClock()
     {
@@ -658,6 +657,13 @@ void stateArpeggiatorPlay()
                 arpeggiatorStartStopClock();
                 break;
                 }
+#ifdef INCLUDE_EXTENDED_ARPEGGIATOR
+            case CC_EXTRA_PARAMETER_1:
+                {
+                arpeggiatorClearLatch();
+                break;
+                }
+#endif INCLUDE_EXTENDED_ARPEGGIATOR
             case CC_EXTRA_PARAMETER_2:
                 {
                 local.arp.advance = true;
