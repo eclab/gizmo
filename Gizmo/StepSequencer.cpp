@@ -231,15 +231,26 @@ static uint8_t potChangedBy(uint16_t* potVals, uint8_t potNum, uint16_t amount)
     return (val > amount);
     }
 
+
 void stateStepSequencerMenuPattern()    
     {
-    const char* menuItems[16] =     { PSTR("OOOO"), PSTR("O-O-"), PSTR("-O-O"), PSTR("OOO-"), PSTR("---O"), PSTR("O--O"), PSTR("-OO-"), PSTR("OO--"), PSTR("--OO"), PSTR("OO-O"), PSTR("--O-"), PSTR("R1/8"), PSTR("R1/4"), PSTR("R1/2"), PSTR("R3/4"),  PSTR("EXCL") };
-    const uint8_t menuIndices[16] = { 15,           5,            10,           7,            8,            9,            6,            3,            12,           11,           4,            1,            2,            13,           14,            0            };
+    const char* menuItems[16] =     { PSTR("OOOO"), PSTR("OOO-"), PSTR("---O"), PSTR("OO-O"), PSTR("--O-"), PSTR("O---"), PSTR("-O--"), PSTR("OO--"), PSTR("--OO"), PSTR("O-O-"), PSTR("-O-O"), 
+    								  PSTR("R1/8"),                      PSTR("R1/4"),                      PSTR("R1/2"),                      PSTR("R3/4"),                      PSTR("EXCL") };
+    const uint8_t menuIndices[16] = { P1111,        P1110,        P0001,        P1101,        P0010,        P1000,        P0100,        P1100,        P0011,        P1010,        P0101,                    
+    								  STEP_SEQUENCER_PATTERN_RANDOM_1_8, STEP_SEQUENCER_PATTERN_RANDOM_1_4, STEP_SEQUENCER_PATTERN_RANDOM_1_2, STEP_SEQUENCER_PATTERN_RANDOM_3_4, STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE };
 #ifdef INCLUDE_EXTENDED_MENU_DEFAULTS
     if (entry)
         {
-        const uint8_t inverseMenuIndices[16] = {15, 11, 12, 7, 10, 1, 6, 3, 4, 5, 2, 9, 8, 13, 14, 0};
-        defaultMenuValue = inverseMenuIndices[local.stepSequencer.pattern[local.stepSequencer.currentTrack]];
+        // find the pattern
+        for(uint8_t i = 0 ; i < 16; i++)
+        	{
+        	if (menuIndices[i] == local.stepSequencer.pattern[local.stepSequencer.currentTrack])
+        		{
+				defaultMenuValue = i;
+				break;
+        		}
+        	}
+
 #ifdef INCLUDE_IMMEDIATE_RETURN
                 setAutoReturnTime();
 #endif INCLUDE_IMMEDIATE_RETURN
@@ -787,7 +798,7 @@ void stateStepSequencerFormat()
             local.stepSequencer.transpose = 0;
             local.stepSequencer.performanceMode = 0;
             local.stepSequencer.goNextSequence = 0;
-            local.stepSequencer.clearTrack = CLEAR_TRACK;
+ //           local.stepSequencer.clearTrack = CLEAR_TRACK;
 #endif INCLUDE_EXTENDED_STEP_SEQUENCER
             local.stepSequencer.solo = 0;
             local.stepSequencer.currentTrack = 0;
@@ -1138,7 +1149,7 @@ void stateStepSequencerPlay()
         setParseRawCC(local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_CC);
 #endif INCLUDE_PROVIDE_RAW_CC
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-        local.stepSequencer.clearTrack = CLEAR_TRACK;
+//        local.stepSequencer.clearTrack = CLEAR_TRACK;
 #endif INCLUDE_EXTENDED_STEP_SEQUENCER
         }
     else if (potUpdated[RIGHT_POT])
@@ -1276,7 +1287,19 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
         TOGGLE_IN_LED();
         uint8_t note = itemNumber;
         uint8_t velocity = itemValue;
-
+        
+        
+        if ((local.stepSequencer.muted[local.stepSequencer.currentTrack] && !options.stepSequencerNoEcho)
+	#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+       	   || (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel == CHANNEL_LAYER )
+	#endif INCLUDE_EXTENDED_STEP_SEQUENCER
+		)
+		{
+		// play the note
+		sendTrackNote(note, velocity, local.stepSequencer.currentTrack);
+		}
+	else
+		{
         // here we're trying to provide some slop so the user can press the note early.
         // we basically are rounding up or down to the nearest note
         uint8_t pos = (local.stepSequencer.currentEditPosition < 0 
@@ -1289,6 +1312,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
         if (pos >= trackLen) pos = 0;
         
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+/*
         if ((local.stepSequencer.clearTrack == CLEAR_TRACK) && local.stepSequencer.performanceMode)
             {
             // clear track and notes
@@ -1296,6 +1320,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
             clearNotesOnTracks(true);
             local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
             }
+*/
 
 /*      if (pos == 0)
         {
@@ -1308,6 +1333,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
 */
         
 #endif INCLUDE_EXTENDED_STEP_SEQUENCER
+
         // add a note
         loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + pos, note, velocity);
         removeSuccessiveTies(pos, trackLen);
@@ -1333,6 +1359,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                         
         local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
         }
+    }
     else if (newItem && (itemType == MIDI_NOTE_OFF)
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
         && (!(local.stepSequencer.performanceMode) || options.stepSequencerPlayAlongChannel == CHANNEL_LAYER )
@@ -1644,6 +1671,15 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 goDownState(STATE_STEP_SEQUENCER_MENU_PERFORMANCE_NEXT);
                 break;
                 }
+#ifdef INCLUDE_CC_CONTROL_LSB
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_6_LSB:
+                {
+                leftPotParameterEquivalent = true;
+                AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
+                goDownState(STATE_OPTIONS_TEMPO);
+                break;
+                }
+#endif
             }
         }
 #endif INCLUDE_STEP_SEQUENCER_CC

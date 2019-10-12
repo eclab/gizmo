@@ -93,6 +93,7 @@
 // INCLUDE_MIDDLE_BUTTON_INCREMENTS_MENU	When in menus, does the middle button increment through them?
 // INCLUDE_CLOCK_IN_OPTIONS					When in the options menu, can I manipulate the clock via buttons?
 // INCLUDE_CC_CONTROL						Can you control Gizmo via CC in addition to NRPN?
+// INCLUDE_CC_CONTROL_MSB					Can you control Gizmo via MSB+LSB CC?
 // INCLUDE_TOPLEVEL_BYPASS					Can the user specify how bypass is handled in the top-level menus as an option?
 //
 // These are turned on as a consequence of other features -- they're probably not useful to turn on yourself.
@@ -137,6 +138,7 @@
 #define INCLUDE_CC_CONTROL
 #define INCLUDE_CLOCK_IN_OPTIONS
 #define INCLUDE_BUFFERED_CURSOR_X_POS
+#define INCLUDE_CC_CONTROL_LSB
 
 //// NOTE: To include the Sysex dump facility, you not only uncomment the INCLUDE_SYSEX line below, but
 //// you ALSO must go into the "midi_Settings.h" file in the Forty Seven Effects MIDI library and change the line 

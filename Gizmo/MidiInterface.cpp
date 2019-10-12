@@ -609,6 +609,54 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
                      }
                  break;
 #endif
+#ifdef INCLUDE_CC_CONTROL_LSB
+                 case CC_LEFT_POT_PARAMETER_LSB:
+                     {
+                     pot[LEFT_POT] |= (value & 0x07); 
+                     potUpdated[LEFT_POT] = CHANGED;
+                     }
+                 break;
+                 case CC_RIGHT_POT_PARAMETER_LSB:
+                     {
+                     pot[RIGHT_POT] |= (value & 0x07); 
+                     potUpdated[RIGHT_POT] = CHANGED;
+                     }
+                 break;
+#ifdef INCLUDE_CC_LEFT_POT_PARAMETER_EQUIVALENTS
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_1_LSB:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_2_LSB:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_3_LSB:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_4_LSB:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_5_LSB:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_6_LSB:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_7_LSB:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_8_LSB:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_9_LSB:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_10_LSB:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_11_LSB:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_12_LSB:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_13_LSB:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_14_LSB:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_15_LSB:
+                 case CC_LEFT_POT_PARAMETER_EQUIVALENT_16_LSB:
+                     {
+                     if (leftPotParameterEquivalent)
+                         {
+                         pot[LEFT_POT] |= (value & 0x07); 
+                         potUpdated[LEFT_POT] = CHANGED;
+                         }
+                     else
+                         {
+                         newItem = NEW_ITEM;
+                         itemType = MIDI_CUSTOM_CONTROLLER;
+                         itemNumber = number;
+                         itemValue = value;
+                         itemChannel = channel;
+                         }
+                     }
+                 break;
+#endif
+#endif
                  case CC_BACK_BUTTON_PARAMETER:
                      {
                      buttonState[BACK_BUTTON] = (value != 0);

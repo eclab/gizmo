@@ -193,9 +193,27 @@
 #define STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE (0)
 #define STEP_SEQUENCER_PATTERN_RANDOM_3_4 (14)
 #define STEP_SEQUENCER_PATTERN_RANDOM_1_2 (13)
-#define STEP_SEQUENCER_PATTERN_RANDOM_1_4 (2)
-#define STEP_SEQUENCER_PATTERN_RANDOM_1_8 (1)
+#define STEP_SEQUENCER_PATTERN_RANDOM_1_4 (6)
+#define STEP_SEQUENCER_PATTERN_RANDOM_1_8 (9)
 #define STEP_SEQUENCER_PATTERN_ALL (15)
+#define P0000 (0)			// STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE
+#define P1000 (1)
+#define P0100 (2)
+#define P1100 (3)
+#define P0010 (4)
+#define P1010 (5)
+#define P0110 (6)			// STEP_SEQUENCER_PATTERN_RANDOM_1_4
+#define P1110 (7)
+#define P0001 (8)
+#define P1001 (9)			// STEP_SEQUENCER_PATTERN_RANDOM_1_8
+#define P0101 (10)
+#define P1101 (11)
+#define P0011 (12)
+#define P1011 (13)			// STEP_SEQUENCER_PATTERN_RANDOM_1_2
+#define P0111 (14)			// STEP_SEQUENCER_PATTERN_RANDOM_3_4
+#define P1111 (15)			// STEP_SEQUENCER_PATTERN_ALL
+
+
 
 #define STEP_SEQUENCER_NOT_MUTED (0)
 #define STEP_SEQUENCER_MUTED (1)
@@ -250,13 +268,15 @@ struct _stepSequencerLocal
     uint8_t currentTrack;                                                   // which track are we editing?
     uint8_t backup;      		// used for backing up data to restore it                                                           // used to back up various values when the user cancels
     int16_t currentRightPot;
-    uint8_t clearTrack;
+//    uint8_t clearTrack;
     };
 
 
+/*
 #define CLEAR_TRACK 0
 #define DONT_CLEAR_TRACK 1
 #define DONT_CLEAR_TRACK_FIRST 2
+*/
 
 #define MAXIMUM_TRACK_LENGTH (64)
 
@@ -330,7 +350,6 @@ void stopStepSequencer();
 
 void resetStepSequencer();
 
-void clearTrack(uint8_t track);
 
 // Performance Options
 void stateStepSequencerMenuPerformanceKeyboard();

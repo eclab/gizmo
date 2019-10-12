@@ -744,6 +744,18 @@ void stateArpeggiatorPlay()
                 AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
                 goDownState(STATE_ARPEGGIATOR_PLAY_OCTAVES);
                 }
+            
+            // ANOTHER discontinuity
+#ifdef INCLUDE_CC_CONTROL_LSB
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_6_LSB:
+                {
+                leftPotParameterEquivalent = true;
+                AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
+                immediateReturnState = STATE_ARPEGGIATOR_PLAY;
+                goDownState(STATE_OPTIONS_TEMPO);
+                break;
+                }
+#endif
             break;
             }
         }
