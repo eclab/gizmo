@@ -593,7 +593,7 @@ The number of notes of the step sequencer (16, 24, 32, etc. notes) is its {\it b
 \paragraph{Edit Mode}
 Typically you'll start in Edit Mode.  Somewhere on the screen there will be a single-pixel blinking {\it edit cursor} which determines where notes are entered if you play them.  The location of this cursor (track, note position) is determined by the dials.  
 
-You enter notes by moving the edit cursor to the a location, then playing keys.  You can also press the Middle Button to enter a rest, or Long Press the Middle Button to enter a {\it tie}.  A tie just means ``keep playing the previous note'': it essentially lengthens the previous note.  You can enter multiple ties in series to make a note as long as you like.
+You enter notes by moving the edit cursor to the desired location, then playing keys.  You can also press the Middle Button to enter a rest, or Long Press the Middle Button to enter a {\it tie}.  A tie just means ``keep playing the previous note'': it essentially lengthens the previous note.  You can enter multiple ties in series to make a note as long as you like.
 
 A track can store and sequence other kinds of data besides Note-On and Note-Off.  Specifically, you can set a given track to store and replay any one of (raw) CC, 14 Bit CC, NRPN, RPN, Pitch Bend, Channel Aftertouch, or Program Change commands by choosing {\bf Type} from the menu (see {\bf Menu Options} below).  If you select (raw) CC, 14 Bit CC, NRPN, or RPN, you will be further prompted to specify which parameter number you'd like to sequence (for example, CC\# 42 or NRPN\# 12312).
 
@@ -614,6 +614,8 @@ Some notes.  First, if you sent a Polyphonic Aftertouch event (on any key) it wi
 If you turn the right knob fully to the left, you will find that the cursor scrolls right off the left side of the screen.  At this point you are in {\bf play position mode}.  Here, if you press a key, it is entered at the play position cursor.
 
 In play position mode, the function of the Middle Button changes.  Now if you press the Middle Button, it will toggle muting the current track.  You can tell a track is muted because the LEDs at each end of the track are blinking.  Additionally, if you Long Press the Middle Button, it will erase all the notes on the current track (but not change its settings).
+
+If the current track is muted (and you're not in Performance Mode as discussed below), Gizmo does something special: it plays any notes you send it on the track's channel: but it doesn't enter them into the track. This allows you to treat mute as a way to try out sounds on-the-fly without entering them into the sequencer.
 
 You can tell you're in play position mode because the play position cursor has changed to include two dots which indicate the current track, as shown in Figure~\ref{playpositionmode}.  When stopped, the play position cursor will sit at the far right of the screen (so you'll only see one dot).
 
@@ -641,7 +643,7 @@ If you press solo, you won't {\it toggle} the solo.  Instead, you {\it schedule}
 Similarly, if you press mute, you {\it schedule} the track to be muted (or not), at the next bar, for exactly one bar, and then to return to its present state.  If you press mute a second time, you schedule the track to be muted (or not) permanently at the next bar.  If you press mute a third time, you undo all this.  This is known as {\bf advancing mute}:
 
 \begin{itemize}
-\item If current track is {\it not} muted: {\bf Schedule Mute For One Bat} \(\rightarrow\)  {\bf Schedule Mute} \(\rightarrow\) {\bf Undo}
+\item If current track is {\it not} muted: {\bf Schedule Mute For One Bar} \(\rightarrow\)  {\bf Schedule Mute} \(\rightarrow\) {\bf Undo}
 \item If current track is muted: {\bf Schedule Un-mute For One Bar} \(\rightarrow\)  {\bf Schedule Un-mute} \(\rightarrow\) {\bf Undo}
 \end{itemize}
 
@@ -891,7 +893,7 @@ Messages that are associated with a MIDI channel will have their channel number 
 \item {\bf Channel Aftertouch}.  \texttt{AT} is displayed, followed by the value.
 \item {\bf Program Change}\quad \texttt{PC} is displayed, followed by the value.
 \item {\bf Control Change (CC)}\quad If the CC parameter is for 7-bit values, then the value is shown first, then text is scrolled with the value, then \texttt{CC}, then the parameter.  If the CC parameter is for 14-bit values, the MSB of the value is shown first, then text is scrolled with the value, then \texttt{CC}, then the parameter, then in parentheses the 14-bit (MSB+LSB) value.
-\item {\bf Registered Parameter Number (RPN)}\quad The value (7-bit MSB only) is shown first, then text is scrolled with the value (MSB), then \texttt{RPN}, then the parameter (14-bit), then in parentheses the 14-bit (MSB+LSB) value.
+\item {\bf Registered Parameter Number (RPN)}\quad The value (7-bit MSB only) is shown first, then text is scrolled with the value (MSB), then \texttt{RPN}, then the parameter (14-bit), then in parentheses the 14-bit (MSB+LSB) value.   {\bf Note:} RPN NULL is never displayed\,---\,it obscures NRPN values on the gauge and so is not helpful.
 \item {\bf Non-Registered Parameter Number (NRPN)}\quad The value (7-bit MSB only) is shown first, then text is scrolled with the value (MSB), then \texttt{NRPN}, then the parameter (14-bit), then in parentheses the 14-bit (MSB+LSB) value.
 \item {\bf Channel Mode}\quad On the Uno, the channel mode value is shown first, then the text \texttt{CHANNEL MODE}, then the channel mode parameter (120--127).  The Mega is more specific: the meaning channel mode parameter and value are instead shown as a text message (such as \texttt{RESET ALL CONTROLLERS}).  In the case of \texttt{MONO ON} the channel count is shown first.  The Channel Mode parameters are:
 \begin{center}\begin{tabular}{@{}rlll@{}}

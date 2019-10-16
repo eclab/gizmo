@@ -472,6 +472,7 @@ void writeFooterAndSend()
 
 
 
+#define RPN_NULL (16383)
 
 
 
@@ -832,6 +833,11 @@ void go()
                             case MIDI_RPN_DECREMENT:
                                 {
                                 str = rpn_p;
+                            	if (itemValue == RPN_NULL)  // note FALL THRU
+                            		{
+                            		newItem = NO_NEW_ITEM;
+                            		str = NULL; 
+                            		}
                                 }
                             break;
                             case MIDI_PITCH_BEND:
@@ -916,7 +922,7 @@ void go()
 #endif                                                          
                             }
                         }
-                    else                    // Fast MIDI
+                    else if (newItem != NO_NEW_ITEM)                   // Fast MIDI is all that's left.  RPN_NULL will trigger NO_NEW_ITEM
                         {
                         local.gauge.fastMidi[itemType] = !local.gauge.fastMidi[itemType];
                         }
