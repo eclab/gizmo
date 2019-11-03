@@ -824,16 +824,26 @@ void removeSuccessiveTies(uint8_t p, uint8_t trackLen)
 
     p = incrementAndWrap(p, trackLen);
     uint16_t v = (((uint16_t)trackLen) * local.stepSequencer.currentTrack + p) * 2 ;
+    uint8_t removed = false;
     while((data.slot.data.stepSequencer.buffer[v + 1]== 0) &&
         data.slot.data.stepSequencer.buffer[v] == 1)
         {
+        removed = true;
         data.slot.data.stepSequencer.buffer[v] = 0;  // make it a rest
         p = incrementAndWrap(p, trackLen);
         v = (((uint16_t)trackLen) * local.stepSequencer.currentTrack + p) * 2 ;
         }
-                        
-    // we gotta do this because we just deleted some notes :-(
-    sendAllSoundsOff();
+      
+    if (removed)
+    	{                  
+		// we gotta do this because we just deleted some notes :-(
+		uint8_t out = (local.stepSequencer.outMIDI[local.stepSequencer.currentTrack] == MIDI_OUT_DEFAULT ? 
+			options.channelOut : local.stepSequencer.outMIDI[local.stepSequencer.currentTrack]);
+		if (out != NO_MIDI_OUT)
+			{
+			sendAllSoundsOff(out);
+			}
+		}
     }
                                                 
 
@@ -1284,6 +1294,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
 #endif INCLUDE_EXTENDED_STEP_SEQUENCER
         )
         {
+        
         TOGGLE_IN_LED();
         uint8_t note = itemNumber;
         uint8_t velocity = itemValue;
@@ -1359,6 +1370,8 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                         
         local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
         }
+
+
     }
     else if (newItem && (itemType == MIDI_NOTE_OFF)
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
