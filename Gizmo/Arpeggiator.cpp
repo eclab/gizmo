@@ -336,6 +336,10 @@ void arpeggiatorRemoveNote(uint8_t note)
                 }
             }
         }
+    if (local.arp.numChordNotes == 0)
+    	{
+        local.arp.currentPosition = ARP_POSITION_START;		// we just removed notes so we need to reset or playArpeggio() may miss it
+    	}
     }
         
 
@@ -351,7 +355,10 @@ void arpeggiatorAddNote(uint8_t note, uint8_t velocity)
             marked++;
         }
     if (marked == local.arp.numChordNotes)  // they're all marked, time to reset
+    	{
         local.arp.numChordNotes = 0;
+        local.arp.currentPosition = ARP_POSITION_START;		// we just removed notes so we need to reset or playArpeggio() will miss it
+        }
 
     if (local.arp.numChordNotes == MAX_ARP_CHORD_NOTES)  // at this stage, of we're still full, someone's holding down a lot of notes!
         return;
@@ -422,6 +429,7 @@ void arpeggiatorStartStopClock()
         }
     else
         {
+        local.arp.currentPosition = ARP_POSITION_START;
         startClock(true);
         }
     }
