@@ -292,7 +292,7 @@ void stateStepSequencerMenuPattern()
 
 void stateStepSequencerMenuPerformanceKeyboard()
     {
-    uint8_t result = doNumericalDisplay(CHANNEL_LAYER, CHANNEL_TRANSPOSE, options.stepSequencerPlayAlongChannel, true, GLYPH_TRANSPOSE);
+    uint8_t result = doNumericalDisplay(CHANNEL_ADD_TO_STEP_SEQUENCER, CHANNEL_TRANSPOSE, options.stepSequencerPlayAlongChannel, true, GLYPH_TRANSPOSE);
     playStepSequencer();
     switch (result)
         {
@@ -1223,9 +1223,8 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
     	itemType != MIDI_CUSTOM_CONTROLLER && 
     	local.stepSequencer.performanceMode && 
     	options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE && 
-    	options.stepSequencerPlayAlongChannel != CHANNEL_LAYER)
+    	options.stepSequencerPlayAlongChannel != CHANNEL_ADD_TO_STEP_SEQUENCER)
         {
-        
         TOGGLE_IN_LED();
         // figure out what the channel should be
         uint8_t channelOut = options.stepSequencerPlayAlongChannel;
@@ -1233,7 +1232,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
             channelOut = options.channelOut;
                 
         // send the appropriate command
-        if (channelOut != 0)
+        if (channelOut != NO_MIDI_OUT)
             {
             if (itemType == MIDI_NOTE_ON)
                 {
@@ -1253,10 +1252,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 }
             else if (itemType == MIDI_CC_7_BIT)  // we're always raw
                 {
-                if (itemNumber < 32)
-                    sendControllerCommand(CONTROL_TYPE_CC, itemNumber, itemValue, channelOut);
-                else
-                    sendControllerCommand(CONTROL_TYPE_CC, itemNumber, (itemValue << 7), channelOut);
+				sendControllerCommand(CONTROL_TYPE_CC, itemNumber, itemValue << 7, channelOut);
                 }
             else if (itemType == MIDI_PROGRAM_CHANGE)
                 {
@@ -1302,7 +1298,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
         
         if ((local.stepSequencer.muted[local.stepSequencer.currentTrack] && !options.stepSequencerNoEcho)
 	#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-       	   || (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel == CHANNEL_LAYER )
+       	   || (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel == CHANNEL_ADD_TO_STEP_SEQUENCER )
 	#endif INCLUDE_EXTENDED_STEP_SEQUENCER
 		)
 		{
@@ -1375,7 +1371,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
     }
     else if (newItem && (itemType == MIDI_NOTE_OFF)
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-        && (!(local.stepSequencer.performanceMode) || options.stepSequencerPlayAlongChannel == CHANNEL_LAYER )
+        && (!(local.stepSequencer.performanceMode) || options.stepSequencerPlayAlongChannel == CHANNEL_ADD_TO_STEP_SEQUENCER )
         && local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_NOTE
 #endif INCLUDE_EXTENDED_STEP_SEQUENCER
         )

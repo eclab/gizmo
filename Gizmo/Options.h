@@ -21,6 +21,8 @@ extern uint32_t lastTempoTapTime;
 // and screenBrightness is 4 bits and channelIn is 4 bits etc.  But it'd require complex
 // math and would increase the code size and right now code size is our problem.
 
+#define NO_MIDI_OUT (0)
+ 
 struct _options
     {
     // 16-bit stuff first

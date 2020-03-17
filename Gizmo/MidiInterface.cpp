@@ -1254,6 +1254,7 @@ void handleGeneralControlChange(byte channel, byte number, byte value)
                 }
             else
 #endif
+/** Handled internally by StepSequencer
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
 			if (application == STATE_STEP_SEQUENCER)
 				{
@@ -1275,6 +1276,7 @@ void handleGeneralControlChange(byte channel, byte number, byte value)
 				}
 			else
 #endif
+*/
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
 			if (application == STATE_ARPEGGIATOR)
 				{
@@ -1363,6 +1365,7 @@ void handleProgramChange(byte channel, byte number)
 				}
 			else
 #endif
+/** Handled internally by StepSequencer
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
 			if (application == STATE_STEP_SEQUENCER)
 				{
@@ -1384,6 +1387,7 @@ void handleProgramChange(byte channel, byte number)
 				}
 			else
 #endif
+*/
 #ifdef INCLUDE_SPLIT
             // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
             if (application == STATE_SPLIT && local.split.playing && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
@@ -1521,6 +1525,7 @@ void handlePitchBend(byte channel, int bend)
 			}
         else
 #endif
+/*
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
         if (application == STATE_STEP_SEQUENCER)
         	{
@@ -1541,6 +1546,7 @@ void handlePitchBend(byte channel, int bend)
 			}
         else
 #endif
+*/
 #ifdef INCLUDE_SPLIT
             // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
             if (application == STATE_SPLIT && local.split.playing && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
