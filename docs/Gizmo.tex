@@ -721,11 +721,11 @@ Of particular use are Tempo, Note Speed, Swing, and especially Click.
 \hline\\[-0.5em]
 Back Button				& Exit  & Exit & Leave Performance Mode\\
 Back Button (Long)			& Toggle Bypass & Toggle Bypass & Toggle Bypass\\
-Middle Button				& Rest & Toggle Mute Track & Toggle Mute Track\\
-Middle Button (Long)			& Tie & Clear Track & Toggle Solo\\
+Middle Button				& Rest & Toggle Mute Track & Schedule Mute Track\\
+Middle Button (Long)			& Tie & Clear Track & Schedule Solo\\
 Select Button				& Start/Stop & Start/Stop & Start/Stop\\
 Select Button (Long)			& Menu & Menu & Menu\\
-Select + Middle Button (Long) 	& Enter Performance Mode & Enter Performance Mode & Trigger Next Sequence\\
+Select + Middle Button (Long) 	& Enter Performance Mode & Enter Performance Mode & Schedule Next Sequence\\
 Left Knob					& Change Track & Change Track & Change Track\\
 Right Knob				& Change Note Position & Leave Play Cursor Mode & Change Tempo\\
 						& {\it or} Enter Play Cursor Mode && {\it (Press Back/Select when Done)}\\
@@ -751,12 +751,12 @@ Keystrokes, CC, etc.			& Enter at Edit Cursor&Enter at Play Cursor & Enter at Pl
 \begin{tabular}{@{}rll@{}}
 \it CC Number & \it CC Value	& \it Operation\\
 \hline\\[-0.5em]
-64 ... 75	&	Any		& Toggle Mute (or Advance Mute in Performance Mode) for track \(n - 63\), that is, track 1...12\\
+64 ... 75	&	Any		& Toggle Mute (or Schedule) Mute for track \(n - 63\), that is, track 1...12\\
 76 ... 87	&	Any		& Select Track \(n - 75\), that is, track 1...12\\
-88	&	Any		& Toggle Solo\\
+88	&	Any		& Toggle (or Schedule) Solo\\
 89	&	Any		& Toggle Transposable Track\\
 90	&	Any		& Clear Track\\
-91	&	Any		& Toggle Triggering of Next Sequence\\
+91	&	Any		& Schedule Next Sequence\\
 92	&	Any		& Toggle Click Track\\
 93	&	Any		& Mark\\
 94	&	Any		& Copy\\
