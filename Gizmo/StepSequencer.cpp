@@ -1385,6 +1385,11 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
             {
             local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = (itemValue << 7) + 1;
             }
+            
+         // pass through -- hope this is right
+         // Note that we're always converting to channel aftertouch
+         
+    	sendControllerCommand(CONTROL_TYPE_AFTERTOUCH, 0, itemValue, options.channelOut);
         }
     else if (newItem && (itemType == MIDI_PROGRAM_CHANGE))
         {
@@ -1392,6 +1397,9 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
             {
             local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = (itemNumber << 7) + 1;
             }
+
+         // pass through -- hope this is right
+    	sendControllerCommand(CONTROL_TYPE_PC, 0, itemValue, options.channelOut);
         }
     else if (newItem && (itemType == MIDI_PITCH_BEND))
         {
@@ -1402,6 +1410,9 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 v = MAX_CONTROL_VALUE;
             local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = v + 1;
             }
+            
+         // pass through -- hope this is right
+    	sendControllerCommand(CONTROL_TYPE_PITCH_BEND, 0, itemValue, options.channelOut);
         }
     else if (newItem && (itemType == MIDI_CC_7_BIT))
         {
@@ -1413,7 +1424,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
             }
         
          // pass through -- hope this is right
-        sendControllerCommand(CONTROL_TYPE_CC, itemNumber, itemValue, options.channelOut);
+        sendControllerCommand(CONTROL_TYPE_CC, itemNumber, itemValue << 7, options.channelOut);
         }
     else if (newItem && (itemType == MIDI_CC_14_BIT))
         {
