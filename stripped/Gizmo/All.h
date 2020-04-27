@@ -70,11 +70,8 @@
 
 
 // -- ADDITIONAL FEATURES --
-// These are turned on as a consequence of other features -- they're probably not useful to turn on yourself.
-// INCLUDE_EXTENDED_FONT					Should the extended font be made available?  This currently consists of some extra LFO wave shapes
 // INCLUDE_SEND_NULL_RPN					Should we terminate NRPN/RPN messages with two additional CCs?  Better but slower.
-
-// -- EXPERIMENTAL JUNK --
+// INCLUDE_EXTENDED_FONT					[In development] Should the extended font be made available?  This currently consists of some extra LFO wave shapes that are unused.  So don't turn this on.
 // INCLUDE_CONTROL_BY_NOTE					[In development] Should we allow control of Gizmo by playing notes on the Control channel?
 // INCLUDE_STEP_SEQUENCER_CC_MUTE_TOGGLES	[In development] Should we toggle mutes in the step sequencer?
 
@@ -83,14 +80,19 @@
 // USE_ALL_SOUNDS_OFF						to All Notes Off.  But other hardware, such as the Kawai K4, doesn't properly respond to ALL Sounds 
 //											Off.  :-(  You can set one, or both, of these.
 
-#define USE_ALL_SOUNDS_OFF					// see Mega below, it uses both
+#define USE_ALL_SOUNDS_OFF
+#define USE_ALL_NOTES_OFF
 
 
-/// Here are the standard values for the MEGA and for the UNO
+
+
+
+/// Here are the standard values for the MEGA
 
 #if defined(__MEGA__)
 #define INCLUDE_ARPEGGIATOR
-#define INCLUDE_STEP_SEQUENCER
+#define INCLUDE_ADVANCED_STEP_SEQUENCER
+#define INCLUDE_STEP_SEQUENCER_CONTROL
 #define INCLUDE_RECORDER
 #define INCLUDE_GAUGE
 #define INCLUDE_CONTROLLER
@@ -99,6 +101,12 @@
 #define INCLUDE_SYNTH
 #define INCLUDE_MEASURE
 
+#define USE_EXTRA_POTS
+
+#define MENU_ITEMS()     const char* menuItems[10] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), options_p };
+#define NUM_MENU_ITEMS  (10)
+
+
 //// NOTE: To include the Sysex dump facility, you not only uncomment the INCLUDE_SYSEX line below, but
 //// you ALSO must go into the "midi_Settings.h" file in the Forty Seven Effects MIDI library and change the line 
 ////    static const unsigned SysExMaxSize = 1;		// this should never be 0 due to a library bug
@@ -106,6 +114,11 @@
 ////	static const unsigned SysExMaxSize = 787;   // the size of the MIDI Dump of a Slot
 
 //#define INCLUDE_SYSEX
+#if defined(INCLUDE_SYSEX)
+#define MENUITEMS     const char* menuItems[11] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), PSTR("SYSEX"), options_p }
+#define NUM_MENU_ITEMS  (11)
+#endif INCLUDE_SYSEX
+
 
 #endif __MEGA__
 
@@ -113,36 +126,58 @@
 
 
 
+/// Here are the standard values for the UNO.  You have to select an application, see below.
 
 #if defined(__UNO__)
 
-// This is a useful set
-#define INCLUDE_ARPEGGIATOR
+// You can pick ONE of these
+// #define INCLUDE_ARPEGGIATOR
 #define INCLUDE_STEP_SEQUENCER
-#define INCLUDE_RECORDER
-#define INCLUDE_CONTROLLER
-
-// You can include these but one or more other items will have to be jettisoned as a result.
-// IMPORTANT NOTE: If you include another application or a different one will also have to modify 
-// The menu array on around Line 616 of TopLevel.cpp, where it states which applications are available.
-// You need to make sure that the array length stays correct (for example, it says menuItems[5],
-// and if you remove an app, it needs to say menuItems[4]).  Similarly, the second argument in doMenuDisplay(...)
-// (currently a 5) would need to change to a 4.
-//
-// Whatever applications you install need to be ordered in this order in that menu:
-// Arpeggiator, Step Sequencer, Recorder, Gauge, Controller, Split, Thru, Synth, Measure, Sysex, [Options]
-
-// --- Additional applications
+// #define INCLUDE_RECORDER
+// #define INCLUDE_CONTROLLER
 // #define INCLUDE_GAUGE
 // #define INCLUDE_SPLIT
 // #define INCLUDE_THRU
 // #define INCLUDE_SYNTH
 // #define INCLUDE_MEASURE
 
+#define NUM_MENU_ITEMS  (2)
+
+#ifdef INCLUDE_ARPEGGIATOR
+#define MENU_ITEMS()     const char* menuItems[2] = { PSTR("ARPEGGIATOR"), options_p };
+#endif INCLUDE_ARPEGGIATOR
+#ifdef INCLUDE_STEP_SEQUENCER
+#define MENU_ITEMS()     const char* menuItems[2] = { PSTR("STEP SEQUENCER"), options_p };
+#endif INCLUDE_STEP_SEQUENCER
+#ifdef INCLUDE_RECORDER
+#define MENU_ITEMS()     const char* menuItems[2] = { PSTR("RECORDER"), options_p };
+#endif INCLUDE_RECORDER
+#ifdef INCLUDE_CONTROLLER
+#define MENU_ITEMS()     const char* menuItems[2] = { PSTR("CONTROLLER"), options_p };
+#endif INCLUDE_CONTROLLER
+#ifdef INCLUDE_GAUGE
+#define MENU_ITEMS()     const char* menuItems[2] = { PSTR("GAUGE"), options_p };
+#endif INCLUDE_GAUGE
+#ifdef INCLUDE_SPLIT
+#define MENU_ITEMS()     const char* menuItems[2] = { PSTR("SPLIT"), options_p };
+#endif INCLUDE_SPLIT
+#ifdef INCLUDE_THRU
+#define MENU_ITEMS()     const char* menuItems[2] = { PSTR("THRU"), options_p };
+#endif INCLUDE_THRU
+#ifdef INCLUDE_SYNTH
+#define MENU_ITEMS()     const char* menuItems[2] = { PSTR("SYNTH"), options_p };
+#endif INCLUDE_SYNTH
+#ifdef INCLUDE_MEASURE
+#define MENU_ITEMS()     const char* menuItems[2] = { PSTR("MEASURE"), options_p };
+#endif INCLUDE_MEASURE
+
+
 // -- Additional Global features
 // Sysex isn't an available option on the Uno: it doesn't have enough memory
 
 #endif __UNO__
+
+
 
 
 
@@ -158,7 +193,9 @@
 #define INCLUDE_SYNTH_YAMAHA_TX81Z
 #endif INCLUDE_SYNTH
 
-
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#define INCLUDE_STEP_SEQUENCER
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
 
 
 

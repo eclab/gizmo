@@ -125,8 +125,11 @@ GLOBAL static uint8_t ignoreNextButtonRelease[NUM_BUTTONS] = { false, false, fal
 
 #define LEFT_POT 0
 #define RIGHT_POT 1
+
+#ifdef USE_EXTRA_POTS
 #define A2_POT 2
 #define A3_POT 3
+#endif
 
 GLOBAL uint16_t pot[NUM_POTS];        // The current pot value OR MIDI controlled value
 GLOBAL uint8_t potUpdated[NUM_POTS];       // has the pot been updated?  CHANGED or NO_CHANGE
@@ -347,7 +350,9 @@ uint8_t update()
             if (!lockoutPots)
                 potUpdated[LEFT_POT] = updatePot(pot[LEFT_POT], potCurrent[LEFT_POT], potCurrentFinal[LEFT_POT], potLast[LEFT_POT], A0);
 #endif // HEADLESS
+#ifdef USE_EXTRA_POTS
             potUpdated[A2_POT] = updatePot(pot[A2_POT], potCurrent[A2_POT], potCurrentFinal[A2_POT], potLast[A2_POT], A14);
+#endif USE_EXTRA_POTS
             return 0;  // don't update the display
             }
         break;
@@ -357,7 +362,9 @@ uint8_t update()
             if (!lockoutPots)
                 potUpdated[RIGHT_POT] = updatePot(pot[RIGHT_POT], potCurrent[RIGHT_POT], potCurrentFinal[RIGHT_POT], potLast[RIGHT_POT], A1);
 #endif // HEADLESS
+#ifdef USE_EXTRA_POTS
             potUpdated[A3_POT] = updatePot(pot[A3_POT], potCurrent[A3_POT], potCurrentFinal[A3_POT], potLast[A3_POT], A15);
+#endif USE_EXTRA_POTS
             return 0;  // don't update the display
             }
         break;  
@@ -588,31 +595,14 @@ void go()
                 {
                 immediateReturnState = STATE_ROOT;
                 }
-#if defined(__MEGA__)
-#if defined(INCLUDE_SYSEX)
-            const char* menuItems[11] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), PSTR("SYSEX"), options_p };
-            if (doMenuDisplay(menuItems, 11, FIRST_APPLICATION, STATE_ROOT, 1) == MENU_SELECTED)
-#else
-                const char* menuItems[10] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), options_p };
-            if (doMenuDisplay(menuItems, 10, FIRST_APPLICATION, STATE_ROOT, 1) == MENU_SELECTED)
-#endif
-                {
+
+			MENU_ITEMS(); 			// See All.h
+            if (doMenuDisplay(menuItems, NUM_MENU_ITEMS, FIRST_APPLICATION, STATE_ROOT, 1) == MENU_SELECTED)
+
 #if defined(TOPLEVEL_BYPASS)
-                if (bypass == BYPASS_FIRST_ON)
-                    toggleBypass(0); // the channel doesn't matter, it'll get ignored
-#endif
-                }
-#endif
-#if defined(__UNO__)
-            const char* menuItems[5] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("CONTROLLER"), options_p };
-            if (doMenuDisplay(menuItems, 5, FIRST_APPLICATION, STATE_ROOT, 1) == MENU_SELECTED)
-                {
-#if defined(TOPLEVEL_BYPASS)
-                if (bypass == BYPASS_FIRST_ON)
-                    toggleBypass(0); // the channel doesn't matter, it'll get ignored
-#endif
-                }
-#endif
+			if (bypass == BYPASS_FIRST_ON)
+				toggleBypass(0); // the channel doesn't matter, it'll get ignored
+#endif TOPLEVEL_BYPASS
             }
         break;  
 #ifdef INCLUDE_ARPEGGIATOR
@@ -937,8 +927,13 @@ void go()
             {
             if (entry)
                 MIDI.sendRealTime(MIDIClock);
+#ifdef USE_EXTRA_POTS
             const char* menuItems[9] = { PSTR("GO"), PSTR("L KNOB"), PSTR("R KNOB"), PSTR("M BUTTON"), PSTR("R BUTTON"), PSTR("WAVE"), PSTR("RANDOM"), PSTR("A2"), PSTR("A3"),  };
             doMenuDisplay(menuItems, 9, STATE_CONTROLLER_PLAY, STATE_ROOT, 1);
+#else
+            const char* menuItems[7] = { PSTR("GO"), PSTR("L KNOB"), PSTR("R KNOB"), PSTR("M BUTTON"), PSTR("R BUTTON"), PSTR("WAVE"), PSTR("RANDOM")  };
+            doMenuDisplay(menuItems, 7, STATE_CONTROLLER_PLAY, STATE_ROOT, 1);
+#endif USE_EXTRA_POTS
             }
         break;
 #endif
@@ -1309,6 +1304,7 @@ void go()
             playStepSequencer();
             }
         break;
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
         case STATE_STEP_SEQUENCER_MENU_TYPE:
             {
             stateStepSequencerMenuType();
@@ -1319,6 +1315,7 @@ void go()
             stateStepSequencerMenuTypeParameter();
             }
         break;
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
         case STATE_STEP_SEQUENCER_MENU_PATTERN:
             {
             stateStepSequencerMenuPattern();
@@ -1560,6 +1557,7 @@ void go()
                         }
                     }
         
+#ifdef USE_EXTRA_POTS
                 if (potUpdated[A2_POT] && (options.a2ControlType != CONTROL_TYPE_OFF))
                     {
                     local.control.displayValue = pot[A2_POT];            
@@ -1589,6 +1587,7 @@ void go()
                         local.control.potWaiting[A3_POT] = 1;
                         }
                     }
+#endif USE_EXTRA_POTS
 
                 // figure out who has been waiting the longest, if any.  The goal here is to only allow one out at a time and yet prevent starvation
 
@@ -1604,6 +1603,7 @@ void go()
                     if (local.control.potUpdateTime[RIGHT_POT] - currentTime > winnerTime) { winner = RIGHT_POT; winnerTime = currentTime - local.control.potUpdateTime[RIGHT_POT]; }
                     }
 
+#ifdef USE_EXTRA_POTS
                 if (local.control.potWaiting[A2_POT] && (currentTime - local.control.potUpdateTime[A2_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
                     {
                     if (local.control.potUpdateTime[A2_POT] - currentTime > winnerTime) { winner = A2_POT; winnerTime = currentTime - local.control.potUpdateTime[A2_POT]; }
@@ -1613,6 +1613,7 @@ void go()
                     {
                     if (local.control.potUpdateTime[A3_POT] - currentTime > winnerTime) { winner = A3_POT; winnerTime = currentTime - local.control.potUpdateTime[A3_POT]; }
                     }
+#endif USE_EXTRA_POTS
                                         
                 // here we go
                 if (winner == LEFT_POT)
@@ -1627,6 +1628,7 @@ void go()
                     local.control.potUpdateTime[RIGHT_POT] = currentTime;
                     local.control.potWaiting[RIGHT_POT] = 0;
                     }
+#ifdef USE_EXTRA_POTS
                 else if (winner == A2_POT)
                     {
                     sendControllerCommand( local.control.displayType = options.a2ControlType, options.a2ControlNumber, local.control.potUpdateValue[A2_POT], options.channelOut);
@@ -1639,6 +1641,7 @@ void go()
                     local.control.potUpdateTime[A3_POT] = currentTime;
                     local.control.potWaiting[A3_POT] = 0;
                     }
+#endif USE_EXTRA_POTS
                 }
    
             if (updateDisplay)
@@ -1713,6 +1716,7 @@ void go()
             doMenuDisplay(menuItems, 7, STATE_CONTROLLER_PLAY_RANDOM, STATE_CONTROLLER, 1);
             }
         break;
+#ifdef USE_EXTRA_POTS
         case STATE_CONTROLLER_SET_A2_TYPE:
             {
             setControllerType(options.a2ControlType, STATE_CONTROLLER_SET_A2_NUMBER, STATE_NONE);
@@ -1723,6 +1727,7 @@ void go()
             setControllerType(options.a3ControlType, STATE_CONTROLLER_SET_A3_NUMBER, STATE_NONE);
             }
         break;
+#endif USE_EXTRA_POTS
         case STATE_CONTROLLER_PLAY_WAVE_ENVELOPE:
             {
             stateControllerPlayWaveEnvelope();
@@ -1812,6 +1817,7 @@ void go()
             setControllerNumber(options.randomControlType, options.randomControlNumber, backupOptions.randomControlType, backupOptions.randomControlNumber, STATE_CONTROLLER_RANDOM);
             }
         break;
+#ifdef USE_EXTRA_POTS
         case STATE_CONTROLLER_SET_A2_NUMBER:
             {
             setControllerNumber(options.a2ControlType, options.a2ControlNumber, backupOptions.a2ControlType, backupOptions.a2ControlNumber, STATE_CONTROLLER);
@@ -1822,6 +1828,7 @@ void go()
             setControllerNumber(options.a3ControlType, options.a3ControlNumber, backupOptions.a3ControlType, backupOptions.a3ControlNumber, STATE_CONTROLLER);
             }
         break;
+#endif USE_EXTRA_POTS
         case STATE_CONTROLLER_SET_LEFT_KNOB_NUMBER:
             {
             setControllerNumber(options.leftKnobControlType, options.leftKnobControlNumber, backupOptions.leftKnobControlType, backupOptions.leftKnobControlNumber, STATE_CONTROLLER);

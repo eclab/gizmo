@@ -251,8 +251,10 @@ struct _stepSequencerLocal
     uint8_t transposable[MAX_STEP_SEQUENCER_TRACKS];
     uint8_t pattern[MAX_STEP_SEQUENCER_TRACKS];
     uint8_t dontPlay[MAX_STEP_SEQUENCER_TRACKS];
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
 	uint16_t controlParameter[MAX_STEP_SEQUENCER_TRACKS];
     uint16_t lastControlValue[MAX_STEP_SEQUENCER_TRACKS];
+#endif
     uint8_t newData;		// a temporary variable.  comes in from STATE_STEP_SEQUENCER_MENU_TYPE, used in STATE_STEP_SEQUENCER_MENU_TYPE_PARAMETER
 	int8_t transpose;
     uint8_t performanceMode;
@@ -333,8 +335,11 @@ void playStepSequencer();
 
 // Gives other options
 void stateStepSequencerMenu();
+
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
 void stateStepSequencerMenuType();
 void stateStepSequencerMenuTypeParameter();
+#endif
 
 void stopStepSequencer();
 
