@@ -46,7 +46,7 @@ GLOBAL uint8_t bypass = BYPASS_OFF;                       // This is set when we
 #endif
 
 GLOBAL uint8_t bypassOut = BYPASS_OFF;                    // This is set when we are preventing Gizmo's applications from writing out
-GLOBAL uint8_t dontBypassOut = 0;                                // An application can set this to allow writing out, but he must afterwards say 
+GLOBAL uint8_t dontBypassOut = 0;                         // An application can set this to allow writing out, but he must afterwards say 
 
 void toggleBypass(uint8_t channel)
     {
@@ -110,26 +110,10 @@ void toggleBypass(uint8_t channel)
 // UPDATING.  We don't update the buttons or pots every tick, because it is expensive.  Instead
 // we update them every 4 ticks (the pots are updated a different tick than the buttons).
 
-#define NUM_BUTTONS (3)
-
-#define BACK_BUTTON 0
-#define MIDDLE_BUTTON 1
-#define SELECT_BUTTON 2
-
 GLOBAL uint8_t button[NUM_BUTTONS];
 GLOBAL uint8_t buttonUpdated[NUM_BUTTONS] = { NO_CHANGE, NO_CHANGE, NO_CHANGE };
 GLOBAL static uint8_t ignoreNextButtonRelease[NUM_BUTTONS] = { false, false, false };
 
-
-#define NUM_POTS (4)
-
-#define LEFT_POT 0
-#define RIGHT_POT 1
-
-#ifdef USE_EXTRA_POTS
-#define A2_POT 2
-#define A3_POT 3
-#endif
 
 GLOBAL uint16_t pot[NUM_POTS];        // The current pot value OR MIDI controlled value
 GLOBAL uint8_t potUpdated[NUM_POTS];       // has the pot been updated?  CHANGED or NO_CHANGE
@@ -350,9 +334,11 @@ uint8_t update()
             if (!lockoutPots)
                 potUpdated[LEFT_POT] = updatePot(pot[LEFT_POT], potCurrent[LEFT_POT], potCurrentFinal[LEFT_POT], potLast[LEFT_POT], A0);
 #endif // HEADLESS
-#ifdef USE_EXTRA_POTS
+#ifdef INCLUDE_MEGA_POTS
             potUpdated[A2_POT] = updatePot(pot[A2_POT], potCurrent[A2_POT], potCurrentFinal[A2_POT], potLast[A2_POT], A14);
-#endif USE_EXTRA_POTS
+#else
+            potUpdated[A2_POT] = updatePot(pot[A2_POT], potCurrent[A2_POT], potCurrentFinal[A2_POT], potLast[A2_POT], A2);
+#endif INCLUDE_MEGA_POTS
             return 0;  // don't update the display
             }
         break;
@@ -362,9 +348,11 @@ uint8_t update()
             if (!lockoutPots)
                 potUpdated[RIGHT_POT] = updatePot(pot[RIGHT_POT], potCurrent[RIGHT_POT], potCurrentFinal[RIGHT_POT], potLast[RIGHT_POT], A1);
 #endif // HEADLESS
-#ifdef USE_EXTRA_POTS
+#ifdef INCLUDE_MEGA_POTS
             potUpdated[A3_POT] = updatePot(pot[A3_POT], potCurrent[A3_POT], potCurrentFinal[A3_POT], potLast[A3_POT], A15);
-#endif USE_EXTRA_POTS
+#else
+            potUpdated[A3_POT] = updatePot(pot[A3_POT], potCurrent[A3_POT], potCurrentFinal[A3_POT], potLast[A3_POT], A3);	
+#endif INCLUDE_MEGA_POTS
             return 0;  // don't update the display
             }
         break;  
@@ -471,52 +459,10 @@ void writeFooterAndSend()
 
 
 
-#define RPN_NULL (16383)
-
-
-
-/// GAUGE HELPER FUNCTIONS
-/// Most of the Gauge app is inlined in the state machine below.
-/// These three helper functions reduce the memory footprint.
-/// However we can't move these to a file like Gauge.cpp because
-/// the linker wastes memory in doing so.  So they're staying here.
-
-/// Adds a number to the buffer.  The number may be buffered with spaces
-/// at its beginning: these are not removed.  This is used to write the FIRST
-/// number in a scrolling message for CC, RPN, or NRPN.
-void addGaugeNumberNoTrim(uint16_t val)
-    {
-    char b[6];
-    numberToString(b, val);
-    addToBuffer(b);
-    }
-
-/// Adds a number to the buffer, removing initial spaces.  This is used to write
-/// subsequent numbers in a scrolling message for CC, RPN, or NRPN.
-void addGaugeNumber(uint16_t val)
-    {
-    char b[6];
-    char* a;
-    numberToString(b, val);
-    a = b;
-    while(a[0] == ' ') a++;  // trim out initial spaces
-    addToBuffer(a);
-    }
-
-/// Writes a note pitch and velocity (or pressure value) to the screen.
-void writeGaugeNote()
-    {
-    writeNotePitch(led2, (uint8_t) itemNumber);                           // Note
-    writeShortNumber(led, (uint8_t) itemValue, false);            // Velocity or Pressure
-    }
-
-
-
-
 //// MIDI SIGNALS
 ////
 //// These are occasional (not constant) MIDI signals
-//// that we can reasonably display on our gauge.  This is used for STATE_GAUGE_ANY
+//// that we can reasonably display on our gauge.  This is used for STATE_GAUGE
 //// Omitted are: MIDI Clock, Active Sensing, both AfterTouch forms, Time Code Quarter Frame
 
 
@@ -534,12 +480,6 @@ GLOBAL uint8_t itemChannel = CHANNEL_OFF;
 ///  [hehe, global local]
 GLOBAL _local local;
         
-
-void write3x5GlyphPair(uint8_t glyph1, uint8_t glyph2)
-    {
-    write3x5Glyph(led2, glyph1, 0);
-    write3x5Glyph(led2, glyph2, 4);
-    }
 
 //// TOP LEVEL STATE VARIABLES
 
@@ -633,292 +573,7 @@ void go()
 #ifdef INCLUDE_GAUGE
         case STATE_GAUGE:
             {   
-            if (entry) 
-                {
-                backupOptions = options;
-                clearScreen();
-                clearBuffer();
-                memset(local.gauge.fastMidi, 0, 3);
-                setParseRawCC(options.gaugeMidiInProvideRawCC);
-                entry = false; 
-                }
-            else
-                {
-                uint8_t dontShowValue = 0;
-
-                // at present I'm saying (newItem) rather than (newItem == NEW_ITEM)
-                // so even the WAIT_FOR_A_SEC stuff gets sent through.  Note sure
-                // if testing for (newItem=1) will result in display starvation
-                // when every time the display comes up we have a new incomplete
-                // CC, NRPN, or RPN.
-        
-                if (getBufferLength() > 0 && updateDisplay)  // we've got a scrollbuffer loaded.  Won't happen on first update.
-                    {
-                    clearScreen();
-                    scrollBuffer(led, led2);
-                    }
-                                        
-                if (isUpdated(SELECT_BUTTON, RELEASED))
-                    {
-                    setParseRawCC(options.gaugeMidiInProvideRawCC = !options.gaugeMidiInProvideRawCC);
-                    saveOptions();
-                    }
-                if (newItem)
-                    {
-                    if ((itemType >= MIDI_NOTE_ON))   // It's not fast midi
-                        {
-                        const char* str = NULL;
-                                                    
-                        clearScreen();
-                        if (itemType < MIDI_CC_7_BIT) // it's not a CC, RPN, or NRPN, and it's not displayable FAST MIDI
-                            {
-                            clearBuffer(); // so we stop scrolling
-                            }
-
-                        switch(itemType)
-                            {
-                            case MIDI_NOTE_ON:
-                                {
-                                // Note we can't arrange this and NOTE OFF as a FALL THRU
-                                // because writeGaugeNote() overwrites the points that we set
-                                // immediately afterwards, so it can't be after them!
-                                writeGaugeNote();
-                                for(uint8_t i = 0; i < 5; i++)
-                                    setPoint(led, i, 1);
-                                }
-                            break;
-                            case MIDI_NOTE_OFF:
-                                {
-                                writeGaugeNote();
-                                }
-                            break;
-                            case MIDI_AFTERTOUCH:
-                                {
-                                write3x5GlyphPair(GLYPH_3x5_A, GLYPH_3x5_T);
-                                writeShortNumber(led, (uint8_t) itemValue, false);
-                                }
-                            break;
-                            case MIDI_AFTERTOUCH_POLY:
-                                {
-                                writeGaugeNote();
-                                for(uint8_t i = 0; i < 5; i+=2)
-                                    setPoint(led, i, 1);
-                                }
-                            break;
-                            case MIDI_PROGRAM_CHANGE:
-                                {
-                                write3x5GlyphPair(GLYPH_3x5_P, GLYPH_3x5_C);
-                                writeShortNumber(led, (uint8_t) itemNumber, false);
-                                }
-                            break;
-                            case MIDI_CC_7_BIT:
-                                {
-                                if (options.gaugeMidiInProvideRawCC)
-                                    {
-                                    clearBuffer(); // so we stop scrolling
-                                    writeShortNumber(led2, (uint8_t) itemNumber, true);
-                                    writeShortNumber(led, (uint8_t) itemValue, false);
-                                    break;
-                                    }
-                                else if (itemNumber >= 120)             // Channel Mode
-                                    {
-                                    dontShowValue = true;
-                                    switch(itemNumber)
-                                        {
-                                        case 120:
-                                            {
-                                            str = PSTR("ALL SOUND OFF");
-                                            break;
-                                            }
-                                        case 121:
-                                            {
-                                            str = PSTR("RESET ALL CONTROLLERS");
-                                            break;
-                                            }
-                                        case 122:
-                                            {
-                                            if (itemValue)
-                                                str = PSTR("LOCAL ON");
-                                            else
-                                                str = PSTR("LOCAL OFF");
-                                            break;
-                                            }
-                                        case 123:
-                                            {
-                                            str = PSTR("ALL NOTES OFF");
-                                            break;
-                                            }
-                                        case 124:
-                                            {
-                                            str = PSTR("OMNI OFF");
-                                            break;
-                                            }
-                                        case 125:
-                                            {
-                                            str = PSTR("OMNI ON");
-                                            break;
-                                            }
-                                        case 126:
-                                            {
-                                            dontShowValue = false;  // we want to see the value (it's the channel)
-                                            str = PSTR("MONO ON");
-                                            break;
-                                            }
-                                        case 127:
-                                            {
-                                            str = PSTR("POLY ON");
-                                            break;
-                                            }
-                                        }
-                                    break;
-                                    }
-                                // else we fall thru
-                                }
-                            // FALL THRU
-                            case MIDI_CC_14_BIT:
-                                {
-                                str = cc_p;
-                                }
-                            break;
-                            case MIDI_NRPN_14_BIT:
-                                // FALL THRU
-                            case MIDI_NRPN_INCREMENT:
-                                // FALL THRU
-                            case MIDI_NRPN_DECREMENT:
-                                {
-                                str = nrpn_p;
-                                }
-                            break;
-                            case MIDI_RPN_14_BIT:
-                                // FALL THRU
-                            case MIDI_RPN_INCREMENT:
-                                // FALL THRU
-                            case MIDI_RPN_DECREMENT:
-                                {
-                                str = rpn_p;
-                            	if (itemValue == RPN_NULL)  // note FALL THRU
-                            		{
-                            		newItem = NO_NEW_ITEM;
-                            		str = NULL; 
-                            		}
-                                }
-                            break;
-                            case MIDI_PITCH_BEND:
-                                {
-                                writeNumber(led, led2, ((int16_t) itemValue) - 8192);           // pitch bend is actually signed
-                                }
-                            break;
-                            case MIDI_SYSTEM_EXCLUSIVE: 
-                            case MIDI_SONG_POSITION:
-                            case MIDI_SONG_SELECT: 
-                            case MIDI_TUNE_REQUEST:
-                            case MIDI_START: 
-                            case MIDI_CONTINUE:
-                            case MIDI_STOP:
-                            case MIDI_SYSTEM_RESET: 
-                                {
-                                write3x5Glyphs(itemType - MIDI_SYSTEM_EXCLUSIVE + GLYPH_SYSTEM_RESET);
-                                }
-                            break;
-                            }
-                                
-                        if (str != NULL)
-                            {           
-                            char b[5];
-                                                                                        
-                            clearBuffer();
-                                                                
-                            // If we're incrementing/decrementing, add UP or DOWN
-                            if ((itemType >= MIDI_NRPN_INCREMENT))
-                                {
-                                addToBuffer("   ");
-                                if (itemType >= MIDI_NRPN_DECREMENT)
-                                    {
-                                    strcpy_P(b, PSTR("-"));
-                                    }
-                                else
-                                    {
-                                    strcpy_P(b, PSTR("+"));
-                                    }
-                                addToBuffer(b);
-                                }
-                                                                
-                            // else if we're 7-bit CC, just add the value
-                            else if (itemType == MIDI_CC_7_BIT)
-                                {
-                                if (!dontShowValue)
-                                    addGaugeNumberNoTrim(itemValue);
-                                }
-                                                                
-                            // else add the MSB
-                            else
-                                {
-                                addGaugeNumberNoTrim(itemValue >> 7);
-                                }
-                                                                
-                            // Next load the name
-                            if (!dontShowValue)
-                                addToBuffer(" "); 
-                            strcpy_P(b, str);
-                            addToBuffer(b);
-                                                                
-                            if (itemType != MIDI_CC_7_BIT || itemNumber < 120)  // we don't want channel mode drawing here
-                                {       
-                                // Next the number
-                                addToBuffer(" ");
-                                addGaugeNumber(itemNumber);
-                                                                                                                                        
-                                if (itemType != MIDI_CC_7_BIT)          // either we indicate how much we increment/decrement, or show the full 14-bit number
-                                    {
-                                    addToBuffer(" (");
-                                    addGaugeNumber(itemValue);                                      
-                                    addToBuffer(")");
-                                    }
-                                }
-                            }
-                        }
-                    else if (newItem != NO_NEW_ITEM)                   // Fast MIDI is all that's left.  RPN_NULL will trigger NO_NEW_ITEM
-                        {
-                        local.gauge.fastMidi[itemType] = !local.gauge.fastMidi[itemType];
-                        }
-
-                    if (newItem == WAIT_FOR_A_SEC)
-                        newItem = NEW_ITEM;
-                    else
-                        newItem = NO_NEW_ITEM;
-                    }
-                }
-
-            if (updateDisplay)
-                {
-                // blink the fast MIDI stuff
-                for(uint8_t i = 0; i < 3; i++)
-                    {
-                    // slightly inefficient but it gets us under the byte limit
-                    clearPoint(led, i + 5, 1);
-                    if (local.gauge.fastMidi[i])
-                        setPoint(led, i + 5, 1);
-                    }
-                drawMIDIChannel(itemChannel);
-
-                if (options.gaugeMidiInProvideRawCC)
-                    setPoint(led, 5, 1);
-                else
-                    clearPoint(led, 5, 1);
-
-                // At any rate...                
-                // Clear the bypass/beat so it can draw itself again,
-                // because we don't update ourselves every single time 
-                for(uint8_t i = 0; i < 8; i++)
-                    clearPoint(led, i, 0);          
-                }
-     
-
-            if (isUpdated(BACK_BUTTON, RELEASED))
-                {
-                setParseRawCC(false);
-                goUpStateWithBackup(STATE_ROOT);
-                }
+			stateGauge();
             }
         break;
 #endif        
@@ -927,13 +582,8 @@ void go()
             {
             if (entry)
                 MIDI.sendRealTime(MIDIClock);
-#ifdef USE_EXTRA_POTS
             const char* menuItems[9] = { PSTR("GO"), PSTR("L KNOB"), PSTR("R KNOB"), PSTR("M BUTTON"), PSTR("R BUTTON"), PSTR("WAVE"), PSTR("RANDOM"), PSTR("A2"), PSTR("A3"),  };
             doMenuDisplay(menuItems, 9, STATE_CONTROLLER_PLAY, STATE_ROOT, 1);
-#else
-            const char* menuItems[7] = { PSTR("GO"), PSTR("L KNOB"), PSTR("R KNOB"), PSTR("M BUTTON"), PSTR("R BUTTON"), PSTR("WAVE"), PSTR("RANDOM")  };
-            doMenuDisplay(menuItems, 7, STATE_CONTROLLER_PLAY, STATE_ROOT, 1);
-#endif USE_EXTRA_POTS
             }
         break;
 #endif
@@ -997,91 +647,19 @@ void go()
         
         case STATE_SYSEX_SLOT:
             {
-            local.sysex.type = SYSEX_TYPE_SLOT;
-            
-            // make sure that we're reset properly
-            local.sysex.received = RECEIVED_NONE;
-            uint8_t result = doNumericalDisplay(0, NUM_SLOTS - 1, 1, false, GLYPH_NONE);
-            switch (result)
-                {
-                case NO_MENU_SELECTED:
-                    break;
-                case MENU_SELECTED:
-                    local.sysex.slot = currentDisplay;
-                    goDownState(STATE_SYSEX_GO);
-                    break;
-                case MENU_CANCELLED:
-                    goUpState(STATE_SYSEX);
-                    break;
-                }
+            stateSysexSlot();
             }
         break;
         
         case STATE_SYSEX_ARP:
             {
-            local.sysex.type = SYSEX_TYPE_ARP;
-
-            // make sure that we're reset properly
-            local.sysex.received = RECEIVED_NONE;
-            uint8_t result = doNumericalDisplay(0, NUM_ARPS - 1, 1, false, GLYPH_NONE);
-            switch (result)
-                {
-                case NO_MENU_SELECTED:
-                    break;
-                case MENU_SELECTED:
-                    local.sysex.slot = currentDisplay;
-                    goDownState(STATE_SYSEX_GO);
-                    break;
-                case MENU_CANCELLED:
-                    goUpState(STATE_SYSEX);
-                    break;
-                }
+            stateSysexArp();
             }
         break;
 
         case STATE_SYSEX_GO:
             {
-            // display
-            if (local.sysex.received == RECEIVED_NONE)
-                {
-                clearScreen();  // is this necessary?
-                write3x5Glyphs(GLYPH_OFF);
-                }
-            else if (local.sysex.received == RECEIVED_WRONG)
-                {
-                clearScreen();  // is this necessary?
-                write3x5Glyphs(GLYPH_SYSEX);
-                }
-            else if (local.sysex.received == RECEIVED_BAD)
-                {
-                clearScreen();  // is this necessary?
-                write3x5Glyphs(GLYPH_FAIL);
-                }
-            else
-                {
-                clearScreen();
-                writeShortNumber(led, ((uint8_t)local.sysex.received), false);
-                }
-                
-            // handle buttons
-            if (isUpdated(BACK_BUTTON, RELEASED))
-                {
-                goUpState(local.sysex.type == SYSEX_TYPE_SLOT ? STATE_SYSEX_SLOT : STATE_SYSEX_ARP);
-                }
-            else if (isUpdated(SELECT_BUTTON, PRESSED))
-                {
-                if (local.sysex.type == SYSEX_TYPE_SLOT)
-                    {
-                    sendSlotSysex();
-                    }
-                else
-                    {
-                    sendArpSysex();
-                    }
-                local.sysex.received++;
-                if (local.sysex.received <= 0)  // previous was BAD or WRONG, or we wrapped around
-                    local.sysex.received = 1;
-                }
+            stateSysexGo();
             }
         break;
 #endif
@@ -1192,13 +770,7 @@ void go()
         break;
         case STATE_ARPEGGIATOR_CREATE:
             {
-            uint8_t note = stateEnterNote(STATE_ARPEGGIATOR);
-            if (note != NO_NOTE)  // it's a real note
-                {
-                data.arp.root = note;
-                state = STATE_ARPEGGIATOR_CREATE_EDIT;
-                entry = true;
-                }
+            stateArpeggiatorCreate();
             }
         break;
         case STATE_ARPEGGIATOR_CREATE_EDIT:
@@ -1226,15 +798,7 @@ void go()
         break;
         case STATE_ARPEGGIATOR_PLAY_TRANSPOSE:
             {
-            local.arp.performanceMode = false;  // it's false until we say it's true
-            uint8_t note = stateEnterNote(STATE_ARPEGGIATOR_PLAY);
-            if (note != NO_NOTE)  // it's a real note
-                {
-                local.arp.transposeRoot = note;
-                goUpState(STATE_ARPEGGIATOR_PLAY);
-                local.arp.performanceMode = true;
-                }
-            playArpeggio();
+            stateArpeggiatorPlayTranspose();
             }
         break;
 #endif
@@ -1421,267 +985,7 @@ void go()
 #ifdef INCLUDE_CONTROLLER
         case STATE_CONTROLLER_PLAY:
             {
-            if (entry)
-                {
-                local.control.middleButtonToggle = 0;
-                local.control.selectButtonToggle = 0;
-                local.control.displayValue = -1;
-                local.control.displayType = CONTROL_TYPE_OFF;
-                local.control.potWaiting[0] = 0;
-                local.control.potWaiting[1] = 0;
-                local.control.potWaiting[2] = 0;
-                local.control.potWaiting[3] = 0;
-                entry = false;
-                dontBypassOut = true;
-                // update bypassOut on entry
-                bypassOut = (bypass && !dontBypassOut);
-                }
-
-            if (isUpdated(BACK_BUTTON, RELEASED))
-                {
-                dontBypassOut = false;
-                // update bypassOut on exit
-                bypassOut = (bypass && !dontBypassOut);
-                goUpState(STATE_CONTROLLER);
-                }
-            else
-                {
-                // this region is redundant but simplifying to a common function call makes the code bigger 
-        
-                if (isUpdated(MIDDLE_BUTTON, PRESSED))
-                    {
-                    local.control.middleButtonToggle = !local.control.middleButtonToggle;
-                    if (options.middleButtonControlType != CONTROL_TYPE_OFF)
-                        {
-                        local.control.displayValue = ((local.control.middleButtonToggle ? options.middleButtonControlOn : options.middleButtonControlOff));
-                        
-                        if (options.middleButtonControlType == CONTROL_TYPE_PITCH_BEND)
-                            {
-                            if (local.control.displayValue != 0) // if it's not "off"
-                                {
-                                local.control.displayValue--;
-                                local.control.displayType = options.middleButtonControlType;
-                                }
-                            else
-                                {
-                                local.control.displayType = CONTROL_TYPE_OFF;
-                                }
-                            }
-                        else
-                            {
-                            // at this point local.control.displayValue is 0...129, where 0 is off and 129 is "INCREMENT", and 1...128 is 0...127
-                            if (local.control.displayValue != 0) // if it's not "off"
-                                {
-                                local.control.displayValue--;  // map to 0...128, where 128 is "INCREMENT"
-
-                                // now convert INCREMENT to DECREMENT
-                                if (local.control.displayValue == CONTROL_VALUE_INCREMENT)
-                                    local.control.displayValue++;
-                                                                
-                                // Now move to MSB+LSB
-                                local.control.displayValue = local.control.displayValue << 7;
-                                                                
-                                sendControllerCommand( local.control.displayType = options.middleButtonControlType, options.middleButtonControlNumber, local.control.displayValue, options.channelOut);
-                                                        
-                                }
-                            else
-                                local.control.displayType = CONTROL_TYPE_OFF;
-                            }
-                        }
-                    }
-
-                if (isUpdated(SELECT_BUTTON, PRESSED))
-                    {
-                    local.control.selectButtonToggle = !local.control.selectButtonToggle;
-                    if (options.selectButtonControlType != CONTROL_TYPE_OFF)
-                        {
-                        local.control.displayValue = ((local.control.selectButtonToggle ?  options.selectButtonControlOn :  options.selectButtonControlOff));
-
-                        if (options.selectButtonControlType == CONTROL_TYPE_PITCH_BEND)
-                            {
-                            if (local.control.displayValue != 0) // if it's not "off"
-                                {
-                                local.control.displayValue--;
-                                local.control.displayType = options.selectButtonControlType;
-                                }
-                            else
-                                {
-                                local.control.displayType = CONTROL_TYPE_OFF;
-                                }
-                            }
-                        else
-                            {
-                            // at this point local.control.displayValue is 0...129, where 0 is off and 129 is "INCREMENT", and 1...128 is 0...127
-                            if (local.control.displayValue != 0)    // if we're not OFF
-                                {
-                                local.control.displayValue--;  // map to 0...128, where 128 is "INCREMENT"
-                                                                
-                                // Now move to MSB+LSB
-                                local.control.displayValue = local.control.displayValue << 7;
-                                                                
-                                sendControllerCommand( local.control.displayType = options.selectButtonControlType, options.selectButtonControlNumber, local.control.displayValue, options.channelOut); 
-                                }
-                            else
-                                local.control.displayType = CONTROL_TYPE_OFF;
-                            }
-                        }
-                    }
-        
-                if (potUpdated[LEFT_POT] && (options.leftKnobControlType != CONTROL_TYPE_OFF))
-                    {
-                    local.control.displayValue = pot[LEFT_POT];
-                    // at this point local.control.displayValue is 0...1023
-            
-                    // Now move to MSB+LSB
-                    local.control.displayValue = local.control.displayValue << 4;
-                    
-                    if (local.control.potUpdateValue[LEFT_POT] != local.control.displayValue)
-                        {
-                        local.control.potUpdateValue[LEFT_POT] = local.control.displayValue;
-                        local.control.potWaiting[LEFT_POT] = 1;
-                        }
-                    }
-          
-                if (potUpdated[RIGHT_POT] && (options.rightKnobControlType != CONTROL_TYPE_OFF))
-                    {
-                    local.control.displayValue = pot[RIGHT_POT];            
-                    // at this point local.control.displayValue is 0...1023
-
-                    // Now move to MSB+LSB
-                    local.control.displayValue = local.control.displayValue << 4;
-                    
-                    if (local.control.potUpdateValue[RIGHT_POT] != local.control.displayValue)
-                        {
-                        local.control.potUpdateValue[RIGHT_POT] = local.control.displayValue;
-                        local.control.potWaiting[RIGHT_POT] = 1;
-                        }
-                    }
-        
-#ifdef USE_EXTRA_POTS
-                if (potUpdated[A2_POT] && (options.a2ControlType != CONTROL_TYPE_OFF))
-                    {
-                    local.control.displayValue = pot[A2_POT];            
-                    // at this point local.control.displayValue is 0...1023
-
-                    // Now move to MSB+LSB
-                    local.control.displayValue = local.control.displayValue << 4;
-                    
-                    if (local.control.potUpdateValue[A2_POT] != local.control.displayValue)
-                        {
-                        local.control.potUpdateValue[A2_POT] = local.control.displayValue;
-                        local.control.potWaiting[A2_POT] = 1;
-                        }
-                    }
-
-                if (potUpdated[A3_POT] && (options.a3ControlType != CONTROL_TYPE_OFF))
-                    {
-                    local.control.displayValue = pot[A3_POT];            
-                    // at this point local.control.displayValue is 0...1023
-
-                    // Now move to MSB+LSB
-                    local.control.displayValue = local.control.displayValue << 4;
-
-                    if (local.control.potUpdateValue[A3_POT] != local.control.displayValue)
-                        {
-                        local.control.potUpdateValue[A3_POT] = local.control.displayValue;
-                        local.control.potWaiting[A3_POT] = 1;
-                        }
-                    }
-#endif USE_EXTRA_POTS
-
-                // figure out who has been waiting the longest, if any.  The goal here is to only allow one out at a time and yet prevent starvation
-
-                int8_t winner = -1;
-                uint32_t winnerTime = 0;
-                if (local.control.potWaiting[LEFT_POT] && (currentTime - local.control.potUpdateTime[LEFT_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
-                    {
-                    if (local.control.potUpdateTime[LEFT_POT] - currentTime > winnerTime) { winner = LEFT_POT; winnerTime = currentTime - local.control.potUpdateTime[LEFT_POT]; }
-                    }
-
-                if (local.control.potWaiting[RIGHT_POT] && (currentTime - local.control.potUpdateTime[RIGHT_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
-                    {
-                    if (local.control.potUpdateTime[RIGHT_POT] - currentTime > winnerTime) { winner = RIGHT_POT; winnerTime = currentTime - local.control.potUpdateTime[RIGHT_POT]; }
-                    }
-
-#ifdef USE_EXTRA_POTS
-                if (local.control.potWaiting[A2_POT] && (currentTime - local.control.potUpdateTime[A2_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
-                    {
-                    if (local.control.potUpdateTime[A2_POT] - currentTime > winnerTime) { winner = A2_POT; winnerTime = currentTime - local.control.potUpdateTime[A2_POT]; }
-                    }
-
-                if (local.control.potWaiting[A3_POT] && (currentTime - local.control.potUpdateTime[A3_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
-                    {
-                    if (local.control.potUpdateTime[A3_POT] - currentTime > winnerTime) { winner = A3_POT; winnerTime = currentTime - local.control.potUpdateTime[A3_POT]; }
-                    }
-#endif USE_EXTRA_POTS
-                                        
-                // here we go
-                if (winner == LEFT_POT)
-                    {
-                    sendControllerCommand( local.control.displayType = options.leftKnobControlType, options.leftKnobControlNumber, local.control.potUpdateValue[LEFT_POT], options.channelOut);
-                    local.control.potUpdateTime[LEFT_POT] = currentTime;
-                    local.control.potWaiting[LEFT_POT] = 0;
-                    }
-                else if (winner == RIGHT_POT)
-                    {
-                    sendControllerCommand( local.control.displayType = options.rightKnobControlType, options.rightKnobControlNumber, local.control.potUpdateValue[RIGHT_POT], options.channelOut);
-                    local.control.potUpdateTime[RIGHT_POT] = currentTime;
-                    local.control.potWaiting[RIGHT_POT] = 0;
-                    }
-#ifdef USE_EXTRA_POTS
-                else if (winner == A2_POT)
-                    {
-                    sendControllerCommand( local.control.displayType = options.a2ControlType, options.a2ControlNumber, local.control.potUpdateValue[A2_POT], options.channelOut);
-                    local.control.potUpdateTime[A2_POT] = currentTime;
-                    local.control.potWaiting[A2_POT] = 0;
-                    }
-                else if (winner == A3_POT)
-                    {
-                    sendControllerCommand( local.control.displayType = options.a3ControlType, options.a3ControlNumber, local.control.potUpdateValue[A3_POT], options.channelOut);
-                    local.control.potUpdateTime[A3_POT] = currentTime;
-                    local.control.potWaiting[A3_POT] = 0;
-                    }
-#endif USE_EXTRA_POTS
-                }
-   
-            if (updateDisplay)
-                {
-                clearScreen();
-                
-                // local.control.displayValue is now -1, meaning "OFF",
-                // or it is a value in the range of MSB + LSB
-
-                if (local.control.displayType != CONTROL_TYPE_OFF)  // isn't "off"
-                    {
-                    uint8_t msb = (uint8_t)(local.control.displayValue >> 7);
-                                                                                        
-                    // if we needed a little bit more space, we could change this to something like
-                    // write3x5Glyphs(msb - CONTROL_VALUE_INCREMENT + GLYPH_INCREMENT);
-                    // except that GLYPH_INCREMENT comes SECOND.  We'd need to fix all that to make it
-                    // consistent.  It'd save us about 20 bytes maybe?
-                    if (msb == CONTROL_VALUE_INCREMENT)
-                        {
-                        write3x5Glyphs(GLYPH_INCREMENT);
-                        }
-                    else if (msb == CONTROL_VALUE_DECREMENT)
-                        {
-                        write3x5Glyphs(GLYPH_DECREMENT);
-                        }
-                    else
-                        {
-                        if (local.control.displayType == CONTROL_TYPE_PITCH_BEND)
-                            {
-                            writeNumber(led, led2, ((int16_t)(local.control.displayValue)) + (int16_t)(MIDI_PITCHBEND_MIN));
-                            }
-                        else
-                            writeShortNumber(led, msb, false);
-                        }
-                    }
-                else
-                    {
-                    write3x5Glyphs(GLYPH_OFF);
-                    }
-                }
+			stateControllerPlay();
             }
         break;
         case STATE_CONTROLLER_SET_LEFT_KNOB_TYPE:
@@ -1716,7 +1020,7 @@ void go()
             doMenuDisplay(menuItems, 7, STATE_CONTROLLER_PLAY_RANDOM, STATE_CONTROLLER, 1);
             }
         break;
-#ifdef USE_EXTRA_POTS
+#ifdef INCLUDE_MEGA_POTS
         case STATE_CONTROLLER_SET_A2_TYPE:
             {
             setControllerType(options.a2ControlType, STATE_CONTROLLER_SET_A2_NUMBER, STATE_NONE);
@@ -1727,7 +1031,7 @@ void go()
             setControllerType(options.a3ControlType, STATE_CONTROLLER_SET_A3_NUMBER, STATE_NONE);
             }
         break;
-#endif USE_EXTRA_POTS
+#endif INCLUDE_MEGA_POTS
         case STATE_CONTROLLER_PLAY_WAVE_ENVELOPE:
             {
             stateControllerPlayWaveEnvelope();
@@ -1817,7 +1121,7 @@ void go()
             setControllerNumber(options.randomControlType, options.randomControlNumber, backupOptions.randomControlType, backupOptions.randomControlNumber, STATE_CONTROLLER_RANDOM);
             }
         break;
-#ifdef USE_EXTRA_POTS
+#ifdef INCLUDE_MEGA_POTS
         case STATE_CONTROLLER_SET_A2_NUMBER:
             {
             setControllerNumber(options.a2ControlType, options.a2ControlNumber, backupOptions.a2ControlType, backupOptions.a2ControlNumber, STATE_CONTROLLER);
@@ -1828,7 +1132,7 @@ void go()
             setControllerNumber(options.a3ControlType, options.a3ControlNumber, backupOptions.a3ControlType, backupOptions.a3ControlNumber, STATE_CONTROLLER);
             }
         break;
-#endif USE_EXTRA_POTS
+#endif INCLUDE_MEGA_POTS
         case STATE_CONTROLLER_SET_LEFT_KNOB_NUMBER:
             {
             setControllerNumber(options.leftKnobControlType, options.leftKnobControlNumber, backupOptions.leftKnobControlType, backupOptions.leftKnobControlNumber, STATE_CONTROLLER);
@@ -2330,25 +1634,7 @@ void go()
         
         case STATE_THRU_CHORD_MEMORY:
             {
-            if (entry && options.thruChordMemorySize > 0)  // maybe entry is not necessary
-                {
-                options.thruChordMemorySize = 0;
-                saveOptions();
-                goUpState(STATE_THRU);
-                }
-            else        
-                {
-                uint8_t retval = stateEnterChord(local.thru.chordMemory, MAX_CHORD_MEMORY_NOTES, STATE_THRU);
-                if (retval != NO_NOTE)
-                    {
-                    // now store.
-                    options.thruChordMemorySize = retval;
-                    memcpy(options.thruChordMemory, local.thru.chordMemory, retval);
-                    saveOptions();
-
-                    goUpState(STATE_THRU);
-                    }
-                }
+            stateThruChordMemory();
             }
         break;
         
@@ -2375,9 +1661,7 @@ void go()
 */
         case STATE_THRU_BLOCK_OTHER_CHANNELS:
             {
-            options.thruBlockOtherChannels = !options.thruBlockOtherChannels;
-            saveOptions();
-            goUpState(STATE_THRU);
+            stateThruBlockOtherChannels();
             }
         break;
 #endif

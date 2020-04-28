@@ -67,6 +67,7 @@
 
 #include "All.h"
 
+#define RPN_NULL (16383)
 
 struct _gaugeLocal
     {
@@ -74,8 +75,7 @@ struct _gaugeLocal
     };
         
 
-/// Most of Gauge's functions are embedded (inlined) in the TopLevel.cpp state machine. 
-
+void stateGauge();
 
 
 #endif __GAUGE_H__

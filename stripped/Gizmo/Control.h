@@ -200,6 +200,6 @@ void stateControllerModulationSetMode();
 void stateControllerResetWaveEnvelopeValuesGo();
 void stateControllerPlayRandom();
 void stateControllerRandomSetMode();
-
+void stateControllerPlay();
 #endif
 

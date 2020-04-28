@@ -810,5 +810,264 @@ void stateControllerRandomSetMode()
         break;
         }
     }
+    
+void stateControllerPlay()
+	{
+            if (entry)
+                {
+                local.control.middleButtonToggle = 0;
+                local.control.selectButtonToggle = 0;
+                local.control.displayValue = -1;
+                local.control.displayType = CONTROL_TYPE_OFF;
+                local.control.potWaiting[0] = 0;
+                local.control.potWaiting[1] = 0;
+                local.control.potWaiting[2] = 0;
+                local.control.potWaiting[3] = 0;
+                entry = false;
+                dontBypassOut = true;
+                // update bypassOut on entry
+                bypassOut = (bypass && !dontBypassOut);
+                }
+
+            if (isUpdated(BACK_BUTTON, RELEASED))
+                {
+                dontBypassOut = false;
+                // update bypassOut on exit
+                bypassOut = (bypass && !dontBypassOut);
+                goUpState(STATE_CONTROLLER);
+                }
+            else
+                {
+                // this region is redundant but simplifying to a common function call makes the code bigger 
+        
+                if (isUpdated(MIDDLE_BUTTON, PRESSED))
+                    {
+                    local.control.middleButtonToggle = !local.control.middleButtonToggle;
+                    if (options.middleButtonControlType != CONTROL_TYPE_OFF)
+                        {
+                        local.control.displayValue = ((local.control.middleButtonToggle ? options.middleButtonControlOn : options.middleButtonControlOff));
+                        
+                        if (options.middleButtonControlType == CONTROL_TYPE_PITCH_BEND)
+                            {
+                            if (local.control.displayValue != 0) // if it's not "off"
+                                {
+                                local.control.displayValue--;
+                                local.control.displayType = options.middleButtonControlType;
+                                }
+                            else
+                                {
+                                local.control.displayType = CONTROL_TYPE_OFF;
+                                }
+                            }
+                        else
+                            {
+                            // at this point local.control.displayValue is 0...129, where 0 is off and 129 is "INCREMENT", and 1...128 is 0...127
+                            if (local.control.displayValue != 0) // if it's not "off"
+                                {
+                                local.control.displayValue--;  // map to 0...128, where 128 is "INCREMENT"
+
+                                // now convert INCREMENT to DECREMENT
+                                if (local.control.displayValue == CONTROL_VALUE_INCREMENT)
+                                    local.control.displayValue++;
+                                                                
+                                // Now move to MSB+LSB
+                                local.control.displayValue = local.control.displayValue << 7;
+                                                                
+                                sendControllerCommand( local.control.displayType = options.middleButtonControlType, options.middleButtonControlNumber, local.control.displayValue, options.channelOut);
+                                                        
+                                }
+                            else
+                                local.control.displayType = CONTROL_TYPE_OFF;
+                            }
+                        }
+                    }
+
+                if (isUpdated(SELECT_BUTTON, PRESSED))
+                    {
+                    local.control.selectButtonToggle = !local.control.selectButtonToggle;
+                    if (options.selectButtonControlType != CONTROL_TYPE_OFF)
+                        {
+                        local.control.displayValue = ((local.control.selectButtonToggle ?  options.selectButtonControlOn :  options.selectButtonControlOff));
+
+                        if (options.selectButtonControlType == CONTROL_TYPE_PITCH_BEND)
+                            {
+                            if (local.control.displayValue != 0) // if it's not "off"
+                                {
+                                local.control.displayValue--;
+                                local.control.displayType = options.selectButtonControlType;
+                                }
+                            else
+                                {
+                                local.control.displayType = CONTROL_TYPE_OFF;
+                                }
+                            }
+                        else
+                            {
+                            // at this point local.control.displayValue is 0...129, where 0 is off and 129 is "INCREMENT", and 1...128 is 0...127
+                            if (local.control.displayValue != 0)    // if we're not OFF
+                                {
+                                local.control.displayValue--;  // map to 0...128, where 128 is "INCREMENT"
+                                                                
+                                // Now move to MSB+LSB
+                                local.control.displayValue = local.control.displayValue << 7;
+                                                                
+                                sendControllerCommand( local.control.displayType = options.selectButtonControlType, options.selectButtonControlNumber, local.control.displayValue, options.channelOut); 
+                                }
+                            else
+                                local.control.displayType = CONTROL_TYPE_OFF;
+                            }
+                        }
+                    }
+        
+                if (potUpdated[LEFT_POT] && (options.leftKnobControlType != CONTROL_TYPE_OFF))
+                    {
+                    local.control.displayValue = pot[LEFT_POT];
+                    // at this point local.control.displayValue is 0...1023
+            
+                    // Now move to MSB+LSB
+                    local.control.displayValue = local.control.displayValue << 4;
+                    
+                    if (local.control.potUpdateValue[LEFT_POT] != local.control.displayValue)
+                        {
+                        local.control.potUpdateValue[LEFT_POT] = local.control.displayValue;
+                        local.control.potWaiting[LEFT_POT] = 1;
+                        }
+                    }
+          
+                if (potUpdated[RIGHT_POT] && (options.rightKnobControlType != CONTROL_TYPE_OFF))
+                    {
+                    local.control.displayValue = pot[RIGHT_POT];            
+                    // at this point local.control.displayValue is 0...1023
+
+                    // Now move to MSB+LSB
+                    local.control.displayValue = local.control.displayValue << 4;
+                    
+                    if (local.control.potUpdateValue[RIGHT_POT] != local.control.displayValue)
+                        {
+                        local.control.potUpdateValue[RIGHT_POT] = local.control.displayValue;
+                        local.control.potWaiting[RIGHT_POT] = 1;
+                        }
+                    }
+        
+                if (potUpdated[A2_POT] && (options.a2ControlType != CONTROL_TYPE_OFF))
+                    {
+                    local.control.displayValue = pot[A2_POT];            
+                    // at this point local.control.displayValue is 0...1023
+
+                    // Now move to MSB+LSB
+                    local.control.displayValue = local.control.displayValue << 4;
+                    
+                    if (local.control.potUpdateValue[A2_POT] != local.control.displayValue)
+                        {
+                        local.control.potUpdateValue[A2_POT] = local.control.displayValue;
+                        local.control.potWaiting[A2_POT] = 1;
+                        }
+                    }
+
+                if (potUpdated[A3_POT] && (options.a3ControlType != CONTROL_TYPE_OFF))
+                    {
+                    local.control.displayValue = pot[A3_POT];            
+                    // at this point local.control.displayValue is 0...1023
+
+                    // Now move to MSB+LSB
+                    local.control.displayValue = local.control.displayValue << 4;
+
+                    if (local.control.potUpdateValue[A3_POT] != local.control.displayValue)
+                        {
+                        local.control.potUpdateValue[A3_POT] = local.control.displayValue;
+                        local.control.potWaiting[A3_POT] = 1;
+                        }
+                    }
+
+                // figure out who has been waiting the longest, if any.  The goal here is to only allow one out at a time and yet prevent starvation
+
+                int8_t winner = -1;
+                uint32_t winnerTime = 0;
+                if (local.control.potWaiting[LEFT_POT] && (currentTime - local.control.potUpdateTime[LEFT_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
+                    {
+                    if (local.control.potUpdateTime[LEFT_POT] - currentTime > winnerTime) { winner = LEFT_POT; winnerTime = currentTime - local.control.potUpdateTime[LEFT_POT]; }
+                    }
+
+                if (local.control.potWaiting[RIGHT_POT] && (currentTime - local.control.potUpdateTime[RIGHT_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
+                    {
+                    if (local.control.potUpdateTime[RIGHT_POT] - currentTime > winnerTime) { winner = RIGHT_POT; winnerTime = currentTime - local.control.potUpdateTime[RIGHT_POT]; }
+                    }
+
+                if (local.control.potWaiting[A2_POT] && (currentTime - local.control.potUpdateTime[A2_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
+                    {
+                    if (local.control.potUpdateTime[A2_POT] - currentTime > winnerTime) { winner = A2_POT; winnerTime = currentTime - local.control.potUpdateTime[A2_POT]; }
+                    }
+
+                if (local.control.potWaiting[A3_POT] && (currentTime - local.control.potUpdateTime[A3_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
+                    {
+                    if (local.control.potUpdateTime[A3_POT] - currentTime > winnerTime) { winner = A3_POT; winnerTime = currentTime - local.control.potUpdateTime[A3_POT]; }
+                    }
+                                        
+                // here we go
+                if (winner == LEFT_POT)
+                    {
+                    sendControllerCommand( local.control.displayType = options.leftKnobControlType, options.leftKnobControlNumber, local.control.potUpdateValue[LEFT_POT], options.channelOut);
+                    local.control.potUpdateTime[LEFT_POT] = currentTime;
+                    local.control.potWaiting[LEFT_POT] = 0;
+                    }
+                else if (winner == RIGHT_POT)
+                    {
+                    sendControllerCommand( local.control.displayType = options.rightKnobControlType, options.rightKnobControlNumber, local.control.potUpdateValue[RIGHT_POT], options.channelOut);
+                    local.control.potUpdateTime[RIGHT_POT] = currentTime;
+                    local.control.potWaiting[RIGHT_POT] = 0;
+                    }
+                else if (winner == A2_POT)
+                    {
+                    sendControllerCommand( local.control.displayType = options.a2ControlType, options.a2ControlNumber, local.control.potUpdateValue[A2_POT], options.channelOut);
+                    local.control.potUpdateTime[A2_POT] = currentTime;
+                    local.control.potWaiting[A2_POT] = 0;
+                    }
+                else if (winner == A3_POT)
+                    {
+                    sendControllerCommand( local.control.displayType = options.a3ControlType, options.a3ControlNumber, local.control.potUpdateValue[A3_POT], options.channelOut);
+                    local.control.potUpdateTime[A3_POT] = currentTime;
+                    local.control.potWaiting[A3_POT] = 0;
+                    }
+                }
+   
+            if (updateDisplay)
+                {
+                clearScreen();
+                
+                // local.control.displayValue is now -1, meaning "OFF",
+                // or it is a value in the range of MSB + LSB
+
+                if (local.control.displayType != CONTROL_TYPE_OFF)  // isn't "off"
+                    {
+                    uint8_t msb = (uint8_t)(local.control.displayValue >> 7);
+                                                                                        
+                    // if we needed a little bit more space, we could change this to something like
+                    // write3x5Glyphs(msb - CONTROL_VALUE_INCREMENT + GLYPH_INCREMENT);
+                    // except that GLYPH_INCREMENT comes SECOND.  We'd need to fix all that to make it
+                    // consistent.  It'd save us about 20 bytes maybe?
+                    if (msb == CONTROL_VALUE_INCREMENT)
+                        {
+                        write3x5Glyphs(GLYPH_INCREMENT);
+                        }
+                    else if (msb == CONTROL_VALUE_DECREMENT)
+                        {
+                        write3x5Glyphs(GLYPH_DECREMENT);
+                        }
+                    else
+                        {
+                        if (local.control.displayType == CONTROL_TYPE_PITCH_BEND)
+                            {
+                            writeNumber(led, led2, ((int16_t)(local.control.displayValue)) + (int16_t)(MIDI_PITCHBEND_MIN));
+                            }
+                        else
+                            writeShortNumber(led, msb, false);
+                        }
+                    }
+                else
+                    {
+                    write3x5Glyphs(GLYPH_OFF);
+                    }
+                }
+        	}
 
 #endif

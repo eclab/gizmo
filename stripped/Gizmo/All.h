@@ -70,6 +70,7 @@
 
 
 // -- ADDITIONAL FEATURES --
+// INCLUDE_MEGA_POTS						Use the more convenient pots A14 and A15 instead of pots A2 and A3 as the "extra" pots in the Controller
 // INCLUDE_SEND_NULL_RPN					Should we terminate NRPN/RPN messages with two additional CCs?  Better but slower.
 // INCLUDE_EXTENDED_FONT					[In development] Should the extended font be made available?  This currently consists of some extra LFO wave shapes that are unused.  So don't turn this on.
 // INCLUDE_CONTROL_BY_NOTE					[In development] Should we allow control of Gizmo by playing notes on the Control channel?
@@ -101,7 +102,7 @@
 #define INCLUDE_SYNTH
 #define INCLUDE_MEASURE
 
-#define USE_EXTRA_POTS
+#define INCLUDE_MEGA_POTS
 
 #define MENU_ITEMS()     const char* menuItems[10] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), options_p };
 #define NUM_MENU_ITEMS  (10)
@@ -114,6 +115,7 @@
 ////	static const unsigned SysExMaxSize = 787;   // the size of the MIDI Dump of a Slot
 
 //#define INCLUDE_SYSEX
+
 #if defined(INCLUDE_SYSEX)
 #define MENUITEMS     const char* menuItems[11] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), PSTR("SYSEX"), options_p }
 #define NUM_MENU_ITEMS  (11)
@@ -127,12 +129,26 @@
 
 
 /// Here are the standard values for the UNO.  You have to select an application, see below.
+///
+///
+/// NOTE: The regular step sequencer is too large to fit in the memory footprint of the Uno.
+/// So I have broken it into two pieces:
+///
+/// 1. INCLUDE_STEP_SEQUENCER    
+///    This is the "basic" step sequencer, missing (1) external control via CC and 
+///    (2) sequencing of non-note information.  The "TYPE" menu is accordingly missing.
+///
+/// 2. INCLUDE_ADVANCED_STEP_SEQUENCER
+///    This is the "basic" step sequencer with the missing elements included.
+///
+/// The Uno can fit INCLUDE_STEP_SEQUENCER in memory.
+/// The Mega can of course just use INCLUDE_ADVANCED_STEP_SEQUENCER
 
 #if defined(__UNO__)
 
 // You can pick ONE of these
-// #define INCLUDE_ARPEGGIATOR
-#define INCLUDE_STEP_SEQUENCER
+#define INCLUDE_ARPEGGIATOR
+// #define INCLUDE_STEP_SEQUENCER
 // #define INCLUDE_RECORDER
 // #define INCLUDE_CONTROLLER
 // #define INCLUDE_GAUGE
@@ -223,6 +239,7 @@
 #include "Thru.h"
 #include "Measure.h"
 #include "Synth.h"
+#include "Sysex.h"
 
 // This lets everyone have access to the MIDI global, not just
 // the .ino file

@@ -1098,6 +1098,31 @@ void stateArpeggiatorCreateSave()
         break;
         }
     }
+
+void stateArpeggiatorCreate()
+	{
+            uint8_t note = stateEnterNote(STATE_ARPEGGIATOR);
+            if (note != NO_NOTE)  // it's a real note
+                {
+                data.arp.root = note;
+                state = STATE_ARPEGGIATOR_CREATE_EDIT;
+                entry = true;
+                }
+	}
+	
+	
+void stateArpeggiatorPlayTranspose()
+	{
+            local.arp.performanceMode = false;  // it's false until we say it's true
+            uint8_t note = stateEnterNote(STATE_ARPEGGIATOR_PLAY);
+            if (note != NO_NOTE)  // it's a real note
+                {
+                local.arp.transposeRoot = note;
+                goUpState(STATE_ARPEGGIATOR_PLAY);
+                local.arp.performanceMode = true;
+                }
+            playArpeggio();
+	}
     
 #endif INCLUDE_ARPEGGIATOR
 

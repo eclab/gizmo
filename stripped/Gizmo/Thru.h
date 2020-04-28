@@ -69,7 +69,8 @@ struct _thruLocal
 
 
 void stateThruPlay();
+void stateThruChordMemory();
+void stateThruBlockOtherChannels();
 void playThru();
-
 
 #endif // __THRU_H__

@@ -135,10 +135,8 @@ typedef enum _State: uint8_t
 #ifdef INCLUDE_CONTROLLER
 	STATE_CONTROLLER_WAVE_ENVELOPE,
 	STATE_CONTROLLER_RANDOM,
-#ifdef USE_EXTRA_POTS
 	STATE_CONTROLLER_SET_A2_TYPE,
 	STATE_CONTROLLER_SET_A3_TYPE,
-#endif USE_EXTRA_POTS
 	STATE_CONTROLLER_PLAY_WAVE_ENVELOPE,
 	STATE_CONTROLLER_SET_WAVE_ENVELOPE_TYPE,
 	STATE_CONTROLLER_SET_WAVE_ENVELOPE,
@@ -156,10 +154,8 @@ typedef enum _State: uint8_t
 	STATE_CONTROLLER_RANDOM_SET_LENGTH,
 	STATE_CONTROLLER_RANDOM_SET_CLOCK,
 	STATE_CONTROLLER_SET_RANDOM_NUMBER,
-#ifdef USE_EXTRA_POTS	
 	STATE_CONTROLLER_SET_A2_NUMBER,
 	STATE_CONTROLLER_SET_A3_NUMBER,
-#endif USE_EXTRA_POTS	
 	STATE_CONTROLLER_SET_LEFT_KNOB_NUMBER,
 	STATE_CONTROLLER_SET_RIGHT_KNOB_NUMBER,
 	STATE_CONTROLLER_SET_MIDDLE_BUTTON_NUMBER,
@@ -309,11 +305,16 @@ extern _local local;
 #define MINIMUM_POT_DEVIATION 8                   // A pot just be turned more than this value before we consider it changed
 
 /// Button and Pot numbers
+#define NUM_BUTTONS (3)
 #define BACK_BUTTON 0
 #define MIDDLE_BUTTON 1
 #define SELECT_BUTTON 2
+
+#define NUM_POTS (4)
 #define LEFT_POT 0
 #define RIGHT_POT 1
+#define A2_POT 2
+#define A3_POT 3
 
 // Update states
 #define NO_CHANGE 0                             		// No change in the button or pot yet
@@ -375,6 +376,10 @@ extern unsigned char led2[LED_WIDTH];
 extern uint8_t scheduleScreenBrightnessUpdate;
 
 
+
+
+
+extern uint8_t dontBypassOut;
 
 #endif
 

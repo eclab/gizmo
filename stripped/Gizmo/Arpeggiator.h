@@ -251,6 +251,8 @@ void stateArpeggiatorCreateEdit();
 void stateArpeggiatorCreateSave();
 
 void stateArpeggiatorMenu();
+void stateArpeggiatorCreate();
+void stateArpeggiatorPlayTranspose();
 
 #endif
 
