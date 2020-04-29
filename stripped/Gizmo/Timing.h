@@ -16,7 +16,7 @@
 // 1. A TICK: 1/3125 seconds.  This is the rate of MIDI transmission.
 //
 // 2. A PULSE: 24 pulses per beat.  Either the user specifies the beats per minute -- which
-//    ultimately gets translated microseconds per pulse -- or the pulses arrive via the 
+//    ultimately gets translated into microseconds per pulse -- or the pulses arrive via the 
 //    MIDI clock (which is also 24 pulses per beat).
 //
 // 3. A BEAT: 1 beat every 24 pulses.  This is measured with the BEAT COUNTDOWN.  When we reach
@@ -36,7 +36,7 @@
 // on the TEMPO.
 //
 // To keep the beat, we maintain a TARGET NEXT PULSE TIME, and each time we exceed this timestep
-// we increment it again by MICROSECS PER PULSE, then set the PULSE variable to 1 so people know
+// we increment it again by MICROSECONDS PER PULSE, then set the PULSE variable to 1 so people know
 // that it's time to pulse.  We might also generate a MIDI clock signal when PULSE happens,
 // depending on settings.
 //
@@ -90,9 +90,10 @@ void updateTicksAndWait();
 extern  uint32_t targetNextPulseTime;
 
 // Number of microseconds between PULSES.  20833 is a tempo of 120 BPM (our default)
-extern uint32_t microsecsPerPulse;  // 120 BPM by default
-extern uint32_t externalMicrosecsPerPulse;
+//extern uint32_t microsecsPerPulse;  // 120 BPM by default
+//extern uint32_t externalMicrosecsPerPulse;
 
+// Number of microseconds between PULSES.  20833 is a tempo of 120 BPM (our default)
 uint32_t getMicrosecsPerPulse();
 
 // The number of PULSES so far.

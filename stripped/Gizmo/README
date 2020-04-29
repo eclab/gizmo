@@ -80,20 +80,20 @@ The files are in certain categories:
 	Gizmo.ino		The standard Arduino entry functions
 
 
-	APPLICATIONS		[Note that many parts of applications are embedded
-				in the state machine in TopLevel.cpp, and a few bits
-				are located in the MIDI callback functions in
-				TopLevel.cpp, though I try to avoid embedding
-				in the callback functions when possible.]
+	APPLICATIONS		[Note that some parts of applications are embedded
+				in the state machine in TopLevel.cpp, and some per-app
+				functionality also appears in MidiInterface.cpp]
 	Arpeggiator.h/cpp	The arpeggiator
 	StepSequencer.h/cpp	The step sequencer
 	Control.h/cpp		The MIDI control surface
-	Gauge.h			The MIDI gauge.  There's no Gauge.cpp because it's
-				entirely contained within the state machine in
-				TopLevel.cpp
+	Gauge.h/cpp		The MIDI gauge.
 	Recorder.h/cpp		The note recorder
 	Split.h/cpp		The keyboard splitter / layerer
 	Thru.h/cpp		The MIDI thru application
+	Measure.h/cpp		The measure counter
+	Sysex.h/cpp		The optional sysex facility
+	Synth.h/cpp		The synth facility toplevel
+		/synth/		Individual synths
 	
 
 

@@ -23,7 +23,7 @@ uint32_t div100(uint32_t n)
 /// Below are two utility functions for doing software division by 10,
 /// useful for printing digits etc. There is no hardware division on 
 /// the Aduino, so it must be done in software, which runs at about
-/// 68 times per ms.  You can speed this up to 241 times per second AND
+/// 68 times per ms.  You can speed this up to 241 times per ms AND
 /// get the remainder for free with the function below.  Also provided
 /// Are methods for getting larger ranges at the cost of slower functions.
 

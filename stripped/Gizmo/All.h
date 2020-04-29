@@ -38,7 +38,7 @@
 //
 // IF you turn on this define and then run the code on the Arduino, it will reset the options,
 // display the splash screen, then display RSET and nothing else.  This makes it possible to do
-// a reset without holding the three buttons down (because you have no buttons!) 
+// a reset without holding the three buttons down (because you may have no buttons!) 
 //#define HEADLESS_RESET
 //
 // If you turn on this define, Gizmo will eliminate the option of OFF for its MIDI Control so you
@@ -92,8 +92,8 @@
 
 #if defined(__MEGA__)
 #define INCLUDE_ARPEGGIATOR
+// See below about why this says "Advanced" Step Sequencer
 #define INCLUDE_ADVANCED_STEP_SEQUENCER
-#define INCLUDE_STEP_SEQUENCER_CONTROL
 #define INCLUDE_RECORDER
 #define INCLUDE_GAUGE
 #define INCLUDE_CONTROLLER
