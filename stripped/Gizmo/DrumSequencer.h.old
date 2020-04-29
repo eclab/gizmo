@@ -1,0 +1,489 @@
+////// Copyright 2016 by Sean Luke
+////// Licensed under the Apache 2.0 License
+
+
+
+#ifndef __DRUM_SEQUENCER_H__
+#define __DRUM_SEQUENCER_H__
+
+
+
+#include "All.h"
+#include "StepSequencer.h"
+
+
+
+/////// THE STEP SEQUENCER
+//
+// The step sequencer can do the following:
+//
+// 1. 12-track 16-note, 8-track 24-note, or 6-track 32-note step sequences.
+//
+// 2. The user can enter notes STEP-BY-STEP at the cursor position, or (by moving the cursor position to off the left of the screen)
+//    enter notes at the PLAY POSITION.  Notes can be entered while the sequencer is playing.  He can also add RESTS and TIES.
+//    A tie says "keep on playing the note in the previous slot position".
+// 
+// 3. Stop, start, and restart the sequencer (including affecting external MIDI Clocks), mute tracks, and clear tracks.   
+// 
+// 4. Toggle ECHO.  Normally when you enter a note, in step-by-step mode, it is played so you can hear what you're entering
+//    [in play position mode the step sequencer doesn't play the notes immediately but instead lets the play cursor play them].
+//    NO ECHO tells the step sequencer to not play notes when you're entering them AT ALL.  This is useful when you are playing
+//    and entering notes using the same device (which is playing as you enter them).
+//
+// 5. Mute tracks, clear tracks, specify the MIDI OUT on a per-track basis (or use the default), specify the note velocity 
+//    on a per-track basis (or use the velocity entered for each note), specify the note length on a per-track basis
+//    (or use the default), change the volume of the tracks (a 7-bit fader), or save sequences.
+//
+// 6. Sequences are affected by SWING, by TEMPO, by NOTE SPEED, and by NOTE LENGTH.
+//
+//
+// STORAGE
+//
+// Notice that the number of tracks, times the number of notes is 12x16 = 8x24 = 6x32 = 4x48 = 3x64 = 192.  The step sequencer stores
+// the PITCH and the VELOCITY of each note, which are 7 bits each, in two bytes, for a total of 192 x 2 = 384 bytes.
+// Additionally a REST is defined as having a pitch of 0 and a velocity of 0.  A TIE has a pitch of 1 and a velocity of 0.
+//
+// If we're storing CONTROL data rather than NOTE data, then 14-bits represent MSB + LSB, or (the value 2^14 - 1) "Nothing".
+// Yes, this means you can't enter 2^14-1 as a sequence value, oh well.
+//
+// A step sequence consists of a FORMAT byte, a REPEAT byte, an UNUSED byte, and a 384 byte BUFFER holding the notes.  
+//
+// Embedded in each track is some per-track data.  This data is stored in the single high unused bit in each byte in the buffer
+// [recall that MIDI pitch and velocity are only 7 bits each].  Tracks can have as little as 32 bytes (16 notes x 2 bytes per note),
+// so we have 32 bits to pack stuff into.  The data is (in order):
+//
+//// 1 bit NOTE vs CONTROL
+//// If NOTE:
+////     1 bit mute
+////     5 bits MIDI out channel (including "use default", which is 17, and "no MIDI out", which is 0)
+////     7 bits note length (0...100 as a percentage, or PLAY_LENGTH_USE_DEFAULT)
+////     7 bits note velocity (0 = "use per-note velocity", or 1...127)
+////     1 bit transposable
+////     5 bits fader
+////	 4 bits pattern
+
+//// If CONTROL:
+////     3 bits: CC MSB, NRPN MSB, RPN MSB, PC, BEND MSB, AFTERTOUCH, INTERNAL
+////     14 bits Parameter
+////     5 bits MIDI out channel
+////	 4 bits pattern
+////     5 bits unused
+
+//
+// This extra data is packed and unpacked in Utilities.stateSave and Utilities.stateLoad, using the private functions
+// distributeByte and gatherByte (and stripHighBits).
+//
+//
+// GLOBALS (TEMPORARY DATA)
+//
+// Temporary data is stored in local.stepSequencer.
+//
+// OPTIONS
+//
+// Permanent options special to the Step Sequencer are:
+//
+// options.stepSequencerNoEcho          Toggle for Echo
+//
+// Other permanent options affecting the Step Sequencer include:
+//
+// options.noteSpeedType
+// options.swing
+// options.channelIn
+// options.channelOut
+// options.transpose
+// options.volume
+// options.tempo
+// options.noteLength
+//
+//
+// DISPLAY
+// 
+// Step sequences are displayed in the top 6 rows of both LEDs.  A 16-note track takes up one full row.  24-note and 32-note
+// tracks take up two rows.  A 48-note track takes up 3 rows.  A 64-note track takes up 4 rows.
+// The sequencer also displays an EDIT CURSOR (a dot) and a PLAY CURSOR (a vertical set of dots).
+// The play cursor shows where the sequencer is currently playing.  The edit cursor is where new notes played, or rests or 
+// ties entered, will be put into the data.  This is known as STEP-BY-STEP editing mode.  You can move the edit cursor
+// up or down (to new tracks), or back and forth.  If you move the cursor beyond the left edge of the screen, the PLAY CURSOR
+// changes to indicate the current playing track.  Now if you play notes they will be entered in the current track at the
+// play cursor as it is playing.  This is known as PLAY POSITION mode.  
+//
+// In step-by-step mode, the middle button enters rests or ties (with a long press).  In play position mode, the
+// middle button either mutes or clears the track.  The select button stops and starts the sequencer, or (long press)
+// brings up the sequecer's menu.
+//
+// The sequence display scrolls vertically to display more tracks as necessary.  The current track is displayed in the
+// second row of the left LED.
+//
+//
+// INTERFACE
+//
+// Root
+//      Step Sequencer                  STATE_STEP_SEQUENCER: choose a slot to load or empty.  If slot is not a step sequencer slot, format:
+//              Format                          STATE_STEP_SEQUENCER_FORMAT:    16, 24, or 32 notes, then STATE_STEP_SEQUENCER_PLAY
+//              [Then Play]                     STATE_STEP_SEQUENCER_PLAY
+//                      Back Button: STATE_STEP_SEQUENCER_SURE, then STATE_STEP_SEQUENCER
+//                      Left Knob:      scroll up/down track 
+//                      Right Knob:     scroll left-right in track, or far left to enter PLAY POSITION mode
+//                      Middle Button [step-by-step mode]:      rest
+//                      Middle Button Long Press [step-by-step mode]: tie
+//                      Middle Button [play position mode]:     mute track
+//                      Middle Button Long Press [play position mode]: clear track
+//                      Select Button:  toggle start/stop (pause) sequence playing
+//                      Select Button Long Press: Menu          STATE_STEP_SEQUENCER_MENU
+//                              MENU:
+//                                      Stop:                           Stop and RESET the sequence to its initial position
+//                                      Reset Track:            Clear track and reset all of its options
+//                                      Length:                         Set track note length (or default)              STATE_STEP_SEQUENCER_LENGTH
+//                                      Out MIDI (Track):       Set Track MIDI out (or default, or off)         STATE_STEP_SEQUENCER_MIDI_CHANNEL_OUT
+//                                      Velocity:                       Set Track note velocity (or none, meaning use each note's individual velocity)  STATE_STEP_SEQUENCER_VELOCITY
+//                                      Fader:                          Set Track fader         STATE_STEP_SEQUENCER_FADER
+//                                      Echo:                           Toggle ECHO mode
+//                                      Save:                           Save the sequence.  STATE_STEP_SEQUENCER_SAVE, then back to STATE_STEP_SEQUENCER_PLAY
+//                                      Options:                        STATE_OPTIONS (display options menu)
+
+
+
+
+#define NUM_DRUM_GROUPS (10)
+#define NUM_DRUM_TRACKS (16)				// this MUST be <= 16 or gatherDrumShort, distributeDrumShort will fail
+#define NUM_BASE_DRUM_TRANSITIONS (18)
+#define NUM_EXTRA_DRUM_TRANSITIONS (2)
+#define NUM_DRUM_TRANSITIONS (NUM_BASE_DRUM_TRANSITIONS + NUM_EXTRA_DRUM_TRANSITIONS)
+
+struct _drumTrack
+	{
+	uint16_t group[NUM_DRUM_GROUPS];	// 16 on/off values 
+	uint16_t extra1;	// High to low: 1 bit mute, 4 bits pattern, 5 bits MIDI channel, 6 bits velocity 
+	uint8_t extra2;		// High to low: 1 bit extra, 4 bits note
+	};
+
+// A transition is defined as	
+//	LOW 4 bits: current group: 0...9, or 10 = END
+//	HIGH 4 bits: (1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 48, 64, 128)
+//  In addition to the transition array, two more transitions are hiding in drumTrack "extra" bits
+
+uint8_t getGroup(uint8_t transition)
+	{
+	return (transition >> 4);
+	}
+
+uint8_t getRepeat(uint8_t transition)
+	{
+	// (1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 48, 64, 128)
+	transition = transition >> 4;
+	if (transition < 9) return transition + 1;
+	switch (transition - 9)
+		{
+		0 : return 12; break;
+		1 : return 16; break;
+		2 : return 24; break;
+		3 : return 32; break;
+		4 : return 48; break;
+		5 : return 64; break;
+		}
+	// 6 : return 128; break;
+	return 128;
+	}
+
+// Note that repeat is raw, not cooked as in getRepeat(...)
+uint8_t makeTransition(uint8_t group, uint8_t repeat)
+	{
+	return (group << 4) | repeat;
+	}
+
+// A seqTransition is defined as	
+//	LOW 4 bits: *next* sequence: 0...8, or 9 = REPEAT, or 10 = END
+//	HIGH 4 bits: (1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 48, 64, 128)
+
+struct _drumSequencer
+	{
+	_drumTrack track[NUM_DRUM_TRACKS];	
+	uint8_t transition[NUM_BASE_DRUM_TRANSITIONS];
+	uint8_t seqTransition;
+	};
+
+// Assembles a short out of the high bits of all the extra1 bytes in the drum sequencer
+// Used by GET_DRUM_TRANSITION to eek out two more transitions.  Obviously there must
+// be at least 16 drum tracks
+uint16_t gatherDrumShort(struct _drumSequencer *seq)
+	{
+	uint16_t d = 0;
+	for(uint8_t i = 0; i < 16; i++)  	// 16 <= NUM_DRUM_TRACKS
+		{
+		d = (d << 1) | (seq->track[i]->extra2 >> 7);
+		}
+	return d;
+	}
+
+// Distributes a short to the high bits of all the extra1 bytes in the drum sequencer
+// Used by GET_DRUM_TRANSITION to eke out two more transitions.  Obviously there must
+// be at least 16 drum tracks
+void distributeDrumShort(struct _drumSequencer *seq, uint16_t val)
+	{
+	for(uint8_t i = 16; i >= 0; i--)  	// 16 <= NUM_DRUM_TRACKS
+		{
+		seq->track[i]->extra2 = ((seq->track[i]->extra2 & 127) | ((val & 1) << 7));
+		val = val >> 1;
+		}
+	}
+
+#define GET_DRUM_TRANSITION(tr, seq) \
+	((tr == NUM_BASE_DRUM_TRANSITIONS + 1) ? \
+		((uint8_t)(getDrumShort(&seq) >> 8)) : \
+			((tr == NUM_BASE_DRUM_TRANSITIONS) ? \
+				((uint8_t)(getDrumShort(&seq) & 255)) : \
+					seq.transition[tr]))
+
+#define SET_DRUM_TRANSITION(tr, seq, val) \
+	(tr == NUM_BASE_DRUM_TRANSITIONS + 1) ? \
+		setDrumShort(&seq, (getDrumShort(&seq) & 255) | (((uint16_t)val) << 8) : \
+			((tr == NUM_BASE_DRUM_TRANSITIONS) ? \
+				setDrumShort(&seq, (getDrumShort(&seq) << 7) | val) : \
+					seq.transition[tr] = val));
+
+
+
+/*
+// local.outMidi[track] is set to this if it's not overriding the default MIDI out in options.channelOut
+#define MIDI_OUT_DEFAULT 17
+
+// No MIDI out channel at all
+#define NO_MIDI_OUT 0
+
+#define PLAY_STATE_STOPPED 0
+#define PLAY_STATE_WAITING 2
+#define PLAY_STATE_PLAYING 1
+
+// RESTS are NOTE 0 VEL 0, and TIES are NOTE 1 VEL 0
+
+/// LOCAL
+
+#define STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE (0)
+#define STEP_SEQUENCER_PATTERN_RANDOM_3_4 (14)
+#define STEP_SEQUENCER_PATTERN_RANDOM_1_2 (13)
+#define STEP_SEQUENCER_PATTERN_RANDOM_1_4 (6)
+#define STEP_SEQUENCER_PATTERN_RANDOM_1_8 (9)
+#define STEP_SEQUENCER_PATTERN_ALL (15)
+#define P0000 (0)			// STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE
+#define P1000 (1)
+#define P0100 (2)
+#define P1100 (3)
+#define P0010 (4)
+#define P1010 (5)
+#define P0110 (6)			// STEP_SEQUENCER_PATTERN_RANDOM_1_4
+#define P1110 (7)
+#define P0001 (8)
+#define P1001 (9)			// STEP_SEQUENCER_PATTERN_RANDOM_1_8
+#define P0101 (10)
+#define P1101 (11)
+#define P0011 (12)
+#define P1011 (13)			// STEP_SEQUENCER_PATTERN_RANDOM_1_2
+#define P0111 (14)			// STEP_SEQUENCER_PATTERN_RANDOM_3_4
+#define P1111 (15)			// STEP_SEQUENCER_PATTERN_ALL
+
+
+
+#define STEP_SEQUENCER_NOT_MUTED (0)
+#define STEP_SEQUENCER_MUTED (1)
+#define STEP_SEQUENCER_MUTE_ON_SCHEDULED (2)
+#define STEP_SEQUENCER_MUTE_OFF_SCHEDULED (3)
+#define STEP_SEQUENCER_MUTE_ON_SCHEDULED_ONCE (4)
+#define STEP_SEQUENCER_MUTE_OFF_SCHEDULED_ONCE (5)
+
+#define STEP_SEQUENCER_NO_SOLO (0)
+#define STEP_SEQUENCER_SOLO (1)
+#define STEP_SEQUENCER_SOLO_ON_SCHEDULED (2)
+#define STEP_SEQUENCER_SOLO_OFF_SCHEDULED (3)
+*/
+
+/*
+	// We have 387 bytes to play with 
+	
+	- ONE bit per note, so we have 0=off 1=on
+	- 16 notes per group
+	- Up to 16 groups per track
+	- 16 tracks
+	- Plus 2 bytes per track:
+		5 bits MIDI channel (including "default" and maybe "off"?)
+		3 bits velocity (15, 31, ..., 127)
+		7 bits note
+		1 bit mute
+	- Or 2.5:
+		5 bits MIDI channel (including "default" and maybe "off"?)
+		7 bits velocity
+		7 bits note
+		1 bit mute
+	- Plus 1 byte per group?
+		3 bits group length	(8, 10, 12, 14, 16, 32, 64, 128)   or (OFF, 8, 10, 12, 14, 16, 32, 64, 128)
+		3 bits note speed  (1x, 2x, 3x, 4x, 6x, 8x, 16x, 32x)
+		2 bits extra: maybe velocity changes?  Dunno
+	- Plus 1/2 byte per group per track
+		4 bits pattern
+		
+	- Up to 365 ? bytes to play with
+	
+	- Some typical (uniform) layouts, though layouts can be non-uniform:
+		8 notes, 13 groups, 16 tracks = (8/8 * 16 + 1/2 * 16 + 1) * 13 + (2 * 16) = 357
+		10 notes, 11 groups, 16 tracks = (10/8 * 16 + 1/2 * 16 + 1) * 11 + (2 * 16) = 351
+		12 notes, 10 groups, 16 tracks = (12/8 * 16 + 1/2 * 16 + 1) * 10 + (2 * 16) = 362
+		14 notes, 9 groups, 16 tracks = (14/8 * 16 + 1/2 * 16 + 1) * 9 + (2 * 16) = 365
+		16 notes, 8 groups, 16 tracks = (16/8 * 16 + 1/2 * 16 + 1) * 8 + (2 * 16) = 360
+		32 notes, 4 groups, 16 tracks = (32/8 * 16 + 1/2 * 16 + 1) * 4 + (2 * 16) = 324
+		64 notes, 2 groups, 16 tracks = (64/8 * 16 + 1/2 * 16 + 1) * 2 + (2 * 16) = 306
+		128 notes, 1 group, 16 tracks = (128/8 * 16 + 1/2 * 16 + 1) * 1 + (2 * 16) = 297
+
+		8 notes, 17 groups, 12 tracks = (8/8 * 12 + 1/2 * 12 + 1) * 17 + (2 * 12) = 347
+		10 notes, 15 groups, 12 tracks = (10/8 * 12 + 1/2 * 12 + 1) * 15 + (2 * 12) = 354
+		12 notes, 13 groups, 12 tracks = (12/8 * 12 + 1/2 * 12 + 1) * 13 + (2 * 12) = 349
+		14 notes, 12 groups, 12 tracks = (14/8 * 12 + 1/2 * 12 + 1) * 12 + (2 * 12) = 360
+		16 notes, 11 groups, 12 tracks = (16/8 * 12 + 1/2 * 12 + 1) * 11 + (2 * 12) = 365
+		32 notes, 6 groups, 12 tracks = (32/8 * 12 + 1/2 * 12 + 1) * 6 + (2 * 12) = 354
+		64 notes, 3 groups, 12 tracks = (64/8 * 12 + 1/2 * 12 + 1) * 3 + (2 * 12) = 333
+		128 notes, 1 group, 12 tracks = (128/8 * 12 + 1/2 * 12 + 1) * 1 + (2 * 12) = 223
+
+		// with no extra byte per group
+		
+		8 notes, 13 groups, 16 tracks = (8/8 * 16 + 1/2 * 16 ) * 13 + (2.5 * 16) = 352
+		10 notes, 11 groups, 16 tracks = (10/8 * 16 + 1/2 * 16 ) * 11 + (2.5 * 16) = 348
+		12 notes, 10 groups, 16 tracks = (12/8 * 16 + 1/2 * 16 ) * 10 + (2.5 * 16) = 360
+		14 notes, 9 groups, 16 tracks = (14/8 * 16 + 1/2 * 16 ) * 9 + (2.5 * 16) = 364
+		16 notes, 8 groups, 16 tracks = (16/8 * 16 + 1/2 * 16 ) * 8 + (2.5 * 16) = 360
+		32 notes, 4 groups, 16 tracks = (32/8 * 16 + 1/2 * 16 ) * 4 + (2.5 * 16) = 328
+		64 notes, 2 groups, 16 tracks = (64/8 * 16 + 1/2 * 16 ) * 2 + (2.5 * 16) = 312
+		128 notes, 1 group, 16 tracks = (128/8 * 16 + 1/2 * 16 ) * 1 + (2.5 * 16) = 304
+
+		8 notes, 18 groups, 12 tracks = (8/8 * 12 + 1/2 * 12 ) * 18 + (2.5 * 12) = 354
+		10 notes, 16 groups, 12 tracks = (10/8 * 12 + 1/2 * 12 ) * 16 + (2.5 * 12) = 366
+		12 notes, 14 groups, 12 tracks = (12/8 * 12 + 1/2 * 12 ) * 14 + (2.5 * 12) = 366
+		14 notes, 12 groups, 12 tracks = (14/8 * 12 + 1/2 * 12 ) * 12 + (2.5 * 12) = 354
+		16 notes, 11 groups, 12 tracks = (16/8 * 12 + 1/2 * 12 ) * 11 + (2.5 * 12) = 360
+		32 notes, 6 groups, 12 tracks = (32/8 * 12 + 1/2 * 12 ) * 6 + (2.5 * 12) = 354
+		64 notes, 3 groups, 12 tracks = (64/8 * 12 + 1/2 * 12 ) * 3 + (2.5 * 12) = 336
+		128 notes, 1 group, 12 tracks = (128/8 * 12 + 1/2 * 12 ) * 1 + (2.5 * 12) = 228
+
+		
+
+	Plus: 20 global group transitions.  These are <group, repeat> pairs indicating 
+	which group and then how many times to repeat it.  Each transition is 1 byte.
+	Group is 4 bits: (0 = FIRST/NEXT, 1...14, 15=END)
+	Repeat is 4 bits: (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, 48, 64, LOOP)
+
+	Plus: 
+		4 bits for num repeats (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, 48, 64, 128)
+		4 bits for next sequence after repeats
+			(0 = END, 1...10 (for 0...9), 11 = LOOP)
+		1 byte left over
+		
+
+
+	RIGHT KNOB
+		Track
+		
+	LEFT KNOB
+		Position, or far left for enter in real time, or far right
+			In position mode you can enter by note maybe?  or use far right to do that?
+		
+	RIGHT BUTTON
+		Play Position:	Start/Stop
+		Edit:			Start/Stop
+		Far right:		Next group
+		Performance:	Start/Stop
+	
+	LONG RIGHT BUTTON
+						Menu
+	
+	MIDDLE BUTTON
+		Play Position:	Mute
+		Edit:			Toggle Note
+		Far right:		Previous Group
+		Performance:	Play Next Group
+
+	LONG MIDDLE BUTTON
+		Play Position:	Clear Track
+		Edit:			Add to Group List?  With length?
+		Far right:		First Group
+		Performance:	Solo
+
+	SELECT + MIDDLE LONG
+		Play Position:	Performance Mode
+		Edit:			Performance Mode
+		Far right:		Performance Mode ? 
+		Performance:	Play Next Sequence
+
+*/
+
+#define TRANSITION_END (10)
+#define SEQUENCE_END (10)
+#define SEQUENCE_LOOP (11)
+
+struct _drumSequencerLocal
+    {
+    uint8_t playState;                                              // is the sequencer playing, paused, or stopped?
+    int8_t currentEditPosition;                                     // Where is the edit cursor?  Can be -1, indicating PLAY rather than STEP BY STEP entry mode
+    uint8_t currentPlayPosition;                                    // Where is the play position marker?
+        
+	uint8_t transitionGroups[NUM_DRUM_TRANSACTIONS];
+	uint8_t transitionRepeats[NUM_DRUM_TRANSACTIONS];
+	uint8_t nextSequence;
+	uint8_t repeats;
+	uint16_t group[NUM_DRUM_GROUPS][NUM_DRUM_TRACKS];
+	uint8_t outMIDI[NUM_DRUM_TRACKS];
+	uint8_t velocity[NUM_DRUM_TRACKS];
+    uint8_t pattern[NUM_DRUM_TRACKS];
+	uint8_t muted[NUM_DRUM_TRACKS];
+    uint8_t note[NUM_DRUM_TRACKS];
+    uint8_t shouldPlay[NUM_DRUM_TRACKS];						// do we need this?
+    uint8_t dontPlay[MAX_STEP_SEQUENCER_TRACKS];				// do we need this?
+    uint8_t performanceMode;									// do we need this?
+    uint8_t goNextSequence;
+    uint8_t countdown;
+    uint8_t countup;
+    uint16_t pots[2];
+    uint8_t markTrack;
+    uint8_t markPosition;
+    uint8_t solo;
+    uint8_t currentTrack;                                                   // which track are we editing?
+    uint8_t backup;      		// used for backing up data to restore it                                                           // used to back up various values when the user cancels
+    int16_t currentRightPot;
+    };
+
+
+// Turns off all notes as appropriate (rests and ties aren't cleared),
+// unless clearAbsolutely is true, in which case absolutely everything gets cleared regardless
+void clearNotesOnTracks(uint8_t clearEvenIfNoteNotFinished);
+
+// Draws the sequence with the given track length, number of tracks, and skip size
+void drawDrumSequencer(uint8_t tracklen, uint8_t numTracks, uint8_t skip);
+
+// Reformats the sequence as requested by the user
+void stateDrumSequencerFormat();
+
+// Plays and records the sequence
+void stateDrumSequencerPlay();
+
+// Plays the current sequence
+void playDrumSequencer();
+
+// Gives other options
+void stateDrumSequencerMenu();
+
+void stopDrumSequencer();
+
+void resetDrumSequencer();
+
+
+// Performance Options
+void stateDrumSequencerMenuPerformanceKeyboard();
+void stateDrumSequencerMenuPerformanceRepeat();
+void stateDrumSequencerMenuPerformanceNext();
+void loadDrumSequencer(uint8_t slot);
+void resetDrumSequencerCountdown();
+void stateDrumSequencerMenuPattern();
+
+// Edit Options
+void stateDrumSequencerMenuEditMark();
+void stateDrumSequencerMenuEditCopy(uint8_t splat, uint8_t paste);
+void stateDrumSequencerMenuEditDuplicate();
+
+#endif
+

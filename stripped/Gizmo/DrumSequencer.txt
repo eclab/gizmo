@@ -1,0 +1,113 @@
+	// We have 387 bytes to play with 
+	
+	- ONE bit per note, so we have 0=off 1=on
+	- 16 notes per group
+	- Up to 16 groups per track
+	- 16 tracks
+	- Plus 2 bytes per track:
+		5 bits MIDI channel (including "default" and maybe "off"?)
+		3 bits velocity (15, 31, ..., 127)
+		7 bits note
+		1 bit mute
+	- Or 2.5:
+		5 bits MIDI channel (including "default" and maybe "off"?)
+		7 bits velocity
+		7 bits note
+		1 bit mute
+	- Plus 1 byte per group?
+		3 bits group length	(8, 10, 12, 14, 16, 32, 64, 128)   or (OFF, 8, 10, 12, 14, 16, 32, 64, 128)
+		3 bits note speed  (1x, 2x, 3x, 4x, 6x, 8x, 16x, 32x)
+		2 bits extra: maybe velocity changes?  Dunno
+	- Plus 1/2 byte per group per track
+		4 bits pattern
+		
+	- Up to 365 ? bytes to play with
+	
+	- Some typical (uniform) layouts, though layouts can be non-uniform:
+		8 notes, 13 groups, 16 tracks = (8/8 * 16 + 1/2 * 16 + 1) * 13 + (2 * 16) = 357
+		10 notes, 11 groups, 16 tracks = (10/8 * 16 + 1/2 * 16 + 1) * 11 + (2 * 16) = 351
+		12 notes, 10 groups, 16 tracks = (12/8 * 16 + 1/2 * 16 + 1) * 10 + (2 * 16) = 362
+		14 notes, 9 groups, 16 tracks = (14/8 * 16 + 1/2 * 16 + 1) * 9 + (2 * 16) = 365
+		16 notes, 8 groups, 16 tracks = (16/8 * 16 + 1/2 * 16 + 1) * 8 + (2 * 16) = 360
+		32 notes, 4 groups, 16 tracks = (32/8 * 16 + 1/2 * 16 + 1) * 4 + (2 * 16) = 324
+		64 notes, 2 groups, 16 tracks = (64/8 * 16 + 1/2 * 16 + 1) * 2 + (2 * 16) = 306
+		128 notes, 1 group, 16 tracks = (128/8 * 16 + 1/2 * 16 + 1) * 1 + (2 * 16) = 297
+
+		8 notes, 17 groups, 12 tracks = (8/8 * 12 + 1/2 * 12 + 1) * 17 + (2 * 12) = 347
+		10 notes, 15 groups, 12 tracks = (10/8 * 12 + 1/2 * 12 + 1) * 15 + (2 * 12) = 354
+		12 notes, 13 groups, 12 tracks = (12/8 * 12 + 1/2 * 12 + 1) * 13 + (2 * 12) = 349
+		14 notes, 12 groups, 12 tracks = (14/8 * 12 + 1/2 * 12 + 1) * 12 + (2 * 12) = 360
+		16 notes, 11 groups, 12 tracks = (16/8 * 12 + 1/2 * 12 + 1) * 11 + (2 * 12) = 365
+		32 notes, 6 groups, 12 tracks = (32/8 * 12 + 1/2 * 12 + 1) * 6 + (2 * 12) = 354
+		64 notes, 3 groups, 12 tracks = (64/8 * 12 + 1/2 * 12 + 1) * 3 + (2 * 12) = 333
+		128 notes, 1 group, 12 tracks = (128/8 * 12 + 1/2 * 12 + 1) * 1 + (2 * 12) = 223
+
+		// with no extra byte per group
+		
+		8 notes, 13 groups, 16 tracks = (8/8 * 16 + 1/2 * 16 ) * 13 + (2.5 * 16) = 352
+		10 notes, 11 groups, 16 tracks = (10/8 * 16 + 1/2 * 16 ) * 11 + (2.5 * 16) = 348
+		12 notes, 10 groups, 16 tracks = (12/8 * 16 + 1/2 * 16 ) * 10 + (2.5 * 16) = 360
+		14 notes, 9 groups, 16 tracks = (14/8 * 16 + 1/2 * 16 ) * 9 + (2.5 * 16) = 364
+		16 notes, 8 groups, 16 tracks = (16/8 * 16 + 1/2 * 16 ) * 8 + (2.5 * 16) = 360
+		32 notes, 4 groups, 16 tracks = (32/8 * 16 + 1/2 * 16 ) * 4 + (2.5 * 16) = 328
+		64 notes, 2 groups, 16 tracks = (64/8 * 16 + 1/2 * 16 ) * 2 + (2.5 * 16) = 312
+		128 notes, 1 group, 16 tracks = (128/8 * 16 + 1/2 * 16 ) * 1 + (2.5 * 16) = 304
+
+		8 notes, 18 groups, 12 tracks = (8/8 * 12 + 1/2 * 12 ) * 18 + (2.5 * 12) = 354
+		10 notes, 16 groups, 12 tracks = (10/8 * 12 + 1/2 * 12 ) * 16 + (2.5 * 12) = 366
+		12 notes, 14 groups, 12 tracks = (12/8 * 12 + 1/2 * 12 ) * 14 + (2.5 * 12) = 366
+		14 notes, 12 groups, 12 tracks = (14/8 * 12 + 1/2 * 12 ) * 12 + (2.5 * 12) = 354
+		16 notes, 11 groups, 12 tracks = (16/8 * 12 + 1/2 * 12 ) * 11 + (2.5 * 12) = 360
+		32 notes, 6 groups, 12 tracks = (32/8 * 12 + 1/2 * 12 ) * 6 + (2.5 * 12) = 354
+		64 notes, 3 groups, 12 tracks = (64/8 * 12 + 1/2 * 12 ) * 3 + (2.5 * 12) = 336
+		128 notes, 1 group, 12 tracks = (128/8 * 12 + 1/2 * 12 ) * 1 + (2.5 * 12) = 228
+
+		
+
+	Plus: 20 global group transitions.  These are <group, repeat> pairs indicating 
+	which group and then how many times to repeat it.  Each transition is 1 byte.
+	Group is 4 bits: (0 = FIRST/NEXT, 1...14, 15=END)
+	Repeat is 4 bits: (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, 48, 64, LOOP)
+
+	Plus: 
+		4 bits for num repeats (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, 48, 64, 128)
+		4 bits for next sequence after repeats
+			(0 = END, 1...10 (for 0...9), 11 = LOOP)
+		1 byte left over
+		
+
+
+	RIGHT KNOB
+		Track
+		
+	LEFT KNOB
+		Position, or far left for enter in real time, or far right
+			In position mode you can enter by note maybe?  or use far right to do that?
+		
+	RIGHT BUTTON
+		Play Position:	Start/Stop
+		Edit:			Start/Stop
+		Far right:		Next group
+		Performance:	Start/Stop
+	
+	LONG RIGHT BUTTON
+						Menu
+	
+	MIDDLE BUTTON
+		Play Position:	Mute
+		Edit:			Toggle Note
+		Far right:		Previous Group
+		Performance:	Play Next Group
+
+	LONG MIDDLE BUTTON
+		Play Position:	Clear Track
+		Edit:			Add to Group List?  With length?
+		Far right:		First Group
+		Performance:	Solo
+
+	SELECT + MIDDLE LONG
+		Play Position:	Performance Mode
+		Edit:			Performance Mode
+		Far right:		Performance Mode ? 
+		Performance:	Play Next Sequence
+
