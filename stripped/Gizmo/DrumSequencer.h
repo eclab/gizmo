@@ -276,55 +276,52 @@
 #define NEXT_SEQUENCE_END						(0)
 #define SEQUENCE_REPEAT_LOOP					(0)
 
+#define CHANNEL_ADD_TO_DRUM_SEQUENCER (-1)		// The default: performance notes just get put into the drum sequencer as normal
+#define CHANNEL_DEFAULT_MIDI_OUT (0)			// Performance notes are routed to MIDI_OUT
+												// Values 1...16: performance notes are routed to this channel number
+
 
 struct _drumSequencerLocal
     {
-	uint8_t numGroups;
-    uint8_t numTracks;
-    uint8_t numNotes;												// This is not the *actual* length, just the max and default length.  Use getActualGroupLength(local.drumSequencer.currentGroup())
-    uint8_t currentGroup;
-    uint8_t currentTrack;
-    uint8_t currentTransition;
-    int8_t currentEditPosition;                                     // Where is the edit cursor?  Can be -1, indicating PLAY rather than STEP BY STEP entry mode, or can be >= getActualGroupLength(local.drumSequencer.currentGroup()), indicating "right mode"
+    uint8_t format;													// Sequence format (layout).  Since this is also in struct _drumSequencer, maybe we can get rid of it.
+	uint8_t numGroups;												// Number of groups in this sequence.  
+    uint8_t numTracks;												// Number of tracks in this sequence
+    uint8_t numNotes;												// Maximum number of notes per track per group.  To get the *actual* length, use getActualGroupLength(local.drumSequencer.currentGroup())
+    uint8_t currentGroup;											// Current group being played/edited in sequence
+    uint8_t currentTrack;											// Current track being played/edited in sequence
+    uint8_t currentTransition;										// Current transition played in sequence (performance mode only)
+    int8_t currentEditPosition;                                     // Where is the edit cursor?  Can be -1, indicating PLAY rather than STEP BY STEP entry mode, or can be >= getActualGroupLength(local.drumSequencer.currentGroup()), indicating "right mode".  We're not using "right mode" right now.
     uint8_t currentPlayPosition;                                    // Where is the play position marker?
-    uint8_t format;
-    uint8_t repeatSequence;
-    uint8_t nextSequence;
-    uint8_t transitionGroup[NUM_TRANSITIONS];
-    uint8_t transitionRepeat[NUM_TRANSITIONS];
-	uint8_t muted[MAX_TRACKS];										// This is wasteful, maybe we can get rid of it
-	uint8_t solo;
-    uint8_t playState;                                              // is the sequencer playing, paused, or stopped?
-    uint8_t shouldPlay[MAX_TRACKS];									// determined when we start note 0 of the sequence, based on the current pattern.  Used throughout the sequence afterwards to determine if we should play or mute the track that time around.
-    uint8_t backup;      		// used for backing up data to restore it                                                           // used to back up various values when the user cancels
-    uint8_t transitionGroupBackup;
-    uint16_t pots[NUM_POTS];
+    uint8_t transitionGroup[NUM_TRANSITIONS];						// The current group for each transition.  See earlier notes about how "other" and "end" etc. work.  Since this is also in struct _drumSequencer, maybe we can get rid of it.
+    uint8_t transitionRepeat[NUM_TRANSITIONS];						// The number of times to repeat for each transition.  See earlier notes about how "other" and "end" etc. work.  Since this is also in struct _drumSequencer, maybe we can get rid of it.
+    uint8_t repeatSequence;											// How often to repeat the entire sequence after the transitions have been exhausted.  Since this is also in struct _drumSequencer, maybe we can get rid of it.
+    uint8_t nextSequence;											// The next sequence after the sequence repeats have been exhausted. Since this is also in struct _drumSequencer, maybe we can get rid of it.
+	uint8_t muted[MAX_DRUM_SEQUENCER_TRACKS];						// Whether a given track is muted.  This is very wasteful, maybe we can get rid of it
+	uint8_t solo;													// Whether we're in solo mode (the given track is being soloed)
+    uint8_t playState;                                              // Is the sequencer playing, paused, or stopped?
+    uint8_t shouldPlay[MAX_DRUM_SEQUENCER_TRACKS];					// Should we play the given track [due to pattern]?  Determined when we start note 0 of the sequence, based on the current pattern.  Used throughout the sequence afterwards to determine if we should play or mute the track that time around.
+    uint8_t performanceMode;										// Are we in performance mode?
+    uint8_t transitionCountdown;									// Current countdown for repeats in the current transition
+    uint8_t sequenceCountdown;										// Current countdown for repeats in whole sequence
+    uint8_t patternCountup;											// Current "countdown" for the pattern
+    uint8_t backup;   												// A temp variable used to backup stuff in TopLevel menus
+    uint8_t transitionGroupBackup;									// A second temp variable used to backup stuff in TopLevel menus
+    uint16_t pots[NUM_POTS];										// Current pot positions
     int16_t currentRightPot;  
-    uint8_t notePulsetransitionCountdown;      
-    uint8_t shouldPlay[MAX_DRUM_SEQUENCER_TRACKS];
-    uint8_t performanceMode;
-    uint8_t transitionCountdown;
-    uint8_t sequenceCountdown;
-    uint8_t patternCountup;
     
+    // don't know if/when we'll be adding editing
     /*
     uint8_t markTrack;
     uint8_t markPosition;
-    uint8_t solo;
     */
     };
 
 
-#define CHANNEL_ADD_TO_DRUM_SEQUENCER (-1)		// The default: performance notes just get put into the drum sequencer as normal
-#define CHANNEL_DEFAULT_MIDI_OUT (0)			// Performance notes are routed to MIDI_OUT
-												// Values 1...16: performance notes are routed to this channel number
-#define CHANNEL_TRANSPOSE (17)					// Use performance note to do transposition
-
 struct _drumSequencer
     {
     uint8_t format;
-    uint8_t repeat;
-    uint8_t transition[NUM_TRANSITIONS];
+    uint8_t repeat;								// repeatSequence and nextSequence.   
+    uint8_t transition[NUM_TRANSITIONS];		// transitionGroup and transitionRepeat
     uint8_t data[DATA_LENGTH]
     };
 

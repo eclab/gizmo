@@ -569,7 +569,7 @@ void go()
             if (entry)              // we do this because this state is entered just before we exit the entire step sequencer
                 {
                 setParseRawCC(false);
-	    		setNotePulseRate(options.noteSpeedType);		// reset the note speed
+                setNotePulseRate(options.noteSpeedType);                // reset the note speed
                 }
             stateLoad(STATE_DRUM_SEQUENCER_PLAY, STATE_DRUM_SEQUENCER_FORMAT, STATE_ROOT, STATE_DRUM_SEQUENCER);
             }
@@ -1045,11 +1045,11 @@ void go()
             {
             uint8_t note = stateEnterNote(STATE_DRUM_SEQUENCER_MENU);
             if (note != NO_NOTE)
-            	{
+                {
                 setNotePitch(local.drumSequencer.currentTrack, note);
                 goUpState(STATE_DRUM_SEQUENCER_MENU);
-            	}
-            playDrumSequencer();		//// FIXME:   Shoudl we do this?
+                }
+            playDrumSequencer();                //// FIXME:   Shoudl we do this?
             }
         break;
         case STATE_DRUM_SEQUENCER_GROUP_LENGTH:
@@ -1094,20 +1094,20 @@ void go()
                 {
                 clearScreen();
                 if (local.drumSequencer.backup == 0)
-                	{
-                	write3x5Glyphs(GLYPH_DEFAULT);
-                	}
+                    {
+                    write3x5Glyphs(GLYPH_DEFAULT);
+                    }
                 else
-                	{
-                	writeNoteSpeed(led, local.drumSequencer.backup);
-                	}
+                    {
+                    writeNoteSpeed(led, local.drumSequencer.backup);
+                    }
                 }
             uint8_t i = isUpdated(SELECT_BUTTON, PRESSED);
             if (isUpdated(BACK_BUTTON, RELEASED) || i )
                 {
                 if (i)
-                	{
-                	setNoteSpeed(local.drumSequencer.currentGroup, backup);
+                    {
+                    setNoteSpeed(local.drumSequencer.currentGroup, backup);
                     }
                 goUpState(STATE_DRUM_SEQUENCER_MENU);
                 }
@@ -1164,13 +1164,13 @@ void go()
                     {
                     local.drumSequencer.transitionGroupBackup = currentDisplay;
                     if (currentDisplay == 0)
-                    	{
-                    	goDownState(STATE_DRUM_SEQUENCER_TRANSITIONS_SPECIAL);
-                    	}
+                        {
+                        goDownState(STATE_DRUM_SEQUENCER_TRANSITIONS_SPECIAL);
+                        }
                     else
-                    	{
-	                    goDownState(STATE_DRUM_SEQUENCER_TRANSITIONS_REPEAT);
-	                    }
+                        {
+                        goDownState(STATE_DRUM_SEQUENCER_TRANSITIONS_REPEAT);
+                        }
                     }
                 break;
                 case MENU_CANCELLED:
@@ -1220,30 +1220,30 @@ void go()
                 {
                 defaultState = local.drumSequencer.transitionRepeat[local.drumSequencer.backup];
                 if (defaultState < 3)
-                	defaultState = 0;
+                    defaultState = 0;
                 }
                 
-            // R2:	Random(choose beetween groups 1 and 2)
-            // R3:	Random(choose beetween groups 1 and 3)
-            // R4:	Random(choose beetween groups 1 and 4)
-            // -1:	one time
-            // -2:	two times
-            // -3:	three times
-            // -4:	four times
-            // -L:	loop forever
-            // END:	End marker: this is not a group, it marks the termination of the sequence.  Not permitted in transition slot 0.
+            // R2:      Random(choose beetween groups 1 and 2)
+            // R3:      Random(choose beetween groups 1 and 3)
+            // R4:      Random(choose beetween groups 1 and 4)
+            // -1:      one time
+            // -2:      two times
+            // -3:      three times
+            // -4:      four times
+            // -L:      loop forever
+            // END:     End marker: this is not a group, it marks the termination of the sequence.  Not permitted in transition slot 0.
             
             if (local.drumSequencer.backup == 0)  // slot 0 can't have "END"
-            	{
-	            const char* menuItems[15] = { PSTR("R2-1"), PSTR("R2-2"), PSTR("R2-3"), PSTR("R2-4"), PSTR("R2-L"), PSTR("R3-1"), PSTR("R3-2"), PSTR("R3-3"), PSTR("R3-4"), PSTR("R3-L"), PSTR("R4-1"), PSTR("R4-2"), PSTR("R4-3"), PSTR("R4-4"), PSTR("R4-L") };
-	            result = doMenuDisplay(menuItems, 15, STATE_NONE, STATE_NONE, 1);
-	            }
-	        else
-	        	{
-	            const char* menuItems[16] = { PSTR("R2-1"), PSTR("R2-2"), PSTR("R2-3"), PSTR("R2-4"), PSTR("R2-L"), PSTR("R3-1"), PSTR("R3-2"), PSTR("R3-3"), PSTR("R3-4"), PSTR("R3-L"), PSTR("R4-1"), PSTR("R4-2"), PSTR("R4-3"), PSTR("R4-4"), PSTR("R4-L"), PSTR("END") };
-	            result = doMenuDisplay(menuItems, 16, STATE_NONE, STATE_NONE, 1);
-	        	}
-	        	
+                {
+                const char* menuItems[15] = { PSTR("R2-1"), PSTR("R2-2"), PSTR("R2-3"), PSTR("R2-4"), PSTR("R2-L"), PSTR("R3-1"), PSTR("R3-2"), PSTR("R3-3"), PSTR("R3-4"), PSTR("R3-L"), PSTR("R4-1"), PSTR("R4-2"), PSTR("R4-3"), PSTR("R4-4"), PSTR("R4-L") };
+                result = doMenuDisplay(menuItems, 15, STATE_NONE, STATE_NONE, 1);
+                }
+            else
+                {
+                const char* menuItems[16] = { PSTR("R2-1"), PSTR("R2-2"), PSTR("R2-3"), PSTR("R2-4"), PSTR("R2-L"), PSTR("R3-1"), PSTR("R3-2"), PSTR("R3-3"), PSTR("R3-4"), PSTR("R3-L"), PSTR("R4-1"), PSTR("R4-2"), PSTR("R4-3"), PSTR("R4-4"), PSTR("R4-L"), PSTR("END") };
+                result = doMenuDisplay(menuItems, 16, STATE_NONE, STATE_NONE, 1);
+                }
+                        
             switch (result)
                 {
                 case NO_MENU_SELECTED:
@@ -1286,41 +1286,41 @@ void go()
         break;
         
 /*
-        case STATE_DRUM_SEQUENCER_MENU_EDIT:
-            {
-            const char* menuItems[5] = { PSTR("MARK"), PSTR("COPY"), PSTR("SPLAT"), PSTR("MOVE"), PSTR("DUPLICATE") };
-            doMenuDisplay(menuItems, 5, STATE_DRUM_SEQUENCER_MENU_EDIT_MARK, STATE_DRUM_SEQUENCER_MENU, 1);
-            playDrumSequencer();
-            }
-        break;
-        case STATE_DRUM_SEQUENCER_MENU_EDIT_MARK:
-            {
-            stateStepSequencerMenuEditMark();
-            }
-        break;
-        case STATE_DRUM_SEQUENCER_MENU_EDIT_COPY:
-            {
-            stateStepSequencerMenuEditCopy(false, false);
-            playDrumSequencer();
-            }
-        break;
-        case STATE_DRUM_SEQUENCER_MENU_EDIT_SPLAT:
-            {
-            stateStepSequencerMenuEditCopy(true, false);
-            playDrumSequencer();
-            }
-        break;
-        case STATE_DRUM_SEQUENCER_MENU_EDIT_MOVE:
-            {
-            stateStepSequencerMenuEditCopy(false, true);
-            playDrumSequencer();
-            }
-        break;
-        case STATE_DRUM_SEQUENCER_MENU_EDIT_DUPLICATE:
-            {
-            stateStepSequencerMenuEditDuplicate();
-            playDrumSequencer();
-            }
+  case STATE_DRUM_SEQUENCER_MENU_EDIT:
+  {
+  const char* menuItems[5] = { PSTR("MARK"), PSTR("COPY"), PSTR("SPLAT"), PSTR("MOVE"), PSTR("DUPLICATE") };
+  doMenuDisplay(menuItems, 5, STATE_DRUM_SEQUENCER_MENU_EDIT_MARK, STATE_DRUM_SEQUENCER_MENU, 1);
+  playDrumSequencer();
+  }
+  break;
+  case STATE_DRUM_SEQUENCER_MENU_EDIT_MARK:
+  {
+  stateStepSequencerMenuEditMark();
+  }
+  break;
+  case STATE_DRUM_SEQUENCER_MENU_EDIT_COPY:
+  {
+  stateStepSequencerMenuEditCopy(false, false);
+  playDrumSequencer();
+  }
+  break;
+  case STATE_DRUM_SEQUENCER_MENU_EDIT_SPLAT:
+  {
+  stateStepSequencerMenuEditCopy(true, false);
+  playDrumSequencer();
+  }
+  break;
+  case STATE_DRUM_SEQUENCER_MENU_EDIT_MOVE:
+  {
+  stateStepSequencerMenuEditCopy(false, true);
+  playDrumSequencer();
+  }
+  break;
+  case STATE_DRUM_SEQUENCER_MENU_EDIT_DUPLICATE:
+  {
+  stateStepSequencerMenuEditDuplicate();
+  playDrumSequencer();
+  }
 */
         case STATE_DRUM_SEQUENCER_MENU_PERFORMANCE:
             {
@@ -1345,13 +1345,13 @@ void go()
             }
         break;
 /*
-        case STATE_DRUM_SEQUENCER_MENU_NO:
-            {
-            const char* menuItems[1] = { PSTR("NO") };
-            doMenuDisplay(menuItems, 1, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
-            playDrumSequencer();
-            }
-        break;
+  case STATE_DRUM_SEQUENCER_MENU_NO:
+  {
+  const char* menuItems[1] = { PSTR("NO") };
+  doMenuDisplay(menuItems, 1, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
+  playDrumSequencer();
+  }
+  break;
 */
 #endif
  

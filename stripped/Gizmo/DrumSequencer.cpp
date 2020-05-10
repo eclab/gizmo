@@ -245,69 +245,69 @@ void numFormatGroups(uint8_t format)
 
 
 void goNextTransition()
-	{
-	if (local.drumSequencer.transitionCountdown == 0)
-		{
-		local.drumSequencer.currentTransition++;
-		uint8_t repeat = 0;
-		uint8_t group =  0;
-		
-		// are we at the end?
-		if (local.drumSequencer.currentTransition > NUM_TRANSITIONS ||
-			(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition] == TRANSITION_GROUP_OTHER &&
-			 local.drumSequencer.transitionRepeat[local.drumSequencer.currentTransition] == TRANSITION_OTHER_END))
-			{
-			// This should never happen.  We can't have END as the first START.  This will be interpreted
-			// as repeating group 1 in a loop
-			if (local.drumSequencer.currentTransition == 0)
-				{
-				repeat = TRANSITION_REPEAT_LOOP;
-				group = 0;
-				}
-			else
-				{
-				if (local.drumSequencer.sequenceCountdown == 0)
-					{
-					uint8_t nextSequence = data.slot.data.stepSequencer.nextSequence;
-					if (nextSequence == NEXT_SEQUENCE_END) 	// STOP
-						{ stopStepSequencer(); return; }
-					else		// maybe this will work out of the box?  hmmm
-						{ 
-						loadDrumSequence(nextSequence - 1); 
-						resetDrumSequencerTransitionCountdown();			// FIXME -- do I need this?
-						}  
-					}
-				else if (local.drumSequencer.sequenceCountdown != 255)  // loop forever
-					{
-					local.drumSequencer.sequenceCountdown--;
-					resetDrumSequencerTransitionCountdown();
-					}	
-				}
-			}                       
-		// are we picking a group at random?
-		else if (local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition] == TRANSITION_GROUP_OTHER &&
-				local.drumSequencer.transitionRepeat[local.drumSequencer.currentTransition] != TRANSITION_OTHER_END)
-			{
-			// Groups are going to be either 1-2, 1-3, or 1-4
-			uint8_t grouptype = div5(local.drumSequencer.transitionRepeat);
-			// repeats are LOOP, 1, 2, 3, or 4
-			repeat = DIV5_REMAINDER(grouptype, local.drumSequencer.transitionRepeat);
-			// Pick a group
-			group = random(0, grouptype + 2);
-			}
-		// just grab the group and repeat
-		else
-			{
-		 	repeat = local.drumSequencer.transitionRepeat[local.drumSequencer.currentTransition];
-		 	group =  local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition];
-			}
-		}
-	else if (local.drumSequencer.transitionCountdown != 255)  // loop forever
-		{
-		local.drumSequencer.transitionCountdown--;
-		}	
-	}
-	
+    {
+    if (local.drumSequencer.transitionCountdown == 0)
+        {
+        local.drumSequencer.currentTransition++;
+        uint8_t repeat = 0;
+        uint8_t group =  0;
+                
+        // are we at the end?
+        if (local.drumSequencer.currentTransition > NUM_TRANSITIONS ||
+                (local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition] == TRANSITION_GROUP_OTHER &&
+                local.drumSequencer.transitionRepeat[local.drumSequencer.currentTransition] == TRANSITION_OTHER_END))
+            {
+            // This should never happen.  We can't have END as the first START.  This will be interpreted
+            // as repeating group 1 in a loop
+            if (local.drumSequencer.currentTransition == 0)
+                {
+                repeat = TRANSITION_REPEAT_LOOP;
+                group = 0;
+                }
+            else
+                {
+                if (local.drumSequencer.sequenceCountdown == 0)
+                    {
+                    uint8_t nextSequence = data.slot.data.stepSequencer.nextSequence;
+                    if (nextSequence == NEXT_SEQUENCE_END)  // STOP
+                        { stopStepSequencer(); return; }
+                    else            // maybe this will work out of the box?  hmmm
+                        { 
+                        loadDrumSequence(nextSequence - 1); 
+                        resetDrumSequencerTransitionCountdown();                        // FIXME -- do I need this?
+                        }  
+                    }
+                else if (local.drumSequencer.sequenceCountdown != 255)  // loop forever
+                    {
+                    local.drumSequencer.sequenceCountdown--;
+                    resetDrumSequencerTransitionCountdown();
+                    }       
+                }
+            }                       
+        // are we picking a group at random?
+        else if (local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition] == TRANSITION_GROUP_OTHER &&
+            local.drumSequencer.transitionRepeat[local.drumSequencer.currentTransition] != TRANSITION_OTHER_END)
+            {
+            // Groups are going to be either 1-2, 1-3, or 1-4
+            uint8_t grouptype = div5(local.drumSequencer.transitionRepeat);
+            // repeats are LOOP, 1, 2, 3, or 4
+            repeat = DIV5_REMAINDER(grouptype, local.drumSequencer.transitionRepeat);
+            // Pick a group
+            group = random(0, grouptype + 2);
+            }
+        // just grab the group and repeat
+        else
+            {
+            repeat = local.drumSequencer.transitionRepeat[local.drumSequencer.currentTransition];
+            group =  local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition];
+            }
+        }
+    else if (local.drumSequencer.transitionCountdown != 255)  // loop forever
+        {
+        local.drumSequencer.transitionCountdown--;
+        }       
+    }
+        
 
 
 void initDrumSequencer(uint8_t format)
@@ -396,7 +396,7 @@ void stateDrumSequencerFormat()
             local.drumSequencer.patternCountup = 255;
             local.drumSequencer.performanceMode = 0;
             local.drumSequencer.solo = 0;
-    		setNotePulseRate(options.noteSpeedType);
+            setNotePulseRate(options.noteSpeedType);
             goDownState(STATE_DRUM_SEQUENCER_PLAY);
             }
         break;
@@ -610,7 +610,7 @@ void resetDrumSequencerSequenceCountdown()
         case 14: local.drumSequencer.sequenceCountdown = 31; break;
         case 15: local.drumSequencer.sequenceCountdown = 63; break;
         }
-	resetDrumSequencerTransitionCountdown();		// I think I need to do this?
+    resetDrumSequencerTransitionCountdown();                // I think I need to do this?
     }
 
     
@@ -1170,81 +1170,81 @@ void stateDrumSequencerPlay()
             sendTrackNote(local.drumSequencer.currentTrack);
             }
         else 
-        	{
-        	/// We have different ways of entering drum note information depending on the edit mode
-        	
-        	uint8_t len = getActualGroupLength(local.drumSequencer.currentGroup());
-        	if (local.drumSequencer.currentEditPosition > 0 && local.drumSequencer.currentEditPosition < len)
-				{
-				//// We're in EDIT MODE
-				//// White keys in Edit mode, starting with Middle C, correspond to individual drumbeats.  Pressing them toggles the beat.
-				//// The C# and D# Black keys in Edit mode SET the current note
-				//// Other black keys in Edit mode CLEAR the current note
-				
-				uint16_t octave = div12(note);
-				if (octave >= 5)  // middle c and up
-					{
-					uint16_t key = DIV12_REMAINDER(octave, note);
-					const uint8_t[12] whiteKey = { 0, -1, 1, -1, 2, 3, -2, 4, -2, 5, -2, 6 };
-					key = whiteKey[key];
-					if (key >= 0)		// it is in fact a white key
-						{
-						key = key + octave * 8 - 60;		// this should start with middle c at 0
-						if (key < len)
-							{
-							uint8_t n = getNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, key);
-							setNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, key, !n);
-							}
-						}
-					else if (key == -1)		// it's a C# or D#  -- set
-						{
-						uint8_t n = getNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition);
-						setNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition, 1);
-						}
-					else
-						{
-						uint8_t n = getNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition);
-						setNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition, 0);
-						}
-					}
-				}
-			else if (local.drumSequencer.currentEditPosition < 0)
-				{
-				//// We're in PLAY POSITION MODE
-				//// The C# and D# Black keys in Play position mode SET the current note and advance
-				//// The F# and G# and A# Black keys in Play position mode SET the current note and advance
-				//// C will move the cursor to the left, G will move it to the right.
-				//// Other white keys do nothing. 
-				
-				uint16_t octave = div12(note);
-				uint16_t key = DIV12_REMAINDER(octave, note);
-				if (key == 1 || key == 3)	//  C# or D#
-					{
-					// set
-					setNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition, 1);
-                	local.drumSequencer.currentEditPosition = incrementAndWrap(local.drumSequencer.currentEditPosition, len);
-					}
-				else if (key == 6 || key == 8 || key == 10)   // F#, G#, A#
-					{
-					// clear
-					setNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition, 0);
-                	local.drumSequencer.currentEditPosition = incrementAndWrap(local.drumSequencer.currentEditPosition, len);
-					}
-				else if (key == 0)     // C
-					{
-					if (local.drumSequencer.currentEditPosition == 0)
-						local.drumSequencer.currentEditPosition = len - 1;
-					else local.drumSequencer.currentEditPosition--;
-					}
-				else if (key == 7)		// G
-					{
-                	local.drumSequencer.currentEditPosition = incrementAndWrap(local.drumSequencer.currentEditPosition, len);
-					}
-				local.drumSequencer.currentRightPot = getNewCursorXPos(len);
-				}
-			else		// right
-				{
-				}
+            {
+            /// We have different ways of entering drum note information depending on the edit mode
+                
+            uint8_t len = getActualGroupLength(local.drumSequencer.currentGroup());
+            if (local.drumSequencer.currentEditPosition > 0 && local.drumSequencer.currentEditPosition < len)
+                {
+                //// We're in EDIT MODE
+                //// White keys in Edit mode, starting with Middle C, correspond to individual drumbeats.  Pressing them toggles the beat.
+                //// The C# and D# Black keys in Edit mode SET the current note
+                //// Other black keys in Edit mode CLEAR the current note
+                                
+                uint16_t octave = div12(note);
+                if (octave >= 5)  // middle c and up
+                    {
+                    uint16_t key = DIV12_REMAINDER(octave, note);
+                    const uint8_t[12] whiteKey = { 0, -1, 1, -1, 2, 3, -2, 4, -2, 5, -2, 6 };
+                    key = whiteKey[key];
+                    if (key >= 0)           // it is in fact a white key
+                        {
+                        key = key + octave * 8 - 60;            // this should start with middle c at 0
+                        if (key < len)
+                            {
+                            uint8_t n = getNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, key);
+                            setNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, key, !n);
+                            }
+                        }
+                    else if (key == -1)             // it's a C# or D#  -- set
+                        {
+                        uint8_t n = getNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition);
+                        setNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition, 1);
+                        }
+                    else
+                        {
+                        uint8_t n = getNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition);
+                        setNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition, 0);
+                        }
+                    }
+                }
+            else if (local.drumSequencer.currentEditPosition < 0)
+                {
+                //// We're in PLAY POSITION MODE
+                //// The C# and D# Black keys in Play position mode SET the current note and advance
+                //// The F# and G# and A# Black keys in Play position mode SET the current note and advance
+                //// C will move the cursor to the left, G will move it to the right.
+                //// Other white keys do nothing. 
+                                
+                uint16_t octave = div12(note);
+                uint16_t key = DIV12_REMAINDER(octave, note);
+                if (key == 1 || key == 3)       //  C# or D#
+                    {
+                    // set
+                    setNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition, 1);
+                    local.drumSequencer.currentEditPosition = incrementAndWrap(local.drumSequencer.currentEditPosition, len);
+                    }
+                else if (key == 6 || key == 8 || key == 10)   // F#, G#, A#
+                    {
+                    // clear
+                    setNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition, 0);
+                    local.drumSequencer.currentEditPosition = incrementAndWrap(local.drumSequencer.currentEditPosition, len);
+                    }
+                else if (key == 0)     // C
+                    {
+                    if (local.drumSequencer.currentEditPosition == 0)
+                        local.drumSequencer.currentEditPosition = len - 1;
+                    else local.drumSequencer.currentEditPosition--;
+                    }
+                else if (key == 7)              // G
+                    {
+                    local.drumSequencer.currentEditPosition = incrementAndWrap(local.drumSequencer.currentEditPosition, len);
+                    }
+                local.drumSequencer.currentRightPot = getNewCursorXPos(len);
+                }
+            else            // right
+                {
+                }
             }
         }
     // NOTE: we ignore NOTE_OFF
@@ -1707,26 +1707,26 @@ void playDrumSequencer()
         
     if (notePulse && (local.drumSequencer.playState == PLAY_STATE_PLAYING))
         {
-		goNextTransition();
+        goNextTransition();
 
         uint8_t oldPlayPosition = local.drumSequencer.currentPlayPosition;
         local.drumSequencer.currentPlayPosition = incrementAndWrap(local.drumSequencer.currentPlayPosition, trackLen);
         
         // maybe gotta change the pulse rate
-    	if (local.drumSequencer.currentPlayPosition == 0)
-    		{
-    		uint8_t noteSpeedType = getGroupSpeed(local.drumSequencer.currentGroup);
-    		if (noteSpeedType == 0) 
-    			{
-    			noteSpeedType = options.noteSpeedType;
-    			}
-    		else
-    			{
-    			noteSpeedType--;		// this means double-whole-note is not an option unless it's the default
-    			}
-    		setNotePulseRate(noteSpeedType);
-    		}
-    	
+        if (local.drumSequencer.currentPlayPosition == 0)
+            {
+            uint8_t noteSpeedType = getGroupSpeed(local.drumSequencer.currentGroup);
+            if (noteSpeedType == 0) 
+                {
+                noteSpeedType = options.noteSpeedType;
+                }
+            else
+                {
+                noteSpeedType--;                // this means double-whole-note is not an option unless it's the default
+                }
+            setNotePulseRate(noteSpeedType);
+            }
+        
         // change scheduled mute?
         if (local.drumSequencer.performanceMode && local.drumSequencer.currentPlayPosition == 0)
             {
@@ -1803,9 +1803,9 @@ void playDrumSequencer()
                 }
                                                             
             if (note && local.drumSequencer.shouldPlay[track] && !shouldMuteTrack(track))
-                    {
-                    sendTrackNote(track);         
-                    }
+                {
+                sendTrackNote(track);         
+                }
             }
         }
 
@@ -1815,6 +1815,100 @@ void playDrumSequencer()
 
 
 
+//// NOTE: The IMMEDIATE_RETURN feature removed from the next three functions
+//// because I've found it VERY ANNOYING -- typically you need to set multiple
+//// items, and so should go back into the menu.
+
+void stateDrumSequencerMenuPerformanceKeyboard()
+    {
+    uint8_t result = doNumericalDisplay(CHANNEL_ADD_TO_DRUM_SEQUENCER, CHANNEL_TRANSPOSE, options.drumSequencerPlayAlongChannel, true, GLYPH_TRANSPOSE);
+    playDrumSequencer();
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            {
+// do nothing
+            }
+        break;
+        case MENU_SELECTED:
+            {
+            options.drumSequencerPlayAlongChannel = currentDisplay;
+            saveOptions();
+            sendAllSoundsOff();
+// get rid of any residual select button calls, so we don't stop when exiting here
+            isUpdated(SELECT_BUTTON, RELEASED);
+            goUpState(immediateReturnState);
+            }
+        break;
+        case MENU_CANCELLED:
+            {
+// get rid of any residual select button calls, so we don't stop when exiting here
+            isUpdated(SELECT_BUTTON, RELEASED);
+            goUpState(immediateReturnState);
+            }
+        break;
+        }
+    }
+        
+void stateDrumSequencerMenuPerformanceRepeat()  
+    {
+// This is forever, 1 time, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 24, 32, 64, 128 times 
+    const char* menuItems[16] = {  PSTR("FOREVER"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("8"), PSTR("9"), PSTR("12"), PSTR("16"), PSTR("18"), PSTR("24"), PSTR("32"), PSTR("64"), PSTR("128") };
+    if (entry) 
+        {
+        defaultMenuValue = data.slot.data.drumSequencer.repeat & 0x0F;
+        }
+    uint8_t result = doMenuDisplay(menuItems, 16, STATE_NONE, 0, 1);
+                
+    playDrumSequencer();
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            {
+// do nothing
+            }
+        break;
+        case MENU_SELECTED:
+            {
+            data.slot.data.drumSequencer.repeat = ((data.slot.data.drumSequencer.repeat & 0xF0) | (currentDisplay & 0x0F));
+            goUpState(immediateReturnState);
+            }
+        break;
+        case MENU_CANCELLED:
+            {
+            goUpState(immediateReturnState);
+            }
+        break;
+        }
+    }
+
+        
+void stateDrumSequencerMenuPerformanceNext()
+    {
+// The values are OFF, 0, 1, ..., 8
+// These correspond with stored values (in the high 4 bits of repeat) of 0...9
+    uint8_t result = doNumericalDisplay(-1, 8, ((int16_t)(data.slot.data.drumSequencer.repeat >> 4)) - 1, true, GLYPH_NONE);
+    playDrumSequencer();
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            {
+// do nothing
+            }
+        break;
+        case MENU_SELECTED:
+            {
+            data.slot.data.drumSequencer.repeat = ((data.slot.data.drumSequencer.repeat & 0x0F) | ((currentDisplay + 1) << 4));
+            goUpState(immediateReturnState);
+            }
+        break;
+        case MENU_CANCELLED:
+            {
+            goUpState(immediateReturnState);
+            }
+        break;
+        }
+    }
 
 
 /*
@@ -1929,103 +2023,6 @@ void playDrumSequencer()
   goDownState(STATE_DRUM_SEQUENCER_MENU_NO);  // failed
   }
   }
-
-        
-
-//// NOTE: The IMMEDIATE_RETURN feature removed from the next three functions
-//// because I've found it VERY ANNOYING -- typically you need to set multiple
-//// items, and so should go back into the menu.
-
-void stateDrumSequencerMenuPerformanceKeyboard()
-{
-uint8_t result = doNumericalDisplay(CHANNEL_ADD_TO_DRUM_SEQUENCER, CHANNEL_TRANSPOSE, options.drumSequencerPlayAlongChannel, true, GLYPH_TRANSPOSE);
-playDrumSequencer();
-switch (result)
-{
-case NO_MENU_SELECTED:
-{
-// do nothing
-}
-break;
-case MENU_SELECTED:
-{
-options.drumSequencerPlayAlongChannel = currentDisplay;
-saveOptions();
-sendAllSoundsOff();
-// get rid of any residual select button calls, so we don't stop when exiting here
-isUpdated(SELECT_BUTTON, RELEASED);
-goUpState(immediateReturnState);
-}
-break;
-case MENU_CANCELLED:
-{
-// get rid of any residual select button calls, so we don't stop when exiting here
-isUpdated(SELECT_BUTTON, RELEASED);
-goUpState(immediateReturnState);
-}
-break;
-}
-}
-        
-void stateDrumSequencerMenuPerformanceRepeat()  
-{
-// This is forever, 1 time, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 24, 32, 64, 128 times 
-const char* menuItems[16] = {  PSTR("FOREVER"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("8"), PSTR("9"), PSTR("12"), PSTR("16"), PSTR("18"), PSTR("24"), PSTR("32"), PSTR("64"), PSTR("128") };
-if (entry) 
-{
-defaultMenuValue = data.slot.data.drumSequencer.repeat & 0x0F;
-}
-uint8_t result = doMenuDisplay(menuItems, 16, STATE_NONE, 0, 1);
-                
-playDrumSequencer();
-switch (result)
-{
-case NO_MENU_SELECTED:
-{
-// do nothing
-}
-break;
-case MENU_SELECTED:
-{
-data.slot.data.drumSequencer.repeat = ((data.slot.data.drumSequencer.repeat & 0xF0) | (currentDisplay & 0x0F));
-goUpState(immediateReturnState);
-}
-break;
-case MENU_CANCELLED:
-{
-goUpState(immediateReturnState);
-}
-break;
-}
-}
-
-        
-void stateDrumSequencerMenuPerformanceNext()
-{
-// The values are OFF, 0, 1, ..., 8
-// These correspond with stored values (in the high 4 bits of repeat) of 0...9
-uint8_t result = doNumericalDisplay(-1, 8, ((int16_t)(data.slot.data.drumSequencer.repeat >> 4)) - 1, true, GLYPH_NONE);
-playDrumSequencer();
-switch (result)
-{
-case NO_MENU_SELECTED:
-{
-// do nothing
-}
-break;
-case MENU_SELECTED:
-{
-data.slot.data.drumSequencer.repeat = ((data.slot.data.drumSequencer.repeat & 0x0F) | ((currentDisplay + 1) << 4));
-goUpState(immediateReturnState);
-}
-break;
-case MENU_CANCELLED:
-{
-goUpState(immediateReturnState);
-}
-break;
-}
-}
 */
 
 
