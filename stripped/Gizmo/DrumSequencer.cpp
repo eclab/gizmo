@@ -1821,7 +1821,7 @@ void playDrumSequencer()
 
 void stateDrumSequencerMenuPerformanceKeyboard()
     {
-    uint8_t result = doNumericalDisplay(CHANNEL_ADD_TO_DRUM_SEQUENCER, CHANNEL_TRANSPOSE, options.drumSequencerPlayAlongChannel, true, GLYPH_TRANSPOSE);
+    uint8_t result = doNumericalDisplay(CHANNEL_ADD_TO_DRUM_SEQUENCER, 16, options.drumSequencerPlayAlongChannel, true, GLYPH_NONE);
     playDrumSequencer();
     switch (result)
         {
@@ -1852,11 +1852,11 @@ void stateDrumSequencerMenuPerformanceKeyboard()
         
 void stateDrumSequencerMenuPerformanceRepeat()  
     {
-// This is forever, 1 time, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 24, 32, 64, 128 times 
-    const char* menuItems[16] = {  PSTR("FOREVER"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("8"), PSTR("9"), PSTR("12"), PSTR("16"), PSTR("18"), PSTR("24"), PSTR("32"), PSTR("64"), PSTR("128") };
+// This is forever, 1 time, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, 64 times 
+    const char* menuItems[16] = {  PSTR("LOOP"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("10"), PSTR("12"), PSTR("16"), PSTR("24"), PSTR("32"), PSTR("64") };
     if (entry) 
         {
-        defaultMenuValue = data.slot.data.drumSequencer.repeat & 0x0F;
+        defaultMenuValue = data.slot.data.drumSequencer.repeatSequence;
         }
     uint8_t result = doMenuDisplay(menuItems, 16, STATE_NONE, 0, 1);
                 
@@ -1870,7 +1870,7 @@ void stateDrumSequencerMenuPerformanceRepeat()
         break;
         case MENU_SELECTED:
             {
-            data.slot.data.drumSequencer.repeat = ((data.slot.data.drumSequencer.repeat & 0xF0) | (currentDisplay & 0x0F));
+            data.slot.data.drumSequencer.repeatSequence = currentDisplay;
             goUpState(immediateReturnState);
             }
         break;
@@ -1885,9 +1885,9 @@ void stateDrumSequencerMenuPerformanceRepeat()
         
 void stateDrumSequencerMenuPerformanceNext()
     {
-// The values are OFF, 0, 1, ..., 8
+// The values are END, 0, 1, ..., 8
 // These correspond with stored values (in the high 4 bits of repeat) of 0...9
-    uint8_t result = doNumericalDisplay(-1, 8, ((int16_t)(data.slot.data.drumSequencer.repeat >> 4)) - 1, true, GLYPH_NONE);
+    uint8_t result = doNumericalDisplay(-1, 8, ((int16_t)(data.slot.data.drumSequencer.nextSequence - 1)), true, GLYPH_NONE);
     playDrumSequencer();
     switch (result)
         {
@@ -1898,7 +1898,7 @@ void stateDrumSequencerMenuPerformanceNext()
         break;
         case MENU_SELECTED:
             {
-            data.slot.data.drumSequencer.repeat = ((data.slot.data.drumSequencer.repeat & 0x0F) | ((currentDisplay + 1) << 4));
+            data.slot.data.drumSequencer.nextSequence = currentDisplay + 1;
             goUpState(immediateReturnState);
             }
         break;
