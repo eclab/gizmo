@@ -101,6 +101,7 @@
 #define INCLUDE_THRU
 #define INCLUDE_SYNTH
 #define INCLUDE_MEASURE
+//#define INCLUDE_DRUM_SEQUENCER
 
 #define INCLUDE_MEGA_POTS
 
@@ -156,6 +157,7 @@
 // #define INCLUDE_THRU
 // #define INCLUDE_SYNTH
 // #define INCLUDE_MEASURE
+// #define INCLUDE_DRUM_SEQUENCER
 
 #define NUM_MENU_ITEMS  (2)
 

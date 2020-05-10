@@ -66,7 +66,7 @@ void resetOptions()
 
     options.clockDivisor = 1;
     options.menuDelay = 5;  // corresponds to DEFAULT_MENU_DELAY
-	options.transpose = 0;
+    options.transpose = 0;
     options.volume = 3;  // corresponds to no volume modification
 
 #ifdef INCLUDE_RECORDER

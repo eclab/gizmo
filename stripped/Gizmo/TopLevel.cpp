@@ -351,7 +351,7 @@ uint8_t update()
 #ifdef INCLUDE_MEGA_POTS
             potUpdated[A3_POT] = updatePot(pot[A3_POT], potCurrent[A3_POT], potCurrentFinal[A3_POT], potLast[A3_POT], A15);
 #else
-            potUpdated[A3_POT] = updatePot(pot[A3_POT], potCurrent[A3_POT], potCurrentFinal[A3_POT], potLast[A3_POT], A3);	
+            potUpdated[A3_POT] = updatePot(pot[A3_POT], potCurrent[A3_POT], potCurrentFinal[A3_POT], potLast[A3_POT], A3);      
 #endif INCLUDE_MEGA_POTS
             return 0;  // don't update the display
             }
@@ -536,12 +536,12 @@ void go()
                 immediateReturnState = STATE_ROOT;
                 }
 
-			MENU_ITEMS(); 			// See All.h
+            MENU_ITEMS();                   // See All.h
             if (doMenuDisplay(menuItems, NUM_MENU_ITEMS, FIRST_APPLICATION, STATE_ROOT, 1) == MENU_SELECTED)
 
 #if defined(TOPLEVEL_BYPASS)
-			if (bypass == BYPASS_FIRST_ON)
-				toggleBypass(0); // the channel doesn't matter, it'll get ignored
+                if (bypass == BYPASS_FIRST_ON)
+                    toggleBypass(0); // the channel doesn't matter, it'll get ignored
 #endif TOPLEVEL_BYPASS
             }
         break;  
@@ -563,6 +563,18 @@ void go()
             }
         break;
 #endif
+#ifdef INCLUDE_DRUM_SEQUENCER
+        case STATE_DRUM_SEQUENCER:
+            {
+            if (entry)              // we do this because this state is entered just before we exit the entire step sequencer
+                {
+                setParseRawCC(false);
+	    		setNotePulseRate(options.noteSpeedType);		// reset the note speed
+                }
+            stateLoad(STATE_DRUM_SEQUENCER_PLAY, STATE_DRUM_SEQUENCER_FORMAT, STATE_ROOT, STATE_DRUM_SEQUENCER);
+            }
+        break;
+#endif
 #ifdef INCLUDE_RECORDER
         case STATE_RECORDER:
             {
@@ -573,7 +585,7 @@ void go()
 #ifdef INCLUDE_GAUGE
         case STATE_GAUGE:
             {   
-			stateGauge();
+            stateGauge();
             }
         break;
 #endif        
@@ -950,7 +962,400 @@ void go()
             }
         break;
 #endif
-       
+
+#ifdef INCLUDE_DRUM_SEQUENCER
+        case STATE_DRUM_SEQUENCER_FORMAT:
+            {
+            stateStepSequencerFormat();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_PLAY:
+            {
+            stateStepSequencerPlay();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_MENU:
+            {
+            stateStepSequencerMenu();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_MIDI_CHANNEL_OUT:
+            {
+            uint8_t result;
+            if (entry) 
+                {
+                local.drumSequencer.backup = getMIDIChannel(local.drumSequencer.currentTrack);
+                }
+            result = doNumericalDisplay(0, 17, local.drumSequencer.backup, true, GLYPH_DEFAULT);
+            switch (result)
+                {
+                case NO_MENU_SELECTED:
+                    {
+                    }
+                break;
+                case MENU_SELECTED:
+                    {
+                    setMIDIChannel(currentDisplay);
+                    goUpState(STATE_DRUM_SEQUENCER_MENU);
+                    }
+                break;
+                case MENU_CANCELLED:
+                    {
+                    setNoteVelocity(local.drumSequencer.currentTrack, local.drumSequencer.backup);
+                    goUpState(STATE_DRUM_SEQUENCER_MENU);
+                    }
+                break;
+                }
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_VELOCITY:
+            {
+            uint8_t result;
+            if (entry) 
+                {
+                local.drumSequencer.backup = getNoteVelocity(local.drumSequencer.currentTrack);
+                defaultState = local.drumSequencer.backup;
+                }
+            const char* menuItems[8] = { PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8") };
+            result = doMenuDisplay(menuItems, 8, STATE_NONE, STATE_NONE, 1);
+            switch (result)
+                {
+                case NO_MENU_SELECTED:
+                    {
+                    setNoteVelocity(local.drumSequencer.currentTrack, currentDisplay);  // so we can hear it
+                    }
+                break;
+                case MENU_SELECTED:
+                    {
+                    goUpState(STATE_DRUM_SEQUENCER_MENU);
+                    }
+                break;
+                case MENU_CANCELLED:
+                    {
+                    setNoteVelocity(local.drumSequencer.currentTrack, local.drumSequencer.backup);
+                    goUpState(STATE_DRUM_SEQUENCER_MENU);
+                    }
+                break;
+                }
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_PITCH:
+            {
+            uint8_t note = stateEnterNote(STATE_DRUM_SEQUENCER_MENU);
+            if (note != NO_NOTE)
+            	{
+                setNotePitch(local.drumSequencer.currentTrack, note);
+                goUpState(STATE_DRUM_SEQUENCER_MENU);
+            	}
+            playDrumSequencer();		//// FIXME:   Shoudl we do this?
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_GROUP_LENGTH:
+            {
+            uint8_t result;
+            if (entry) 
+                {
+                local.drumSequencer.backup = getGroupLength(local.drumSequencer.currentGroup);
+                }
+            result = doNumericalDisplay(0, 15, local.drumSequencer.backup, true, GLYPH_NONE);
+            switch (result)
+                {
+                case NO_MENU_SELECTED:
+                    {
+                    setGroupLength(local.drumSequencer.currentGroup, currentDisplay);
+                    }
+                break;
+                case MENU_SELECTED:
+                    {
+                    goUpState(STATE_DRUM_SEQUENCER_MENU);
+                    }
+                break;
+                case MENU_CANCELLED:
+                    {
+                    setGroupLength(local.drumSequencer.currentGroup, local.drumSequencer.backup);
+                    goUpState(STATE_DRUM_SEQUENCER_MENU);
+                    }
+                break;
+                }            
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_GROUP_SPEED:
+            {
+            if (entry)
+                {
+                local.drumSequencer.backup = getNoteSpeed(local.drumSequencer.currentGroup);
+                potDivisor = 1024 / (NOTE_SPEED_DOUBLE_WHOLE - NOTE_SPEED_EIGHTH_TRIPLET + 1);
+                }
+            entry = false;
+            if (updateDisplay)
+                {
+                clearScreen();
+                if (local.drumSequencer.backup == 0)
+                	{
+                	write3x5Glyphs(GLYPH_DEFAULT);
+                	}
+                else
+                	{
+                	writeNoteSpeed(led, local.drumSequencer.backup);
+                	}
+                }
+            uint8_t i = isUpdated(SELECT_BUTTON, PRESSED);
+            if (isUpdated(BACK_BUTTON, RELEASED) || i )
+                {
+                if (i)
+                	{
+                	setNoteSpeed(local.drumSequencer.currentGroup, backup);
+                    }
+                goUpState(STATE_DRUM_SEQUENCER_MENU);
+                }
+            else if (potUpdated[LEFT_POT])
+                {
+                // can't avoid a divide :-(
+                local.drumSequencer.backup = (uint8_t) (pot[LEFT_POT] / potDivisor); 
+                }
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRANSITIONS:
+            {
+            uint8_t result;
+            if (entry) 
+                {
+                }
+            result = doNumericalDisplay(1, 20, 1, false, GLYPH_NONE);
+            switch (result)
+                {
+                case NO_MENU_SELECTED:
+                    {
+                    }
+                break;
+                case MENU_SELECTED:
+                    {
+                    local.drumSequencer.backup = currentDisplay;
+                    goDownState(STATE_DRUM_SEQUENCER_TRANSITIONS_GROUP);
+                    }
+                break;
+                case MENU_CANCELLED:
+                    {
+                    goUpState(STATE_DRUM_SEQUENCER_MENU);
+                    }
+                break;
+                }            
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRANSITIONS_GROUP:
+            {
+            uint8_t result;
+            if (entry) 
+                {
+                }
+            result = doNumericalDisplay(0, 15, local.drumSequencer.transitionGroup[local.drumSequencer.backup], true, GLYPH_NONE);
+            switch (result)
+                {
+                case NO_MENU_SELECTED:
+                    {
+                    }
+                break;
+                case MENU_SELECTED:
+                    {
+                    local.drumSequencer.transitionGroupBackup = currentDisplay;
+                    if (currentDisplay == 0)
+                    	{
+                    	goDownState(STATE_DRUM_SEQUENCER_TRANSITIONS_SPECIAL);
+                    	}
+                    else
+                    	{
+	                    goDownState(STATE_DRUM_SEQUENCER_TRANSITIONS_REPEAT);
+	                    }
+                    }
+                break;
+                case MENU_CANCELLED:
+                    {
+                    goUpState(STATE_DRUM_SEQUENCER_MENU);
+                    }
+                break;
+                }            
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRANSITIONS_REPEAT:
+            {
+            uint8_t result;
+            if (entry) 
+                {
+                defaultState = local.drumSequencer.transitionRepeat[local.drumSequencer.backup];
+                }
+            const char* menuItems[16] = { PSTR("LOOP"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("10"), PSTR("12"), PSTR("16"), PSTR("24"), PSTR("32"), PSTR("64") };
+            result = doMenuDisplay(menuItems, 16, STATE_NONE, STATE_NONE, 1);
+            switch (result)
+                {
+                case NO_MENU_SELECTED:
+                    {
+                    }
+                break;
+                case MENU_SELECTED:
+                    {
+                    local.drumSequencer.transitionGroup[local.drumSequencer.backup] = local.drumSequencer.transitionGroupBackup;
+                    local.drumSequencer.transitionRepeat[local.drumSequencer.backup] = currentDisplay;                    
+                    goUpState(STATE_DRUM_SEQUENCER_MENU);
+                    }
+                break;
+                case MENU_CANCELLED:
+                    {
+                    goUpState(STATE_DRUM_SEQUENCER_MENU);
+                    }
+                break;
+                }
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRANSITIONS_SPECIAL:
+            {
+            uint8_t result;
+            if (entry) 
+                {
+                defaultState = local.drumSequencer.transitionRepeat[local.drumSequencer.backup];
+                if (defaultState < 3)
+                	defaultState = 0;
+                }
+                
+            // R2:	Random(choose beetween groups 1 and 2)
+            // R3:	Random(choose beetween groups 1 and 3)
+            // R4:	Random(choose beetween groups 1 and 4)
+            // -1:	one time
+            // -2:	two times
+            // -3:	three times
+            // -4:	four times
+            // -L:	loop forever
+            // END:	End marker: this is not a group, it marks the termination of the sequence.  Not permitted in transition slot 0.
+            
+            if (local.drumSequencer.backup == 0)  // slot 0 can't have "END"
+            	{
+	            const char* menuItems[15] = { PSTR("R2-1"), PSTR("R2-2"), PSTR("R2-3"), PSTR("R2-4"), PSTR("R2-L"), PSTR("R3-1"), PSTR("R3-2"), PSTR("R3-3"), PSTR("R3-4"), PSTR("R3-L"), PSTR("R4-1"), PSTR("R4-2"), PSTR("R4-3"), PSTR("R4-4"), PSTR("R4-L") };
+	            result = doMenuDisplay(menuItems, 15, STATE_NONE, STATE_NONE, 1);
+	            }
+	        else
+	        	{
+	            const char* menuItems[16] = { PSTR("R2-1"), PSTR("R2-2"), PSTR("R2-3"), PSTR("R2-4"), PSTR("R2-L"), PSTR("R3-1"), PSTR("R3-2"), PSTR("R3-3"), PSTR("R3-4"), PSTR("R3-L"), PSTR("R4-1"), PSTR("R4-2"), PSTR("R4-3"), PSTR("R4-4"), PSTR("R4-L"), PSTR("END") };
+	            result = doMenuDisplay(menuItems, 16, STATE_NONE, STATE_NONE, 1);
+	        	}
+	        	
+            switch (result)
+                {
+                case NO_MENU_SELECTED:
+                    {
+                    }
+                break;
+                case MENU_SELECTED:
+                    {
+                    local.drumSequencer.transitionGroup[local.drumSequencer.backup] = local.drumSequencer.transitionGroupBackup;
+                    local.drumSequencer.transitionRepeat[local.drumSequencer.backup] = currentDisplay;                    
+                    goUpState(STATE_DRUM_SEQUENCER_MENU);
+                    }
+                break;
+                case MENU_CANCELLED:
+                    {
+                    goUpState(STATE_DRUM_SEQUENCER_MENU);
+                    }
+                break;
+                }
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_SURE:
+            {
+            stateSure(STATE_DRUM_SEQUENCER_PLAY, STATE_DRUM_SEQUENCER);
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_SAVE:
+            {
+//// FIXME: we don't have a save yet
+            stateSave(STATE_DRUM_SEQUENCER_PLAY);
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_MENU_PATTERN:
+            {
+            stateDrumSequencerMenuPattern();
+            }
+        break;
+        
+/*
+        case STATE_DRUM_SEQUENCER_MENU_EDIT:
+            {
+            const char* menuItems[5] = { PSTR("MARK"), PSTR("COPY"), PSTR("SPLAT"), PSTR("MOVE"), PSTR("DUPLICATE") };
+            doMenuDisplay(menuItems, 5, STATE_DRUM_SEQUENCER_MENU_EDIT_MARK, STATE_DRUM_SEQUENCER_MENU, 1);
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_MENU_EDIT_MARK:
+            {
+            stateStepSequencerMenuEditMark();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_MENU_EDIT_COPY:
+            {
+            stateStepSequencerMenuEditCopy(false, false);
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_MENU_EDIT_SPLAT:
+            {
+            stateStepSequencerMenuEditCopy(true, false);
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_MENU_EDIT_MOVE:
+            {
+            stateStepSequencerMenuEditCopy(false, true);
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_MENU_EDIT_DUPLICATE:
+            {
+            stateStepSequencerMenuEditDuplicate();
+            playDrumSequencer();
+            }
+*/
+        case STATE_DRUM_SEQUENCER_MENU_PERFORMANCE:
+            {
+            const char* menuItems[3] = { PSTR("KEYBOARD"), PSTR("REPEAT SEQUENCE"), PSTR("NEXT SEQUENCE") };
+            doMenuDisplay(menuItems, 3, STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_KEYBOARD, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_KEYBOARD:
+            {
+            stateStepSequencerMenuPerformanceKeyboard();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_REPEAT:
+            {
+            stateStepSequencerMenuPerformanceRepeat();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_NEXT:
+            {
+            stateStepSequencerMenuPerformanceNext();
+            }
+        break;
+/*
+        case STATE_DRUM_SEQUENCER_MENU_NO:
+            {
+            const char* menuItems[1] = { PSTR("NO") };
+            doMenuDisplay(menuItems, 1, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
+            playDrumSequencer();
+            }
+        break;
+*/
+#endif
+ 
+        
 #ifdef INCLUDE_RECORDER
         case STATE_RECORDER_FORMAT:
             {
@@ -985,7 +1390,7 @@ void go()
 #ifdef INCLUDE_CONTROLLER
         case STATE_CONTROLLER_PLAY:
             {
-			stateControllerPlay();
+            stateControllerPlay();
             }
         break;
         case STATE_CONTROLLER_SET_LEFT_KNOB_TYPE:

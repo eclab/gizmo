@@ -45,8 +45,8 @@ void sendSlotSysex()
         sum += bytes[9 + i * 2 + 1];
 
         /*
-        if (data.bytes[i] != ((uint8_t)(bytes[9 + i * 2] << 4) | (bytes[9 + i * 2 + 1] & 0xF)))
-            debug(999);
+          if (data.bytes[i] != ((uint8_t)(bytes[9 + i * 2] << 4) | (bytes[9 + i * 2 + 1] & 0xF)))
+          debug(999);
         */
         }
     bytes[sizeof(struct _slot) * 2 + 11 - 2] = (sum & 127);
@@ -189,90 +189,90 @@ void handleSysex(unsigned char* bytes, int len)
 
 
 void stateSysexSlot()
-	{
-            local.sysex.type = SYSEX_TYPE_SLOT;
+    {
+    local.sysex.type = SYSEX_TYPE_SLOT;
             
-            // make sure that we're reset properly
-            local.sysex.received = RECEIVED_NONE;
-            uint8_t result = doNumericalDisplay(0, NUM_SLOTS - 1, 1, false, GLYPH_NONE);
-            switch (result)
-                {
-                case NO_MENU_SELECTED:
-                    break;
-                case MENU_SELECTED:
-                    local.sysex.slot = currentDisplay;
-                    goDownState(STATE_SYSEX_GO);
-                    break;
-                case MENU_CANCELLED:
-                    goUpState(STATE_SYSEX);
-                    break;
-                }
-	}
-	
+    // make sure that we're reset properly
+    local.sysex.received = RECEIVED_NONE;
+    uint8_t result = doNumericalDisplay(0, NUM_SLOTS - 1, 1, false, GLYPH_NONE);
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            break;
+        case MENU_SELECTED:
+            local.sysex.slot = currentDisplay;
+            goDownState(STATE_SYSEX_GO);
+            break;
+        case MENU_CANCELLED:
+            goUpState(STATE_SYSEX);
+            break;
+        }
+    }
+        
 void stateSysexArp()
-	{
-            local.sysex.type = SYSEX_TYPE_ARP;
+    {
+    local.sysex.type = SYSEX_TYPE_ARP;
 
-            // make sure that we're reset properly
-            local.sysex.received = RECEIVED_NONE;
-            uint8_t result = doNumericalDisplay(0, NUM_ARPS - 1, 1, false, GLYPH_NONE);
-            switch (result)
-                {
-                case NO_MENU_SELECTED:
-                    break;
-                case MENU_SELECTED:
-                    local.sysex.slot = currentDisplay;
-                    goDownState(STATE_SYSEX_GO);
-                    break;
-                case MENU_CANCELLED:
-                    goUpState(STATE_SYSEX);
-                    break;
-                }
-	}
-	
+    // make sure that we're reset properly
+    local.sysex.received = RECEIVED_NONE;
+    uint8_t result = doNumericalDisplay(0, NUM_ARPS - 1, 1, false, GLYPH_NONE);
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            break;
+        case MENU_SELECTED:
+            local.sysex.slot = currentDisplay;
+            goDownState(STATE_SYSEX_GO);
+            break;
+        case MENU_CANCELLED:
+            goUpState(STATE_SYSEX);
+            break;
+        }
+    }
+        
 void stateSysexGo()
-	{
-            // display
-            if (local.sysex.received == RECEIVED_NONE)
-                {
-                clearScreen();  // is this necessary?
-                write3x5Glyphs(GLYPH_OFF);
-                }
-            else if (local.sysex.received == RECEIVED_WRONG)
-                {
-                clearScreen();  // is this necessary?
-                write3x5Glyphs(GLYPH_SYSEX);
-                }
-            else if (local.sysex.received == RECEIVED_BAD)
-                {
-                clearScreen();  // is this necessary?
-                write3x5Glyphs(GLYPH_FAIL);
-                }
-            else
-                {
-                clearScreen();
-                writeShortNumber(led, ((uint8_t)local.sysex.received), false);
-                }
+    {
+    // display
+    if (local.sysex.received == RECEIVED_NONE)
+        {
+        clearScreen();  // is this necessary?
+        write3x5Glyphs(GLYPH_OFF);
+        }
+    else if (local.sysex.received == RECEIVED_WRONG)
+        {
+        clearScreen();  // is this necessary?
+        write3x5Glyphs(GLYPH_SYSEX);
+        }
+    else if (local.sysex.received == RECEIVED_BAD)
+        {
+        clearScreen();  // is this necessary?
+        write3x5Glyphs(GLYPH_FAIL);
+        }
+    else
+        {
+        clearScreen();
+        writeShortNumber(led, ((uint8_t)local.sysex.received), false);
+        }
                 
-            // handle buttons
-            if (isUpdated(BACK_BUTTON, RELEASED))
-                {
-                goUpState(local.sysex.type == SYSEX_TYPE_SLOT ? STATE_SYSEX_SLOT : STATE_SYSEX_ARP);
-                }
-            else if (isUpdated(SELECT_BUTTON, PRESSED))
-                {
-                if (local.sysex.type == SYSEX_TYPE_SLOT)
-                    {
-                    sendSlotSysex();
-                    }
-                else
-                    {
-                    sendArpSysex();
-                    }
-                local.sysex.received++;
-                if (local.sysex.received <= 0)  // previous was BAD or WRONG, or we wrapped around
-                    local.sysex.received = 1;
-                }
-	}
+    // handle buttons
+    if (isUpdated(BACK_BUTTON, RELEASED))
+        {
+        goUpState(local.sysex.type == SYSEX_TYPE_SLOT ? STATE_SYSEX_SLOT : STATE_SYSEX_ARP);
+        }
+    else if (isUpdated(SELECT_BUTTON, PRESSED))
+        {
+        if (local.sysex.type == SYSEX_TYPE_SLOT)
+            {
+            sendSlotSysex();
+            }
+        else
+            {
+            sendArpSysex();
+            }
+        local.sysex.received++;
+        if (local.sysex.received <= 0)  // previous was BAD or WRONG, or we wrapped around
+            local.sysex.received = 1;
+        }
+    }
 
 #endif INCLUDE_SYSEX

@@ -339,34 +339,34 @@ void stateThruPlay()
     }
         
 void stateThruChordMemory()
-	{
-            if (entry && options.thruChordMemorySize > 0)  // maybe entry is not necessary
-                {
-                options.thruChordMemorySize = 0;
-                saveOptions();
-                goUpState(STATE_THRU);
-                }
-            else        
-                {
-                uint8_t retval = stateEnterChord(local.thru.chordMemory, MAX_CHORD_MEMORY_NOTES, STATE_THRU);
-                if (retval != NO_NOTE)
-                    {
-                    // now store.
-                    options.thruChordMemorySize = retval;
-                    memcpy(options.thruChordMemory, local.thru.chordMemory, retval);
-                    saveOptions();
-
-                    goUpState(STATE_THRU);
-                    }
-                }
-	}  
-	
-void stateThruBlockOtherChannels()
-	{
-            options.thruBlockOtherChannels = !options.thruBlockOtherChannels;
+    {
+    if (entry && options.thruChordMemorySize > 0)  // maybe entry is not necessary
+        {
+        options.thruChordMemorySize = 0;
+        saveOptions();
+        goUpState(STATE_THRU);
+        }
+    else        
+        {
+        uint8_t retval = stateEnterChord(local.thru.chordMemory, MAX_CHORD_MEMORY_NOTES, STATE_THRU);
+        if (retval != NO_NOTE)
+            {
+            // now store.
+            options.thruChordMemorySize = retval;
+            memcpy(options.thruChordMemory, local.thru.chordMemory, retval);
             saveOptions();
+
             goUpState(STATE_THRU);
-	}      
+            }
+        }
+    }  
+        
+void stateThruBlockOtherChannels()
+    {
+    options.thruBlockOtherChannels = !options.thruBlockOtherChannels;
+    saveOptions();
+    goUpState(STATE_THRU);
+    }      
 
 #endif
 

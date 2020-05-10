@@ -101,14 +101,14 @@ void handleClockCommand(uint8_t (*clockFunction)(uint8_t), midi::MidiType clockM
             sendClock(clockMIDI, false);
             }
         }
-        else if (USING_EXTERNAL_CLOCK())  // CONSUME, USE, or IGNORE (which we just handled already)
-            {
-            clockFunction(false);
-            }
-        else                    // GENERATE OR BLOCK
-            {
-            // do nothing
-            }
+    else if (USING_EXTERNAL_CLOCK())  // CONSUME, USE, or IGNORE (which we just handled already)
+        {
+        clockFunction(false);
+        }
+    else                    // GENERATE OR BLOCK
+        {
+        // do nothing
+        }
     }
 
 void handleStart()
@@ -748,7 +748,7 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
         
 void handleNRPN(byte channel, uint16_t parameter, uint16_t value, uint8_t valueType)
     {
-	if (channel == options.channelControl)  // options.channelControl can be zero remember
+    if (channel == options.channelControl)  // options.channelControl can be zero remember
         {
         lockoutPots = 1;
                         
@@ -1228,49 +1228,49 @@ void handleGeneralControlChange(byte channel, byte number, byte value)
             else
 #endif
 #ifdef INCLUDE_ARPEGGIATOR
-			if (application == STATE_ARPEGGIATOR)
-				{
-				// Are we playing along?  Route to the play along channel
-				if (local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
-					{
-					uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
-					if (channelOut == 0)
-						channelOut = options.channelOut;
-					MIDI.sendControlChange(number, value, channelOut);  // generally pass through control changes
-					TOGGLE_OUT_LED();
-					}
-				// If we're not playing along, route to Midi Out
-				else
-					{
-					MIDI.sendControlChange(number, value, options.channelOut);  // generally pass through control changes
-					TOGGLE_OUT_LED();
-					}
-				}
-			else
+                if (application == STATE_ARPEGGIATOR)
+                    {
+                    // Are we playing along?  Route to the play along channel
+                    if (local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                        {
+                        uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+                        if (channelOut == 0)
+                            channelOut = options.channelOut;
+                        MIDI.sendControlChange(number, value, channelOut);  // generally pass through control changes
+                        TOGGLE_OUT_LED();
+                        }
+                    // If we're not playing along, route to Midi Out
+                    else
+                        {
+                        MIDI.sendControlChange(number, value, options.channelOut);  // generally pass through control changes
+                        TOGGLE_OUT_LED();
+                        }
+                    }
+                else
 #endif
-			// block it off entirely.  Nobody wants it
+                    // block it off entirely.  Nobody wants it
                     { }
             }
         else 
 #ifdef INCLUDE_THRU
-		// Thru should route through everything that's NOT coming in the default channel and is NOT being blocked
-		if (state == STATE_THRU_PLAY)
-			{
-			if (!options.thruBlockOtherChannels)
-				{
-				// Note this does NOT include the merge channel
-				MIDI.sendControlChange(number, value, channel);  // generally pass through control changes
-				TOGGLE_OUT_LED();
-				}
-			}
-		else
+            // Thru should route through everything that's NOT coming in the default channel and is NOT being blocked
+            if (state == STATE_THRU_PLAY)
+                {
+                if (!options.thruBlockOtherChannels)
+                    {
+                    // Note this does NOT include the merge channel
+                    MIDI.sendControlChange(number, value, channel);  // generally pass through control changes
+                    TOGGLE_OUT_LED();
+                    }
+                }
+            else
 #endif
-	// In general we pass through everything else
-			{
-			MIDI.sendControlChange(number, value, channel);
-			TOGGLE_OUT_LED();
-			}
-		}
+                // In general we pass through everything else
+                {
+                MIDI.sendControlChange(number, value, channel);
+                TOGGLE_OUT_LED();
+                }
+        }
     else
         {
         TOGGLE_OUT_LED();
@@ -1295,25 +1295,25 @@ void handleProgramChange(byte channel, byte number)
     if (!bypass) 
         {
 #ifdef INCLUDE_ARPEGGIATOR
-			if (application == STATE_ARPEGGIATOR)
-				{
-				// Are we playing along?  Route to the play along channel
-				if (local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
-					{
-					uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
-					if (channelOut == 0)
-						channelOut = options.channelOut;
-                    MIDI.sendProgramChange(number, channelOut);
-					TOGGLE_OUT_LED();
-					}
-				// If we're not playing along, route to Midi Out
-				else
-					{
-                    MIDI.sendProgramChange(number, options.channelOut);
-					TOGGLE_OUT_LED();
-					}
-				}
-			else
+        if (application == STATE_ARPEGGIATOR)
+            {
+            // Are we playing along?  Route to the play along channel
+            if (local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                {
+                uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+                if (channelOut == 0)
+                    channelOut = options.channelOut;
+                MIDI.sendProgramChange(number, channelOut);
+                TOGGLE_OUT_LED();
+                }
+            // If we're not playing along, route to Midi Out
+            else
+                {
+                MIDI.sendProgramChange(number, options.channelOut);
+                TOGGLE_OUT_LED();
+                }
+            }
+        else
 #endif
 #ifdef INCLUDE_SPLIT
             // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
@@ -1434,22 +1434,22 @@ void handlePitchBend(byte channel, int bend)
         {
 #ifdef INCLUDE_ARPEGGIATOR
         if (application == STATE_ARPEGGIATOR)
-        	{
-        	// are we playing along?  Route to the play along channel
-        	if (local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
-				{
-				uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
-				if (channelOut == 0)
-					channelOut = options.channelOut;
-				MIDI.sendPitchBend(bend, channelOut);
-                    TOGGLE_OUT_LED();
-				}
-			else if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
-				{
-				MIDI.sendPitchBend(bend, options.channelOut);
-                    TOGGLE_OUT_LED();
-				}
-			}
+            {
+            // are we playing along?  Route to the play along channel
+            if (local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                {
+                uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+                if (channelOut == 0)
+                    channelOut = options.channelOut;
+                MIDI.sendPitchBend(bend, channelOut);
+                TOGGLE_OUT_LED();
+                }
+            else if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
+                {
+                MIDI.sendPitchBend(bend, options.channelOut);
+                TOGGLE_OUT_LED();
+                }
+            }
         else
 #endif
 #ifdef INCLUDE_SPLIT

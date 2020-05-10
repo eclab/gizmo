@@ -1156,7 +1156,7 @@ void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
 #if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK)    // note we're NOT flipping them
         matrix = mat;  
         matrix2 = mat2;
-#else									// here we ARE flipping them
+#else                                                                   // here we ARE flipping them
         matrix2 = mat;  
         matrix = mat2;
 #endif

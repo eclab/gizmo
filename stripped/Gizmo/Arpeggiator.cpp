@@ -26,36 +26,36 @@ void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len)
         }
             
     if (minNote < ARP_TIE) // it's not all rests or ties (or empty)  -- actually it'd be impossible for it to be all ties or a mix of rests and ties...
-            {
-            uint8_t interval = maxNote - minNote + 1;
+        {
+        uint8_t interval = maxNote - minNote + 1;
 
-            uint8_t j = 0;
-            uint8_t i = 0;
-            // we assume we're drawing a user-defined matrix, so we're using local.arp.currentPosition
-            for(i = pos; i < data.arp.length; i++)
-                {
-                j = i - pos;
-                if (j >= len) break;
+        uint8_t j = 0;
+        uint8_t i = 0;
+        // we assume we're drawing a user-defined matrix, so we're using local.arp.currentPosition
+        for(i = pos; i < data.arp.length; i++)
+            {
+            j = i - pos;
+            if (j >= len) break;
                 
-                uint8_t n = ARP_NOTEX(i);
-                if (n == ARP_REST)
-                    continue;
-                else if (n == ARP_TIE)
-                    {
-                    setPoint(mat, j, 7);
-                    }
-                else if (interval > 7)
-                    {
-                    setPoint(mat, j, n >> 1);
-                    if ((n & 1) == 1)  // it's odd, add another point
-                        setPoint(mat, j, (n >> 1) + 1);
-                    }
-                else
-                    {
-                    setPoint(mat, j, n);
-                    }
+            uint8_t n = ARP_NOTEX(i);
+            if (n == ARP_REST)
+                continue;
+            else if (n == ARP_TIE)
+                {
+                setPoint(mat, j, 7);
+                }
+            else if (interval > 7)
+                {
+                setPoint(mat, j, n >> 1);
+                if ((n & 1) == 1)  // it's odd, add another point
+                    setPoint(mat, j, (n >> 1) + 1);
+                }
+            else
+                {
+                setPoint(mat, j, n);
                 }
             }
+        }
                 
     if (editCursor == EDIT_CURSOR_START)
         {
@@ -313,9 +313,9 @@ void arpeggiatorRemoveNote(uint8_t note)
             }
         }
     if (local.arp.numChordNotes == 0)
-    	{
-        local.arp.currentPosition = ARP_POSITION_START;		// we just removed notes so we need to reset or playArpeggio() may miss it
-    	}
+        {
+        local.arp.currentPosition = ARP_POSITION_START;         // we just removed notes so we need to reset or playArpeggio() may miss it
+        }
     }
         
 
@@ -331,9 +331,9 @@ void arpeggiatorAddNote(uint8_t note, uint8_t velocity)
             marked++;
         }
     if (marked == local.arp.numChordNotes)  // they're all marked, time to reset
-    	{
+        {
         local.arp.numChordNotes = 0;
-        local.arp.currentPosition = ARP_POSITION_START;		// we just removed notes so we need to reset or playArpeggio() will miss it
+        local.arp.currentPosition = ARP_POSITION_START;         // we just removed notes so we need to reset or playArpeggio() will miss it
         }
 
     if (local.arp.numChordNotes == MAX_ARP_CHORD_NOTES)  // at this stage, of we're still full, someone's holding down a lot of notes!
@@ -1100,29 +1100,29 @@ void stateArpeggiatorCreateSave()
     }
 
 void stateArpeggiatorCreate()
-	{
-            uint8_t note = stateEnterNote(STATE_ARPEGGIATOR);
-            if (note != NO_NOTE)  // it's a real note
-                {
-                data.arp.root = note;
-                state = STATE_ARPEGGIATOR_CREATE_EDIT;
-                entry = true;
-                }
-	}
-	
-	
+    {
+    uint8_t note = stateEnterNote(STATE_ARPEGGIATOR);
+    if (note != NO_NOTE)  // it's a real note
+        {
+        data.arp.root = note;
+        state = STATE_ARPEGGIATOR_CREATE_EDIT;
+        entry = true;
+        }
+    }
+        
+        
 void stateArpeggiatorPlayTranspose()
-	{
-            local.arp.performanceMode = false;  // it's false until we say it's true
-            uint8_t note = stateEnterNote(STATE_ARPEGGIATOR_PLAY);
-            if (note != NO_NOTE)  // it's a real note
-                {
-                local.arp.transposeRoot = note;
-                goUpState(STATE_ARPEGGIATOR_PLAY);
-                local.arp.performanceMode = true;
-                }
-            playArpeggio();
-	}
+    {
+    local.arp.performanceMode = false;  // it's false until we say it's true
+    uint8_t note = stateEnterNote(STATE_ARPEGGIATOR_PLAY);
+    if (note != NO_NOTE)  // it's a real note
+        {
+        local.arp.transposeRoot = note;
+        goUpState(STATE_ARPEGGIATOR_PLAY);
+        local.arp.performanceMode = true;
+        }
+    playArpeggio();
+    }
     
 #endif INCLUDE_ARPEGGIATOR
 
