@@ -121,6 +121,12 @@ struct _options
 	int8_t stepSequencerPlayAlongChannel;
 #endif
 
+#ifdef INCLUDE_DRUM_SEQUENCER
+    uint8_t drumSequencerNoEcho;
+    uint8_t drumSequencerSendClock;
+	int8_t drumSequencerPlayAlongChannel;
+#endif
+
 #ifdef INCLUDE_RECORDER
 	uint8_t recorderRepeat;
 #endif

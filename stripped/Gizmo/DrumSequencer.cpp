@@ -1532,18 +1532,17 @@ void stateDrumSequencerPlay()
 #define DRUM_SEQUENCER_MENU_SOLO 0
 #define DRUM_SEQUENCER_MENU_RESET 1
 #define DRUM_SEQUENCER_MENU_LENGTH 2
-#define DRUM_SEQUENCER_MENU_MIDI_OUT 3
-#define DRUM_SEQUENCER_MENU_VELOCITY 4
-#define DRUM_SEQUENCER_MENU_FADER 5
-#define DRUM_SEQUENCER_MENU_TYPE 6
-#define DRUM_SEQUENCER_MENU_PATTERN 7
-#define DRUM_SEQUENCER_MENU_TRANSPOSABLE 8
-#define DRUM_SEQUENCER_MENU_EDIT 9
-#define DRUM_SEQUENCER_MENU_SEND_CLOCK 10
-#define DRUM_SEQUENCER_MENU_NO_ECHO 11
-#define DRUM_SEQUENCER_MENU_PERFORMANCE 12
-#define DRUM_SEQUENCER_MENU_SAVE 13
-#define DRUM_SEQUENCER_MENU_OPTIONS 14
+#define DRUM_SEQUENCER_MENU_SPEED 3
+#define DRUM_SEQUENCER_MENU_MIDI_OUT 4
+#define DRUM_SEQUENCER_MENU_VELOCITY 5
+#define DRUM_SEQUENCER_MENU_NOTE 6
+#define DRUM_SEQUENCER_MENU_TRANSITIONS 7
+#define DRUM_SEQUENCER_MENU_PATTERN 8
+#define DRUM_SEQUENCER_MENU_SEND_CLOCK 9
+#define DRUM_SEQUENCER_MENU_NO_ECHO 10
+#define DRUM_SEQUENCER_MENU_PERFORMANCE 11
+#define DRUM_SEQUENCER_MENU_SAVE 12
+#define DRUM_SEQUENCER_MENU_OPTIONS 13
 
 
 
@@ -1555,23 +1554,24 @@ void stateDrumSequencerMenu()
     {
     uint8_t result;
 
-    const char* menuItems[15] = {    
-        (local.drumSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),
+    const char* menuItems[14] = {    
+        (local.drumSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),			/// FIXME: DO WE NEED THIS ONE?
         PSTR("RESET TRACK"),
-        PSTR("LENGTH (TRACK)"),
-        PSTR("OUT MIDI (TRACK)"),
-        PSTR("VELOCITY (TRACK)"),
-        PSTR("FADER (TRACK)"), 
-        PSTR("PATTERN (TRACK)"),
-        local.drumSequencer.transposable[local.drumSequencer.currentTrack] ? PSTR("NO TRANSPOSE (TRACK)") : PSTR("TRANSPOSE (TRACK)"),
-        PSTR("EDIT"),
+        PSTR("LENGTH (GROUP)"),			// check 		STATE_DRUM_SEQUENCER_GROUP_LENGTH
+        PSTR("SPEED (GROUP)"),			// check 		STATE_DRUM_SEQUENCER_GROUP_SPEED
+        PSTR("OUT MIDI (TRACK)"),		// check		STATE_DRUM_SEQUENCER_MIDI_CHANNEL_OUT
+        PSTR("VELOCITY (TRACK)"),		// check		STATE_DRUM_SEQUENCER_VELOCITY
+        PSTR("NOTE (TRACK)"),			// check		STATE_DRUM_SEQUENCER_PITCH
+        PSTR("TRANSITIONS"), 			//			STATE_DRUM_SEQUENCER_TRANSITIONS
+        PSTR("PATTERN (TRACK)"),		// STATE_DRUM_SEQUENCER_MENU_PATTERN
+       //  PSTR("EDIT"),
         options.drumSequencerSendClock ? PSTR("NO CLOCK CONTROL") : PSTR("CLOCK CONTROL"),
         options.drumSequencerNoEcho ? PSTR("ECHO") : PSTR("NO ECHO"), 
         PSTR("PERFORMANCE"),
         PSTR("SAVE"), 
         options_p 
         };
-    result = doMenuDisplay(menuItems, 15, STATE_NONE, STATE_NONE, 1);
+    result = doMenuDisplay(menuItems, 14, STATE_NONE, STATE_NONE, 1);
 
     playDrumSequencer();
     switch (result)
@@ -1599,7 +1599,12 @@ void stateDrumSequencerMenu()
                     }
                 case DRUM_SEQUENCER_MENU_LENGTH:
                     {
-                    state = STATE_DRUM_SEQUENCER_LENGTH;                            
+                    state = STATE_DRUM_SEQUENCER_GROUP_LENGTH;                            
+                    }
+                break;
+                case DRUM_SEQUENCER_MENU_SPEED:
+                    {
+                    state = STATE_DRUM_SEQUENCER_GROUP_SPEED;                            
                     }
                 break;
                 case DRUM_SEQUENCER_MENU_MIDI_OUT:
@@ -1613,9 +1618,9 @@ void stateDrumSequencerMenu()
                     state = STATE_DRUM_SEQUENCER_VELOCITY;
                     }
                 break;
-                case DRUM_SEQUENCER_MENU_FADER:
+                case DRUM_SEQUENCER_MENU_NOTE:
                     {
-                    state = STATE_DRUM_SEQUENCER_FADER;
+                    state = STATE_DRUM_SEQUENCER_PITCH;
                     }
                 break;
                 case DRUM_SEQUENCER_MENU_PATTERN:
@@ -1624,16 +1629,13 @@ void stateDrumSequencerMenu()
                     state = STATE_DRUM_SEQUENCER_MENU_PATTERN;
                     }
                 break;
-                case DRUM_SEQUENCER_MENU_TRANSPOSABLE:
-                    {
-                    local.drumSequencer.transposable[local.drumSequencer.currentTrack] = !local.drumSequencer.transposable[local.drumSequencer.currentTrack];
-                    }
-                break;
+                /*
                 case DRUM_SEQUENCER_MENU_EDIT:
                     {
                     state = STATE_DRUM_SEQUENCER_MENU_EDIT;
                     }
                 break;
+                */
                 case DRUM_SEQUENCER_MENU_SEND_CLOCK:
                     {
                     options.drumSequencerSendClock = !options.drumSequencerSendClock;
@@ -1666,7 +1668,6 @@ void stateDrumSequencerMenu()
                     goDownState(STATE_DRUM_SEQUENCER_MENU_PERFORMANCE);
                     }
                 break;
-
                 case DRUM_SEQUENCER_MENU_SAVE:
                     {
                     state = STATE_DRUM_SEQUENCER_SAVE;
