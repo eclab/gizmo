@@ -39,7 +39,7 @@
 	- 20 bytes for transitions
 		20 global group transitions.  These are <group, repeat> pairs indicating 
 		which group and then how many times to repeat it.  Each transition is 1 byte.
-			Group is 4 bits: (0...14, 15=END)
+			Group is 4 bits: (0...14, 15=OTHERs)
 			Repeat is 4 bits: (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, 48, 64, LOOP)
 
 	- 4 bits for overall repeats (1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, 48, 64, LOOP)
@@ -175,8 +175,8 @@
 						This will be confusing because on the Step Sequencer this is Schedule Mute
 
 	LONG MIDDLE BUTTON
-		Play Position:	Clear Track
-		Edit:			
+		Play Position:	Clear Group					// this is confusing because on the Step Sequencer this is Clear Track
+		Edit:			Clear Track on Group
 		Far right:
 		Performance:	Schedule Solo
 

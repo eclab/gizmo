@@ -296,6 +296,9 @@ extern const char* options_p;
 
 union _local
     {
+#ifdef INCLUDE_DRUM_SEQUENCER
+    struct _drumSequencerLocal drumSequencer;
+#endif
 #ifdef INCLUDE_STEP_SEQUENCER
     struct _stepSequencerLocal stepSequencer;
 #endif

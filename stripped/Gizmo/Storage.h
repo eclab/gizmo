@@ -49,21 +49,23 @@
 #define SLOT_TYPE_EMPTY (GLYPH_3x5_BLANK)
 #define SLOT_TYPE_STEP_SEQUENCER (GLYPH_3x5_S)
 #define SLOT_TYPE_RECORDER (GLYPH_3x5_R)
+#define SLOT_TYPE_DRUM_SEQUENCER (GLYPH_3x5_D)
 
 
-// Given an application state (presently STATE_STEP_SEQUENCER or STATE_RECORDER),
-// returns the appropriate slot (SLOT_TYPE_STEP_SEQUENCER or SLOT_TYPE_RECORDER)
+// Given an application state (presently STATE_STEP_SEQUENCER, STATE_DRUM_SEQUENCER or STATE_RECORDER),
+// returns the appropriate slot (SLOT_TYPE_STEP_SEQUENCER, SLOT_DRUM_SEQUENCER, or SLOT_TYPE_RECORDER)
 uint8_t slotTypeForApplication(uint8_t application);
 
 
 
 struct _slot
     {
-    uint8_t type;                       // Slot type, one of SLOT_TYPE_EMPTY, SLOT_TYPE_STEP_SEQUENCER, or SLOT_TYPE_RECORDER
+    uint8_t type;                       // Slot type, one of SLOT_TYPE_EMPTY, SLOT_TYPE_STEP_SEQUENCER, SLOT_TYPE_DRUM_SEQUENCER, or SLOT_TYPE_RECORDER
     union
         {
         struct _recorder recorder;
         struct _stepSequencer stepSequencer;
+        struct _drumSequencer drumSequencer;
         // This is a union so we can restructure it any way we like
         char buffer[SLOT_DATA_SIZE];             
         } data;

@@ -101,7 +101,7 @@
 #define INCLUDE_THRU
 #define INCLUDE_SYNTH
 #define INCLUDE_MEASURE
-//#define INCLUDE_DRUM_SEQUENCER
+#define INCLUDE_DRUM_SEQUENCER
 
 #define INCLUDE_MEGA_POTS
 
@@ -164,6 +164,9 @@
 #ifdef INCLUDE_ARPEGGIATOR
 #define MENU_ITEMS()     const char* menuItems[2] = { PSTR("ARPEGGIATOR"), options_p };
 #endif INCLUDE_ARPEGGIATOR
+#ifdef INCLUDE_DRUM_SEQUENCER
+#define MENU_ITEMS()     const char* menuItems[2] = { PSTR("DRUM SEQUENCER"), options_p };
+#endif INCLUDE_DRUM_SEQUENCER
 #ifdef INCLUDE_STEP_SEQUENCER
 #define MENU_ITEMS()     const char* menuItems[2] = { PSTR("STEP SEQUENCER"), options_p };
 #endif INCLUDE_STEP_SEQUENCER
@@ -236,6 +239,7 @@
 #include "Recorder.h"
 #include "Options.h"
 #include "StepSequencer.h"
+#include "DrumSequencer.h"
 #include "Gauge.h"
 #include "Split.h"
 #include "Thru.h"

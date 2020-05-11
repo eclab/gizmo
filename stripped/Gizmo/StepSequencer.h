@@ -350,7 +350,7 @@ void resetStepSequencer();
 void stateStepSequencerMenuPerformanceKeyboard();
 void stateStepSequencerMenuPerformanceRepeat();
 void stateStepSequencerMenuPerformanceNext();
-void loadStepSequencer(uint8_t slot);
+//void loadStepSequencer(uint8_t slot);
 void resetStepSequencerCountdown();
 void stateStepSequencerMenuPattern();
 

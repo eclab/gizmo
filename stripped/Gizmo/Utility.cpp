@@ -840,6 +840,14 @@ void stateSave(uint8_t backState)
                     }
                 break;
 #endif INCLUDE_RECORDER
+#ifdef INCLUDE_DRUM_SEQUENCER
+                case STATE_DRUM_SEQUENCER:
+                    {
+                    packDrumSequenceData();
+                    saveSlot(currentDisplay);
+                    }
+                break;
+#endif INCLUDE_DRUM_SEQUENCER
                 }
                                         
             goUpState(backState);
@@ -878,63 +886,79 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                 else
                     {
                     state = selectedState;
-#ifdef INCLUDE_STEP_SEQUENCER
-                    if (application == STATE_STEP_SEQUENCER)
+#ifdef INCLUDE_DRUM_SEQUENCER
+                    if (application == STATE_DRUM_SEQUENCER)
                         {
+                        //// FIXME:  Need to set the note pulse rate first before the following....? (which was stolen from StepSequencer code in Utility.cpp)
+                        //// FIXME:  Need to stop the sequencer?  Etc.
+
                         // FIXME: did I fix the issue of synchronizing the beats with the sequencer notes?
-                        local.stepSequencer.currentPlayPosition = 
+                        local.drumSequencer.currentPlayPosition = 
                             div12((24 - beatCountdown) * notePulseRate) >> 1;   // get in sync with beats
 
-                        uint8_t len = GET_TRACK_LENGTH();
-                        uint8_t num = GET_NUM_TRACKS();
-                                
-                        // unpack the high-bit info
-                        for(uint8_t i = 0; i < num; i++)
-                            {
-                            uint16_t pos = i * len * 2;
-
-                            //// 1 bit type of data
-                            if (gatherByte(pos) >> 7 == 0)  // It's a note
-                                {
-                                //// 1 bit mute
-                                //// 5 bits MIDI out channel (including "use default")
-                                //// 7 bits length
-                                //// 8 bits velocity (including "use per-note velocity")
-                                //// 4 bits fader
-                                local.stepSequencer.data[i] = STEP_SEQUENCER_DATA_NOTE;
-                                
-                                local.stepSequencer.muted[i] = (gatherByte(pos + 1) >> 7); // first bit
-                                local.stepSequencer.outMIDI[i] = (gatherByte(pos + 2) >> 3);  // top 5 bits moved down 3
-                                local.stepSequencer.noteLength[i] = (gatherByte(pos + 7) >> 1); // top 7 bits moved down 1
-                                local.stepSequencer.velocity[i] = (gatherByte(pos + 14) >> 1); // top 7 bits moved down 1
-                                local.stepSequencer.transposable[i] = (gatherByte(pos + 21) >> 7); // top 1 bits moved down 7
-                                local.stepSequencer.fader[i] = (gatherByte(pos + 22) >> 3);  // top 5 bits moved down 3
-                                local.stepSequencer.pattern[i] = (gatherByte(pos + 27) >> 4);  // top 4 bits moved down 4
-                                }
-                            else                        // It's a control sequence
-                                {                               
-                                ////     3 bits: CC, NRPN, RPN, PC, BEND, AFTERTOUCH
-                                ////     7 bits MSB of Parameter 
-                                ////     7 bits LSB of Parameter
-                                ////     5 bits MIDI out channel
-                                ////     4 bits pattern
-
-                                uint8_t controlDataType = (gatherByte(pos + 1) >> 4);
-                                local.stepSequencer.data[i] = controlDataType + 1;
-                                local.stepSequencer.noteLength[i] = (gatherByte(pos + 4) >> 1);         // MSB
-                                local.stepSequencer.velocity[i] = (gatherByte(pos + 11) >> 1);          // LSB
-                                local.stepSequencer.outMIDI[i] = (gatherByte(pos + 18) >> 3);
-                                local.stepSequencer.pattern[i] = (gatherByte(pos + 23) >> 4);
-                                }
-                            }
-                            
-                        stripHighBits();
-                        
-                        local.stepSequencer.markTrack = 0;
-                        local.stepSequencer.markPosition = 0;
-                        resetStepSequencerCountdown();
+                        unpackDrumSequenceData();
                         }
+                    else
+#endif INCLUDE_DRUM_SEQUENCER
+#ifdef INCLUDE_STEP_SEQUENCER
+                        if (application == STATE_STEP_SEQUENCER)
+                            {
+                            // FIXME: did I fix the issue of synchronizing the beats with the sequencer notes?
+                            local.stepSequencer.currentPlayPosition = 
+                                div12((24 - beatCountdown) * notePulseRate) >> 1;   // get in sync with beats
+
+                            uint8_t len = GET_TRACK_LENGTH();
+                            uint8_t num = GET_NUM_TRACKS();
+                                
+                            // unpack the high-bit info
+                            for(uint8_t i = 0; i < num; i++)
+                                {
+                                uint16_t pos = i * len * 2;
+
+                                //// 1 bit type of data
+                                if (gatherByte(pos) >> 7 == 0)  // It's a note
+                                    {
+                                    //// 1 bit mute
+                                    //// 5 bits MIDI out channel (including "use default")
+                                    //// 7 bits length
+                                    //// 8 bits velocity (including "use per-note velocity")
+                                    //// 4 bits fader
+                                    local.stepSequencer.data[i] = STEP_SEQUENCER_DATA_NOTE;
+                                
+                                    local.stepSequencer.muted[i] = (gatherByte(pos + 1) >> 7); // first bit
+                                    local.stepSequencer.outMIDI[i] = (gatherByte(pos + 2) >> 3);  // top 5 bits moved down 3
+                                    local.stepSequencer.noteLength[i] = (gatherByte(pos + 7) >> 1); // top 7 bits moved down 1
+                                    local.stepSequencer.velocity[i] = (gatherByte(pos + 14) >> 1); // top 7 bits moved down 1
+                                    local.stepSequencer.transposable[i] = (gatherByte(pos + 21) >> 7); // top 1 bits moved down 7
+                                    local.stepSequencer.fader[i] = (gatherByte(pos + 22) >> 3);  // top 5 bits moved down 3
+                                    local.stepSequencer.pattern[i] = (gatherByte(pos + 27) >> 4);  // top 4 bits moved down 4
+                                    }
+                                else                        // It's a control sequence
+                                    {                               
+                                    ////     3 bits: CC, NRPN, RPN, PC, BEND, AFTERTOUCH
+                                    ////     7 bits MSB of Parameter 
+                                    ////     7 bits LSB of Parameter
+                                    ////     5 bits MIDI out channel
+                                    ////     4 bits pattern
+
+                                    uint8_t controlDataType = (gatherByte(pos + 1) >> 4);
+                                    local.stepSequencer.data[i] = controlDataType + 1;
+                                    local.stepSequencer.noteLength[i] = (gatherByte(pos + 4) >> 1);         // MSB
+                                    local.stepSequencer.velocity[i] = (gatherByte(pos + 11) >> 1);          // LSB
+                                    local.stepSequencer.outMIDI[i] = (gatherByte(pos + 18) >> 3);
+                                    local.stepSequencer.pattern[i] = (gatherByte(pos + 23) >> 4);
+                                    }
+                                }
+                            
+                            stripHighBits();
+                        
+                            local.stepSequencer.markTrack = 0;
+                            local.stepSequencer.markPosition = 0;
+                            resetStepSequencerCountdown();
+                            }
+                        else
 #endif INCLUDE_STEP_SEQUENCER
+                            {}
                     }
                 }
 

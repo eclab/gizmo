@@ -966,17 +966,17 @@ void go()
 #ifdef INCLUDE_DRUM_SEQUENCER
         case STATE_DRUM_SEQUENCER_FORMAT:
             {
-            stateStepSequencerFormat();
+            stateDrumSequencerFormat();
             }
         break;
         case STATE_DRUM_SEQUENCER_PLAY:
             {
-            stateStepSequencerPlay();
+            stateDrumSequencerPlay();
             }
         break;
         case STATE_DRUM_SEQUENCER_MENU:
             {
-            stateStepSequencerMenu();
+            stateDrumSequencerMenu();
             }
         break;
         case STATE_DRUM_SEQUENCER_MIDI_CHANNEL_OUT:
@@ -995,7 +995,7 @@ void go()
                 break;
                 case MENU_SELECTED:
                     {
-                    setMIDIChannel(currentDisplay);
+                    setMIDIChannel(local.drumSequencer.currentTrack, currentDisplay);
                     goUpState(STATE_DRUM_SEQUENCER_MENU);
                     }
                 break;
@@ -1059,16 +1059,25 @@ void go()
                 {
                 local.drumSequencer.backup = getGroupLength(local.drumSequencer.currentGroup);
                 }
-            result = doNumericalDisplay(0, 15, local.drumSequencer.backup, true, GLYPH_NONE);
+                
+            if (local.drumSequencer.numNotes == 8)
+                {
+                result = doNumericalDisplay(0, 8, local.drumSequencer.backup, true, GLYPH_NONE);
+                }
+            else
+                {
+                result = doNumericalDisplay(0, 15, local.drumSequencer.backup, true, GLYPH_NONE);
+                }
+                
             switch (result)
                 {
                 case NO_MENU_SELECTED:
                     {
-                    setGroupLength(local.drumSequencer.currentGroup, currentDisplay);
                     }
                 break;
                 case MENU_SELECTED:
                     {
+                    setGroupLength(local.drumSequencer.currentGroup, currentDisplay);
                     goUpState(STATE_DRUM_SEQUENCER_MENU);
                     }
                 break;
@@ -1107,7 +1116,7 @@ void go()
                 {
                 if (i)
                     {
-                    setNoteSpeed(local.drumSequencer.currentGroup, backup);
+                    setNoteSpeed(local.drumSequencer.currentGroup, local.drumSequencer.backup);
                     }
                 goUpState(STATE_DRUM_SEQUENCER_MENU);
                 }
@@ -1274,7 +1283,6 @@ void go()
         break;
         case STATE_DRUM_SEQUENCER_SAVE:
             {
-//// FIXME: we don't have a save yet
             stateSave(STATE_DRUM_SEQUENCER_PLAY);
             playDrumSequencer();
             }
@@ -1331,17 +1339,17 @@ void go()
         break;
         case STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_KEYBOARD:
             {
-            stateStepSequencerMenuPerformanceKeyboard();
+            stateDrumSequencerMenuPerformanceKeyboard();
             }
         break;
         case STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_REPEAT:
             {
-            stateStepSequencerMenuPerformanceRepeat();
+            stateDrumSequencerMenuPerformanceRepeat();
             }
         break;
         case STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_NEXT:
             {
-            stateStepSequencerMenuPerformanceNext();
+            stateDrumSequencerMenuPerformanceNext();
             }
         break;
 /*

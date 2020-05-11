@@ -56,6 +56,10 @@ uint8_t slotTypeForApplication(uint8_t application)
         case STATE_RECORDER:
             return SLOT_TYPE_RECORDER;
 #endif
+#ifdef INCLUDE_DRUM_SEQUENCER
+        case STATE_DRUM_SEQUENCER:
+            return SLOT_TYPE_DRUM_SEQUENCER;
+#endif
         default:
             return SLOT_TYPE_EMPTY;
         }

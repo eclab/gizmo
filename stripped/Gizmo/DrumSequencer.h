@@ -69,8 +69,8 @@
 //		1 bit mute
 //
 // - Additionally there is 1 byte per group:
-//		4 bits actual group length (0 = default, 1...15 or appropriate division thereof)
-//		4 bits note speed (0 = default, 1 ... 15 is 1-15 of the standard note speeds)
+//		4 bits actual group length (0 = FULL, 1...15 is 1/16 ... 15/16 of full group length, or 1...7 if the full length is 8)
+//		4 bits note speed (0 = default, 1 ... 15 is 1-15 of the standard note speeds.  This means that the fastest speed is not available)
 //
 // - Additionally there is 1/2 byte per group per track
 //		4 bits pattern
@@ -259,25 +259,25 @@
 #define DRUM_SEQUENCER_SOLO_ON_SCHEDULED (2)
 #define DRUM_SEQUENCER_SOLO_OFF_SCHEDULED (3)
 
-#define MAX_TRACKS 								(32)
-#define MAX_GROUPS 								(15)
-#define NUM_FORMATS 							(8)			// we could go as high as 16
-#define NUM_TRANSITIONS 						(20)
-#define DATA_LENGTH 							(387)
-#define GROUP_LENGTH_DEFAULT					(0)
-#define NOTE_SPEED_DEFAULT						(0)
-#define NO_MIDI_OUT 							(0)
-#define MIDI_OUT_DEFAULT						(16)		// for now?  I'd prefer zero, see initDrumSequencer
-#define MAX_NOTE_VELOCITY						(7)			// 127
-#define INITIAL_NOTE_PITCH						(60)
-#define TRANSITION_GROUP_OTHER					(0)
-#define TRANSITION_OTHER_END					(15)
-#define TRANSITION_REPEAT_LOOP					(0)
-#define NEXT_SEQUENCE_END						(0)
-#define SEQUENCE_REPEAT_LOOP					(0)
+#define MAX_DRUM_SEQUENCER_TRACKS 								(32)
+#define MAX_DRUM_SEQUENCER_GROUPS 								(15)
+#define DRUM_SEQUENCER_NUM_FORMATS 							(8)			// we could go as high as 16
+#define DRUM_SEQUENCER_NUM_TRANSITIONS 						(20)
+#define DRUM_SEQUENCER_DATA_LENGTH 							(387)
+#define DRUM_SEQUENCER_GROUP_LENGTH_DEFAULT					(0)
+#define DRUM_SEQUENCER_NOTE_SPEED_DEFAULT						(0)
+#define DRUM_SEQUENCER_NO_MIDI_OUT 							(0)
+#define DRUM_SEQUENCER_MIDI_OUT_DEFAULT						(16)		// for now?  I'd prefer zero, see initDrumSequencer
+#define DRUM_SEQUENCER_MAX_NOTE_VELOCITY						(7)			// 127
+#define DRUM_SEQUENCER_INITIAL_NOTE_PITCH						(60)
+#define DRUM_SEQUENCER_TRANSITION_GROUP_OTHER					(0)
+#define DRUM_SEQUENCER_TRANSITION_OTHER_END					(15)
+#define DRUM_SEQUENCER_TRANSITION_REPEAT_LOOP					(0)
+#define DRUM_SEQUENCER_NEXT_SEQUENCE_END						(0)
+#define DRUM_SEQUENCER_SEQUENCE_REPEAT_LOOP					(0)
 
 #define CHANNEL_ADD_TO_DRUM_SEQUENCER (-1)		// The default: performance notes just get put into the drum sequencer as normal
-#define CHANNEL_DEFAULT_MIDI_OUT (0)			// Performance notes are routed to MIDI_OUT
+#define DRUM_SEQUENCER_CHANNEL_DEFAULT_MIDI_OUT (0)			// Performance notes are routed to MIDI_OUT
 												// Values 1...16: performance notes are routed to this channel number
 
 
@@ -292,8 +292,8 @@ struct _drumSequencerLocal
     uint8_t currentTransition;										// Current transition played in sequence (performance mode only)
     int8_t currentEditPosition;                                     // Where is the edit cursor?  Can be -1, indicating PLAY rather than STEP BY STEP entry mode, or can be >= getActualGroupLength(local.drumSequencer.currentGroup()), indicating "right mode".  We're not using "right mode" right now.
     uint8_t currentPlayPosition;                                    // Where is the play position marker?
-    uint8_t transitionGroup[NUM_TRANSITIONS];						// The current group for each transition.  See earlier notes about how "other" and "end" etc. work.  Since this is also in struct _drumSequencer, maybe we can get rid of it.
-    uint8_t transitionRepeat[NUM_TRANSITIONS];						// The number of times to repeat for each transition.  See earlier notes about how "other" and "end" etc. work.  Since this is also in struct _drumSequencer, maybe we can get rid of it.
+    uint8_t transitionGroup[DRUM_SEQUENCER_NUM_TRANSITIONS];		// The current group for each transition.  See earlier notes about how "other" and "end" etc. work.  Since this is also in struct _drumSequencer, maybe we can get rid of it.
+    uint8_t transitionRepeat[DRUM_SEQUENCER_NUM_TRANSITIONS];		// The number of times to repeat for each transition.  See earlier notes about how "other" and "end" etc. work.  Since this is also in struct _drumSequencer, maybe we can get rid of it.
     uint8_t repeatSequence;											// How often to repeat the entire sequence after the transitions have been exhausted.  Since this is also in struct _drumSequencer, maybe we can get rid of it.
     uint8_t nextSequence;											// The next sequence after the sequence repeats have been exhausted. Since this is also in struct _drumSequencer, maybe we can get rid of it.
 	uint8_t muted[MAX_DRUM_SEQUENCER_TRACKS];						// Whether a given track is muted.  This is very wasteful, maybe we can get rid of it
@@ -321,8 +321,8 @@ struct _drumSequencer
     {
     uint8_t format;
     uint8_t repeat;								// repeatSequence and nextSequence.   
-    uint8_t transition[NUM_TRANSITIONS];		// transitionGroup and transitionRepeat
-    uint8_t data[DATA_LENGTH]
+    uint8_t transition[DRUM_SEQUENCER_NUM_TRANSITIONS];		// transitionGroup and transitionRepeat
+    uint8_t data[DRUM_SEQUENCER_DATA_LENGTH];
     };
 
 
@@ -365,8 +365,74 @@ void stateDrumSequencerMenuEditCopy(uint8_t splat, uint8_t paste);
 void stateDrumSequencerMenuEditDuplicate();
 */
 
-void packDrumSequenceData(struct _drumSequencer *seq);
-void unpackDrumSequenceData(struct _drumSequencer *seq);
+void packDrumSequenceData();
+void unpackDrumSequenceData();
+
+
+
+
+
+
+
+
+
+
+
+//// DATA ACCESS FUNCTIONS
+//// Right now these need to be accessible to TopLevel, but if/when we move that code
+//// into DrumSequencer.cpp, we can make these private
+
+
+// Extract a note from data.slot.data.drumSequencer.data
+uint8_t getNote(uint8_t group, uint8_t track, uint8_t note);
+// Set (val = 1) or clear (val = 0) a note in data.slot.data.drumSequencer.data
+void setNote(uint8_t group, uint8_t track, uint8_t note, uint8_t val);
+// Set (to 1) a note from data.slot.data.drumSequencer.data
+void setNote(uint8_t group, uint8_t track, uint8_t note);
+// Clear (to 0) a note from data.slot.data.drumSequencer.data
+void clearNote(uint8_t group, uint8_t track, uint8_t note);
+// Clear all notes in a given track and group from data.slot.data.drumSequencer.data
+void clearNotes(uint8_t group, uint8_t track);
+// Return the pattern (0...15) for a given group and track from data.slot.data.drumSequencer.data
+uint8_t getPattern(uint8_t group, uint8_t track);
+// Set the pattern (0...15) for a given group and track from data.slot.data.drumSequencer.data
+void setPattern(uint8_t group, uint8_t track, uint8_t pattern);
+// Return the length fraction (0...15) for a given group from data.slot.data.drumSequencer.data.
+// Group length fractions are 0 = FULL LENGTH, 1...15 are 1/16 ... 15/16 of the full length
+uint8_t getGroupLength(uint8_t group);
+// Return the actual length, in number of notes, for a given group from data.slot.data.drumSequencer.data.
+uint8_t getActualGroupLength(uint8_t group);
+// Set the length fraction (0...15) for a given group from data.slot.data.drumSequencer.data.
+// Group length fractions are 0 = FULL LENGTH, 1...15 are 1/16 ... 15/16 of the full length
+void setGroupLength(uint8_t group, uint8_t groupLength);
+// Get the note speed (0...15) for a given group from data.slot.data.drumSequencer.data.
+// Note speeds are 0 = DEFAULT, and 1...15 are the standard Gizmo note speeds (up to double whole note);
+uint8_t getNoteSpeed(uint8_t group);
+// Set the note speed (0...15) for a given group from data.slot.data.drumSequencer.data.
+// Note speeds are 0 = DEFAULT, and 1...15 are the standard Gizmo note speeds (up to double whole note);
+void setNoteSpeed(uint8_t group, uint8_t noteSpeed);
+// Get the MIDI channel for a track.  Channels are 0 = Off, 1...16, 17 = Default
+uint8_t getMIDIChannel(uint8_t track);
+// Set the MIDI channel for a track.  Channels are 0 = Off, 1...16, 17 = Default
+void setMIDIChannel(uint8_t track, uint8_t channel);
+// Get the note velocity (volume) for a track.  Legal values are 0...127
+uint8_t getNoteVelocity(uint8_t track);
+// Set the note velocity (volume) for a track.  Legal values are 0...127
+void setNoteVelocity(uint8_t track, uint8_t velocity);
+// Get the note pitch for a track.  Legal values are 0...127
+uint8_t getNotePitch(uint8_t track);
+// Set the note pitch for a track.  Legal values are 0...127
+void setNotePitch(uint8_t track, uint8_t pitch);
+// Get the mute for a track (0 or 1);
+uint8_t getMute(uint8_t track);
+// Set the mute for a track (0 or 1);
+void setMute(uint8_t track, uint8_t mute);
+// For a given format (layout), returns the standard (full) number of notes per group.  This can be shortened with getGroupLength
+uint8_t numFormatNotes(uint8_t format);
+// For a given format (layout), returns the number of tracks
+uint8_t numFormatTracks(uint8_t format);
+// For a given format (layout), returns the number of groups
+uint8_t numFormatGroups(uint8_t format);
 
 
 #endif __DRUM_SEQUENCER_H__
