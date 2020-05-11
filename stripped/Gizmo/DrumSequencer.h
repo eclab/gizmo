@@ -14,195 +14,314 @@
 
 
 /////// THE DRUM SEQUENCER
-//
-// The drum sequencer contains note data in the form of single bits, indicating that a given (drum) note has been played.
-// No per-note information is stored regarding the velocity, pitch, or other auxillary features of the note.  No note-off
-// information is provided (indeed the Drum Sequencer never issues note off).   Notes (as bits)
-// are packed into bytes, then stored in TRACKS of a certain length L long (such as 16 beats).  Some T tracks are packed
-// into a GROUP.  There are G groups.  All groups have the same number of tracks and the same length tracks as far as storage
-// is concerned; but groups can be set up to shorten the length of their tracks internally, allowing different group lengths
-// but wasting space.
-//
-// Thus our storage is basically group BY track BY notes in track.  There is also additional per-group data, some per-track
-// data, and some per-track BY per-group data.  
-//
-// A group is basically a repeating bar or phrase.  The purpose of a group is to allow you to have one sequence pattern, then
-// after it has repeated some N times, switch to another group and start playing that one.  The description of which groups
-// play and when is given by an array of 20 TRANSITIONS.  Each transition stipulates a group to be played, and how long to play it.
-// When this is done, we go on to the next transition.
-//
-//
+
+
+/*
+The drum sequencer contains note data in the form of single bits, indicating that a given (drum) note has been played.
+No per-note information is stored regarding the velocity, pitch, or other auxillary features of the note.  No note-off
+information is provided (indeed the Drum Sequencer never issues note off).   Notes (as bits)
+are packed into bytes, then stored in TRACKS of a certain length L long (such as 16 beats).  Some T tracks are packed
+into a GROUP.  There are G groups.  All groups have the same number of tracks and the same length tracks as far as storage
+is concerned; but groups can be set up to shorten the length of their tracks internally, allowing different group lengths
+but wasting space.
+
+Thus our storage is basically group BY track BY notes in track.  There is also additional per-group data, some per-track
+data, and some per-track BY per-group data.  
+
+A group is basically a repeating bar or phrase.  The purpose of a group is to allow you to have one sequence pattern, then
+after it has repeated some N times, switch to another group and start playing that one.  The description of which groups
+play and when is given by an array of 20 TRANSITIONS.  Each transition stipulates a group to be played, and how long to play it.
+When this is done, we go on to the next transition.
+
+Sequence data is at data.slot.data.drumSequencer.data[].  See the DATA ACCESS MACROS AND FUNCTIONS section in DrumSequencer.cpp
+for accessing these bytes.
+
+
+STORAGE
+
+There are 8, 16, 32, or 64 notes per track per group. There are 12 or 16 tracks per group. There are no more than 15 groups.
+
+- Each note is 1 bit, so they are packed 8 notes to the byte.
+
+- Additionally there are 2 bytes per track:
+		5 bits MIDI channel (0 = "off", 17 = "default")
+		3 bits velocity (15, 31, 47, 63, 79, 95, 111, 127)
+		7 bits note
+		1 bit mute
+
+- Additionally there is 1 byte per group:
+		4 bits actual group length (0 = FULL, 1...15 is 1/16 ... 15/16 of full group length, or 1...7 if the full length is 8)
+		4 bits note speed (0 = default, 1 ... 15 is 1-15 of the standard note speeds.  This means that the fastest speed is not available)
+
+- Additionally there is 1/2 byte per group per track
+		4 bits pattern
+
+Combinations of the above data comprise the LAYOUT or FORMAT of the sequence.  There are 
+presently EIGHT possible layouts but we can have as many as SIXTEEN.  Here are our current eight:
+
+		8 notes, 13 groups, 16 tracks = (8/8 * 16 + 1/2 * 16 + 1) * 13 + (2 * 16) = 357
+		16 notes, 8 groups, 16 tracks = (16/8 * 16 + 1/2 * 16 + 1) * 8 + (2 * 16) = 360
+		32 notes, 4 groups, 16 tracks = (32/8 * 16 + 1/2 * 16 + 1) * 4 + (2 * 16) = 324
+		64 notes, 2 groups, 16 tracks = (64/8 * 16 + 1/2 * 16 + 1) * 2 + (2 * 16) = 306
+
+		8 notes, 15 groups, 12 tracks = (8/8 * 12 + 1/2 * 12 + 1) * 17 + (2 * 12) = 347
+         ** Note that there is room for 17 groups, but we can only refer to 15 of them
+		16 notes, 11 groups, 12 tracks = (16/8 * 12 + 1/2 * 12 + 1) * 11 + (2 * 12) = 365
+		32 notes, 6 groups, 12 tracks = (32/8 * 12 + 1/2 * 12 + 1) * 6 + (2 * 12) = 354
+		64 notes, 3 groups, 12 tracks = (64/8 * 12 + 1/2 * 12 + 1) * 3 + (2 * 12) = 333
+
+If we were to REMOVE the pattern from 16-track, then we could get 2 more groups out of the 8 and 16 steps
+And one more group out of the 32 step.
+		8/19/16 = 355		[in reality this maxes out at 15 groups]
+		16/10/16 = 362
+		32/5/16 = 357
+		64 -- no help
+
+If we were to REMOVE the pattern from 12-track, then we could get 2 more groups out of the 16 steps
+		8 -- way too many
+		16/13/12 = 349
+		32 -- no help
+		64 -- no help
+
+We could also theoretically do some 32-track options
+		8 notes, 6 groups, 32 tracks = (8/8 * 32 + 1/2 * 32 + 1) * 6 + (2 * 32) = 358
+		16 notes, 3 groups, 32 tracks = (16/8 * 32 + 1/2 * 32 + 1) * 3 + (2 * 32) = 307
+		32 notes, 2 groups, 32 tracks = (32/8 * 32 + 1/2 * 32 + 1) * 2 + (2 * 32) = 354
+		64 notes, 1 group, 32 tracks = (64/8 * 32 + 1/2 * 32 + 1) * 1 + (2 * 32) = 337
+
+If we were to REMOVE the pattern from 32-track, then we could get 3 more groups out of the 8 steps
+and 1 more group out of the 16 steps
+		8/9/32 = 361
+		16/4/32 = 324
+		32	-- no help
+		64  -- no help
+
+Some other possibilities:
+
+		8 notes, 6 groups, 32 tracks = (8/8 * 32 + 1/2 * 24 + 1) * 13 + (2 * 32) = 358
+		16 notes, 3 groups, 32 tracks = (16/8 * 32 + 1/2 * 24 + 1) * 3 + (2 * 32) = 307
+		32 notes, 2 groups, 32 tracks = (32/8 * 32 + 1/2 * 24 + 1) * 2 + (2 * 32) = 354
+		64 notes, 1 group, 32 tracks = (64/8 * 32 + 1/2 * 32 + 1) * 1 + (2 * 32) = 337
+			/WARNING: more than 32 tracks and the access macros must be upgraded to 16-bit
+		    /WARNING: more than 32 tracks and we have to come up with a way to draw the track range
+		16 notes, 1 group, 80 tracks = (16/8 * 80 + 1/2 * 80 + 1) * 1 + (2 * 80) = 361
+
+Thus a layout comprises AT MOST 365 BYTES.
+
+There are also 20 bytes for transitions:
+		20 global group transitions.  These are <group, repeat> pairs indicating 
+		which group and then how many times to repeat it.  Each transition is 1 byte.
+			Group is 4 bits: (0 = OTHER, 1...15)
+			Repeat is 4 bits: 
+				If Group is OTHER then:	Random: Groups 1-2 (LOOP, 1 time, 2..., 3..., 4...), Groups 1-3 (LOOP, 1, 2, 3, 4), Groups 1-4 (LOOP, 1, 2, 3, 4), END)
+				If Group is not OTHER then: LOOP, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, 64
+				Note that Transition 0 cannot be END.  If this happens (which it should not be able to)
+				then this is interpreted as LOOP FOREVER Group 1.
+
+There is also 1 byte for sequence repeats:
+		4 bits for overall repeats (LOOP, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, 64)
+		4 bits for next sequence after repeats have concluded (0 = END, 1...10 (for 0...9))
+
+There is also one global byte:
+		4 bits: up to 16 layouts.  Currently 3 bits is used (eight layouts)
+		4 bits: extra
+
+
+GLOBALS (TEMPORARY DATA)
+
+Temporary data is stored in local.drumSequencer.
+
+Some limited sequence data (transition group, 
+transition repeat, track muted) are copied to these globals mostly to be compatible with original StepSequencer code.
+These might ultimately be removed.  At present the packDrumSequenceData() and unpackDrumSequenceData() functions load
+and unlload these globals, plus set up some other stuff.
+
+
+
+OPTIONS
+
+Permanent options special to the Drum Sequencer are:
+
+options.drumSequencerNoEcho          Toggle for Echo
+
+Other permanent options affecting the Drum Sequencer include:
+
+options.noteSpeedType
+options.swing
+options.channelIn
+options.channelOut
+options.volume
+options.tempo
+
+
+MODES
+
+Like the StepSequencer, the DrumSequencer has three playing modes: PLAY-POSITION MODE, where when you hit keys,
+data is entered at the current point that the drum sequencer is playing, STEP-BY-STEP or EDIT MODE, where the data is entered 
+where the edit cursor is located, and PERFORMANCE MODE.  In performance mode, when you hit keys different
+things can happen: they could be blocked, or routed to other MIDI channels.  
+
+The mode also affects which buttons and pots do what.  
+In anticipation of the need to add additional buttons, the drum sequencer has an additional mode currently called
+FAR RIGHT mode.  Whereas play-position mode is entered by shifting the play cursor off-screen to the left, beyond
+the beginning of the notes, far-right mode is entered by shifting the cursor off-screen to the right, beyond the
+end of the notes.  At present this mode is DISABLED.
+
+My current arrangement of buttons and pots is as follows:
+
+	LEFT KNOB
+		Play Position:	Track
+		Edit:			Track
+		Far right:		
+		Performance:	Track
+		
+	RIGHT KNOB
+		Position, or far left for enter in real time, or far right for groups
+		Performance:	Change Tempo?
+		
+	BACK BUTTON
+		Play Position:	Exit
+		Edit:			Exit
+		Far right:		
+		Performance:	Leave Performance Mode
+		
+	LONG BACK BUTTON
+						Toggle Bypass
+		
+	SELECT BUTTON
+						Start/Stop
+	
+	SELECT RIGHT BUTTON
+						Menu
+	
+	MIDDLE BUTTON
+		Play Position:	Toggle Mute
+		Edit:			Toggle Note
+		Far right:
+		Performance:	Schedule Transition, Next Sequence?
+						This will be confusing because on the Step Sequencer this is Schedule Mute
+
+	LONG MIDDLE BUTTON
+		Play Position:	Clear Group					// this is confusing because on the Step Sequencer this is Clear Track
+		Edit:			Clear Track on Group
+		Far right:
+		Performance:	Schedule Solo
+
+	SELECT + MIDDLE LONG
+		Play Position:	Performance Mode
+		Edit:			Performance Mode
+		Far right:		
+		Performance:	Schedule Mute
+						This will be confusing because on the Step Sequencer this is Schedule Next Sequence
+
+
+NOTE ENTRY
+
+Note entry is quite different from what you'd expect give the step sequencer, since we're not entering NOTES
+but rather sequences of DRUM HITS.  So we abuse the keyboard as follows:
+
+In PLAY POSITION MODE, 
+    - White keys or C# and D# SET the current note
+    - Other black keys CLEAR the current note
+
+In STEP-BY-STEP (EDIT) MODE, 
+    - White keys in Edit mode, starting with Middle C, correspond to individual drumbeats.  Pressing them toggles the beat.
+      Think of this like toggling the beat buttons on a classic 808 or 909 drum machine.
+	- The C# and D# Black keys in Edit mode SET the *current* note, which is specified by the cursor
+	- Other black keys in Edit mode CLEAR the *current* note, which is specified by the cursor
+
+In PERFORMANCE MODE, keystrokes are routed as specified by the user via menu options.
 
 
 
 
+DATA DESCRIPTIONS:
 
-//
-// 2. The user can enter notes STEP-BY-STEP at the cursor position, or (by moving the cursor position to off the left of the screen)
-//    enter notes at the PLAY POSITION.  Notes can be entered while the sequencer is playing.  He can also add RESTS and TIES.
-//    A tie says "keep on playing the note in the previous slot position".
-// 
-// 3. Stop, start, and restart the sequencer (including affecting external MIDI Clocks), mute tracks, and clear tracks.   
-// 
-// 4. Toggle ECHO.  Normally when you enter a note, in step-by-step mode, it is played so you can hear what you're entering
-//    [in play position mode the drum sequencer doesn't play the notes immediately but instead lets the play cursor play them].
-//    NO ECHO tells the drum sequencer to not play notes when you're entering them AT ALL.  This is useful when you are playing
-//    and entering notes using the same device (which is playing as you enter them).
-//
-// 5. Mute tracks, clear tracks, specify the MIDI OUT on a per-track basis (or use the default), specify the note velocity 
-//    on a per-track basis (or use the velocity entered for each note), specify the note length on a per-track basis
-//    (or use the default), change the volume of the tracks (a 7-bit fader), or save sequences.
-//
-// 6. Sequences are affected by SWING, by TEMPO, by NOTE SPEED, and by NOTE LENGTH.
-//
-//
-// STORAGE
-//
-// There are 8, 16, 32, or 64 notes per track per group. There are 12 or 16 tracks per group. There are no more than 15 groups.
-//
-// - Each note is 1 bit, so they are packed 8 notes to the byte.
-// 
-// - Additionally there are 2 bytes per track:
-//		5 bits MIDI channel (0 = "off", 17 = "default")
-//		3 bits velocity (15, 31, 47, 63, 79, 95, 111, 127)
-//		7 bits note
-//		1 bit mute
-//
-// - Additionally there is 1 byte per group:
-//		4 bits actual group length (0 = FULL, 1...15 is 1/16 ... 15/16 of full group length, or 1...7 if the full length is 8)
-//		4 bits note speed (0 = default, 1 ... 15 is 1-15 of the standard note speeds.  This means that the fastest speed is not available)
-//
-// - Additionally there is 1/2 byte per group per track
-//		4 bits pattern
-//
-// Combinations of the above data comprise the LAYOUT or FORMAT of the sequence.  There are 
-// presently EIGHT possible layouts but we can have as many as SIXTEEN
-//
-//		8 notes, 13 groups, 16 tracks = (8/8 * 16 + 1/2 * 16 + 1) * 13 + (2 * 16) = 357
-//		16 notes, 8 groups, 16 tracks = (16/8 * 16 + 1/2 * 16 + 1) * 8 + (2 * 16) = 360
-//		32 notes, 4 groups, 16 tracks = (32/8 * 16 + 1/2 * 16 + 1) * 4 + (2 * 16) = 324
-//		64 notes, 2 groups, 16 tracks = (64/8 * 16 + 1/2 * 16 + 1) * 2 + (2 * 16) = 306
-//
-//		8/19/16 = 355
-//		16/10/16 = 362
-//		32/5/16 = 357
-//		64 -- no help
-//
-//		8 notes, 15 groups, 12 tracks = (8/8 * 12 + 1/2 * 12 + 1) * 17 + (2 * 12) = 347
-//          ** Note that there is room for 17 groups, but we can only refer to 15 of them
-//		16 notes, 11 groups, 12 tracks = (16/8 * 12 + 1/2 * 12 + 1) * 11 + (2 * 12) = 365
-//		32 notes, 6 groups, 12 tracks = (32/8 * 12 + 1/2 * 12 + 1) * 6 + (2 * 12) = 354
-//		64 notes, 3 groups, 12 tracks = (64/8 * 12 + 1/2 * 12 + 1) * 3 + (2 * 12) = 333
-//
-//		8 -- way too many
-//		16/13/12 = 349
-//		32 -- no help
-//		64 -- no help
-//
-//		8 notes, 6 groups, 32 tracks = (8/8 * 32 + 1/2 * 32 + 1) * 6 + (2 * 32) = 358
-//		16 notes, 3 groups, 32 tracks = (16/8 * 32 + 1/2 * 32 + 1) * 3 + (2 * 32) = 307
-//		32 notes, 2 groups, 32 tracks = (32/8 * 32 + 1/2 * 32 + 1) * 2 + (2 * 32) = 354
-//		64 notes, 1 group, 32 tracks = (64/8 * 32 + 1/2 * 32 + 1) * 1 + (2 * 32) = 337
-//
-//		8/9/32 = 361
-//		16/4/32 = 324
-//		32	-- no help
-//		64  -- no help
-//
-// Some other possibilities:
-//
-//		8 notes, 6 groups, 32 tracks = (8/8 * 32 + 1/2 * 24 + 1) * 13 + (2 * 32) = 358
-//		16 notes, 3 groups, 32 tracks = (16/8 * 32 + 1/2 * 24 + 1) * 3 + (2 * 32) = 307
-//		32 notes, 2 groups, 32 tracks = (32/8 * 32 + 1/2 * 24 + 1) * 2 + (2 * 32) = 354
-//		64 notes, 1 group, 32 tracks = (64/8 * 32 + 1/2 * 32 + 1) * 1 + (2 * 32) = 337
-//			/// WARNING: more than 32 tracks and the access macros must be upgraded to 16-bit
-//		    /// WARNING: more than 32 tracks and we have to come up with a way to draw the track range
-//		16 notes, 1 group, 80 tracks = (16/8 * 80 + 1/2 * 80 + 1) * 1 + (2 * 80) = 361
-//
-// Thus a layout comprises AT MOST 365 BYTES.
-//
-// There are also 20 bytes for transitions:
-//		20 global group transitions.  These are <group, repeat> pairs indicating 
-//		which group and then how many times to repeat it.  Each transition is 1 byte.
-//			Group is 4 bits: (0 = OTHER, 1...15)
-//			Repeat is 4 bits: 
-//				If Group is OTHER then:	Random: Groups 1-2 (LOOP, 1 time, 2..., 3..., 4...), Groups 1-3 (LOOP, 1, 2, 3, 4), Groups 1-4 (LOOP, 1, 2, 3, 4), END)
-//				If Group is not OTHER then: LOOP, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, 64
-//				Note that Transition 0 cannot be END.  If this happens (which it should not be able to)
-// 				then this is interpreted as LOOP FOREVER Group 1.
-//
-// There is also 1 byte for sequence repeats:
-//		4 bits for overall repeats (LOOP, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, 64)
-//		4 bits for next sequence after repeats have concluded (0 = END, 1...10 (for 0...9))
-//
-// There is also one global byte:
-//		4 bits: up to 16 layouts.  Currently 3 bits is used (eight layouts)
-//		4 bits: extra
+	The FORMAT (or LAYOUT) specifies T Tracks by G Groups, and each group has (the same) maximum length of N Notes
+	
+	Each NOTE can only be ON or OFF
+	Each GROUP has:
+		- A LENGTH whch is less than the maximum length.  This is defined as a fraction of the maximum length (4 bits).
+		- A NOTE SPEED which may be different from the default speed.  This will cause the group to play at this speed.
+		  I *think* I can get this to work?
+	Each TRACK has:
+		- A MIDI Channel, or off, or default
+		- A note velocity (volume)
+		- A note pitch (drum note)
+		- A mute flag
+	Each TRACK/GROUP COMBO has:
+		- A pattern.  Patterns define whether the notes are muted played over a four-bar repeating sequence.  Most
+		  patterns are deterministic (like PLAY PLAY MUTE PLAY), while others are random.
+	
+	Additionally, there is a list of up to M TRANSITIONS.  During performance mode, playing the sequence will start
+	at transition 0 and gradually increase in transition index.  Transitions define which group is currently being 
+	played.
+	
+	Each TRANSITION has:
+		- A group indicating which group is presently being played, or the special group "OTHER"
+		- The number of times ("repeats") the group is to be played before transitioning to the next group.
+			- If the group was OTHER, then the repeats means something else:
+					- Repeats can be "END", meaning that the transition is actually just a PREMATURE END OF SEQUENCE marker
+					- Or it can be one of 15 "RANDOM" options to indicate that the group was selected randomly
 
-// GLOBALS (TEMPORARY DATA)
-//
-// Temporary data is stored in local.drumSequencer.
-//
-// OPTIONS
-//
-// Permanent options special to the Drum Sequencer are:
-//
-// options.drumSequencerNoEcho          Toggle for Echo
-//
-// Other permanent options affecting the Drum Sequencer include:
-//
-// options.noteSpeedType
-// options.swing
-// options.channelIn
-// options.channelOut
-// options.volume
-// options.tempo
-//
-//
-// DISPLAY
-// 
-// Drum sequences are displayed in the top 6 rows of both LEDs.  A 16-note track takes up one full row.  32-note
-// tracks take up two rows.  A 64-note track takes up 4 rows.
-// The sequencer also displays an EDIT CURSOR (a dot) and a PLAY CURSOR (a vertical set of dots).
-// The play cursor shows where the sequencer is currently playing.  The edit cursor is where new notes played, or rests or 
-// ties entered, will be put into the data.  This is known as STEP-BY-STEP editing mode.  You can move the edit cursor
-// up or down (to new tracks), or back and forth.  If you move the cursor beyond the left edge of the screen, the PLAY CURSOR
-// changes to indicate the current playing track.  Now if you play notes they will be entered in the current track at the
-// play cursor as it is playing.  This is known as PLAY POSITION mode.  
-//
-// In step-by-step mode, the middle button enters rests or ties (with a long press).  In play position mode, the
-// middle button either mutes or clears the track.  The select button stops and starts the sequencer, or (long press)
-// brings up the sequecer's menu.
-//
-// The sequence display scrolls vertically to display more tracks as necessary.  The current track is displayed in the
-// second row of the left LED.
-//
-//
-// INTERFACE
-//
-// Root
-//      Drum Sequencer                  STATE_DRUM_SEQUENCER: choose a slot to load or empty.  If slot is not a drum sequencer slot, format:
-//              Format                          STATE_DRUM_SEQUENCER_FORMAT:    specify the layout, then STATE_DRUM_SEQUENCER_PLAY
-//              [Then Play]                     STATE_DRUM_SEQUENCER_PLAY
-//                      Back Button: STATE_DRUM_SEQUENCER_SURE, then STATE_DRUM_SEQUENCER
-//                      Left Knob:      scroll up/down track 
-//                      Right Knob:     scroll left-right in track, or far left to enter PLAY POSITION mode
-//                      Middle Button [step-by-step mode]:      rest
-//                      Middle Button Long Press [step-by-step mode]: tie
-//                      Middle Button [play position mode]:     mute track
-//                      Middle Button Long Press [play position mode]: clear track
-//                      Select Button:  toggle start/stop (pause) sequence playing
-//                      Select Button Long Press: Menu          STATE_DRUM_SEQUENCER_MENU
-//                              MENU:
-//                                      Stop:                           Stop and RESET the sequence to its initial position
-//                                      Reset Track:            Clear track and reset all of its options
-//                                      Length:                         Set track note length (or default)              STATE_DRUM_SEQUENCER_LENGTH
-//                                      Out MIDI (Track):       Set Track MIDI out (or default, or off)         STATE_DRUM_SEQUENCER_MIDI_CHANNEL_OUT
-//                                      Velocity:                       Set Track note velocity (or none, meaning use each note's individual velocity)  STATE_DRUM_SEQUENCER_VELOCITY
-//                                      Fader:                          Set Track fader         STATE_DRUM_SEQUENCER_FADER
-//                                      Echo:                           Toggle ECHO mode
-//                                      Save:                           Save the sequence.  STATE_DRUM_SEQUENCER_SAVE, then back to STATE_DRUM_SEQUENCER_PLAY
-//                                      Options:                        STATE_OPTIONS (display options menu)
+	Finally, you can stipulate how often the sequence as a *whole* should be iterated during performance mode, 
+	including all of its transitions and their repeats.  And you can stipulate what to do at the end of these iterations:
+	either simply STOP, or start playing a new sequence in a different Gizmo storage slot.  This last feature is 
+	borrowed from the Step Sequencer; we'll see if I can get it working.
+	
+	
+
+DISPLAY
+
+Drum sequences are displayed in the top 6 rows of both LEDs.  A 16-note track takes up one full row.  32-note
+tracks take up two rows.  A 64-note track takes up 4 rows.
+
+The sequencer also displays an EDIT CURSOR (a dot) and a PLAY CURSOR (a vertical set of dots).
+The play cursor shows where the sequencer is currently playing.  The edit cursor is where new notes played, or rests or 
+ties entered, will be put into the data.  This is known as STEP-BY-STEP editing mode.  You can move the edit cursor
+up or down (to new tracks), or back and forth.  If you move the cursor beyond the left edge of the screen, the PLAY CURSOR
+changes to indicate the current playing track.  Now if you play notes they will be entered in the current track at the
+play cursor as it is playing.  This is PLAY POSITION mode.  
+
+In step-by-step mode, the middle button enters rests or ties (with a long press).  In play position mode, the
+middle button either mutes or clears the track.  The select button stops and starts the sequencer, or (long press)
+brings up the sequecer's menu.
+
+The sequence display scrolls vertically to display more tracks as necessary.  The current track is displayed in the
+second row of the left LED.
+
+
+INTERFACE
+
+Root
+     Drum Sequencer                  STATE_DRUM_SEQUENCER: choose a slot to load or empty.  If slot is not a drum sequencer slot, format:
+             Format                          STATE_DRUM_SEQUENCER_FORMAT:    specify the layout, then STATE_DRUM_SEQUENCER_PLAY
+             [Then Play]                     STATE_DRUM_SEQUENCER_PLAY
+                     Select Button Long Press: Menu          STATE_DRUM_SEQUENCER_MENU
+                             MENU:
+                                     Solo:                   Toggle solo (outside of performance mode)
+                                     Reset Track:            Reset track or group - not sure yet
+                                     Length (Group):         Set group length length
+                                     Speed (Group):       	 Set group speed
+                                     Out MIDI (Track):         Set track midi channel
+                                     Velocity (Track):       	 Set track velocity (volume)
+                                     Note (Track):         	Set Track pitch (drum note)
+                                     Transitions:       	Select a transition, then...	 
+                                     	Group:					Select a group for the transition or ----, then ....
+                                     	Repeat:					[If a group was selected, choose how many repeats, or...]
+                                     	Other:					[If ---- was selected, choose the END marker or a random-group option]
+                                     Pattern (Track/Group):	Set Track/Group pattern
+                                     Clock Control:         Toggle cock control
+                                     Echo:       	 		Toggle Echo
+                                     Performance:         	MENU
+                                     	Keyboard:			Route keys to sequencer, or out a MIDI channel
+                                     	Repeat:				How often to repeat the entire sequence
+                                     	Next:				What to do after the sequence has been repeated 
+                                     Save:       	 		Save sequence
+
+
+*/
+
 
 
 

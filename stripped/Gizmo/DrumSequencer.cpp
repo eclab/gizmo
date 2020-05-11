@@ -781,7 +781,7 @@ void stateDrumSequencerMenu()
         PSTR("VELOCITY (TRACK)"),               // check                STATE_DRUM_SEQUENCER_VELOCITY
         PSTR("NOTE (TRACK)"),                   // check                STATE_DRUM_SEQUENCER_PITCH
         PSTR("TRANSITIONS"),                    //                      STATE_DRUM_SEQUENCER_TRANSITIONS
-        PSTR("PATTERN (TRACK)"),                // STATE_DRUM_SEQUENCER_MENU_PATTERN
+        PSTR("PATTERN (TRACK/GROUP)"),                // STATE_DRUM_SEQUENCER_MENU_PATTERN
         //  PSTR("EDIT"),
         options.drumSequencerSendClock ? PSTR("NO CLOCK CONTROL") : PSTR("CLOCK CONTROL"),
         options.drumSequencerNoEcho ? PSTR("ECHO") : PSTR("NO ECHO"), 
@@ -1706,7 +1706,7 @@ void stateDrumSequencerPlay()
                 //// We're in EDIT MODE
                 //// White keys in Edit mode, starting with Middle C, correspond to individual drumbeats.  Pressing them toggles the beat.
                 //// The C# and D# Black keys in Edit mode SET the current note
-                //// Other black keys in Edit mode CLEAR the current note
+                //// Other black keys (F#, G#, A#) in Edit mode CLEAR the current note
                                 
                 uint16_t octave = div12(note);
                 if (octave >= 5)  // middle c and up
@@ -1738,36 +1738,23 @@ void stateDrumSequencerPlay()
             else if (local.drumSequencer.currentEditPosition < 0)
                 {
                 //// We're in PLAY POSITION MODE
-                //// The C# and D# Black keys in Play position mode SET the current note and advance
-                //// The F# and G# and A# Black keys in Play position mode SET the current note and advance
-                //// C will move the cursor to the left, G will move it to the right.
-                //// Other white keys do nothing. 
+                //// White keys or C# and D# SET the current note
+                //// Black keys CLEAR the current note
                                 
                 uint16_t octave = div12(note);
-                uint16_t key = DIV12_REMAINDER(octave, note);
-                if (key == 1 || key == 3)       //  C# or D#
+				uint16_t key = DIV12_REMAINDER(octave, note);
+				const uint8_t whiteKey[12] = { 0, -1, 1, -1, 2, 3, -2, 4, -2, 5, -2, 6 };
+				key = whiteKey[key];
+				if (key >= 0 || key == -1)
                     {
                     // set
                     setNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition, 1);
-                    local.drumSequencer.currentEditPosition = incrementAndWrap(local.drumSequencer.currentEditPosition, len);
                     }
-                else if (key == 6 || key == 8 || key == 10)   // F#, G#, A#
+                else 
                     {
                     // clear
                     setNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition, 0);
-                    local.drumSequencer.currentEditPosition = incrementAndWrap(local.drumSequencer.currentEditPosition, len);
                     }
-                else if (key == 0)     // C
-                    {
-                    if (local.drumSequencer.currentEditPosition == 0)
-                        local.drumSequencer.currentEditPosition = len - 1;
-                    else local.drumSequencer.currentEditPosition--;
-                    }
-                else if (key == 7)              // G
-                    {
-                    local.drumSequencer.currentEditPosition = incrementAndWrap(local.drumSequencer.currentEditPosition, len);
-                    }
-                local.drumSequencer.currentRightPot = drumSequencerGetNewCursorXPos(len);
                 }
             else            // right
                 {
