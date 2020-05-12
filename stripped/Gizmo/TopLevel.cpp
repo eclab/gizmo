@@ -981,298 +981,47 @@ void go()
         break;
         case STATE_DRUM_SEQUENCER_MIDI_CHANNEL_OUT:
             {
-            uint8_t result;
-            if (entry) 
-                {
-                local.drumSequencer.backup = getMIDIChannel(local.drumSequencer.currentTrack);
-                }
-            result = doNumericalDisplay(0, 17, local.drumSequencer.backup, true, GLYPH_DEFAULT);
-            switch (result)
-                {
-                case NO_MENU_SELECTED:
-                    {
-                    }
-                break;
-                case MENU_SELECTED:
-                    {
-                    setMIDIChannel(local.drumSequencer.currentTrack, currentDisplay);
-                    goUpState(STATE_DRUM_SEQUENCER_MENU);
-                    }
-                break;
-                case MENU_CANCELLED:
-                    {
-                    setNoteVelocity(local.drumSequencer.currentTrack, local.drumSequencer.backup);
-                    goUpState(STATE_DRUM_SEQUENCER_MENU);
-                    }
-                break;
-                }
-            playDrumSequencer();
+            stateDrumSequencerMIDIChannelOut();
             }
         break;
         case STATE_DRUM_SEQUENCER_VELOCITY:
             {
-            uint8_t result;
-            if (entry) 
-                {
-                local.drumSequencer.backup = getNoteVelocity(local.drumSequencer.currentTrack);
-                defaultState = local.drumSequencer.backup;
-                }
-            const char* menuItems[8] = { PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8") };
-            result = doMenuDisplay(menuItems, 8, STATE_NONE, STATE_NONE, 1);
-            switch (result)
-                {
-                case NO_MENU_SELECTED:
-                    {
-                    setNoteVelocity(local.drumSequencer.currentTrack, currentDisplay);  // so we can hear it
-                    }
-                break;
-                case MENU_SELECTED:
-                    {
-                    goUpState(STATE_DRUM_SEQUENCER_MENU);
-                    }
-                break;
-                case MENU_CANCELLED:
-                    {
-                    setNoteVelocity(local.drumSequencer.currentTrack, local.drumSequencer.backup);
-                    goUpState(STATE_DRUM_SEQUENCER_MENU);
-                    }
-                break;
-                }
-            playDrumSequencer();
+            stateDrumSequencerVelocity();
             }
         break;
         case STATE_DRUM_SEQUENCER_PITCH:
             {
-            uint8_t note = stateEnterNote(STATE_DRUM_SEQUENCER_MENU);
-            if (note != NO_NOTE)
-                {
-                setNotePitch(local.drumSequencer.currentTrack, note);
-                goUpState(STATE_DRUM_SEQUENCER_MENU);
-                }
-            playDrumSequencer();                //// FIXME:   Shoudl we do this?
+            stateDrumSequencerPitch();
             }
         break;
         case STATE_DRUM_SEQUENCER_GROUP_LENGTH:
             {
-            uint8_t result;
-            if (entry) 
-                {
-                local.drumSequencer.backup = getGroupLength(local.drumSequencer.currentGroup);
-                }
-                
-            if (local.drumSequencer.numNotes == 8)
-                {
-                result = doNumericalDisplay(0, 8, local.drumSequencer.backup, true, GLYPH_NONE);
-                }
-            else
-                {
-                result = doNumericalDisplay(0, 15, local.drumSequencer.backup, true, GLYPH_NONE);
-                }
-                
-            switch (result)
-                {
-                case NO_MENU_SELECTED:
-                    {
-                    }
-                break;
-                case MENU_SELECTED:
-                    {
-                    setGroupLength(local.drumSequencer.currentGroup, currentDisplay);
-                    goUpState(STATE_DRUM_SEQUENCER_MENU);
-                    }
-                break;
-                case MENU_CANCELLED:
-                    {
-                    setGroupLength(local.drumSequencer.currentGroup, local.drumSequencer.backup);
-                    goUpState(STATE_DRUM_SEQUENCER_MENU);
-                    }
-                break;
-                }            
-            playDrumSequencer();
+            stateDrumSequencerGroupLength();
             }
         break;
         case STATE_DRUM_SEQUENCER_GROUP_SPEED:
             {
-            if (entry)
-                {
-                local.drumSequencer.backup = getNoteSpeed(local.drumSequencer.currentGroup);
-                potDivisor = 1024 / (NOTE_SPEED_DOUBLE_WHOLE - NOTE_SPEED_EIGHTH_TRIPLET + 1);
-                }
-            entry = false;
-            if (updateDisplay)
-                {
-                clearScreen();
-                if (local.drumSequencer.backup == 0)
-                    {
-                    write3x5Glyphs(GLYPH_DEFAULT);
-                    }
-                else
-                    {
-                    writeNoteSpeed(led, local.drumSequencer.backup);
-                    }
-                }
-            uint8_t i = isUpdated(SELECT_BUTTON, PRESSED);
-            if (isUpdated(BACK_BUTTON, RELEASED) || i )
-                {
-                if (i)
-                    {
-                    setNoteSpeed(local.drumSequencer.currentGroup, local.drumSequencer.backup);
-                    }
-                goUpState(STATE_DRUM_SEQUENCER_MENU);
-                }
-            else if (potUpdated[LEFT_POT])
-                {
-                // can't avoid a divide :-(
-                local.drumSequencer.backup = (uint8_t) (pot[LEFT_POT] / potDivisor); 
-                }
-            playDrumSequencer();
+            stateDrumSequencerGroupSpeed();
             }
         break;
         case STATE_DRUM_SEQUENCER_TRANSITIONS:
             {
-            uint8_t result;
-            if (entry) 
-                {
-                }
-            result = doNumericalDisplay(1, 20, 1, false, GLYPH_NONE);
-            switch (result)
-                {
-                case NO_MENU_SELECTED:
-                    {
-                    }
-                break;
-                case MENU_SELECTED:
-                    {
-                    local.drumSequencer.backup = currentDisplay;
-                    goDownState(STATE_DRUM_SEQUENCER_TRANSITIONS_GROUP);
-                    }
-                break;
-                case MENU_CANCELLED:
-                    {
-                    goUpState(STATE_DRUM_SEQUENCER_MENU);
-                    }
-                break;
-                }            
-            playDrumSequencer();
+            stateDrumSequencerTransitions();
             }
         break;
         case STATE_DRUM_SEQUENCER_TRANSITIONS_GROUP:
             {
-            uint8_t result;
-            if (entry) 
-                {
-                }
-            result = doNumericalDisplay(0, 15, local.drumSequencer.transitionGroup[local.drumSequencer.backup], true, GLYPH_NONE);
-            switch (result)
-                {
-                case NO_MENU_SELECTED:
-                    {
-                    }
-                break;
-                case MENU_SELECTED:
-                    {
-                    local.drumSequencer.transitionGroupBackup = currentDisplay;
-                    if (currentDisplay == 0)
-                        {
-                        goDownState(STATE_DRUM_SEQUENCER_TRANSITIONS_SPECIAL);
-                        }
-                    else
-                        {
-                        goDownState(STATE_DRUM_SEQUENCER_TRANSITIONS_REPEAT);
-                        }
-                    }
-                break;
-                case MENU_CANCELLED:
-                    {
-                    goUpState(STATE_DRUM_SEQUENCER_MENU);
-                    }
-                break;
-                }            
-            playDrumSequencer();
+            stateDrumSequencerTransitionsGroup();
             }
         break;
         case STATE_DRUM_SEQUENCER_TRANSITIONS_REPEAT:
             {
-            uint8_t result;
-            if (entry) 
-                {
-                defaultState = local.drumSequencer.transitionRepeat[local.drumSequencer.backup];
-                }
-            const char* menuItems[16] = { PSTR("LOOP"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("10"), PSTR("12"), PSTR("16"), PSTR("24"), PSTR("32"), PSTR("64") };
-            result = doMenuDisplay(menuItems, 16, STATE_NONE, STATE_NONE, 1);
-            switch (result)
-                {
-                case NO_MENU_SELECTED:
-                    {
-                    }
-                break;
-                case MENU_SELECTED:
-                    {
-                    local.drumSequencer.transitionGroup[local.drumSequencer.backup] = local.drumSequencer.transitionGroupBackup;
-                    local.drumSequencer.transitionRepeat[local.drumSequencer.backup] = currentDisplay;                    
-                    goUpState(STATE_DRUM_SEQUENCER_MENU);
-                    }
-                break;
-                case MENU_CANCELLED:
-                    {
-                    goUpState(STATE_DRUM_SEQUENCER_MENU);
-                    }
-                break;
-                }
-            playDrumSequencer();
+            stateDrumSequencerTransitionsRepeat();
             }
         break;
         case STATE_DRUM_SEQUENCER_TRANSITIONS_SPECIAL:
             {
-            uint8_t result;
-            if (entry) 
-                {
-                defaultState = local.drumSequencer.transitionRepeat[local.drumSequencer.backup];
-                if (defaultState < 3)
-                    defaultState = 0;
-                }
-                
-            // R2:      Random(choose beetween groups 1 and 2)
-            // R3:      Random(choose beetween groups 1 and 3)
-            // R4:      Random(choose beetween groups 1 and 4)
-            // -1:      one time
-            // -2:      two times
-            // -3:      three times
-            // -4:      four times
-            // -L:      loop forever
-            // END:     End marker: this is not a group, it marks the termination of the sequence.  Not permitted in transition slot 0.
-            
-            if (local.drumSequencer.backup == 0)  // slot 0 can't have "END"
-                {
-                const char* menuItems[15] = { PSTR("R2-1"), PSTR("R2-2"), PSTR("R2-3"), PSTR("R2-4"), PSTR("R2-L"), PSTR("R3-1"), PSTR("R3-2"), PSTR("R3-3"), PSTR("R3-4"), PSTR("R3-L"), PSTR("R4-1"), PSTR("R4-2"), PSTR("R4-3"), PSTR("R4-4"), PSTR("R4-L") };
-                result = doMenuDisplay(menuItems, 15, STATE_NONE, STATE_NONE, 1);
-                }
-            else
-                {
-                const char* menuItems[16] = { PSTR("R2-1"), PSTR("R2-2"), PSTR("R2-3"), PSTR("R2-4"), PSTR("R2-L"), PSTR("R3-1"), PSTR("R3-2"), PSTR("R3-3"), PSTR("R3-4"), PSTR("R3-L"), PSTR("R4-1"), PSTR("R4-2"), PSTR("R4-3"), PSTR("R4-4"), PSTR("R4-L"), PSTR("END") };
-                result = doMenuDisplay(menuItems, 16, STATE_NONE, STATE_NONE, 1);
-                }
-                        
-            switch (result)
-                {
-                case NO_MENU_SELECTED:
-                    {
-                    }
-                break;
-                case MENU_SELECTED:
-                    {
-                    local.drumSequencer.transitionGroup[local.drumSequencer.backup] = local.drumSequencer.transitionGroupBackup;
-                    local.drumSequencer.transitionRepeat[local.drumSequencer.backup] = currentDisplay;                    
-                    goUpState(STATE_DRUM_SEQUENCER_MENU);
-                    }
-                break;
-                case MENU_CANCELLED:
-                    {
-                    goUpState(STATE_DRUM_SEQUENCER_MENU);
-                    }
-                break;
-                }
-            playDrumSequencer();
+            stateDrumSequencerTransitionsSpecial();
             }
         break;
         case STATE_DRUM_SEQUENCER_SURE:

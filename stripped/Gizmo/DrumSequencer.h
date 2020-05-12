@@ -477,6 +477,19 @@ void loadDrumSequencer(uint8_t slot);
 void resetDrumSequencerTransitionCountdown();
 void stateDrumSequencerMenuPattern();
 
+
+// Additional states
+void stateDrumSequencerMIDIChannelOut();
+void stateDrumSequencerVelocity();
+void stateDrumSequencerPitch();
+void stateDrumSequencerGroupLength();
+void stateDrumSequencerGroupSpeed();
+void stateDrumSequencerTransitions();
+void stateDrumSequencerTransitionsGroup();
+void stateDrumSequencerTransitionsRepeat();
+void stateDrumSequencerTransitionsSpecial();
+
+
 /*
 // Edit Options
 void stateDrumSequencerMenuEditMark();
