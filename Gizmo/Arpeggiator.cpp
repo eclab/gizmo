@@ -209,7 +209,6 @@ void playArpeggio()
                     break;
                     case ARPEGGIATOR_NUMBER_UP_DOWN:
                         {
-                        
                         if (!local.arp.goingDown)
                             {
                             local.arp.currentPosition++;
@@ -219,15 +218,17 @@ void playArpeggio()
                             local.arp.currentPosition--;
                             }
                         
+                        //.... then .....
+                        
                         if (local.arp.currentPosition < 0)
                             {
                             local.arp.goingDown = 0;
                             local.arp.currentPosition = ((local.arp.numChordNotes == 1) ? 0 : 1);
                             }
-                        else if (local.arp.currentPosition >= max)
+                        else if (local.arp.currentPosition > max)
                             {
                             local.arp.goingDown = 1;
-                            local.arp.currentPosition = max;
+                            local.arp.currentPosition = ((local.arp.numChordNotes == 1) ? max : max - 1);
                             }
                         }
                     break;
@@ -337,9 +338,9 @@ void arpeggiatorRemoveNote(uint8_t note)
             }
         }
     if (local.arp.numChordNotes == 0)
-    	{
-        local.arp.currentPosition = ARP_POSITION_START;		// we just removed notes so we need to reset or playArpeggio() may miss it
-    	}
+        {
+        local.arp.currentPosition = ARP_POSITION_START;         // we just removed notes so we need to reset or playArpeggio() may miss it
+        }
     }
         
 
@@ -355,9 +356,9 @@ void arpeggiatorAddNote(uint8_t note, uint8_t velocity)
             marked++;
         }
     if (marked == local.arp.numChordNotes)  // they're all marked, time to reset
-    	{
+        {
         local.arp.numChordNotes = 0;
-        local.arp.currentPosition = ARP_POSITION_START;		// we just removed notes so we need to reset or playArpeggio() will miss it
+        local.arp.currentPosition = ARP_POSITION_START;         // we just removed notes so we need to reset or playArpeggio() will miss it
         }
 
     if (local.arp.numChordNotes == MAX_ARP_CHORD_NOTES)  // at this stage, of we're still full, someone's holding down a lot of notes!

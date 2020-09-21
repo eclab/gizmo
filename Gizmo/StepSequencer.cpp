@@ -235,24 +235,24 @@ static uint8_t potChangedBy(uint16_t* potVals, uint8_t potNum, uint16_t amount)
 void stateStepSequencerMenuPattern()    
     {
     const char* menuItems[16] =     { PSTR("OOOO"), PSTR("OOO-"), PSTR("---O"), PSTR("OO-O"), PSTR("--O-"), PSTR("O---"), PSTR("-O--"), PSTR("OO--"), PSTR("--OO"), PSTR("O-O-"), PSTR("-O-O"), 
-    								  PSTR("R1/8"),                      PSTR("R1/4"),                      PSTR("R1/2"),                      PSTR("R3/4"),                      PSTR("EXCL") };
+                                      PSTR("R1/8"),                      PSTR("R1/4"),                      PSTR("R1/2"),                      PSTR("R3/4"),                      PSTR("EXCL") };
     const uint8_t menuIndices[16] = { P1111,        P1110,        P0001,        P1101,        P0010,        P1000,        P0100,        P1100,        P0011,        P1010,        P0101,                    
-    								  STEP_SEQUENCER_PATTERN_RANDOM_1_8, STEP_SEQUENCER_PATTERN_RANDOM_1_4, STEP_SEQUENCER_PATTERN_RANDOM_1_2, STEP_SEQUENCER_PATTERN_RANDOM_3_4, STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE };
+                                      STEP_SEQUENCER_PATTERN_RANDOM_1_8, STEP_SEQUENCER_PATTERN_RANDOM_1_4, STEP_SEQUENCER_PATTERN_RANDOM_1_2, STEP_SEQUENCER_PATTERN_RANDOM_3_4, STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE };
 #ifdef INCLUDE_EXTENDED_MENU_DEFAULTS
     if (entry)
         {
         // find the pattern
         for(uint8_t i = 0 ; i < 16; i++)
-        	{
-        	if (menuIndices[i] == local.stepSequencer.pattern[local.stepSequencer.currentTrack])
-        		{
-				defaultMenuValue = i;
-				break;
-        		}
-        	}
+            {
+            if (menuIndices[i] == local.stepSequencer.pattern[local.stepSequencer.currentTrack])
+                {
+                defaultMenuValue = i;
+                break;
+                }
+            }
 
 #ifdef INCLUDE_IMMEDIATE_RETURN
-                setAutoReturnTime();
+        setAutoReturnTime();
 #endif INCLUDE_IMMEDIATE_RETURN
         }
 #endif INCLUDE_EXTENDED_MENU_DEFAULTS
@@ -798,7 +798,7 @@ void stateStepSequencerFormat()
             local.stepSequencer.transpose = 0;
             local.stepSequencer.performanceMode = 0;
             local.stepSequencer.goNextSequence = 0;
- //           local.stepSequencer.clearTrack = CLEAR_TRACK;
+            //           local.stepSequencer.clearTrack = CLEAR_TRACK;
 #endif INCLUDE_EXTENDED_STEP_SEQUENCER
             local.stepSequencer.solo = 0;
             local.stepSequencer.currentTrack = 0;
@@ -835,15 +835,15 @@ void removeSuccessiveTies(uint8_t p, uint8_t trackLen)
         }
       
     if (removed)
-    	{                  
-		// we gotta do this because we just deleted some notes :-(
-		uint8_t out = (local.stepSequencer.outMIDI[local.stepSequencer.currentTrack] == MIDI_OUT_DEFAULT ? 
-			options.channelOut : local.stepSequencer.outMIDI[local.stepSequencer.currentTrack]);
-		if (out != NO_MIDI_OUT)
-			{
-			sendAllSoundsOff(out);
-			}
-		}
+        {                  
+        // we gotta do this because we just deleted some notes :-(
+        uint8_t out = (local.stepSequencer.outMIDI[local.stepSequencer.currentTrack] == MIDI_OUT_DEFAULT ? 
+            options.channelOut : local.stepSequencer.outMIDI[local.stepSequencer.currentTrack]);
+        if (out != NO_MIDI_OUT)
+            {
+            sendAllSoundsOff(out);
+            }
+        }
     }
                                                 
 
@@ -1134,6 +1134,7 @@ void stateStepSequencerPlay()
             if (local.stepSequencer.performanceMode == false)
                 {
                 local.stepSequencer.performanceMode = true;
+                local.stepSequencer.goNextSequence = false;
                 resetStepSequencerCountdown();    // otherwise we'll miss jumps to other sequences
 #ifdef INCLUDE_PROVIDE_RAW_CC
                 setParseRawCC(true);
@@ -1220,10 +1221,10 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
 
     // rerouting to new channel
     if (newItem && 
-    	itemType != MIDI_CUSTOM_CONTROLLER && 
-    	local.stepSequencer.performanceMode && 
-    	options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE && 
-    	options.stepSequencerPlayAlongChannel != CHANNEL_ADD_TO_STEP_SEQUENCER)
+        itemType != MIDI_CUSTOM_CONTROLLER && 
+        local.stepSequencer.performanceMode && 
+        options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE && 
+        options.stepSequencerPlayAlongChannel != CHANNEL_ADD_TO_STEP_SEQUENCER)
         {
         TOGGLE_IN_LED();
         // figure out what the channel should be
@@ -1252,7 +1253,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 }
             else if (itemType == MIDI_CC_7_BIT)  // we're always raw
                 {
-				sendControllerCommand(CONTROL_TYPE_CC, itemNumber, itemValue << 7, channelOut);
+                sendControllerCommand(CONTROL_TYPE_CC, itemNumber, itemValue << 7, channelOut);
                 }
             else if (itemType == MIDI_PROGRAM_CHANGE)
                 {
@@ -1270,9 +1271,9 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
         }
     // transposition
     else if (newItem && 
-    		itemType == MIDI_NOTE_ON &&
-    		local.stepSequencer.performanceMode && 
-    		options.stepSequencerPlayAlongChannel == CHANNEL_TRANSPOSE)
+        itemType == MIDI_NOTE_ON &&
+        local.stepSequencer.performanceMode && 
+        options.stepSequencerPlayAlongChannel == CHANNEL_TRANSPOSE)
         {
         TOGGLE_IN_LED();
 
@@ -1297,36 +1298,36 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
         
         
         if ((local.stepSequencer.muted[local.stepSequencer.currentTrack] && !options.stepSequencerNoEcho)
-	#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-       	   || (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel == CHANNEL_ADD_TO_STEP_SEQUENCER )
-	#endif INCLUDE_EXTENDED_STEP_SEQUENCER
-		)
-		{
-		// play the note
-		sendTrackNote(note, velocity, local.stepSequencer.currentTrack);
-		}
-	else
-		{
-        // here we're trying to provide some slop so the user can press the note early.
-        // we basically are rounding up or down to the nearest note
-        uint8_t pos = (local.stepSequencer.currentEditPosition < 0 
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-            || (local.stepSequencer.performanceMode)
+            || (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel == CHANNEL_ADD_TO_STEP_SEQUENCER )
 #endif INCLUDE_EXTENDED_STEP_SEQUENCER
-            ) ? 
-            local.stepSequencer.currentPlayPosition + (notePulseCountdown <= (notePulseRate >> 1) ? 1 : 0) :
-            local.stepSequencer.currentEditPosition;
-        if (pos >= trackLen) pos = 0;
+            )
+            {
+            // play the note
+            sendTrackNote(note, velocity, local.stepSequencer.currentTrack);
+            }
+        else
+            {
+            // here we're trying to provide some slop so the user can press the note early.
+            // we basically are rounding up or down to the nearest note
+            uint8_t pos = (local.stepSequencer.currentEditPosition < 0 
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+                || (local.stepSequencer.performanceMode)
+#endif INCLUDE_EXTENDED_STEP_SEQUENCER
+                ) ? 
+                local.stepSequencer.currentPlayPosition + (notePulseCountdown <= (notePulseRate >> 1) ? 1 : 0) :
+                local.stepSequencer.currentEditPosition;
+            if (pos >= trackLen) pos = 0;
         
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
 /*
-        if ((local.stepSequencer.clearTrack == CLEAR_TRACK) && local.stepSequencer.performanceMode)
-            {
-            // clear track and notes
-            memset(data.slot.data.stepSequencer.buffer + ((uint16_t)trackLen) * local.stepSequencer.currentTrack * 2, 0, trackLen * 2);
-            clearNotesOnTracks(true);
-            local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
-            }
+  if ((local.stepSequencer.clearTrack == CLEAR_TRACK) && local.stepSequencer.performanceMode)
+  {
+  // clear track and notes
+  memset(data.slot.data.stepSequencer.buffer + ((uint16_t)trackLen) * local.stepSequencer.currentTrack * 2, 0, trackLen * 2);
+  clearNotesOnTracks(true);
+  local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
+  }
 */
 
 /*      if (pos == 0)
@@ -1341,34 +1342,34 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
         
 #endif INCLUDE_EXTENDED_STEP_SEQUENCER
 
-        // add a note
-        loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + pos, note, velocity);
-        removeSuccessiveTies(pos, trackLen);
+            // add a note
+            loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + pos, note, velocity);
+            removeSuccessiveTies(pos, trackLen);
 
-        if (local.stepSequencer.currentEditPosition >= 0
+            if (local.stepSequencer.currentEditPosition >= 0
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-            && !(local.stepSequencer.performanceMode)
+                && !(local.stepSequencer.performanceMode)
 #endif INCLUDE_EXTENDED_STEP_SEQUENCER
-            )
-            {
-            local.stepSequencer.currentEditPosition = incrementAndWrap(local.stepSequencer.currentEditPosition, trackLen);
-            }
-        else 
-            {
-#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-            local.stepSequencer.dontPlay[local.stepSequencer.currentTrack] = 1;
-            if (!options.stepSequencerNoEcho)          // only play if we're echoing
+                )
                 {
-                sendTrackNote(note, velocity, local.stepSequencer.currentTrack);
+                local.stepSequencer.currentEditPosition = incrementAndWrap(local.stepSequencer.currentEditPosition, trackLen);
                 }
+            else 
+                {
+#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+                local.stepSequencer.dontPlay[local.stepSequencer.currentTrack] = 1;
+                if (!options.stepSequencerNoEcho)          // only play if we're echoing
+                    {
+                    sendTrackNote(note, velocity, local.stepSequencer.currentTrack);
+                    }
 #endif INCLUDE_EXTENDED_STEP_SEQUENCER
-            }
+                }
                         
-        local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
+            local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
+            }
+
+
         }
-
-
-    }
     else if (newItem && (itemType == MIDI_NOTE_OFF)
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
         && (!(local.stepSequencer.performanceMode) || options.stepSequencerPlayAlongChannel == CHANNEL_ADD_TO_STEP_SEQUENCER )
@@ -1386,10 +1387,10 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
             local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = (itemValue << 7) + 1;
             }
             
-         // pass through -- hope this is right
-         // Note that we're always converting to channel aftertouch
+        // pass through -- hope this is right
+        // Note that we're always converting to channel aftertouch
          
-    	sendControllerCommand(CONTROL_TYPE_AFTERTOUCH, 0, itemValue, options.channelOut);
+        sendControllerCommand(CONTROL_TYPE_AFTERTOUCH, 0, itemValue, options.channelOut);
         }
     else if (newItem && (itemType == MIDI_PROGRAM_CHANGE))
         {
@@ -1398,8 +1399,8 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
             local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = (itemNumber << 7) + 1;
             }
 
-         // pass through -- hope this is right
-    	sendControllerCommand(CONTROL_TYPE_PC, 0, itemValue, options.channelOut);
+        // pass through -- hope this is right
+        sendControllerCommand(CONTROL_TYPE_PC, 0, itemValue, options.channelOut);
         }
     else if (newItem && (itemType == MIDI_PITCH_BEND))
         {
@@ -1411,8 +1412,8 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
             local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = v + 1;
             }
             
-         // pass through -- hope this is right
-    	sendControllerCommand(CONTROL_TYPE_PITCH_BEND, 0, itemValue, options.channelOut);
+        // pass through -- hope this is right
+        sendControllerCommand(CONTROL_TYPE_PITCH_BEND, 0, itemValue, options.channelOut);
         }
     else if (newItem && (itemType == MIDI_CC_7_BIT))
         {
@@ -1423,7 +1424,7 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
             local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = (itemValue << 7) + 1;
             }
         
-         // pass through -- hope this is right
+        // pass through -- hope this is right
         sendControllerCommand(CONTROL_TYPE_CC, itemNumber, itemValue << 7, options.channelOut);
         }
     else if (newItem && (itemType == MIDI_CC_14_BIT))
@@ -1436,9 +1437,9 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 v = MAX_CONTROL_VALUE;
             local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = v + 1;
  
-         // pass through -- hope this is right
-    	sendControllerCommand(CONTROL_TYPE_CC, itemNumber, itemValue, options.channelOut);
-           }
+            // pass through -- hope this is right
+            sendControllerCommand(CONTROL_TYPE_CC, itemNumber, itemValue, options.channelOut);
+            }
         }
     else if (newItem && (itemType == MIDI_NRPN_14_BIT))
         {
@@ -1450,8 +1451,8 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 v = MAX_CONTROL_VALUE;
             local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = v + 1;
             }
-         // pass through -- hope this is right
-    	sendControllerCommand(CONTROL_TYPE_NRPN, itemNumber, itemValue, options.channelOut);
+        // pass through -- hope this is right
+        sendControllerCommand(CONTROL_TYPE_NRPN, itemNumber, itemValue, options.channelOut);
         }
     else if (newItem && (itemType == MIDI_RPN_14_BIT))
         {
@@ -1463,8 +1464,8 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 v = MAX_CONTROL_VALUE;
             local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = v + 1;
             }
-         // pass through -- hope this is right
-    	sendControllerCommand(CONTROL_TYPE_RPN, itemNumber, itemValue, options.channelOut);
+        // pass through -- hope this is right
+        sendControllerCommand(CONTROL_TYPE_RPN, itemNumber, itemValue, options.channelOut);
         }
 #endif INCLUDE_EXTENDED_STEP_SEQUENCER
 

@@ -722,52 +722,52 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
                  */
                  }
         }
-else
+    else
 #endif
 
-    // all values that come in are 14 bit with the MSB in the top 7 bits
-    // and either the LSB *or* ZERO in the bottom 7 bits, EXCEPT for VALUE_7_BIT_ONLY,
-    // which is just the raw number
-    if (updateMIDI(channel, MIDI_CC_14_BIT, number, value))
-        {
-        newItem = NEW_ITEM;
-        switch (type)
+        // all values that come in are 14 bit with the MSB in the top 7 bits
+        // and either the LSB *or* ZERO in the bottom 7 bits, EXCEPT for VALUE_7_BIT_ONLY,
+        // which is just the raw number
+        if (updateMIDI(channel, MIDI_CC_14_BIT, number, value))
             {
-            case VALUE:
+            newItem = NEW_ITEM;
+            switch (type)
                 {
-                itemType = MIDI_CC_14_BIT;
+                case VALUE:
+                    {
+                    itemType = MIDI_CC_14_BIT;
+                    }
+                break;
+                case VALUE_MSB_ONLY:
+                    {
+                    itemType = MIDI_CC_14_BIT;
+                    newItem = WAIT_FOR_A_SEC;
+                    }
+                break;
+                case INCREMENT:
+                    {
+                    // never happens
+                    }
+                // FALL THRU
+                case DECREMENT:
+                    {
+                    // never happens
+                    }
+                // FALL THRU
+                case VALUE_7_BIT_ONLY:
+                    {
+                    itemType = MIDI_CC_7_BIT;
+                    }
+                break;
                 }
-            break;
-            case VALUE_MSB_ONLY:
-                {
-                itemType = MIDI_CC_14_BIT;
-                newItem = WAIT_FOR_A_SEC;
-                }
-            break;
-            case INCREMENT:
-                {
-                // never happens
-                }
-            // FALL THRU
-            case DECREMENT:
-                {
-                // never happens
-                }
-            // FALL THRU
-            case VALUE_7_BIT_ONLY:
-                {
-                itemType = MIDI_CC_7_BIT;
-                }
-            break;
             }
-        }
     } 
         
         
         
 void handleNRPN(byte channel, uint16_t parameter, uint16_t value, uint8_t valueType)
     {
-	if (channel == options.channelControl)  // options.channelControl can be zero remember
+    if (channel == options.channelControl)  // options.channelControl can be zero remember
         {
         lockoutPots = 1;
                         
@@ -1255,72 +1255,72 @@ void handleGeneralControlChange(byte channel, byte number, byte value)
             else
 #endif
 /** Handled internally by StepSequencer
-#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-			if (application == STATE_STEP_SEQUENCER)
-				{
-				// Are we playing along?  Route to the play along channel
-				if (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE)
-					{
-					uint8_t channelOut = options.stepSequencerPlayAlongChannel;
-					if (channelOut == 0)
-						channelOut = options.channelOut;
-					MIDI.sendControlChange(number, value, channelOut);  // generally pass through control changes
-					TOGGLE_OUT_LED();
-					}
-				// If we're not playing along, route to Midi Out
-				else
-					{
-					MIDI.sendControlChange(number, value, options.channelOut);
-					TOGGLE_OUT_LED();
-					}
-				}
-			else
-#endif
+    #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+    if (application == STATE_STEP_SEQUENCER)
+    {
+    // Are we playing along?  Route to the play along channel
+    if (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE)
+    {
+    uint8_t channelOut = options.stepSequencerPlayAlongChannel;
+    if (channelOut == 0)
+    channelOut = options.channelOut;
+    MIDI.sendControlChange(number, value, channelOut);  // generally pass through control changes
+    TOGGLE_OUT_LED();
+    }
+    // If we're not playing along, route to Midi Out
+    else
+    {
+    MIDI.sendControlChange(number, value, options.channelOut);
+    TOGGLE_OUT_LED();
+    }
+    }
+    else
+    #endif
 */
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
-			if (application == STATE_ARPEGGIATOR)
-				{
-				// Are we playing along?  Route to the play along channel
-				if (local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
-					{
-					uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
-					if (channelOut == 0)
-						channelOut = options.channelOut;
-					MIDI.sendControlChange(number, value, channelOut);  // generally pass through control changes
-					TOGGLE_OUT_LED();
-					}
-				// If we're not playing along, route to Midi Out
-				else
-					{
-					MIDI.sendControlChange(number, value, options.channelOut);  // generally pass through control changes
-					TOGGLE_OUT_LED();
-					}
-				}
-			else
+                if (application == STATE_ARPEGGIATOR)
+                    {
+                    // Are we playing along?  Route to the play along channel
+                    if (local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                        {
+                        uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+                        if (channelOut == 0)
+                            channelOut = options.channelOut;
+                        MIDI.sendControlChange(number, value, channelOut);  // generally pass through control changes
+                        TOGGLE_OUT_LED();
+                        }
+                    // If we're not playing along, route to Midi Out
+                    else
+                        {
+                        MIDI.sendControlChange(number, value, options.channelOut);  // generally pass through control changes
+                        TOGGLE_OUT_LED();
+                        }
+                    }
+                else
 #endif
-			// block it off entirely.  Nobody wants it
+                    // block it off entirely.  Nobody wants it
                     { }
             }
         else 
 #ifdef INCLUDE_THRU
-		// Thru should route through everything that's NOT coming in the default channel and is NOT being blocked
-		if (state == STATE_THRU_PLAY)
-			{
-			if (!options.thruBlockOtherChannels)
-				{
-				// Note this does NOT include the merge channel
-				MIDI.sendControlChange(number, value, channel);  // generally pass through control changes
-				TOGGLE_OUT_LED();
-				}
-			}
-		else
+            // Thru should route through everything that's NOT coming in the default channel and is NOT being blocked
+            if (state == STATE_THRU_PLAY)
+                {
+                if (!options.thruBlockOtherChannels)
+                    {
+                    // Note this does NOT include the merge channel
+                    MIDI.sendControlChange(number, value, channel);  // generally pass through control changes
+                    TOGGLE_OUT_LED();
+                    }
+                }
+            else
 #endif
-	// In general we pass through everything else
-			{
-			MIDI.sendControlChange(number, value, channel);
-			TOGGLE_OUT_LED();
-			}
-		}
+                // In general we pass through everything else
+                {
+                MIDI.sendControlChange(number, value, channel);
+                TOGGLE_OUT_LED();
+                }
+        }
     else
         {
         TOGGLE_OUT_LED();
@@ -1345,48 +1345,48 @@ void handleProgramChange(byte channel, byte number)
     if (!bypass) 
         {
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
-			if (application == STATE_ARPEGGIATOR)
-				{
-				// Are we playing along?  Route to the play along channel
-				if (local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
-					{
-					uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
-					if (channelOut == 0)
-						channelOut = options.channelOut;
-                    MIDI.sendProgramChange(number, channelOut);
-					TOGGLE_OUT_LED();
-					}
-				// If we're not playing along, route to Midi Out
-				else
-					{
-                    MIDI.sendProgramChange(number, options.channelOut);
-					TOGGLE_OUT_LED();
-					}
-				}
-			else
+        if (application == STATE_ARPEGGIATOR)
+            {
+            // Are we playing along?  Route to the play along channel
+            if (local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                {
+                uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+                if (channelOut == 0)
+                    channelOut = options.channelOut;
+                MIDI.sendProgramChange(number, channelOut);
+                TOGGLE_OUT_LED();
+                }
+            // If we're not playing along, route to Midi Out
+            else
+                {
+                MIDI.sendProgramChange(number, options.channelOut);
+                TOGGLE_OUT_LED();
+                }
+            }
+        else
 #endif
 /** Handled internally by StepSequencer
-#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-			if (application == STATE_STEP_SEQUENCER)
-				{
-				// Are we playing along?  Route to the play along channel
-				if (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE)
-					{
-					uint8_t channelOut = options.stepSequencerPlayAlongChannel;
-					if (channelOut == 0)
-						channelOut = options.channelOut;
-                    MIDI.sendProgramChange(number, channelOut);
-					TOGGLE_OUT_LED();
-					}
-				// If we're not playing along, route to Midi Out
-				else
-					{
-                    MIDI.sendProgramChange(number, options.channelOut);
-					TOGGLE_OUT_LED();
-					}
-				}
-			else
-#endif
+    #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+    if (application == STATE_STEP_SEQUENCER)
+    {
+    // Are we playing along?  Route to the play along channel
+    if (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE)
+    {
+    uint8_t channelOut = options.stepSequencerPlayAlongChannel;
+    if (channelOut == 0)
+    channelOut = options.channelOut;
+    MIDI.sendProgramChange(number, channelOut);
+    TOGGLE_OUT_LED();
+    }
+    // If we're not playing along, route to Midi Out
+    else
+    {
+    MIDI.sendProgramChange(number, options.channelOut);
+    TOGGLE_OUT_LED();
+    }
+    }
+    else
+    #endif
 */
 #ifdef INCLUDE_SPLIT
             // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
@@ -1507,45 +1507,45 @@ void handlePitchBend(byte channel, int bend)
         {
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
         if (application == STATE_ARPEGGIATOR)
-        	{
-        	// are we playing along?  Route to the play along channel
-        	if (local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
-				{
-				uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
-				if (channelOut == 0)
-					channelOut = options.channelOut;
-				MIDI.sendPitchBend(bend, channelOut);
-                    TOGGLE_OUT_LED();
-				}
-			else if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
-				{
-				MIDI.sendPitchBend(bend, options.channelOut);
-                    TOGGLE_OUT_LED();
-				}
-			}
+            {
+            // are we playing along?  Route to the play along channel
+            if (local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                {
+                uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+                if (channelOut == 0)
+                    channelOut = options.channelOut;
+                MIDI.sendPitchBend(bend, channelOut);
+                TOGGLE_OUT_LED();
+                }
+            else if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
+                {
+                MIDI.sendPitchBend(bend, options.channelOut);
+                TOGGLE_OUT_LED();
+                }
+            }
         else
 #endif
 /*
-#ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-        if (application == STATE_STEP_SEQUENCER)
-        	{
-        	// are we playing along?  Route to the play along channel
-        	if (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE)
-				{
-				uint8_t channelOut = options.stepSequencerPlayAlongChannel;
-				if (channelOut == 0)
-					channelOut = options.channelOut;
-				MIDI.sendPitchBend(bend, channelOut);
-                    TOGGLE_OUT_LED();
-				}
-			else if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
-				{
-				MIDI.sendPitchBend(bend, options.channelOut);
-                    TOGGLE_OUT_LED();
-				}
-			}
-        else
-#endif
+  #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+  if (application == STATE_STEP_SEQUENCER)
+  {
+  // are we playing along?  Route to the play along channel
+  if (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE)
+  {
+  uint8_t channelOut = options.stepSequencerPlayAlongChannel;
+  if (channelOut == 0)
+  channelOut = options.channelOut;
+  MIDI.sendPitchBend(bend, channelOut);
+  TOGGLE_OUT_LED();
+  }
+  else if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
+  {
+  MIDI.sendPitchBend(bend, options.channelOut);
+  TOGGLE_OUT_LED();
+  }
+  }
+  else
+  #endif
 */
 #ifdef INCLUDE_SPLIT
             // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
@@ -1977,8 +1977,8 @@ void sendSlotSysex()
         sum += bytes[9 + i * 2 + 1];
 
         /*
-        if (data.bytes[i] != ((uint8_t)(bytes[9 + i * 2] << 4) | (bytes[9 + i * 2 + 1] & 0xF)))
-            debug(999);
+          if (data.bytes[i] != ((uint8_t)(bytes[9 + i * 2] << 4) | (bytes[9 + i * 2 + 1] & 0xF)))
+          debug(999);
         */
         }
     bytes[sizeof(struct _slot) * 2 + 11 - 2] = (sum & 127);

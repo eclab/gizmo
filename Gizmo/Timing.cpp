@@ -114,14 +114,18 @@ void updateTicksAndWait()
     ++tickCount;
     }
 
+/*
 // Returns whether we are using a clock command which allows us to emit a clock message
 // in response to a button press, internal pulse, or 
 uint8_t shouldEmitClockMessages()
     {
-    return      !bypass &&
-        (options.clock == GENERATE_MIDI_CLOCK ||
-        options.clock == USE_MIDI_CLOCK);
+    return      
+    	options.clock == MERGE_MIDI_CLOCK ||
+    	(!bypass &&
+        	(options.clock == GENERATE_MIDI_CLOCK ||
+        	options.clock == USE_MIDI_CLOCK));
     }
+*
 
 
 uint32_t lastExternalPulseTime = 0;
@@ -174,10 +178,12 @@ void updateExternalClock()
 
 void sendClock(midi::MidiType signal, uint8_t fromButton)
     {
-    if (!bypass &&                                                                                                      // don't send if I'm bypassed
-            (       (options.clock == IGNORE_MIDI_CLOCK && !fromButton) ||  // allow a send if I'm IGNORING -- ignore calls this to pass it through
+    if (options.clock == MERGE_MIDI_CLOCK ||				// allow a send if I'm MERGING AND a button was pressed regardless of bypass
+    	(!bypass &&                                         // don't send if I'm bypassed
+            (
+            (options.clock == IGNORE_MIDI_CLOCK && !fromButton) ||  // allow a send if I'm IGNORING -- ignore calls this to pass it through
             (options.clock == USE_MIDI_CLOCK && !fromButton) ||             // allow a send if I'm USING (and passing through) but NOT if the button was pressed
-            (options.clock == GENERATE_MIDI_CLOCK)))        // allow a send if I'm GENERATING AND a button was pressed
+            (options.clock == GENERATE_MIDI_CLOCK))))	        // allow a send if I'm GENERATING AND a button was pressed		
         {
         MIDI.sendRealTime(signal);
         TOGGLE_OUT_LED();
@@ -470,7 +476,8 @@ void updateTimers()
             
 #ifdef INCLUDE_OPTIONS_MIDI_CLOCK_DIVIDE
         if (options.clock == USE_MIDI_CLOCK ||
-            options.clock == GENERATE_MIDI_CLOCK)
+            options.clock == GENERATE_MIDI_CLOCK ||
+            options.clock == MERGE_MIDI_CLOCK)
             sendDividedClock();
 #endif
         }

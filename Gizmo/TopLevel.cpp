@@ -531,6 +531,36 @@ GLOBAL uint8_t itemChannel = CHANNEL_OFF;
 
 
 
+
+void checkForClockStartStop()
+	{
+	if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
+		{
+		if (getClockState() == CLOCK_RUNNING)
+			{
+			stopClock(true);
+			}
+		else
+			{
+			startClock(true);
+			}
+		}
+		
+	else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
+		{
+		if (getClockState() == CLOCK_RUNNING)
+			{
+			stopClock(true);
+			}
+		else
+			{
+			continueClock(true);
+			}
+		}
+		
+    }
+
+
 //// LOCAL APPLICATION DATA
 ///  [hehe, global local]
 GLOBAL _local local;
@@ -597,6 +627,9 @@ void go()
                 {
 #ifdef INCLUDE_IMMEDIATE_RETURN
                 immediateReturnState = STATE_ROOT;
+#endif
+#ifdef INCLUDE_CLOCK_IN_OPTIONS
+				checkForClockStartStop();
 #endif
                 }
 #if defined(__MEGA__)
@@ -833,11 +866,11 @@ void go()
                             case MIDI_RPN_DECREMENT:
                                 {
                                 str = rpn_p;
-                            	if (itemValue == RPN_NULL)  // note FALL THRU
-                            		{
-                            		newItem = NO_NEW_ITEM;
-                            		str = NULL; 
-                            		}
+                                if (itemValue == RPN_NULL)  // note FALL THRU
+                                    {
+                                    newItem = NO_NEW_ITEM;
+                                    str = NULL; 
+                                    }
                                 }
                             break;
                             case MIDI_PITCH_BEND:
@@ -1139,29 +1172,7 @@ void go()
         case STATE_OPTIONS:
             {
 #ifdef INCLUDE_CLOCK_IN_OPTIONS
-            if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
-                {
-                if (getClockState() == CLOCK_RUNNING)
-                    {
-                    stopClock(true);
-                    }
-                else
-                    {
-                    startClock(true);
-                    }
-                }
-                
-            else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
-                {
-                if (getClockState() == CLOCK_RUNNING)
-                    {
-                    stopClock(true);
-                    }
-                else
-                    {
-                    continueClock(true);
-                    }
-                }
+checkForClockStartStop();
 #endif
                         
 #if defined(__MEGA__)
@@ -2262,8 +2273,8 @@ void go()
                 defaultMenuValue = options.clock;  // so we display the right thing
 #endif
                 }
-            const char* menuItems[5] = { PSTR("USE"), PSTR("CONSUME"), PSTR("IGNORE"), PSTR("GENERATE"), PSTR("BLOCK") };
-            result = doMenuDisplay(menuItems, 5, STATE_NONE, STATE_NONE, 1);
+            const char* menuItems[6] = { PSTR("USE"), PSTR("CONSUME"), PSTR("IGNORE"), PSTR("GENERATE"), PSTR("MERGE"), PSTR("BLOCK") };
+            result = doMenuDisplay(menuItems, 6, STATE_NONE, STATE_NONE, 1);
             switch (result)
                 {
                 case NO_MENU_SELECTED:
