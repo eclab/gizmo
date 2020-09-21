@@ -207,8 +207,10 @@
 #define GLYPH_8x5_ONE_HALF              21
 #define GLYPH_8x5_SURE_PT1                              22
 #define GLYPH_8x5_SURE_PT2                              23
-#define GLYPH_8x5_GIZMO_PT1                             24
-#define GLYPH_8x5_GIZMO_PT2                             25
+#define GLYPH_8x5_EXIT_PT1                              24
+#define GLYPH_8x5_EXIT_PT2                              25
+#define GLYPH_8x5_GIZMO_PT1                             26
+#define GLYPH_8x5_GIZMO_PT2                             27
 
 
 
@@ -232,9 +234,9 @@ extern const char PROGMEM font_5x5[5][5];
 //extern const char PROGMEM font_alphabet5x5[26][5];
 extern const char PROGMEM font_8x5[
 #ifdef INCLUDE_EXTENDED_FONT       
-38
+40
 #else
-26
+28
 #endif
 ][8];
 
@@ -362,6 +364,9 @@ void writeNote(unsigned char* mat, unsigned char note);
 
 // Prints a note to the matrix plus a range underneath indicating the octave.
 void writeNotePitch(unsigned char* mat, unsigned char note);
+
+// Prints a note to one matrix and its octave to the other
+void writeNotePitchLong(unsigned char* mat, unsigned char* mat2, unsigned char note);
 
 // Note speed values
 #define NOTE_SPEED_EIGHTH_TRIPLET 0

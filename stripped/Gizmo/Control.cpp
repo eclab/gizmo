@@ -20,7 +20,7 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
         {
         backupOptions = options; 
         }
-    const char* menuItems[7] = {  PSTR("OFF"), cc_p, nrpn_p, rpn_p, PSTR("PC"), PSTR("BEND"), PSTR("AFTERTOUCH")};
+    const char* menuItems[7] = {  PSTR("OFF"), PSTR("CC"), PSTR("NRPN"), PSTR("RPN"), PSTR("PC"), PSTR("BEND"), PSTR("AFTERTOUCH")};
     result = doMenuDisplay(menuItems, 7, STATE_NONE,  STATE_NONE, 1);
     switch (result)
         {
@@ -292,7 +292,7 @@ uint16_t computeWaveValue(uint8_t startindex, uint8_t endindex)
     // the start wave value is going to be fadeStartControl *if* we're doing FADED, and we just *restarted* (that is,
     // fadeStartControl isn't negative) rather than *started*.  In all other cases, it's just the standard start wave of
     // the given index
-    float _startWaveVal = (options.envelopeMode == ENVELOPE_MODE_FADED && startindex == 0 && local.control.fadeStartControl >= 0 ? 
+    float _startWaveVal = (options.envelopeMode == ENVELOPE_MODE_FADED && startindex == 0 && local.control.noteOnCount > 0 && local.control.fadeStartControl >= 0 ? 
         local.control.fadeStartControl : (float)(WAVEVAL(startindex) << 7));
 
     // (currenttime - starttime) / (endtime - starttime) = (currentval - startval) / (endval - startval)
@@ -324,7 +324,7 @@ void resetWaveEnvelope(uint8_t index)
     if (index == 0)
         local.control.fadeStartControl = local.control.fadeWaveControl;  // may be we're doing FADED?  So set the start control to the very last wave control immedately before resetting.
     local.control.wavePosition = index;
-    if (index != 0 || options.envelopeMode != ENVELOPE_MODE_FADED)          // don't send a controller command with the new position, or we get a click
+    if (!(index == 0 && options.envelopeMode == ENVELOPE_MODE_FADED && local.control.noteOnCount > 0))          // don't send a controller command with the new position, or we get a click
         local.control.currentWaveControl = WAVEVAL(local.control.wavePosition) << 7;
     sendControllerCommand(options.waveControlType, options.waveControlNumber, local.control.currentWaveControl, options.channelOut);
     local.control.waveCountDown = WAVE_COUNTDOWN;
@@ -359,6 +359,10 @@ void stateControllerPlayWaveEnvelope()
             local.control.wavePosition = -1;
             }
         }
+    else if (newItem && itemType == MIDI_NOTE_ON && (options.envelopeMode == ENVELOPE_MODE_FADED))
+    	{
+        local.control.wavePosition = -1;
+    	}
     
     // If we haven't started yet and got a MIDI_NOTE_ON *or* we're free
     if (local.control.wavePosition == -1 && ((newItem && itemType == MIDI_NOTE_ON) || (options.envelopeMode == ENVELOPE_MODE_FREE)))

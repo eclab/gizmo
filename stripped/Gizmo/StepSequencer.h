@@ -239,35 +239,35 @@ struct _stepSequencerLocal
     // You'd think that the right way to do this would be to make a struct with each of these variables
     // and then just have an array of structs, one per track.  But it adds 400 bytes to the total code size.  :-(
         
-    uint8_t data[MAX_STEP_SEQUENCER_TRACKS];
-    uint8_t outMIDI[MAX_STEP_SEQUENCER_TRACKS];             // Per-track MIDI out.  Can also be CHANNEL_DEFAULT
-    uint8_t noteLength[MAX_STEP_SEQUENCER_TRACKS];  // Per-track note length, from 0...100, or PLAY_LENGTH_USE_DEFAULT
-    uint8_t muted[MAX_STEP_SEQUENCER_TRACKS];               // Per-track mute toggle
-    uint8_t velocity[MAX_STEP_SEQUENCER_TRACKS];    // Per track note velocity, or STEP_SEQUENCER_NO_OVERRIDE_VELOCITY
-    uint8_t fader[MAX_STEP_SEQUENCER_TRACKS];               // Per-track fader, values from 1...16
-    uint32_t offTime[MAX_STEP_SEQUENCER_TRACKS];    // When do we turn off? 
-    uint8_t noteOff[MAX_STEP_SEQUENCER_TRACKS];
-    uint8_t shouldPlay[MAX_STEP_SEQUENCER_TRACKS];
-    uint8_t transposable[MAX_STEP_SEQUENCER_TRACKS];
-    uint8_t pattern[MAX_STEP_SEQUENCER_TRACKS];
-    uint8_t dontPlay[MAX_STEP_SEQUENCER_TRACKS];
+    uint8_t data[MAX_STEP_SEQUENCER_TRACKS];						// What kind of data is this track? STEP_SEQUENCER_DATA_NOTE, STEP_SEQUENCER_DATA_CC, etc.
+    uint8_t outMIDI[MAX_STEP_SEQUENCER_TRACKS];             		// Per-track MIDI out.  Can also be CHANNEL_DEFAULT
+    uint8_t noteLength[MAX_STEP_SEQUENCER_TRACKS];  				// Per-track note length, from 0...100, or PLAY_LENGTH_USE_DEFAULT
+    uint8_t muted[MAX_STEP_SEQUENCER_TRACKS];               		// Per-track mute toggle
+    uint8_t velocity[MAX_STEP_SEQUENCER_TRACKS];    				// Per track note velocity, or STEP_SEQUENCER_NO_OVERRIDE_VELOCITY
+    uint8_t fader[MAX_STEP_SEQUENCER_TRACKS];               		// Per-track fader, values from 1...16
+    uint32_t offTime[MAX_STEP_SEQUENCER_TRACKS];    				// When do we turn off? 
+    uint8_t noteOff[MAX_STEP_SEQUENCER_TRACKS];						// What note should be turned off?
+    uint8_t shouldPlay[MAX_STEP_SEQUENCER_TRACKS];					// Should the track be played this time around (due to the pattern)?
+    uint8_t transposable[MAX_STEP_SEQUENCER_TRACKS];				// Can this track be transposed in performance mode?
+    uint8_t pattern[MAX_STEP_SEQUENCER_TRACKS];						// Track pattern
+    uint8_t dontPlay[MAX_STEP_SEQUENCER_TRACKS];					// Don't play the note on this track this step because it was played manually while being entered
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
-	uint16_t controlParameter[MAX_STEP_SEQUENCER_TRACKS];
-    uint16_t lastControlValue[MAX_STEP_SEQUENCER_TRACKS];
+	uint16_t controlParameter[MAX_STEP_SEQUENCER_TRACKS];			// If the data is a control data type, what is its parameter?
+    uint16_t lastControlValue[MAX_STEP_SEQUENCER_TRACKS];			// If the data is a control data type, what was the last control value it held?
 #endif
-    uint8_t newData;		// a temporary variable.  comes in from STATE_STEP_SEQUENCER_MENU_TYPE, used in STATE_STEP_SEQUENCER_MENU_TYPE_PARAMETER
-	int8_t transpose;
-    uint8_t performanceMode;
-    uint8_t goNextSequence;
-    uint8_t countdown;
-    uint8_t countup;
-    uint16_t pots[2];
-    uint8_t markTrack;
-    uint8_t markPosition;
-    uint8_t solo;
-    uint8_t currentTrack;                                                   // which track are we editing?
-    uint8_t backup;      		// used for backing up data to restore it                                                           // used to back up various values when the user cancels
-    int16_t currentRightPot;
+    uint8_t newData;				// A temporary variable.  comes in from STATE_STEP_SEQUENCER_MENU_TYPE, used in STATE_STEP_SEQUENCER_MENU_TYPE_PARAMETER
+	int8_t transpose;				// Current transposition due to performance mode
+    uint8_t performanceMode;		// We are in performane mode
+    uint8_t goNextSequence;			// We're manually scheduled to go to the next sequence at the end of this iteration 
+    uint8_t countdown;				// Number of iterations left before we terminate or go to the next sequence automatically
+    uint8_t countup;				// Position in the pattern
+    uint16_t pots[2];				// Pot values (left and right)
+    uint8_t markTrack;				// Track where our mark is located 
+    uint8_t markPosition;			// Position in the track where our mark is located 
+    uint8_t solo;					// Solo is on
+    uint8_t currentTrack;           // which track are we editing?
+    uint8_t backup;      			// used for backing up data to restore it                                                           // used to back up various values when the user cancels
+    int16_t currentRightPot;		// Current X position of cursor
 //    uint8_t clearTrack;
     };
 
@@ -284,7 +284,7 @@ struct _stepSequencerLocal
 
 /// DATA
 
-// There are three step sequencer formats available
+// There are five step sequencer formats available
 #define STEP_SEQUENCER_FORMAT_16x12_ 0
 #define STEP_SEQUENCER_FORMAT_24x8_ 1
 #define STEP_SEQUENCER_FORMAT_32x6_ 2

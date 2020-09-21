@@ -1,3 +1,0 @@
-This is a special version of Gizmo in which a great many of the #ifdefs have 
-been eliminated, thus simplifying the code more than a little bit.  I expect
-that this version will eventually supplant the primary version.

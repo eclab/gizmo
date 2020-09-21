@@ -17,10 +17,6 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 // some shorthand so we can save a bit of program space.  Of course
 // this uses up some of our working memory.  These are PSTR strings
 // used in more than one location in the program.  They're set in the Gizmo.ino file
-GLOBAL const char* nrpn_p;// = PSTR("NRPN");
-GLOBAL const char* rpn_p;// = PSTR("RPN");
-GLOBAL const char* cc_p;// = PSTR("CC");
-GLOBAL const char* v_p;// = PSTR("IS");
 GLOBAL const char* options_p;  // = PSTR("OPTIONS");
 
 
@@ -495,6 +491,37 @@ GLOBAL uint8_t defaultState = STATE_NONE;
 // that's not stateful.  Yuck.
 GLOBAL uint8_t defaultMenuValue = 0;
 
+
+void checkForClockStartStop()
+	{
+	if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
+		{
+		if (getClockState() == CLOCK_RUNNING)
+			{
+			stopClock(true);
+			}
+		else
+			{
+			startClock(true);
+			}
+		}
+		
+	else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
+		{
+		if (getClockState() == CLOCK_RUNNING)
+			{
+			stopClock(true);
+			}
+		else
+			{
+			continueClock(true);
+			}
+		}
+		
+    }
+
+
+
 ////// GO()
 //
 // This is the top-level state machine.
@@ -535,6 +562,8 @@ void go()
                 {
                 immediateReturnState = STATE_ROOT;
                 }
+
+			checkForClockStartStop();
 
             MENU_ITEMS();                   // See All.h
             if (doMenuDisplay(menuItems, NUM_MENU_ITEMS, FIRST_APPLICATION, STATE_ROOT, 1) == MENU_SELECTED)
@@ -676,32 +705,9 @@ void go()
         break;
 #endif
 
-
         case STATE_OPTIONS:
             {
-            if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
-                {
-                if (getClockState() == CLOCK_RUNNING)
-                    {
-                    stopClock(true);
-                    }
-                else
-                    {
-                    startClock(true);
-                    }
-                }
-                
-            else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
-                {
-                if (getClockState() == CLOCK_RUNNING)
-                    {
-                    stopClock(true);
-                    }
-                else
-                    {
-                    continueClock(true);
-                    }
-                }
+			checkForClockStartStop();
                         
 #if defined(__MEGA__)
             const char* menuItems[16] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
@@ -795,9 +801,9 @@ void go()
             stateArpeggiatorCreateSave();
             }
         break;
-        case STATE_ARPEGGIATOR_CREATE_SURE:
+        case STATE_ARPEGGIATOR_CREATE_EXIT:
             {
-            stateSure(STATE_ARPEGGIATOR_CREATE_EDIT, STATE_ARPEGGIATOR);
+            stateExit(STATE_ARPEGGIATOR_CREATE_EDIT, STATE_ARPEGGIATOR);
             }
         break;
         case STATE_ARPEGGIATOR_PLAY_PERFORMANCE:
@@ -868,9 +874,9 @@ void go()
             playStepSequencer();
             }
         break;
-        case STATE_STEP_SEQUENCER_SURE:
+        case STATE_STEP_SEQUENCER_EXIT:
             {
-            stateSure(STATE_STEP_SEQUENCER_PLAY, STATE_STEP_SEQUENCER);
+            stateExit(STATE_STEP_SEQUENCER_PLAY, STATE_STEP_SEQUENCER);
             playStepSequencer();
             }
         break;
@@ -969,6 +975,11 @@ void go()
             stateDrumSequencerFormat();
             }
         break;
+        case STATE_DRUM_SEQUENCER_FORMAT_NOTE:
+            {
+            stateDrumSequencerFormatNote();
+            }
+        break;
         case STATE_DRUM_SEQUENCER_PLAY:
             {
             stateDrumSequencerPlay();
@@ -979,19 +990,121 @@ void go()
             stateDrumSequencerMenu();
             }
         break;
-        case STATE_DRUM_SEQUENCER_MIDI_CHANNEL_OUT:
+        case STATE_DRUM_SEQUENCER_MARK:
             {
-            stateDrumSequencerMIDIChannelOut();
+            stateDrumSequencerMenuEditMark();
             }
         break;
-        case STATE_DRUM_SEQUENCER_VELOCITY:
+        case STATE_DRUM_SEQUENCER_LOCAL:
+            {
+            const char* menuItems[3] = { PSTR("PATTERN"), PSTR("COPY TRACK"), PSTR("SWAP TRACKS") };
+            doMenuDisplay(menuItems, 3, STATE_DRUM_SEQUENCER_LOCAL_PATTERN, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRACK:
+            {
+            const char* menuItems[7] = { PSTR("VELOCITY"), PSTR("OUT MIDI"), PSTR("COPY WHOLE"), PSTR("SWAP WHOLE"),  PSTR("DISTRIBUTE"), PSTR("ACCENT"), PSTR("DEFAULT VELOCITY") };
+            doMenuDisplay(menuItems, 7, STATE_DRUM_SEQUENCER_TRACK_VELOCITY, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_GROUP:
+            {
+            const char* menuItems[5] = { PSTR("LENGTH"), PSTR("SPEED MULTPLIER"), PSTR("STAMP"), PSTR("COPY"), PSTR("SWAP") };
+            doMenuDisplay(menuItems, 5, STATE_DRUM_SEQUENCER_GROUP_LENGTH, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRANSITION:
+            {
+            stateDrumSequencerTransition();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_PERFORMANCE:
+            {
+            const char* menuItems[3] = { PSTR("KEYBOARD"), PSTR("REPEAT SEQUENCE"), PSTR("NEXT SEQUENCE") };
+            doMenuDisplay(menuItems, 3, STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_KEYBOARD, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_SAVE:
+            {
+            stateSave(STATE_DRUM_SEQUENCER_PLAY);
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_EXIT:
+            {
+            stateExit(STATE_DRUM_SEQUENCER_PLAY, STATE_DRUM_SEQUENCER);
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_CANT:
+            {
+            stateCant(STATE_DRUM_SEQUENCER_PLAY);
+            playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_LOCAL_PATTERN:
+            {
+            stateDrumSequencerMenuPattern();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_LOCAL_COPY:
+            {
+            stateDrumSequencerMenuCopyGroupTrack();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_LOCAL_SWAP:
+            {
+            stateDrumSequencerMenuSwapGroupTracks();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRACK_VELOCITY:
             {
             stateDrumSequencerVelocity();
             }
         break;
-        case STATE_DRUM_SEQUENCER_PITCH:
+        case STATE_DRUM_SEQUENCER_TRACK_MIDI_CHANNEL_OUT:
+            {
+            stateDrumSequencerMIDIChannelOut();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRACK_COPY:
+            {
+            stateDrumSequencerMenuCopyTrack();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRACK_SWAP:
+            {
+            stateDrumSequencerMenuSwapTracks();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRACK_DISTRIBUTE:
+            {
+            stateDrumSequencerMenuDistributeTrackInfo();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRACK_ACCENT:
+            {
+            stateDrumSequencerMenuAccentTrack();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRACK_DEFAULT_VELOCITY:
+            {
+            stateDrumSequencerMenuDefaultVelocity();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRACK_PITCH:
             {
             stateDrumSequencerPitch();
+            }
+        break;
+        // this needs to be last because it's not part of the menu
+        case STATE_DRUM_SEQUENCER_TRACK_PITCH_BACK:
+            {
+            stateDrumSequencerPitchBack();
             }
         break;
         case STATE_DRUM_SEQUENCER_GROUP_LENGTH:
@@ -1004,86 +1117,95 @@ void go()
             stateDrumSequencerGroupSpeed();
             }
         break;
-        case STATE_DRUM_SEQUENCER_TRANSITIONS:
+        case STATE_DRUM_SEQUENCER_COPY_TO_NEXT:
             {
-            stateDrumSequencerTransitions();
+            stateDrumSequencerCopyGroupToNext();
             }
         break;
-        case STATE_DRUM_SEQUENCER_TRANSITIONS_GROUP:
+        case STATE_DRUM_SEQUENCER_GROUP_COPY:
             {
-            stateDrumSequencerTransitionsGroup();
+            stateDrumSequencerMenuCopyGroup();
             }
         break;
-        case STATE_DRUM_SEQUENCER_TRANSITIONS_REPEAT:
+        case STATE_DRUM_SEQUENCER_GROUP_SWAP:
             {
-            stateDrumSequencerTransitionsRepeat();
+            stateDrumSequencerMenuSwapGroup();
             }
         break;
-        case STATE_DRUM_SEQUENCER_TRANSITIONS_SPECIAL:
+        case STATE_DRUM_SEQUENCER_GROUP_CLEAR_SURE:
             {
-            stateDrumSequencerTransitionsSpecial();
+            stateSure(STATE_DRUM_SEQUENCER_PLAY, STATE_DRUM_SEQUENCER_GROUP_CLEAR);
+    		playDrumSequencer();
             }
         break;
-        case STATE_DRUM_SEQUENCER_SURE:
+        case STATE_DRUM_SEQUENCER_GROUP_CLEAR:
             {
-            stateSure(STATE_DRUM_SEQUENCER_PLAY, STATE_DRUM_SEQUENCER);
+            clearCurrentGroup();
+			goUpState(STATE_DRUM_SEQUENCER_PLAY);
+    		playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_GROUP_SPEED_CANT:
+            {
+            stateCant(STATE_DRUM_SEQUENCER_GROUP_SPEED);
             playDrumSequencer();
             }
         break;
-        case STATE_DRUM_SEQUENCER_SAVE:
+        case STATE_DRUM_SEQUENCER_TRANSITION_MENU:
             {
-            stateSave(STATE_DRUM_SEQUENCER_PLAY);
+            const char* menuItems[7] = { PSTR("GO"), PSTR("MARK"), PSTR("PUT"), PSTR("EDIT"), PSTR("DELETE"), PSTR("COPY"), PSTR("MOVE") };
+            doMenuDisplay(menuItems, 7, STATE_DRUM_SEQUENCER_TRANSITION_GO_GROUP, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
             playDrumSequencer();
             }
         break;
-        case STATE_DRUM_SEQUENCER_MENU_PATTERN:
+        case STATE_DRUM_SEQUENCER_TRANSITION_GO_GROUP:
             {
-            stateDrumSequencerMenuPattern();
+            stateDrumSequencerTransitionGoGroup();
             }
         break;
-        
-/*
-  case STATE_DRUM_SEQUENCER_MENU_EDIT:
-  {
-  const char* menuItems[5] = { PSTR("MARK"), PSTR("COPY"), PSTR("SPLAT"), PSTR("MOVE"), PSTR("DUPLICATE") };
-  doMenuDisplay(menuItems, 5, STATE_DRUM_SEQUENCER_MENU_EDIT_MARK, STATE_DRUM_SEQUENCER_MENU, 1);
-  playDrumSequencer();
-  }
-  break;
-  case STATE_DRUM_SEQUENCER_MENU_EDIT_MARK:
-  {
-  stateStepSequencerMenuEditMark();
-  }
-  break;
-  case STATE_DRUM_SEQUENCER_MENU_EDIT_COPY:
-  {
-  stateStepSequencerMenuEditCopy(false, false);
-  playDrumSequencer();
-  }
-  break;
-  case STATE_DRUM_SEQUENCER_MENU_EDIT_SPLAT:
-  {
-  stateStepSequencerMenuEditCopy(true, false);
-  playDrumSequencer();
-  }
-  break;
-  case STATE_DRUM_SEQUENCER_MENU_EDIT_MOVE:
-  {
-  stateStepSequencerMenuEditCopy(false, true);
-  playDrumSequencer();
-  }
-  break;
-  case STATE_DRUM_SEQUENCER_MENU_EDIT_DUPLICATE:
-  {
-  stateStepSequencerMenuEditDuplicate();
-  playDrumSequencer();
-  }
-*/
-        case STATE_DRUM_SEQUENCER_MENU_PERFORMANCE:
+        case STATE_DRUM_SEQUENCER_TRANSITION_MARK:
             {
-            const char* menuItems[3] = { PSTR("KEYBOARD"), PSTR("REPEAT SEQUENCE"), PSTR("NEXT SEQUENCE") };
-            doMenuDisplay(menuItems, 3, STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_KEYBOARD, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
-            playDrumSequencer();
+            stateDrumSequencerTransitionMark();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRANSITION_PUT:
+            {
+            stateDrumSequencerTransitionPut();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRANSITION_EDIT:
+            {
+            stateDrumSequencerTransitionEdit();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRANSITION_COPY:
+            {
+            stateDrumSequencerTransitionCopy();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRANSITION_DELETE:
+            {
+            stateDrumSequencerTransitionDelete();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRANSITION_MOVE:
+            {
+            stateDrumSequencerTransitionMove();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_EDIT_TRANSITION_GROUP:
+            {
+            stateDrumSequencerTransitionEditGroup();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_EDIT_TRANSITION_REPEAT:
+            {
+            stateDrumSequencerTransitionEditRepeat();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_EDIT_TRANSITION_SPECIAL:
+            {
+            stateDrumSequencerTransitionEditSpecial();
             }
         break;
         case STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_KEYBOARD:
@@ -1101,15 +1223,6 @@ void go()
             stateDrumSequencerMenuPerformanceNext();
             }
         break;
-/*
-  case STATE_DRUM_SEQUENCER_MENU_NO:
-  {
-  const char* menuItems[1] = { PSTR("NO") };
-  doMenuDisplay(menuItems, 1, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
-  playDrumSequencer();
-  }
-  break;
-*/
 #endif
  
         
@@ -1129,9 +1242,9 @@ void go()
             stateSave(STATE_RECORDER_PLAY);
             }
         break;
-        case STATE_RECORDER_SURE:
+        case STATE_RECORDER_EXIT:
             {
-            stateSure(STATE_RECORDER_PLAY, STATE_RECORDER);
+            stateExit(STATE_RECORDER_PLAY, STATE_RECORDER);
             }
         break;
 #endif
@@ -1345,7 +1458,7 @@ void go()
                 lastTempoTapTime = 0;
                 }
 
-            if (isUpdated(MIDDLE_BUTTON, PRESSED))
+			if (isUpdated(MIDDLE_BUTTON, PRESSED))
                 {
                 if (lastTempoTapTime != 0)
                     {
@@ -1584,8 +1697,8 @@ void go()
                 backupOptions = options; 
                 defaultMenuValue = options.clock;  // so we display the right thing
                 }
-            const char* menuItems[5] = { PSTR("USE"), PSTR("CONSUME"), PSTR("IGNORE"), PSTR("GENERATE"), PSTR("BLOCK") };
-            result = doMenuDisplay(menuItems, 5, STATE_NONE, STATE_NONE, 1);
+            const char* menuItems[6] = { PSTR("USE"), PSTR("CONSUME"), PSTR("IGNORE"), PSTR("GENERATE"), PSTR("MERGE"), PSTR("BLOCK") };
+            result = doMenuDisplay(menuItems, 6, STATE_NONE, STATE_NONE, 1);
             switch (result)
                 {
                 case NO_MENU_SELECTED:

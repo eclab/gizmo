@@ -92,10 +92,6 @@ void setup()
 #endif	// HEADLESS
 
 	// Define a few PSTRs that will be used several times
-    nrpn_p = PSTR("NRPN");
-    rpn_p = PSTR("RPN");
-    cc_p = PSTR("CC");
-    v_p = PSTR("IS");
     options_p = PSTR("OPTIONS");
 
 	// seed the random number generator.  I need something which has

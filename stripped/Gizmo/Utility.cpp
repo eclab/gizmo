@@ -24,15 +24,18 @@ void allowImmediateReturn(uint8_t state)
     immediateReturnState = state;
     immediateReturn = true;
     }
+    
 void allowAutoReturn(uint8_t state)
     {
     allowImmediateReturn(state);
     autoReturn = true;
     }
+    
 void removeAutoReturnTime()
     {
     autoReturnTime = NO_AUTO_RETURN_TIME_SET;
     }
+    
 void setAutoReturnTime()
     {
     if (entry)
@@ -77,7 +80,7 @@ void setAutoReturnTime()
 //
 // 2. To simply indicate what menu item was provided.  Here, the
 //    user passes in STATE_NONE as baseState, and passes in a DEFAULT
-//    MENU ITEM (not STATE) for defaultState.  backState is entirely
+//    MENU ITEM (not STATE) as defaultMenuValue.  backState is entirely
 //    ignored.  As the user is scrolling through various options,
 //    doMenuDisplay will return NO_MENU_SELECTED, but you can see which
 //    item is being considered as currentDisplay.  If the user selects a
@@ -108,6 +111,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
     
     if (entry)
         {
+		
         // copy over the PSTRs but don't convert them.
         memcpy(menu, _menu, menuLen * sizeof(const char*));
     
@@ -117,7 +121,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
         // what do we display first
         if (baseState == STATE_NONE)                                            // These aren't states
             {
-            currentDisplay = defaultMenuValue;                                                                  // Display the first item unless the default state was specified
+            currentDisplay = defaultMenuValue;                                  // Display the first item unless the default state was specified
             defaultMenuValue = 0;
             }
         else                                                                                                                                    // These are states
@@ -129,9 +133,10 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
             }
                 
         newDisplay = FORCE_NEW_DISPLAY;                                         // This tells us that we MUST compute a new display
-        entry = false;
         defaultState = STATE_NONE;                                              // We're done with this
         setAutoReturnTime();
+
+        entry = false;
         }
     else
         {
@@ -180,8 +185,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
             }
         return MENU_CANCELLED;
         }
-    else if (isUpdated(SELECT_BUTTON, RELEASED)
-        || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime))
+    else if (isUpdated(SELECT_BUTTON, RELEASED) || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime))
         {
         removeAutoReturnTime();
         if (baseState != STATE_NONE)
@@ -892,11 +896,13 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                         //// FIXME:  Need to set the note pulse rate first before the following....? (which was stolen from StepSequencer code in Utility.cpp)
                         //// FIXME:  Need to stop the sequencer?  Etc.
 
+                        unpackDrumSequenceData();
+					    local.drumSequencer.playState = PLAY_STATE_STOPPED;
+					    local.drumSequencer.performanceMode = false;
+
                         // FIXME: did I fix the issue of synchronizing the beats with the sequencer notes?
                         local.drumSequencer.currentPlayPosition = 
                             div12((24 - beatCountdown) * notePulseRate) >> 1;   // get in sync with beats
-
-                        unpackDrumSequenceData();
                         }
                     else
 #endif INCLUDE_DRUM_SEQUENCER
@@ -963,13 +969,15 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                 }
 
 #ifdef INCLUDE_STEP_SEQUENCER
-                                
+if (application == STATE_STEP_SEQUENCER)
+			{                                
             local.stepSequencer.solo = 0;
             local.stepSequencer.currentTrack = 0;
             local.stepSequencer.transpose = 0;
             setParseRawCC(local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_CC);
             local.stepSequencer.currentEditPosition = 0;
             stopStepSequencer();
+            }
 #endif INCLUDE_STEP_SEQUENCER
                 
             defaultState = STATE_NONE;
@@ -987,7 +995,7 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
 
 
 
-void stateSure(uint8_t selectedState, uint8_t backState)
+void stateSure(uint8_t cancelState, uint8_t sureState)
     {
     if (updateDisplay)
         {
@@ -996,18 +1004,52 @@ void stateSure(uint8_t selectedState, uint8_t backState)
         write8x5Glyph(led, GLYPH_8x5_SURE_PT2);
         }
 
+    if (isUpdated(SELECT_BUTTON, RELEASED))
+        {
+        goDownState(sureState);
+        }
+    else if (isUpdated(BACK_BUTTON, PRESSED))
+        {
+        // just go back, don't reenter
+        state = cancelState;
+        }
+    }
+
+void stateExit(uint8_t cancelState, uint8_t exitState)
+    {
+    if (updateDisplay)
+        {
+        clearScreen();
+        write8x5Glyph(led2, GLYPH_8x5_EXIT_PT1);
+        write8x5Glyph(led, GLYPH_8x5_EXIT_PT2);
+        }
+
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
         // send ALL NOTES OFF
         MIDI.sendControlChange(123, 0, options.channelOut);
         
-        goUpState(backState);
-        defaultState = selectedState;
+        goUpState(exitState);
+        defaultState = cancelState;
         }
     else if (isUpdated(SELECT_BUTTON, PRESSED))
         {
         // just go back, don't reenter
-        state = selectedState;
+        state = cancelState;
+        }
+    }
+
+void stateCant(uint8_t nextState)
+    {
+    if (updateDisplay)
+        {
+        clearScreen();
+		write3x5Glyphs(GLYPH_CANT);
+        }
+
+    if (isUpdated(BACK_BUTTON, RELEASED) || isUpdated(SELECT_BUTTON, RELEASED))
+        {
+        state = nextState;
         }
     }
 
@@ -1163,6 +1205,12 @@ void playApplication()
             playStepSequencer();
             break;
 #endif INCLUDE_STEP_SEQUENCER
+#ifdef INCLUDE_DRUM_SEQUENCER
+        case STATE_DRUM_SEQUENCER_PLAY:
+        case STATE_DRUM_SEQUENCER_MENU:
+            playDrumSequencer();
+            break;
+#endif INCLUDE_DRUM_SEQUENCER
 #ifdef INCLUDE_RECORDER
         case STATE_RECORDER_PLAY:  // note not MENU: we go directly to options from PLAY
             // This is a dummy function, which we include to keep the switch statement from growing by 100 bytes (!)
@@ -1201,7 +1249,7 @@ void clearScreen()
 
 
 
-GLOBAL static uint8_t glyphTable[22][4] = 
+GLOBAL static uint8_t glyphTable[24][4] = 
     {
     // These first: ----, ALLC, DFLT, DECR, and INCR, must be the FIRST ones
     // because the correspond with the five glyph types in doNumericalDisplay
@@ -1227,6 +1275,8 @@ GLOBAL static uint8_t glyphTable[22][4] =
     {GLYPH_3x5_T, GLYPH_3x5_R, GLYPH_3x5_A, GLYPH_3x5_N},   // TRAN
     {GLYPH_3x5_F, GLYPH_3x5_A, GLYPH_3x5_I, GLYPH_3x5_L},   // FAIL
     {GLYPH_3x5_L, GLYPH_3x5_O, GLYPH_3x5_O, GLYPH_3x5_P},   // LOOP
+    {GLYPH_3x5_M, GLYPH_3x5_O, GLYPH_3x5_R, GLYPH_3x5_E},   // MORE
+    {GLYPH_3x5_C, GLYPH_3x5_A, GLYPH_3x5_N, GLYPH_3x5_T},   // CANT
     };
 
 

@@ -134,7 +134,7 @@ uint16_t div10(uint16_t dividend);
 // Range of 0...16391
 //
 // Note that you could instead do div6(dividend) >> 1, but it
-// is slightly slower and has the same range.
+// is slightly slower and has basically the same range.
 //
 uint16_t div12(uint16_t dividend);
 

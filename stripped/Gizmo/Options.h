@@ -122,9 +122,10 @@ struct _options
 #endif
 
 #ifdef INCLUDE_DRUM_SEQUENCER
-    uint8_t drumSequencerNoEcho;
     uint8_t drumSequencerSendClock;
 	int8_t drumSequencerPlayAlongChannel;
+	uint8_t drumSequencerResetOnStop;
+	uint8_t drumSequencerDefaultVelocity;
 #endif
 
 #ifdef INCLUDE_RECORDER

@@ -195,7 +195,7 @@ void stateGauge()
                     // FALL THRU
                     case MIDI_CC_14_BIT:
                         {
-                        str = cc_p;
+                        str = PSTR("CC");
                         }
                     break;
                     case MIDI_NRPN_14_BIT:
@@ -204,7 +204,7 @@ void stateGauge()
                         // FALL THRU
                     case MIDI_NRPN_DECREMENT:
                         {
-                        str = nrpn_p;
+                        str = PSTR("NRPN");
                         }
                     break;
                     case MIDI_RPN_14_BIT:
@@ -213,7 +213,7 @@ void stateGauge()
                         // FALL THRU
                     case MIDI_RPN_DECREMENT:
                         {
-                        str = rpn_p;
+                        str = PSTR("RPN");
                         if (itemValue == RPN_NULL)  // note FALL THRU
                             {
                             newItem = NO_NEW_ITEM;

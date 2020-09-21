@@ -22,7 +22,8 @@
 #define CONSUME_MIDI_CLOCK 1     // Use external MIDI clock, but don't pass it through
 #define IGNORE_MIDI_CLOCK 2      // Use our own internal clock, but pass any MIDI clock through
 #define GENERATE_MIDI_CLOCK 3    // Use our own internal clock and emit a MIDI clock from it, rather than passing through any MIDI clock
-#define BLOCK_MIDI_CLOCK 4       // Use our own internal clock.  Don't pass through or emit any MIDI clock.
+#define MERGE_MIDI_CLOCK 4    	// Use our own internal clock and emit a MIDI clock from it, rather than passing through any MIDI clock, even if bypass is on
+#define BLOCK_MIDI_CLOCK 5       // Use our own internal clock.  Don't pass through or emit any MIDI clock.
 
 
 // Some useful predicates
@@ -235,6 +236,13 @@ extern uint8_t itemChannel;				// Channel of the incoming item.  One of 1...16
 #define CC_EXTRA_PARAMETER_8				  117
 #define CC_EXTRA_PARAMETER_9				  118
 #define CC_EXTRA_PARAMETER_10				  119
+
+#define CC_EXTRA_PARAMETER_11				  110
+#define CC_EXTRA_PARAMETER_12				  111
+#define CC_EXTRA_PARAMETER_13				  112
+#define CC_EXTRA_PARAMETER_14				  113
+#define CC_EXTRA_PARAMETER_15				  114
+#define CC_EXTRA_PARAMETER_16				  115
 
 
 

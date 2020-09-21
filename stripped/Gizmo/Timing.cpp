@@ -87,7 +87,6 @@ GLOBAL uint8_t beat;
 
 
 
-
 ///// UPDATE TICKS AND WAIT
 ///// Called only by loop().  This does a delay the proper amount of time
 ///// in order sleep to the next tick, then updates the tick.
@@ -114,14 +113,18 @@ void updateTicksAndWait()
     ++tickCount;
     }
 
+/*
 // Returns whether we are using a clock command which allows us to emit a clock message
 // in response to a button press, internal pulse, or 
 uint8_t shouldEmitClockMessages()
     {
-    return      !bypass &&
-        (options.clock == GENERATE_MIDI_CLOCK ||
-        options.clock == USE_MIDI_CLOCK);
+    return      
+    	options.clock == MERGE_MIDI_CLOCK ||
+    	(!bypass &&
+        	(options.clock == GENERATE_MIDI_CLOCK ||
+        	options.clock == USE_MIDI_CLOCK));
     }
+*/
 
 
 uint32_t lastExternalPulseTime = 0;
@@ -174,10 +177,12 @@ void updateExternalClock()
 
 void sendClock(midi::MidiType signal, uint8_t fromButton)
     {
-    if (!bypass &&                                                                                                      // don't send if I'm bypassed
-            (       (options.clock == IGNORE_MIDI_CLOCK && !fromButton) ||  // allow a send if I'm IGNORING -- ignore calls this to pass it through
+    if (options.clock == MERGE_MIDI_CLOCK ||				// allow a send if I'm MERGING AND a button was pressed regardless of bypass
+    	(!bypass &&                                         // don't send if I'm bypassed
+            (
+            (options.clock == IGNORE_MIDI_CLOCK && !fromButton) ||  // allow a send if I'm IGNORING -- ignore calls this to pass it through
             (options.clock == USE_MIDI_CLOCK && !fromButton) ||             // allow a send if I'm USING (and passing through) but NOT if the button was pressed
-            (options.clock == GENERATE_MIDI_CLOCK)))        // allow a send if I'm GENERATING AND a button was pressed
+            (options.clock == GENERATE_MIDI_CLOCK))))	        // allow a send if I'm GENERATING AND a button was pressed		
         {
         MIDI.sendRealTime(signal);
         TOGGLE_OUT_LED();
@@ -379,8 +384,24 @@ void setPulseRate(uint16_t bpm)
     }
 
   
-
-
+///// SET NOTE PULSE RATE
+///// Given a note speed type (various NOTE_SPEED_* values defined in LEDDisplay.h), sets up
+///// the global variables such that the system issues a NOTE PULSE at that rate.
+void setRawNotePulseRate(uint8_t rate, uint8_t sync)
+    {
+    uint8_t oldNotePulseRate = notePulseRate;
+    notePulseRate = rate;
+    if (oldNotePulseRate != notePulseRate && sync)  // no need to create a new countdown, and the blip with it
+        {
+        notePulseCountdown = ((uint8_t)(pulseCount % notePulseRate)) + 1;
+        drawNotePulseToggle = (uint8_t)((pulseCount / notePulseRate) & 1);          // that is, %2
+        }
+    else
+    	{
+        notePulseCountdown = notePulseRate;
+    	}
+    }
+    
 //// Table of note pulse rates corresponding to each note speed (such as NOTE_SPEED_QUARTER)
 GLOBAL static uint8_t notePulseRateTable[16] = { 1, 2, 3, 4, 6, 8, 12, 16, 18, 24, 36, 48, 72, 96, 144, 192 };
 
@@ -389,14 +410,15 @@ GLOBAL static uint8_t notePulseRateTable[16] = { 1, 2, 3, 4, 6, 8, 12, 16, 18, 2
 ///// the global variables such that the system issues a NOTE PULSE at that rate.
 void setNotePulseRate(uint8_t noteSpeedType)
     {
-    uint8_t oldNotePulseRate = notePulseRate;
-    notePulseRate = notePulseRateTable[noteSpeedType];
-    if (oldNotePulseRate != notePulseRate)  // no need to create a new countdown, and the blip with it
-        {
-        notePulseCountdown = ((uint8_t)(pulseCount % notePulseRate)) + 1;
-        drawNotePulseToggle = (uint8_t)((pulseCount / notePulseRate) & 1);          // that is, %2
-        }
+    setRawNotePulseRate(notePulseRateTable[noteSpeedType], true);
     }
+
+///// GET NOTE PULSE RATE FOR
+///// Returns what the note pulse rate would be for the given speed type.
+uint8_t getNotePulseRateFor(uint8_t noteSpeedType)
+	{
+	return notePulseRateTable[noteSpeedType];
+	}
 
 uint32_t getMicrosecsPerPulse()
     {
@@ -461,7 +483,8 @@ void updateTimers()
             }
             
         if (options.clock == USE_MIDI_CLOCK ||
-            options.clock == GENERATE_MIDI_CLOCK)
+            options.clock == GENERATE_MIDI_CLOCK ||
+            options.clock == MERGE_MIDI_CLOCK)
             sendDividedClock();
         }
     }

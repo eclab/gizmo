@@ -113,7 +113,7 @@ void stateRecorderPlay()
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
         ended = ENDED;
-        goUpState(STATE_RECORDER_SURE);
+        goUpState(STATE_RECORDER_EXIT);
         }
         
     // The middle button does play/stop

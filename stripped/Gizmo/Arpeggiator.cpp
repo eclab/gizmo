@@ -154,6 +154,9 @@ void playArpeggio()
             if (local.arp.number <= ARPEGGIATOR_NUMBER_ASSIGN)
                 {
                 int16_t max = local.arp.numChordNotes * (int16_t)(options.arpeggiatorPlayOctaves + 1) - 1;
+                if (local.arp.number == ARPEGGIATOR_NUMBER_UP_DOWN_2)
+                	max++;
+                	
                 switch(local.arp.number)
                     {
                     case ARPEGGIATOR_NUMBER_ASSIGN:
@@ -188,8 +191,8 @@ void playArpeggio()
                         }
                     break;
                     case ARPEGGIATOR_NUMBER_UP_DOWN:
+                    case ARPEGGIATOR_NUMBER_UP_DOWN_2:
                         {
-                        
                         if (!local.arp.goingDown)
                             {
                             local.arp.currentPosition++;
@@ -199,15 +202,17 @@ void playArpeggio()
                             local.arp.currentPosition--;
                             }
                         
+                        //.... then .....
+                        
                         if (local.arp.currentPosition < 0)
                             {
                             local.arp.goingDown = 0;
                             local.arp.currentPosition = ((local.arp.numChordNotes == 1) ? 0 : 1);
                             }
-                        else if (local.arp.currentPosition >= max)
+                        else if (local.arp.currentPosition > max)
                             {
                             local.arp.goingDown = 1;
-                            local.arp.currentPosition = max;
+                            local.arp.currentPosition = ((local.arp.numChordNotes == 1) ? max : max - 1);
                             }
                         }
                     break;
@@ -443,7 +448,7 @@ void stateArpeggiator()
         local.arp.transpose = 0;
         sendAllSoundsOff();
         }
-    const char* menuItems[17] = { PSTR(STR_UP), PSTR(STR_DOWN), PSTR(STR_UP_DOWN), PSTR("RANDOM"), PSTR("ASSIGN"), PSTR("CHORD"), PSTR("0"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("CREATE")};
+    const char* menuItems[17] = { PSTR(STR_UP), PSTR(STR_DOWN), PSTR(STR_UP_DOWN "+"), PSTR("RANDOM"), PSTR("ASSIGN"), PSTR("CHORD"), PSTR("0"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("CREATE")};
     result = doMenuDisplay(menuItems, 17, STATE_NONE,  STATE_ROOT, 1);
 
     entry = true;
@@ -475,7 +480,7 @@ void stateArpeggiator()
         }
     }
 
-GLOBAL static uint8_t arpeggiatorGlyphs[6] = { GLYPH_3x5_UP, GLYPH_3x5_DOWN, GLYPH_3x5_UP_DOWN, GLYPH_3x5_R, GLYPH_3x5_A, GLYPH_3x5_C };
+GLOBAL static uint8_t arpeggiatorGlyphs[7] = { GLYPH_3x5_UP, GLYPH_3x5_DOWN, GLYPH_3x5_UP_DOWN, GLYPH_3x5_UP_DOWN, GLYPH_3x5_R, GLYPH_3x5_A, GLYPH_3x5_C };
 
 // Handle the menu structure for playing an arpeggio
 void stateArpeggiatorPlay()
@@ -511,9 +516,11 @@ void stateArpeggiatorPlay()
                 pos = local.arp.currentPosition - 6;
             drawArpeggio(led2, pos, EDIT_CURSOR_POS);
             }
-        else 
+        else
             {
             write3x5Glyph(led2, arpeggiatorGlyphs[local.arp.number], 0);
+        	if (local.arp.number == ARPEGGIATOR_NUMBER_UP_DOWN_2)
+            	write3x5Glyph(led2, GLYPH_3x5_PLUS, 4);
             }
             
         if (local.arp.steadyNoteOff != NO_NOTE)
@@ -871,7 +878,7 @@ void stateArpeggiatorCreateEdit()
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
         sendAllSoundsOff();
-        state = STATE_ARPEGGIATOR_CREATE_SURE;
+        state = STATE_ARPEGGIATOR_CREATE_EXIT;
         }
     else if (isUpdated(SELECT_BUTTON, PRESSED))
         {

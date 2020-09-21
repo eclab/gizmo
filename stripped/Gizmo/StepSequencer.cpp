@@ -293,7 +293,7 @@ void stateStepSequencerMenuPerformanceKeyboard()
 void stateStepSequencerMenuPerformanceRepeat()  
     {
     // This is forever, 1 time, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 24, 32, 64, 128 times 
-    const char* menuItems[16] = {  PSTR("FOREVER"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("8"), PSTR("9"), PSTR("12"), PSTR("16"), PSTR("18"), PSTR("24"), PSTR("32"), PSTR("64"), PSTR("128") };
+    const char* menuItems[16] = {  PSTR("LOOP"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("8"), PSTR("9"), PSTR("12"), PSTR("16"), PSTR("18"), PSTR("24"), PSTR("32"), PSTR("64"), PSTR("128") };
     if (entry) 
         {
         defaultMenuValue = data.slot.data.stepSequencer.repeat & 0x0F;
@@ -311,6 +311,7 @@ void stateStepSequencerMenuPerformanceRepeat()
         case MENU_SELECTED:
             {
             data.slot.data.stepSequencer.repeat = ((data.slot.data.stepSequencer.repeat & 0xF0) | (currentDisplay & 0x0F));
+			resetStepSequencerCountdown();
             goUpState(immediateReturnState);
             }
         break;
@@ -848,7 +849,7 @@ void stateStepSequencerPlay()
             {
             //// EXIT SEQUENCER
             setParseRawCC(false);
-            goUpState(STATE_STEP_SEQUENCER_SURE);
+            goUpState(STATE_STEP_SEQUENCER_EXIT);
             }
         }
     else if (isUpdated(MIDDLE_BUTTON, RELEASED))
@@ -936,21 +937,20 @@ void stateStepSequencerPlay()
                     local.stepSequencer.currentEditPosition = incrementAndWrap(local.stepSequencer.currentEditPosition, trackLen);  
                     local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
                     }
-                else
-                    // don't add if a rest precedes it or a tie is after it
-                    if (((data.slot.data.stepSequencer.buffer[v + 1] == 0) &&           // rest before
+				// don't add if a rest precedes it or a tie is after it
+               else if (((data.slot.data.stepSequencer.buffer[v + 1] == 0) &&           // rest before
                             (data.slot.data.stepSequencer.buffer[v] == 0)) ||
                             ((data.slot.data.stepSequencer.buffer[v2 + 1] == 1) &&          // tie after
                             (data.slot.data.stepSequencer.buffer[v2] == 0)))
-                        {
-                        // do nothing
-                        }
-                    else
-                        {
-                        loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + local.stepSequencer.currentEditPosition, 1, 0);
-                        local.stepSequencer.currentEditPosition = incrementAndWrap(local.stepSequencer.currentEditPosition, trackLen);
-                        local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
-                        }
+					{
+					// do nothing
+					}
+				else
+					{
+					loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + local.stepSequencer.currentEditPosition, 1, 0);
+					local.stepSequencer.currentEditPosition = incrementAndWrap(local.stepSequencer.currentEditPosition, trackLen);
+					local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
+					}
                 }
             else 
                 {
@@ -964,7 +964,6 @@ void stateStepSequencerPlay()
     else if (isUpdated(SELECT_BUTTON, RELEASED))
         {
         //// START / STOP
-        
         if (options.stepSequencerSendClock)
             {
             // we always stop the clock just in case, even if we're immediately restarting it
@@ -1008,6 +1007,7 @@ void stateStepSequencerPlay()
                 {
                 //// ENTER PERFORMANCE MODE
                 local.stepSequencer.performanceMode = true;
+                local.stepSequencer.goNextSequence = false;
                 resetStepSequencerCountdown();    // otherwise we'll miss jumps to other sequences
                 setParseRawCC(true);
                 }

@@ -221,6 +221,8 @@ void drawMIDIChannel(uint8_t channel);
 #define GLYPH_TRANSPOSE 19								// TRAN
 #define GLYPH_FAIL 20									// FAIL
 #define GLYPH_LOOP 21									// LOOP
+#define GLYPH_MORE 22									// MORE
+#define GLYPH_CANT 23									// CANT
 
 #define GLYPH_OTHER (254)	// reserved to represent "use this glyph instead"
 #define GLYPH_NONE	(255)	// reserved to represent "no glyph"
@@ -284,13 +286,29 @@ void stateSave(uint8_t backState);
 void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint8_t defaultState);
 
 
+///// Call this repeatedly from your EXIT? state to query the user about whether he really wants
+///// to do something (typically to cancel via clicking the back button)
+///// cancelState             	where we should go after the user has pressed the SELECT button,
+/////                                   typically indicating that he DOESN'T want to exit.
+///// exitState                 where we should go after the user has pressed the BACK button,
+/////                                   typically indicating that he WANTS to exit.
+///// On exiting, the cancelState will be set to be the default state for menu display,
+///// and ALL NOTES OFF will be sent.
+void stateExit(uint8_t cancelState, uint8_t exitState);
+
+
 ///// Call this repeatedly from your SURE? state to query the user about whether he really wants
 ///// to do something (typically to cancel via clicking the back button)
-///// selectedState             where we should go after the user has pressed the SELECT button,
-/////                                   typically indicating that he DOESN'T want to go back.
-///// backState                 where we should go after the user has pressed the BACK button,
-/////                                   typically indicating that he WANTS to go back.
-void stateSure(uint8_t selectedState, uint8_t backState);
+///// cancelState             	where we should go after the user has pressed the BACK button,
+/////                                   typically indicating that he DOESN'T want to proceed.
+///// sureState                 where we should go after the user has pressed the SELECT button,
+/////                                   typically indicating that he WANTS to go proceed.
+void stateSure(uint8_t cancelState, uint8_t sureState);
+
+
+///// Call this repeatedly to print CANT and to indicate something that is not currently possible.
+///// nextState             	where we should go after the user has pressed the BACK or SELECT buttons
+void stateCant(uint8_t nextState);
 
 
 ///// Call this repeatedly from your notional "please enter a note" state to query the user about what note he'd like.

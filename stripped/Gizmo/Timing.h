@@ -69,6 +69,10 @@ extern uint32_t currentTime;
 // 1/3125 sec is exactly 320 microsec
 #define TARGET_TICK_TIMESTEP 320
 
+// 1073741823 is 4294967296 / 4
+#define ROLLOVER_BUFFER_LOW ( 1073741823 )
+#define ROLLOVER_BUFFER_HIGH ( 4294967295 - 1073741823 )
+
 /// Estimated time of the next TICK (in microseconds)
 extern uint32_t targetNextTickTime; 
 
@@ -136,13 +140,19 @@ extern uint8_t swingToggle;
 // how much time should we delay?
 extern uint32_t swingTime;
 
+///// SET RAW NOTE PULSE RATE
+///// Given a note speed type (various NOTE_SPEED_* values defined in LEDDisplay.h), sets up
+///// the global variables such that the system issues a NOTE PULSE at that rate.
+void setRawNotePulseRate(uint8_t rate, uint8_t sync);
+
 ///// SET NOTE PULSE RATE
 ///// Given a note speed type (various NOTE_SPEED_* values defined in LEDDisplay.h), sets up
 ///// the global variables such that the system issues a NOTE PULSE at that rate.
 void setNotePulseRate(uint8_t _noteSpeedType);
 
-
-
+///// GET NOTE PULSE RATE FOR
+///// Returns what the note pulse rate would be for the given speed type.
+uint8_t getNotePulseRateFor(uint8_t noteSpeedType);
 
 
 //// BEATS

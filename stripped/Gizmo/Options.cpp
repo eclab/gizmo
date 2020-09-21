@@ -79,6 +79,10 @@ void resetOptions()
     options.splitLayerNote = NO_NOTE;
 #endif
 
+#ifdef INCLUDE_DRUM_SEQUENCER
+    options.drumSequencerDefaultVelocity = 5;
+#endif
+
 #ifdef INCLUDE_MEASURE
     options.measureBeatsPerBar = 4;
     options.measureBarsPerPhrase = 4;

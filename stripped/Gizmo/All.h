@@ -105,9 +105,13 @@
 
 #define INCLUDE_MEGA_POTS
 
+#ifdef INCLUDE_DRUM_SEQUENCER
+#define MENU_ITEMS()     const char* menuItems[11] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("DRUM SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), options_p };
+#define NUM_MENU_ITEMS  (11)
+#else
 #define MENU_ITEMS()     const char* menuItems[10] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), options_p };
 #define NUM_MENU_ITEMS  (10)
-
+#endif
 
 //// NOTE: To include the Sysex dump facility, you not only uncomment the INCLUDE_SYSEX line below, but
 //// you ALSO must go into the "midi_Settings.h" file in the Forty Seven Effects MIDI library and change the line 
@@ -157,9 +161,9 @@
 // #define INCLUDE_THRU
 // #define INCLUDE_SYNTH
 // #define INCLUDE_MEASURE
-// #define INCLUDE_DRUM_SEQUENCER
+// #define INCLUDE_DRUM_SEQUENCER		// TOO BIG
 
-#define NUM_MENU_ITEMS  (2)
+#define NUM_MENU_ITEMS  (2)   		/// has to include Options
 
 #ifdef INCLUDE_ARPEGGIATOR
 #define MENU_ITEMS()     const char* menuItems[2] = { PSTR("ARPEGGIATOR"), options_p };

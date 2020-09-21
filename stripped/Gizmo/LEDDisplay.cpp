@@ -39,6 +39,8 @@
 
 
 /// Defines which make it easy to write bitmap fonts
+// The << 3 shifts the 5 bits to the top of the LED screen
+
 #define A00000A  (0 << 3)
 #define A10000A  (1 << 3)
 #define A01000A  (2 << 3)
@@ -73,18 +75,16 @@
 #define A11111A  (31 << 3)
 
 
-/*
   const char PROGMEM font_2x5[1][2] = {
   { //1
   A00010A,
   A11111A
   },
   };
-*/
 
 
 // This semicolon is critical to clue Emacs into properly
-// indenting the following array
+// indenting the following array.  Go figure.
 ;
 
 const char PROGMEM font_3x5[47][3] = {
@@ -364,7 +364,7 @@ const char PROGMEM font_4x5[19][4] = {
         A10111A,
         A11101A
         },  
-        { //16
+        { //16          // Not very readable
         A11111A,
         A01110A,
         A10101A,
@@ -376,13 +376,13 @@ const char PROGMEM font_4x5[19][4] = {
         A11101A,
         A00011A
         },  
-        { //18
+        { //18          // Not very readable
         A11111A,
         A01110A,
         A10101A,
         A01110A
         },  
-        { //19
+        { //19          // Not very readable
         A11111A,
         A00010A,
         A00101A,
@@ -490,21 +490,17 @@ const char PROGMEM font_5x5[5][5] = {
 /////   Fixed width 8-wide glyphs
 /////
 /////   Many of these are representations of different note lengths:
-/////   Half-Triplet (1/24), 1/16, 1/12 (triplet), 1/8, 1/4, 1/3 (1/4 + triplet), 1/2, 3/4 (dotted half), 1 (whole), 1.5 (dotted whole), 2 (double whole)
+/////   Eighth-Triplet (1/96), Quarter-Triplet (1/48), 32nd note (1/32) Half-Triplet (1/24), 1/16, 1/12 (triplet), 1/8, 1/4, 1/3 (1/4 + triplet), 1/2, 3/4 (dotted half), 1 (whole), 1.5 (dotted whole), 2 (double whole)
 /////
-/////   Additionally, we have squished representations of the numbers -60...-64
-/////   which are used internally to display those numbers
+/////   Additionally, we have infinity, 1/8, 1/6, 1/4, 1/3, and 1/2.
 /////
-/////   And we have the fractions 1/2, 1/3, 1/4, 1/6, and 1/8, and the infinity sign
-/////
-/////   And we have the number 211 to represent a sequencer pattern 2 + 1 + 1 that
-/////   isn't normally drawn using writeNumber
+/////	Plus we have some two-part glyphs: "SURE?", "GIZMO x" (for various numbers x: 8 bits high), and some waves that I'm not using right now.
 
 const char PROGMEM font_8x5[
 #ifdef INCLUDE_EXTENDED_FONT        
-    38
+    40
 #else
-    26
+    28
 #endif
     ][8] = {
         { // 1/96 note (eighth-triplet) [1 MIDI clock beat]
@@ -771,6 +767,26 @@ const char PROGMEM font_8x5[
             A10101A,
             A00011A
             },
+            { // EXIT? pt 1
+            A11111A,
+            A10101A,
+            A10101A,
+            A00000A,
+            A11011A,
+            A00100A,
+            A11011A,
+            A00000A,
+            },
+            { // EXIT? pt 2
+            A11111A,
+            A00000A,
+            A00001A,
+            A11111A,
+            A00001A,
+            A00000A,
+            A10101A,
+            A00011A
+            },
 
         // NOTE we're using gcc's 0b.... syntax.
         // This is not portable of course, but who cares.
@@ -790,16 +806,38 @@ const char PROGMEM font_8x5[
             0b10110101,
             },
         
-            { // GIZMO VERSION 5 pt 2
+            { // GIZMO VERSION 7 pt 2
             0b11010101,
             0b10010111,
             0b00000000,
             0b00000000,
-            0b01110100,
-            0b01010100,
-            0b01001000,
+            0b01001100,
+            0b01010000,
+            0b01100000,
             0b00000000,
             },
+
+//            { // GIZMO VERSION 6 pt 2
+//            0b11010101,
+//            0b10010111,
+//            0b00000000,
+//            0b00000000,
+//            0b01111100,
+//            0b01010100,
+//            0b01011100,
+//            0b00000000,
+//            },
+
+//            { // GIZMO VERSION 5 pt 2
+//            0b11010101,
+//            0b10010111,
+//            0b00000000,
+//            0b00000000,
+//            0b01110100,
+//            0b01010100,
+//            0b01001000,
+//            0b00000000,
+//            },
 
 //            { // GIZMO VERSION 4 pt 2
 //            0b11010101,
@@ -1699,7 +1737,7 @@ void writeNote(unsigned char* mat, unsigned char note)
 
 /// Draws a series of points horizontally corresponding to a value from 0...(total-1)
 /// This series draws to the right, then undraws to the right, and starts at column X
-/// in row Y.  Generally, total should be an even number.
+/// in row Y.  TOTAL ought to be an even number, up to 52, even if you don't use all of it.
 ///
 /// An example.  Let us say that TOTAL is 8.  Then we will draw up to 4 points like this:
 /// (an X is a point, a . is an unlit LED)
@@ -1708,25 +1746,152 @@ void writeNote(unsigned char* mat, unsigned char note)
 /// 1:  XX..
 /// 2:  XXX.
 /// 3:  XXXX
-/// 4:      .XXX
+/// 4:  .XXX
 /// 5:  ..XX
 /// 6:  ...X
 /// 7:  ....
+/// 
+/// If the total is 16, then we draw 0...15 as:
+
+///  0: X.......
+///  1: XX......
+///  2: XXX.....
+///  3: XXXX....
+///  4: XXXXX...
+///  5: XXXXXX..
+///  6: XXXXXXX.
+///  7: XXXXXXXX
+///  8: .XXXXXXX
+///  9: ..XXXXXX
+/// 10: ...XXXXX
+/// 11: ....XXXX
+/// 12: .....XXX
+/// 13: ......XX
+/// 14: .......X
+/// 15: ........
+
+/// If the total is > 16, then we draw 16...26 as:
+
+/// 16: X.X.....
+/// 17: X.XX....
+/// 18: X.XXX...
+/// 19: X.XXXX..
+/// 20: X.XXXXX.
+/// 21: X.XXXXXX
+/// 22: X..XXXXX
+/// 23: X...XXXX
+/// 24: X....XXX
+/// 25: X.....XX
+/// 26: X......X
+
+/// If the total is > 27, then we draw 27...35 as:
+
+/// 27: XX.X....
+/// 28: XX.XX...
+/// 29: XX.XXX..
+/// 30: XX.XXXX.
+/// 31: XX.XXXXX
+/// 32: XX..XXXX
+/// 33: XX...XXX
+/// 34: XX....XX
+/// 35: XX.....X
+
+/// If the total is > 36, then we draw 36...42 as:
+
+/// 36: XXX.X...
+/// 37: XXX.XX..
+/// 38: XXX.XXX.
+/// 39: XXX.XXXX
+/// 40: XXX..XXX
+/// 41: XXX...XX
+/// 42: XXX....X
+
+/// If the total is > 43, then we draw 43...48 as:
+
+/// 43: XXXX.X..
+/// 44: XXXX.XX.
+/// 45: XXXX.XXX
+/// 46: XXXX..XX
+/// 47: XXXX...X
+
+/// If the total is > 48, then we draw 48...50 as:
+
+/// 48: XXXXX.X.
+/// 49: XXXXX.XX
+/// 50: XXXXX..X
+
+/// If the total is > 51, then we draw 51 as:
+
+/// 51: XXXXXX.X
+
 void drawRange(uint8_t *mat, uint8_t x, uint8_t y, uint8_t total, uint8_t val)
     {
-    uint8_t halftotal = (total >> 1);
-    if (val < halftotal)
-        {
-        for(uint8_t i = 0; i < val + 1; i++)
-            {
-            setPoint(mat, i + x, y);
-            }
-        }
+    if (total > 16)
+    	{
+		if (val == 51)
+			{
+			for(uint8_t i = 0; i < 6; i++)
+				{
+				setPoint(mat, i + x, y);
+				}
+			setPoint(mat, 7 + x, y);
+			}
+		else if (val >= 48)
+			{
+			for(uint8_t i = 0; i < 5; i++)
+				{
+				setPoint(mat, i + x, y);
+				}
+			drawRange(mat, x + 6, y, 4, val - 48);
+			}
+		else if (val >= 43)
+			{
+			for(uint8_t i = 0; i < 4; i++)
+				{
+				setPoint(mat, i + x, y);
+				}
+			drawRange(mat, x + 5, y, 6, val - 43);
+			}
+		else if (val >= 36)
+			{
+			for(uint8_t i = 0; i < 3; i++)
+				{
+				setPoint(mat, i + x, y);
+				}
+			drawRange(mat, x + 4, y, 8, val - 36);
+			}
+		else if (val >= 27)
+			{
+			setPoint(mat, 0 + x, y);
+			setPoint(mat, 1 + x, y);
+			drawRange(mat, x + 3, y, 10, val - 27);
+			}
+		else if (val >= 16)
+			{
+			setPoint(mat, 0 + x, y);    	
+			drawRange(mat, x + 2, y, 12, val - 16);
+			}
+		else
+			{
+			drawRange(mat, x, y, 16, val);
+			}
+		}
     else
-        {
-        for(uint8_t i = val - halftotal + 1; i < halftotal; i++)
-            setPoint(mat, i + x, y);
-        } 
+    	{
+		uint8_t halftotal = (total >> 1);
+		if (val < halftotal)
+			{
+			for(uint8_t i = 0; i < val + 1; i++)
+				{
+				setPoint(mat, i + x, y);
+				}
+			}
+		else
+			{
+			for(uint8_t i = val - halftotal + 1; i < halftotal; i++)
+				setPoint(mat, i + x, y);
+			} 
+		}
     }
 
 
@@ -1742,6 +1907,15 @@ void writeNotePitch(unsigned char* mat, unsigned char note)
     // 12 here so it divides by 2 nicely
     
     drawRange(mat, 0, 1, 12, (uint8_t) octave);
+    }
+
+// Prints a note to one matrix and its octave to the other
+void writeNotePitchLong(unsigned char* mat, unsigned char* mat2, unsigned char note)
+    {
+    uint16_t octave = div12(note);
+    uint16_t n = DIV12_REMAINDER(octave, note);
+    writeNote(mat, (uint8_t) n);
+	writeShortNumber(mat2, octave, true);
     }
 
 

@@ -542,7 +542,7 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
         lockoutPots = 1;
 
         if ((number >= 64 && number < 96) ||
-            (number >= 116 && number < 119))
+            (number >= 110 && number < 119))
             {
             newItem = NEW_ITEM;
             itemType = MIDI_CUSTOM_CONTROLLER;
@@ -709,7 +709,7 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
     // all values that come in are 14 bit with the MSB in the top 7 bits
     // and either the LSB *or* ZERO in the bottom 7 bits, EXCEPT for VALUE_7_BIT_ONLY,
     // which is just the raw number
-    if (updateMIDI(channel, MIDI_CC_14_BIT, number, value))
+    else if (updateMIDI(channel, MIDI_CC_14_BIT, number, value))
         {
         newItem = NEW_ITEM;
         switch (type)
