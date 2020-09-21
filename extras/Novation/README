@@ -1,3 +1,15 @@
 This directory contains a template for controlling Gizmo via
-the Novation ReMOTE SL series or the Novation ReMOTE Compact
-series (I've tested on the Zero Mk ii and on the Compact 25SL).
+the Novation ReMOTE SL series (I've tested on the Zero Mk ii).
+
+Gizmo.syx
+This template is a combined template for the Arpeggiator
+and the Step Sequencer
+
+GizmoLayout.pdf
+PDF cheat sheet for Gizmo.syx
+
+GizmoDrum.syx
+This template is just for the Drum Sequencer
+
+GizmoDrumLayout.pdf
+PDF cheat sheet for GizmoDrum.syx
