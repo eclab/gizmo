@@ -348,9 +348,6 @@ uint8_t continueClock(uint8_t fromButton)
     if (fromButton && (USING_EXTERNAL_CLOCK() || clockState != CLOCK_STOPPED))
         return 0;
 
-    if (clockState != CLOCK_STOPPED)
-        return 0;
-
     sendClock(MIDIContinue, fromButton);
         
     clockState = CLOCK_RUNNING;
