@@ -268,7 +268,6 @@ struct _stepSequencerLocal
     uint8_t currentTrack;           // which track are we editing?
     uint8_t backup;      			// used for backing up data to restore it                                                           // used to back up various values when the user cancels
     int16_t currentRightPot;		// Current X position of cursor
-//    uint8_t clearTrack;
     };
 
 

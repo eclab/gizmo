@@ -45,6 +45,8 @@ Gizmo comes built-in with a number of applications and other capabilities.  All 
 
 \item {\bf Step Sequencer.}\quad Gizmo's step sequencer can be organized as 12 16-note tracks, 8 24-note tracks, 6 32-note tracks, 4 48-note tracks or 3 64-note tracks.  Each note in a track can have its own unique pitch and velocity, or be a rest, or continue (lengthen, tie) the previous note.  You can also fix the velocity for an entire track, mute tracks, fade their volume, specify their independent output MIDI channels, specify the note value relative to the tempo (again ranging from eighth triplets to double whole notes), the note length as a percentage of the note value (how legato or staccato a note is), and the degree of swing (syncopation).   In addition to note data, you can sequence CC, RPN/NRPN, Pitch Bend, Aftertouch, or PC data in the {\bf advanced version of the sequencer}\footnote{This is an \texttt{\#include} option found in \texttt{All.h}} (which only fits on the Mega).  The step sequencer lets you edit in two modes: either by triggering independent steps like a classic drum sequencer, or by playing a sequence of notes.  Gizmo will show and edit sequences on-screen.   You can specify a mute-pattern for each track along four bars of the sequencer.  There's also a ``performance mode'' which allows sequence chaining, playing along, and transposition, among other things.  You can stipulate whether starting/stopping the sequencer will also start/stop the MIDI clock.  You can also have the Sequencer avoid playing notes out as they are entered.  The Arduino Uno can store up to two sequences in its slots (shared with the Recorder, discussed next).  The Mega can store up to nine sequences.
 
+\item {\bf Drum Sequencer.}\quad The drum sequencer is similar to the step sequencer but has many features more oriented towards controlling drum synthesizers in the vein of a drum machine, rather than playing notes.  Whereas the step sequencer repeats a single 16-to-64-step sequence, the drum sequencer is has up to 15 such sequences (called {\it groups}) and can chain them together in a series of up to 20 transitions from sequence to sequence in order to define drum patterns for an entire song.  Each group can have from 1 to 64 steps, and up to 20 tracks, depending on the organization (there are 16 organization choices). Each track plays a single drum note on a single MIDI channel at a given velocity; the steps in the track simply state when the note should be played.  Like the step sequencer, you can specify a mute pattern for each track (and for each group). You have many speed options, including independent speed of groups, plus swing and other features.  Also like the step sequencer there's an edit mode which allows you to toggle steps X0X style, and another mode which lets you enter notes in real time as the sequencer is playing.  There's also a `performance mode'' which allows chaining, playing along, etc., plus an additional ``group mode'' for changing and editing groups.  You can stipulate whether starting/stopping the sequencer will also start/stop the MIDI clock.    The drum sequencer will only fit on the Mega, and can store up to nine sequences.
+
 \item {\bf Recorder.}\quad The Arduino doesn't have a lot of memory, but we provide a note recorder which records and plays back up to 64 notes (pitch and velocity) played over 21 measures. The recorder has 16-voice polyphony.   It's enough to record a very short ditty.  You can also set the recorder to loop the recording while playing, and to provide a click track.  The Arduino Uno can store up to two recordings in its slots (shared with the Step Sequencer).  The recorder gives you the option of auto-repeating a recording or stopping when it is finished.  The Uno can store up to two recordings; the Mega can store up to nine.
 
 \item {\bf MIDI Gauge.}\quad The gauge will display all incoming MIDI information on one or all channels.  Note on, note off, and polyphonic aftertouch are shown with pitch and velocity (or pressure).  Channel aftertouch is shown with the appropriate pitch.  Program changes indicate the number.  Pitch bends indicate the value in full 14-bit.  Control Change, Channel Mode, NRPN, and RPN messages display the number, value, and whether the value is being set, incremented, or decremented.  Sysex, song position, song select, tune request, start, continue, stop, and system reset are simply noted.  Rapid-fire MIDI signals such as MIDI clock, active sensing, and time code just turn on individual LEDs. You can also read raw Control Change messages (that is, not parsed into NRPN etc.), and provides more useful information on Channel Mode messages.
@@ -83,7 +85,7 @@ Gizmo applications can also be set with a {\it note value} (or {\it note speed})
 
 \item {\bf Transposition and Volume Control.}\quad You can transpose all of Gizmo's MIDI output pitch by anywhere from \(-60...60\) steps.  Additionally you can multiply the MIDI output velocity (volume) by multiples of two ranging from \(1/8\) to \(8\).
 
-\item {\bf \quad Menu Delay.}\quad Many of Gizmo's menus display the first few letters of a menu item, then pause for some interval of time before they start scrolling the full item.  You can change this interval.
+\item {\bf Menu Delay.}\quad Many of Gizmo's menus display the first few letters of a menu item, then pause for some interval of time before they start scrolling the full item.  You can change this interval.
 
 %\item {\bf \quad Sysex Dumps.}\quad Arpeggios, Step Sequences, and Recordings can be uploaded and downloaded to your computer.
 
@@ -1170,7 +1172,7 @@ You can use the transition chain display to just look through the transitions, a
 	\item {\bf Go}\quad Jumps to the group associated with the selected transition.
 	\item {\bf Mark}\quad Sets a transition as the {\bf mark transition} (similar to but not to be confused with the {\it mark} discussed earlier), to be used in the copy and move commands below.
 	\item {\bf Put}\quad Inserts a new transition just before the selected transition.  The current group is placed in this transition, and you then indicate the number of repeated iterations.  This is any of \texttt{LOOP} (meaning ``forever''), 1, 2, 3, 4, 5, 6, 7, 8 9, 10, 12, 16, 24, 32, or 64.  
-	\item {\bf Edit}\quad Edits the selected transition.  You first specify the group for the transition (you'll see a \texttt{G}), or \texttt{DFLT} to select the current group, or \texttt{- - - -} to indicate {\bf more}.  If you selected a group, then you will then specify the number of repeated iterations.  This is any of \texttt{LOOP} (meaning ``forever''), 1, 2, 3, 4, 5, 6, 7, 8 9, 10, 12, 16, 24, 32, or 64.  
+	\item {\bf Edit}\quad Edits the selected transition.  You first specify the group for the transition (you'll see a \texttt{G}), or \texttt{DFLT} to select the current group, or \texttt{- - - -} to indicate {\bf more}.  If you selected a group, then you will then specify the number of repeated iterations.  This is any of \texttt{LOOP} (meaning ``forever''), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, or 64.  
 	If you had selected {\it more} instead of a group (you'll see an {\tt M}), you'll instead be asked to specify a random-group selection or \texttt{END} (meaning ``this transition simply marks the end of the chain'').  The random-group selections are R2-1, R2-2, R2-3, R2-4, R2-L, R3-1, R3-2, R3-3, R3-4, R3-L, R4-1, R4-2, R4-3, R4-4, and R4-L.  The R{\it x} means ``Pick randomly from groups 1...{\it x}'' inclusive).  -1 means ``do one iteration''.  -2 means ``do 2 iterations''.  -3 means ``do 3 iterations''.  And -L means ``loop forever''.
 	\item {\bf Delete}\quad Deletes the selected transition, shifting all higher transitions down one slot to fill its spot.  The empty space now at the topmost transition is replaced with \texttt{END}.
 	\item {\bf Copy}\quad Copies the {\it mark transition}, inserting it before the selected transition, and shifting all higher transitions up one slot to make room.  The topmost transition is removed.  If the mark has not been sent, you'll be told {\tt CANT}.
@@ -1214,6 +1216,7 @@ In MIDI& Out MIDI&Control MIDI&MIDI Clock&Volume\\
 \vspace{1em}
 Of particular use are Tempo, Note Speed, Swing, and especially Click.
 
+The Drum Sequencer also responds to the {\it Transpose} option (because all applications do) but this is a nuisance as it changes the drum notes.  I strongly suggest you set Transpose to 0.
 
 
 \paragraph{Controls Summary}  The Drum Sequencer's controls can be a bit complex.  Here's what they do in each mode.  Note that once you're changing the tempo, you can also tap the middle button to adjust the tempo in addition to moving the knob.
@@ -1242,14 +1245,24 @@ Right Knob				& Change Step {\it or} &  Edit Mode &  Edit Mode&Change Tempo\\
 
 Note that the Set... CCs transfer to the relevant menu, then act as proxies for the left knob.  This means that once you've transferred to a menu, {\it any} of them can be used to set the menu, along with the left knob CC.  This can be confusing.
 
+A few of these options are only available over CC: you can't do them directly with buttons or knobs on the Arduino.  These are:
+
+\begin{itemize}
+\item {\bf Previous Group}\quad This is just like Next Group, except that it moves backwards through the groups rather than forwards.
+\item {\bf Schedule Next Sequence}\quad This works like the Step Sequencer's version: at the end of the current iteration, Gizmo will transition to the next sequence, or if there is no next sequence it will stop.  If the next sequence has been scheduled, then the Next Transition Trigger LED blinks rapidly. You can unschedule by pressing the button again. 
+\end{itemize}
+
+Also note that {\bf Save} (CC 25) is in an unusual position.
+
+
 \vspace{1em}
 \noindent {\small
-\begin{tabular}{@{}rll@{}}
+\begin{tabular}{@{}rll@{}l@{}}
 \it CC Number & \it CC Value	& \it Operation\\
 \hline\\[-0.5em]
 64 ... 83	&	Any	& Go to Track \(n - 63\), that is, track 1...20\\
 84	&	Any		& Set Drum Note\\
-85	&	Any		& Previous Group\\
+85	&	Any		& Previous Group&{\it Only available via CC}\\
 86	&	Any		& Next Group\\
 87	&	Any		& Toggle (or Schedule) Mute\\
 88	&	Any		& Toggle (or Schedule) Solo\\
@@ -1268,22 +1281,23 @@ Note that the Set... CCs transfer to the relevant menu, then act as proxies for 
 117	&	Any		& Accent Track\\
 118	&	Any		& Distribute Track Info\\
 119	&	Any		& Pause\\
-16	&	0--127		& Set Group Speed Multiplier (press Select to set, Back to cancel)\\
-17	&	0--127		& Set Track MIDI Out (press Select to set, Back to cancel)\\
-18	&	0--127		& Set Track Velocity (press Select to set, Back to cancel)\\
-19	&	0--127		& Set Group Length (press Select to set, Back to cancel)\\
-20	&	0--127		& Set Track Pattern (press Select to set, Back to cancel)\\
-21	&	0--127		& Set Gizmo's Tempo (press Select to set, Back to cancel)\\
-%22	&	0--127		& Set Gizmo's Transpose (press Select to set, Back to cancel)\\
-23	&	0--127		& Set Gizmo's Volume (press Select to set, Back to cancel)\\
-24	&	0--127		& Set Gizmo's Note Speed (press Select to set, Back to cancel)\\
-%25	&	0--127		& Set Gizmo's Play Length (press Select to set, Back to cancel)\\
-26	&	0--127		& Set Gizmo's Swing (press Select to set, Back to cancel)\\
-27	&	0--127		& Set Performance Keyboard Mode (press Select to set, Back to cancel)\\
-28	&	0--127		& Set Performance Repeat (press Select to set, Back to cancel)\\
-29	&	0--127		& Set Performance Next Sequence (press Select to set, Back to cancel)\\
-30	&	0--127		& Select Transition (press Select to set, Back to cancel)\\
-31	&	0--127		& Change Group (press Select to set, Back to cancel)\\
+120	&	Any		& Schedule Next Sequence&{\it Only available via CC}\\
+16	&	0--127		& Set Group Speed Multiplier (Select to set, Back to cancel)\\
+17	&	0--127		& Set Track MIDI Out (Select to set, Back to cancel)\\
+18	&	0--127		& Set Track Velocity (Select to set, Back to cancel)\\
+19	&	0--127		& Set Group Length (Select to set, Back to cancel)\\
+20	&	0--127		& Set Track Pattern (Select to set, Back to cancel)\\
+21	&	0--127		& Set Gizmo's Tempo (Select to set, Back to cancel)\\
+22	&	0--127		& Set Gizmo's Transpose (Select to set, Back to cancel)&\it Not useful for Drum Sequencer\\
+23	&	0--127		& Set Gizmo's Volume (Select to set, Back to cancel)\\
+24	&	0--127		& Set Gizmo's Note Speed (Select to set, Back to cancel)\\
+25	&	0--127		& Save (Select to set, Back to cancel)\\
+26	&	0--127		& Set Gizmo's Swing (Select to set, Back to cancel)\\
+27	&	0--127		& Set Performance Keyboard Mode (Select to set, Back to cancel)\\
+28	&	0--127		& Set Performance Repeat (Select to set, Back to cancel)\\
+29	&	0--127		& Set Performance Next Sequence (Select to set, Back to cancel)\\
+30	&	0--127		& Select Transition (Select to set, Back to cancel)\\
+31	&	0--127		& Change Group (Select to set, Back to cancel)\\
 \end{tabular}
 }
 

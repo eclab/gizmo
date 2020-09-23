@@ -244,6 +244,10 @@ extern uint8_t itemChannel;				// Channel of the incoming item.  One of 1...16
 #define CC_EXTRA_PARAMETER_15				  114
 #define CC_EXTRA_PARAMETER_16				  115
 
+#define CC_EXTRA_PARAMETER_17				  124
+#define CC_EXTRA_PARAMETER_18				  125
+#define CC_EXTRA_PARAMETER_19				  126
+#define CC_EXTRA_PARAMETER_20				  127
 
 
 // If this is TRUE then the various left pot parameter equivalent CCs will

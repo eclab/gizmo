@@ -538,6 +538,7 @@ struct _drumSequencerLocal
     uint8_t returnState;                                            // Used by stateDrumSequencerTransitions and stateDrumSequencerRepeat to determine where to go when cancelled
 	int8_t drumRegion;												// 0...3, multiplied against the incoming note to determine which drum to toggle, or negative, indicating a track in play position mode
 	uint8_t goNextTransition;										// should we go to the next transition?
+	uint8_t goNextSequence;											// should we go to the next sequence?
     uint8_t markTrack;												// Mark position for the track
     uint8_t markGroup;												// Mark position for the group
     int8_t markPosition;											// Mark position for the step

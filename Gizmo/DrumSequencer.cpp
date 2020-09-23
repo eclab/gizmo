@@ -362,6 +362,7 @@ void initDrumSequencer(uint8_t format)
 	local.drumSequencer.patternCountup = 255;
 	// backups don't matter
 	local.drumSequencer.goNextTransition = false;
+	local.drumSequencer.goNextSequence = 0;
     local.drumSequencer.markGroup = DRUM_SEQUENCER_NO_MARK;
     local.drumSequencer.markPosition = DRUM_SEQUENCER_NO_MARK;
     local.drumSequencer.markTrack = DRUM_SEQUENCER_NO_MARK;
@@ -450,6 +451,7 @@ void stateDrumSequencerFormat()
             local.drumSequencer.patternCountup = 255;
             local.drumSequencer.performanceMode = 0;
             local.drumSequencer.goNextTransition = 0;
+			local.drumSequencer.goNextSequence = 0;
             local.drumSequencer.solo = 0;
             setNotePulseRate(options.noteSpeedType);
             goDownState(STATE_DRUM_SEQUENCER_FORMAT_NOTE);
@@ -575,6 +577,7 @@ void unpackDrumSequenceData()
 	local.drumSequencer.patternCountup = 255;
 	// backups don't matter
 	local.drumSequencer.goNextTransition = false;
+	local.drumSequencer.goNextSequence = 0;
     local.drumSequencer.markGroup = DRUM_SEQUENCER_NO_MARK;
     local.drumSequencer.markPosition = DRUM_SEQUENCER_NO_MARK;
     local.drumSequencer.markTrack = DRUM_SEQUENCER_NO_MARK;
@@ -707,49 +710,47 @@ void drumSequencerUpdateGroup(uint8_t group)
 
 void goNextTransition()
     {
-    if (local.drumSequencer.goNextTransition || 
+    if (local.drumSequencer.goNextTransition || local.drumSequencer.goNextSequence ||
     	(local.drumSequencer.performanceMode && local.drumSequencer.transitionCountdown == 0))
         {
 		local.drumSequencer.goNextTransition = 0;
 		local.drumSequencer.currentTransition++;
 			
 		// are we at the end?
-		if (local.drumSequencer.currentTransition > DRUM_SEQUENCER_NUM_TRANSITIONS ||
+		if (local.drumSequencer.currentTransition > DRUM_SEQUENCER_NUM_TRANSITIONS || local.drumSequencer.goNextSequence  ||
 			(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition] == DRUM_SEQUENCER_TRANSITION_GROUP_OTHER &&
 			local.drumSequencer.transitionRepeat[local.drumSequencer.currentTransition] == DRUM_SEQUENCER_TRANSITION_OTHER_END))
 			{
+ 			if (local.drumSequencer.sequenceCountdown == 0 || local.drumSequencer.goNextSequence)
+				{
+				uint8_t nextSequence = local.drumSequencer.nextSequence;
+				if (nextSequence == DRUM_SEQUENCER_NEXT_SEQUENCE_END)  // STOP
+					{
+					stopDrumSequencer(); 
+					}
+				else            // maybe this will work out of the box?  hmmm
+					{ 
+					loadDrumSequence(nextSequence - 1); 
+					resetDrumSequencerTransitionCountdown();                        // FIXME -- do I need this?
+					}  
+				}
 			// This should never happen.  We can't have END as the first START.  This will be interpreted
 			// as repeating group 1 in a loop
-			if (local.drumSequencer.currentTransition == 0)
+			else if (local.drumSequencer.currentTransition == 0)
 				{
-		debug(100);
+				// do nothing
+				drumSequencerUpdateGroup(0);
 				}
+			else if (local.drumSequencer.sequenceCountdown == 255)  // loop forever
+				{
+				local.drumSequencer.currentTransition = 0;
+				drumSequencerUpdateGroup(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition]);
+				}       
 			else
 				{
-				if (local.drumSequencer.sequenceCountdown == 0)
-					{
-					uint8_t nextSequence = local.drumSequencer.nextSequence;
-					if (nextSequence == DRUM_SEQUENCER_NEXT_SEQUENCE_END)  // STOP
-						{
-						stopDrumSequencer(); 
-						}
-					else            // maybe this will work out of the box?  hmmm
-						{ 
-						loadDrumSequence(nextSequence - 1); 
-						resetDrumSequencerTransitionCountdown();                        // FIXME -- do I need this?
-						}  
-					}
-				else if (local.drumSequencer.sequenceCountdown == 255)  // loop forever
-					{
-					local.drumSequencer.currentTransition = 0;
-					drumSequencerUpdateGroup(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition]);
-					}       
-				else
-					{
-					local.drumSequencer.sequenceCountdown--;
-					local.drumSequencer.currentTransition = 0;
-					drumSequencerUpdateGroup(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition]);
-					}
+				local.drumSequencer.sequenceCountdown--;
+				local.drumSequencer.currentTransition = 0;
+				drumSequencerUpdateGroup(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition]);
 				}
 			}                       
 		// are we picking a group at random?
@@ -2278,7 +2279,9 @@ void drawDrumSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
         {
         blinkPoint(led, 2, 1);
         // are we going to the next transition?  (Or sequence?)
-        if (local.drumSequencer.goNextTransition)
+        if (local.drumSequencer.goNextSequence)
+           blinkPoint(led, 3, 1);
+        else if (local.drumSequencer.goNextTransition)
             setPoint(led, 3, 1);
         }       
         
@@ -2512,6 +2515,7 @@ void stopDrumSequencer()
 		// for performance mode
 		local.drumSequencer.currentTransition = DRUM_SEQUENCER_TRANSITION_START;			// gotta make sure this is drawn right
 		local.drumSequencer.goNextTransition = 1;			// should be enough to trigger going to the next transition?
+		local.drumSequencer.goNextSequence = 0;
     	}
     	
     local.drumSequencer.currentPlayPosition = getGroupLength(local.drumSequencer.currentGroup) - 1;
@@ -2628,6 +2632,7 @@ void stateDrumSequencerPlay()
 					// for performance mode
 					local.drumSequencer.currentTransition = DRUM_SEQUENCER_TRANSITION_START;			// gotta make sure this is drawn right
 					local.drumSequencer.goNextTransition = 1;			// should be enough to trigger going to the next transition?
+					local.drumSequencer.goNextSequence = 0;
 					}
 					
 				// Though this is done in stopDrumSequencer we have to do it again because we may be in a different group now. 
@@ -2678,7 +2683,9 @@ void stateDrumSequencerPlay()
                 {
                 //// ENTER PERFORMANCE MODE
                 local.drumSequencer.performanceMode = true;
-                local.drumSequencer.goNextTransition = false;
+				local.drumSequencer.currentTransition = DRUM_SEQUENCER_TRANSITION_START;			// gotta make sure this is drawn right
+				local.drumSequencer.goNextTransition = 1;			// should be enough to trigger going to the next transition?
+				local.drumSequencer.goNextSequence = 0;
                 resetDrumSequencerTransitionCountdown();  // otherwise we'll miss jumps to other sequences
                 setParseRawCC(true);
                 }
@@ -2723,6 +2730,7 @@ void stateDrumSequencerPlay()
                 //// ENTER PERFORMANCE MODE
                 local.drumSequencer.performanceMode = true;
                 local.drumSequencer.goNextTransition = false;
+				local.drumSequencer.goNextSequence = 0;
                 resetDrumSequencerTransitionCountdown();  // otherwise we'll miss jumps to other sequences
                 setParseRawCC(true);
                 }
@@ -2784,11 +2792,6 @@ void stateDrumSequencerPlay()
         
         
 ///// INCOMING MIDI DATA
-  
-    else if (bypass)
-        {
-        // do nothing
-        }
 
     // rerouting to new channel
     if (newItem && 
@@ -2839,6 +2842,361 @@ void stateDrumSequencerPlay()
                 }
             }
         }
+    else if (newItem && (itemType == MIDI_CUSTOM_CONTROLLER))
+      {
+      switch (itemNumber)
+      {
+      case CC_EXTRA_PARAMETER_A:
+      case CC_EXTRA_PARAMETER_B:
+      case CC_EXTRA_PARAMETER_C:
+      case CC_EXTRA_PARAMETER_D:
+      case CC_EXTRA_PARAMETER_E:
+      case CC_EXTRA_PARAMETER_F:
+      case CC_EXTRA_PARAMETER_G:
+      case CC_EXTRA_PARAMETER_H:
+      case CC_EXTRA_PARAMETER_I:
+      case CC_EXTRA_PARAMETER_J:
+      case CC_EXTRA_PARAMETER_K:
+      case CC_EXTRA_PARAMETER_L:
+      case CC_EXTRA_PARAMETER_M:
+      case CC_EXTRA_PARAMETER_N:
+      case CC_EXTRA_PARAMETER_O:
+      case CC_EXTRA_PARAMETER_P:
+      case CC_EXTRA_PARAMETER_Q:
+      case CC_EXTRA_PARAMETER_R:
+      case CC_EXTRA_PARAMETER_S:
+      case CC_EXTRA_PARAMETER_T:
+      {
+      // Set Track
+      uint8_t track = itemNumber - CC_EXTRA_PARAMETER_A;
+      if (track < local.drumSequencer.numTracks)
+      	local.drumSequencer.currentTrack = track;
+      break;
+      }
+      case CC_EXTRA_PARAMETER_U:
+      {
+      // Set Drum Note
+      immediateReturnState = STATE_DRUM_SEQUENCER_PLAY;
+      goDownState(STATE_DRUM_SEQUENCER_TRACK_PITCH);
+      break;
+      }
+      case CC_EXTRA_PARAMETER_V:
+      {
+      // Previous Group
+      goPreviousGroup();
+      break;
+      }
+      case CC_EXTRA_PARAMETER_W:
+      {
+      // Next Group
+	  goNextGroup();
+      break;
+      }
+      case CC_EXTRA_PARAMETER_X:
+      {
+      // Toggle/Schedule Mute
+        if (local.drumSequencer.performanceMode)
+            {
+            //// SCHEDULE MUTE
+            drumSequencerAdvanceMute(local.drumSequencer.currentTrack);
+            }
+        else
+            {
+            //// TOGGLE MUTE
+            local.drumSequencer.muted[local.drumSequencer.currentTrack] = !local.drumSequencer.muted[local.drumSequencer.currentTrack];
+            }
+      break;
+      }
+      case CC_EXTRA_PARAMETER_Y:
+      {
+      // Toggle/Schedule Solo
+            if (local.drumSequencer.performanceMode)
+                {
+                drumSequencerAdvanceSolo();
+                }
+			else
+				{
+	            local.drumSequencer.solo = !local.drumSequencer.solo;
+				}
+      break;
+      }
+      case CC_EXTRA_PARAMETER_Z:
+      {
+      // Clear Group
+                goDownState(STATE_DRUM_SEQUENCER_GROUP_CLEAR_SURE);
+      break;
+      }
+      case CC_EXTRA_PARAMETER_1:
+      {
+      // Clear Track in Group
+                clearCurrentTrackInGroup();
+      break;
+      }
+      case CC_EXTRA_PARAMETER_2:
+      {
+      // Schedule Transition
+            if (local.drumSequencer.performanceMode)
+                {
+            	//// SCHEDULE TRANSITION
+            	local.drumSequencer.goNextTransition = !local.drumSequencer.goNextTransition;
+                }
+      break;
+      }
+      case CC_EXTRA_PARAMETER_3:
+      {
+      // Toggle Click Track
+                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_OPTIONS_CLICK);
+      break;
+      }
+      case CC_EXTRA_PARAMETER_4:
+      {
+      // Set Mark
+                goDownState(STATE_DRUM_SEQUENCER_MARK);
+      break;
+      }
+      case CC_EXTRA_PARAMETER_5:
+      {
+      // Copy Track (Local)
+                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_DRUM_SEQUENCER_LOCAL_COPY);
+      break;
+      }
+      case CC_EXTRA_PARAMETER_6:
+      {
+      // Swap Tracks (Local)
+                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_DRUM_SEQUENCER_LOCAL_SWAP);
+      break;
+      }
+      
+      // IN ORDER THOUGH IT DOESNT LOOK LIKE IT
+      
+      case CC_EXTRA_PARAMETER_11:
+      {
+      // UNUSED
+      break;
+      }
+      case CC_EXTRA_PARAMETER_12:
+      {
+      // UNUSED
+      break;
+      }
+
+      case CC_EXTRA_PARAMETER_13:
+      {
+      // Copy Whole Tracks
+                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_DRUM_SEQUENCER_TRACK_COPY);
+      break;
+      }
+      case CC_EXTRA_PARAMETER_14:
+      {
+      // Swap Whole Tracks
+                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_DRUM_SEQUENCER_TRACK_SWAP);
+      break;
+      }
+      case CC_EXTRA_PARAMETER_15:
+      {
+      // Copy Group
+                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_DRUM_SEQUENCER_GROUP_COPY);
+      break;
+      }
+      case CC_EXTRA_PARAMETER_16:
+      {
+      // Swap Groups
+                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_DRUM_SEQUENCER_GROUP_SWAP);
+      break;
+      }
+
+
+      case CC_EXTRA_PARAMETER_7:
+      {
+      // Stamp Group
+                goDownState(STATE_DRUM_SEQUENCER_COPY_TO_NEXT);
+      break;
+      }
+      case CC_EXTRA_PARAMETER_8:
+      {
+      // Accent Track
+                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_DRUM_SEQUENCER_TRACK_ACCENT);
+      break;
+      }
+      case CC_EXTRA_PARAMETER_9:
+      {
+      // Distribute Track Info
+                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_DRUM_SEQUENCER_TRACK_DISTRIBUTE);
+      break;
+      }
+      case CC_EXTRA_PARAMETER_10:
+      {
+      // (Performance Mode) Pause
+        pauseDrumSequencer();
+      break;
+      }
+                        
+      case CC_EXTRA_PARAMETER_17:
+      {
+      // Schedule Next Sequence
+      local.drumSequencer.goNextSequence = !local.drumSequencer.goNextSequence;
+      break;
+      }
+                        
+      // this is a discontinuity, hope compiler can handle it
+                        
+      case CC_LEFT_POT_PARAMETER_EQUIVALENT_1:
+      {
+      // Set Group Speed Multiplier
+      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+      leftPotParameterEquivalent = true;
+      goDownState(STATE_DRUM_SEQUENCER_GROUP_SPEED);
+      break;
+      }
+      case CC_LEFT_POT_PARAMETER_EQUIVALENT_2:
+      {
+      // midi out
+      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+      leftPotParameterEquivalent = true;
+      goDownState(STATE_DRUM_SEQUENCER_TRACK_MIDI_CHANNEL_OUT);
+      break;
+      }
+      case CC_LEFT_POT_PARAMETER_EQUIVALENT_3:
+      {
+      // velocity
+      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+      leftPotParameterEquivalent = true;
+      goDownState(STATE_DRUM_SEQUENCER_TRACK_VELOCITY);
+      break;
+      }
+      case CC_LEFT_POT_PARAMETER_EQUIVALENT_4:
+      {
+      // group length
+      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+      leftPotParameterEquivalent = true;
+      goDownState(STATE_DRUM_SEQUENCER_GROUP_LENGTH);
+      break;
+      }
+      case CC_LEFT_POT_PARAMETER_EQUIVALENT_5:
+      {
+      // pattern
+      leftPotParameterEquivalent = true;
+      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+      goDownState(STATE_DRUM_SEQUENCER_LOCAL_PATTERN);
+      break;
+      }
+      case CC_LEFT_POT_PARAMETER_EQUIVALENT_6:
+      {
+      leftPotParameterEquivalent = true;
+      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+      goDownState(STATE_OPTIONS_TEMPO);
+      break;
+      }
+      case CC_LEFT_POT_PARAMETER_EQUIVALENT_7:
+      {
+      //// IRRELEVANT
+      leftPotParameterEquivalent = true;
+      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+      goDownState(STATE_OPTIONS_TRANSPOSE);
+      break;
+      }
+      case CC_LEFT_POT_PARAMETER_EQUIVALENT_8:
+      {
+      leftPotParameterEquivalent = true;
+      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+      goDownState(STATE_OPTIONS_VOLUME);
+      break;
+      }
+      case CC_LEFT_POT_PARAMETER_EQUIVALENT_9:
+      {
+      //// STUPID
+      leftPotParameterEquivalent = true;
+      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+      goDownState(STATE_OPTIONS_NOTE_SPEED);
+      break;
+      }
+      case CC_LEFT_POT_PARAMETER_EQUIVALENT_10:
+      {
+      /*
+      ///// IRRELEVANT
+      leftPotParameterEquivalent = true;
+      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+      goDownState(STATE_OPTIONS_PLAY_LENGTH);
+      */
+	  // Save
+      leftPotParameterEquivalent = true;
+      goDownState(STATE_DRUM_SEQUENCER_SAVE);
+      break;
+      }
+      case CC_LEFT_POT_PARAMETER_EQUIVALENT_11:
+      {
+      leftPotParameterEquivalent = true;
+      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+      goDownState(STATE_OPTIONS_SWING);
+      break;
+      }
+      case CC_LEFT_POT_PARAMETER_EQUIVALENT_12:
+      {
+      leftPotParameterEquivalent = true;
+      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+      goDownState(STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_KEYBOARD);
+      break;
+      }
+      case CC_LEFT_POT_PARAMETER_EQUIVALENT_13:
+      {
+      leftPotParameterEquivalent = true;
+      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+      goDownState(STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_REPEAT);
+      break;
+      }
+      case CC_LEFT_POT_PARAMETER_EQUIVALENT_14:
+      {
+      leftPotParameterEquivalent = true;
+      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+      goDownState(STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_NEXT);
+      break;
+      }
+      case CC_LEFT_POT_PARAMETER_EQUIVALENT_15:
+      {
+		// Select Transition
+      leftPotParameterEquivalent = true;
+      //AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+      IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+      goDownState(STATE_DRUM_SEQUENCER_TRANSITION);
+      break;
+      }
+      case CC_LEFT_POT_PARAMETER_EQUIVALENT_16:
+      {
+      // Update pot as if it were a left parameter equivalent (see line 586 of MidiInterface)
+	  uint16_t equivalentPot = (itemValue >> 4); 
+		//// CHANGE GROUP
+		uint8_t group = ((equivalentPot * local.drumSequencer.numGroups) >> 10);         //  / 1024;
+		group = bound(group, 0, local.drumSequencer.numGroups);
+		drumSequencerChangeGroup(group);
+      break;
+      }
+		// Do I need any more of these?
+      case CC_LEFT_POT_PARAMETER_EQUIVALENT_6_LSB:
+      {
+      leftPotParameterEquivalent = true;
+      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+      goDownState(STATE_OPTIONS_TEMPO);
+      break;
+      }
+      }
+      }
+
+  
+    else if (bypass)
+        {
+        // do nothing
+        }
+        
+	// everything after this should be denied if we're in bypass
 
     else if (newItem && (itemType == MIDI_NOTE_ON))   //// there is a note played
         {
@@ -3021,341 +3379,6 @@ void stateDrumSequencerPlay()
         // pass through -- hope this is right
         sendControllerCommand(CONTROL_TYPE_RPN, itemNumber, itemValue, options.channelOut);
         }
-    else if (newItem && (itemType == MIDI_CUSTOM_CONTROLLER))
-      {
-      switch (itemNumber)
-      {
-      case CC_EXTRA_PARAMETER_A:
-      case CC_EXTRA_PARAMETER_B:
-      case CC_EXTRA_PARAMETER_C:
-      case CC_EXTRA_PARAMETER_D:
-      case CC_EXTRA_PARAMETER_E:
-      case CC_EXTRA_PARAMETER_F:
-      case CC_EXTRA_PARAMETER_G:
-      case CC_EXTRA_PARAMETER_H:
-      case CC_EXTRA_PARAMETER_I:
-      case CC_EXTRA_PARAMETER_J:
-      case CC_EXTRA_PARAMETER_K:
-      case CC_EXTRA_PARAMETER_L:
-      case CC_EXTRA_PARAMETER_M:
-      case CC_EXTRA_PARAMETER_N:
-      case CC_EXTRA_PARAMETER_O:
-      case CC_EXTRA_PARAMETER_P:
-      case CC_EXTRA_PARAMETER_Q:
-      case CC_EXTRA_PARAMETER_R:
-      case CC_EXTRA_PARAMETER_S:
-      case CC_EXTRA_PARAMETER_T:
-      {
-      // Set Track
-      uint8_t track = itemNumber - CC_EXTRA_PARAMETER_A;
-      if (track < local.drumSequencer.numTracks)
-      	local.drumSequencer.currentTrack = track;
-      break;
-      }
-      case CC_EXTRA_PARAMETER_U:
-      {
-      // Set Drum Note
-      goDownState(STATE_DRUM_SEQUENCER_TRACK_PITCH);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_V:
-      {
-      // Previous Group
-      goPreviousGroup();
-      break;
-      }
-      case CC_EXTRA_PARAMETER_W:
-      {
-      // Next Group
-	  goNextGroup();
-      break;
-      }
-      case CC_EXTRA_PARAMETER_X:
-      {
-      // Toggle/Schedule Mute
-        if (local.drumSequencer.performanceMode)
-            {
-            //// SCHEDULE MUTE
-            drumSequencerAdvanceMute(local.drumSequencer.currentTrack);
-            }
-        else
-            {
-            //// TOGGLE MUTE
-            local.drumSequencer.muted[local.drumSequencer.currentTrack] = !local.drumSequencer.muted[local.drumSequencer.currentTrack];
-            }
-      break;
-      }
-      case CC_EXTRA_PARAMETER_Y:
-      {
-      // Toggle/Schedule Solo
-            if (local.drumSequencer.performanceMode)
-                {
-                drumSequencerAdvanceSolo();
-                }
-			else
-				{
-	            local.drumSequencer.solo = !local.drumSequencer.solo;
-				}
-      break;
-      }
-      case CC_EXTRA_PARAMETER_Z:
-      {
-      // Clear Group
-                goDownState(STATE_DRUM_SEQUENCER_GROUP_CLEAR_SURE);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_1:
-      {
-      // Clear Track in Group
-                clearCurrentTrackInGroup();
-      break;
-      }
-      case CC_EXTRA_PARAMETER_2:
-      {
-      // Schedule Transition
-            if (local.drumSequencer.performanceMode)
-                {
-            	//// SCHEDULE TRANSITION
-            	local.drumSequencer.goNextTransition = !local.drumSequencer.goNextTransition;
-                }
-      break;
-      }
-      case CC_EXTRA_PARAMETER_3:
-      {
-      // Toggle Click Track
-                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-                goDownState(STATE_OPTIONS_CLICK);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_4:
-      {
-      // Set Mark
-                goDownState(STATE_DRUM_SEQUENCER_MARK);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_5:
-      {
-      // Copy Track (Local)
-                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-                goDownState(STATE_DRUM_SEQUENCER_LOCAL_COPY);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_6:
-      {
-      // Swap Tracks (Local)
-                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-                goDownState(STATE_DRUM_SEQUENCER_LOCAL_SWAP);
-      break;
-      }
-      
-      // IN ORDER THOUGH IT DOESNT LOOK LIKE IT
-      
-      case CC_EXTRA_PARAMETER_11:
-      {
-      // UNUSED
-      break;
-      }
-      case CC_EXTRA_PARAMETER_12:
-      {
-      // UNUSED
-      break;
-      }
-
-      case CC_EXTRA_PARAMETER_13:
-      {
-      // Copy Whole Tracks
-                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-                goDownState(STATE_DRUM_SEQUENCER_TRACK_COPY);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_14:
-      {
-      // Swap Whole Tracks
-                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-                goDownState(STATE_DRUM_SEQUENCER_TRACK_SWAP);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_15:
-      {
-      // Copy Group
-                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-                goDownState(STATE_DRUM_SEQUENCER_GROUP_COPY);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_16:
-      {
-      // Swap Groups
-                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-                goDownState(STATE_DRUM_SEQUENCER_GROUP_SWAP);
-      break;
-      }
-
-
-      case CC_EXTRA_PARAMETER_7:
-      {
-      // Stamp Group
-                goDownState(STATE_DRUM_SEQUENCER_COPY_TO_NEXT);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_8:
-      {
-      // Accent Track
-                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-                goDownState(STATE_DRUM_SEQUENCER_TRACK_ACCENT);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_9:
-      {
-      // Distribute Track Info
-                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-                goDownState(STATE_DRUM_SEQUENCER_TRACK_DISTRIBUTE);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_10:
-      {
-      // (Performance Mode) Pause
-        pauseDrumSequencer();
-      break;
-      }
-                        
-                        
-      // this is a discontinuity, hope compiler can handle it
-                        
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_1:
-      {
-      // Set Group Speed Multiplier
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      leftPotParameterEquivalent = true;
-      goDownState(STATE_DRUM_SEQUENCER_GROUP_SPEED);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_2:
-      {
-      // midi out
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      leftPotParameterEquivalent = true;
-      goDownState(STATE_DRUM_SEQUENCER_TRACK_MIDI_CHANNEL_OUT);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_3:
-      {
-      // velocity
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      leftPotParameterEquivalent = true;
-      goDownState(STATE_DRUM_SEQUENCER_TRACK_VELOCITY);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_4:
-      {
-      // group length
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      leftPotParameterEquivalent = true;
-      goDownState(STATE_DRUM_SEQUENCER_GROUP_LENGTH);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_5:
-      {
-      // pattern
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_DRUM_SEQUENCER_LOCAL_PATTERN);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_6:
-      {
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_OPTIONS_TEMPO);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_7:
-      {
-      //// IRRELEVANT
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_OPTIONS_TRANSPOSE);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_8:
-      {
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_OPTIONS_VOLUME);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_9:
-      {
-      //// STUPID
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_OPTIONS_NOTE_SPEED);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_10:
-      {
-      ///// IRRELEVANT
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_OPTIONS_PLAY_LENGTH);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_11:
-      {
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_OPTIONS_SWING);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_12:
-      {
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_KEYBOARD);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_13:
-      {
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_REPEAT);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_14:
-      {
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_NEXT);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_15:
-      {
-		// Select Transition
-      leftPotParameterEquivalent = true;
-      //AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_DRUM_SEQUENCER_TRANSITION);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_16:
-      {
-      // Update pot as if it were a left parameter equivalent (see line 586 of MidiInterface)
-	  uint16_t equivalentPot = (itemValue >> 4); 
-		//// CHANGE GROUP
-		uint8_t group = ((equivalentPot * local.drumSequencer.numGroups) >> 10);         //  / 1024;
-		group = bound(group, 0, local.drumSequencer.numGroups);
-		drumSequencerChangeGroup(group);
-      break;
-      }
-		// Do I need any more of these?
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_6_LSB:
-      {
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_OPTIONS_TEMPO);
-      break;
-      }
-      }
-      }
 
     playDrumSequencer();
     if (updateDisplay)
