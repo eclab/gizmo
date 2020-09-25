@@ -15,6 +15,7 @@
 \usepackage{bm}
 \usepackage{array}
 \usepackage{color}
+\usepackage{multicol}
 
 \newcommand\ignore[1]{}
 \newcommand\bump{\vspace{11in}}
@@ -1006,26 +1007,36 @@ When you play keys in Group Mode, it works like Play Position mode.
 
 Once you have finished editing your groups, you can string them together into a {\bf chain of transitions} from group to group.  You can then play them in the order specified in the chain.   A group can appear more than once in a chain, that is, you can play a group more than once in different parts in your song.  A chain can be up to 20 transitions long.
 
-Each transition holds three things:
+A {\bf standard transition} holds three things:
 
 \begin{itemize}
 \item The transition number (1...20)
-\item Which {\it group} is playing (1... {\it Num groups}, at most 15), or \texttt{MORE}
-\item How many times the group's playing should repeat (\texttt{LOOP}, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, 64)
+\item Which {\it group} is playing (1... {\it Maximum groups}, at most 15)
+\item How many times the group's playing should repeat (\texttt{LOOP}, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 64, or \texttt{BIG~LOOP})
 \end{itemize}
 
-{\it Num groups} is the number of groups you specified when initializing your sequence.  Obviously you can't transition to a group greater than that.  {\tt LOOP} indicates that the group should play repeatedly forever, never transitioning from then on, unless you manually schedule a transition for it (you can do this in Performance Mode)
+{\tt LOOP} indicates that the group should play repeatedly forever, never transitioning from then on, unless you manually schedule a transition for it (you can do this in Performance Mode).  We'll get to {\tt BIG LOOP} in a moment.
 
-{\tt MORE} indicates that it's not just a single group that's playing.  The Drum Sequencer will let you set one of the following additional options:
+There are also {\bf special transitions}.  These are chosen by selecting {\tt - - - -} for your group number.  These include:
 
 \begin{itemize}
-\item Repeatedly play \text{LOOP} (forever), 1, 2, 3, or 4 times.  Each time, randomly select from among groups 1--2 which group to play.
-\item Repeatedly play \text{LOOP} (forever), 1, 2, 3, or 4 times.  Each time, randomly select from among groups 1--3 which group to play.  
-\item Repeatedly play \text{LOOP} (forever), 1, 2, 3, or 4 times.  Each time, randomly select from among groups 1--4 which group to play.
+\item Repeatedly play forever (\texttt{LOOP}), 1, 2, 3, or 4 times.  Each time, randomly select from among groups 1--2 which group to play.
+\item Repeatedly play forever (\texttt{LOOP}) 1, 2, 3, or 4 times.  Each time, randomly select from among groups 1--3 which group to play.  
+\item Repeatedly play forever (\texttt{LOOP}) 1, 2, 3, or 4 times.  Each time, randomly select from among groups 1--4 which group to play.
 \item Mark this transition as the {\bf end}.  When at the end of the transitions, the Drum Sequencer will stop, repeat the whole chain, or continue to the next sequence as you specified in the {\bf Menu} options.  If none of your transitions is {\bf end}, then the Drum Sequencer will make this decision after exhausting the chain.   The very first transition in a chain is not permitted to be {\bf end}.
 \end{itemize}
 
-All these options are set in the {\bf menu}, but you play the transition in {\bf Performance Mode}, discussed next.
+\begin{figure}[t]
+\centering\includegraphics[width=6.5in]{BigLoop}
+\caption{Making looped groups with {\tt BIG LOOP}, manual transitions, and an optional repeating sequence.}
+\label{bigloop}
+\end{figure}
+
+And now to {\tt BIG LOOP}.  When in performance mode (discussed below) you can manually force a transition to occur at the end of the current bar, even if the number of repeats hasn't been completed yet.  This is useful in the following way: you could set up Transition 1 to be (say) group 1 repeated forever (LOOP), then Transition 2 to be group 2 repeated forever, then Transition 3 to be group 3 repeated forever, etc.  When playing the chain, you'll be in group 1 until you decide to force the transition, which would take you to group 2, and then another manual forced transition at the desired time would go to group 3.
+
+This is all fine and good, but another common need would be to loop though multiple groups forever until manually forced to transition out of them.  For example, imagine you wanted to loop forever through groups 1, 7, and 3 as a sequence, then loop forever through group 2, then loop forever through groups 3, 4, and 6 as a sequence.  This is where {\tt BIG LOOP} comes in.  When a transition is set to {\tt BIG LOOP}, then after playing its group {\it once}, it will hunt back though previous transitions until it finds the first transition {\it after} some other infinite loop (a BIG LOOP, a LOOP, or a random LOOP).  If it finds none, it will use the very first transition.  It then loops back to this transition.  As shown in Figure~\ref{bigloop}, this can be used to chain together multi-transition groups separated by manual transitions.\footnote{You can't chain together groups with non-infinite loops for automated play: to do this, you'd need to use multiple sequences.}
+
+One weakness of BIG LOOP is that the final transition in the loop will be played exactly 1 time.  That's the way it is.  Other transitions can be repeated multiple (non-infinite) times, though most commonly they'd be 1 time each as well.
 
 
 \paragraph{Performance Mode}  The function of Performance Mode is to make it easy to perform a chain of transitions; it works much like Performance Mode does in the Step Sequencer. No, we've not discussed how to edit transitions yet\,---\,we'll get to that when we discuss the menus.  Performance Mode is entered by long-pressing the Select and Middle buttons together while in any of the other three modes.  In Performance Mode, the cursor will look the same as the Play Position cursor.
@@ -1083,7 +1094,8 @@ If you Long Press the Select button at any time, you'll call up the Drum Sequenc
 \end{itemize}
 
 
-\item {\bf Group} {\it Submenu for dealing with entire groups} \\ Group is not available in Performance Mode (it's labeled {\tt X GROUP})
+\item {\bf Group} {\it Submenu for dealing with entire groups} 
+
 \begin{itemize}
 \item {\bf Length}\quad Lets you set the length of this group.  The group can only be made smaller than the standard group length specified when you formatted the sequence initially; it cannot be lengthened beyond the standard group length. 
 \item {\bf Speed Multiplier}\quad Changes the speed of the group relative to the tempo.   The speed can be set to \(1\times\) (default), \(2\times\), \(4\times\), or \(1/2\times\) the current  {\bf note speed} (see the {\bf Options}).  
@@ -1151,7 +1163,7 @@ Double Whole Note&\cm		&\cm	&	\\
 \item {\bf Swap Groups}\quad This swaps the entire group specified by the {\it mark} with the current group.
 \end{itemize}
 
-\item {\bf Chain} {\it Submenu for editing and manipulating the chain of transitions}\\ Chain is not available in Performance Mode (it's labeled {\tt X CHAIN})
+\item {\bf Chain} {\it Submenu for editing and manipulating the chain of transitions}
 \end{itemize}
 
 \begin{wrapfigure}{r}{3in}
@@ -1162,21 +1174,35 @@ Double Whole Note&\cm		&\cm	&	\\
 
 This submenu works differently from the others.  When you select {\bf Chain}, you're first asked to select a {\bf transition} in the chain.  
 
-Transitions are displayed as shown in Figure~\ref{selecttransition}: as you scroll through the transitions (left knob) the current transition is displayed at bottom.  Additionally, the transition's group is displayed both as a number at left and as a range, and the transition's repeats is shown at right.  Random group transitions are shown as {\tt R}{\it num}~{\it repeats}, where {\it num}, the number of groups involved, is 2, 3, or 4, and {\it repeats} is 1, 2, 3, 4, or \(\infty\). If the group is an end group, the screen will show {\tt END}. 
+Transitions are displayed as shown in Figure~\ref{selecttransition}: as you scroll through the transitions (left knob) the current transition is displayed at bottom.  Additionally, the transition's group is displayed both as a number at left and as a range, and the transition's repeats is shown at right (\(\infty\) for \texttt{LOOP}, and {\tt BL} for \texttt{BIG LOOP}).  Random group transitions are shown as {\tt R}{\it num}~{\it repeats}, where {\it num}, the number of groups involved, is 2, 3, or 4, and {\it repeats} is 1, 2, 3, 4, or \(\infty\). If the group is an end group, the screen will show {\tt END}. 
 
 You can use the transition chain display to just look through the transitions, and then press the Back button to go back; or you can {\bf select} a transition and perform an {\bf operation} on it.  Operations include:
 
 \begin{itemize}
 \item[]~\vspace{-2em}
 \begin{itemize}
-	\item {\bf Go}\quad Jumps to the group associated with the selected transition.
+	\item {\bf Edit}\quad Edits the selected transition.  You will be first asked to indicate a group for the transition (you'll see a \texttt{G}), or \texttt{DFLT} to select the current group.  You can also select \texttt{- - - -} to indicate extra options.  If you selected a group or \texttt{DFLT}, you will then be asked to specify the number of repeated iterations for the group (you'll see an \texttt{R}).  Your choices are \texttt{LOOP}, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 64, or \texttt{BIG LOOP}.  If instead you selected \texttt{- - - -}, you'll be then asked to select among extra options.  These options are: \texttt{END}, R2-1, R2-2, R2-3, R2-4, R2-L, R3-1, R3-2, R3-3, R3-4, R3-L, R4-1, R4-2, R4-3, R4-4, and R4-L.  The various {\it R-} options indicate loops with random group selection. They are:
+
+\vspace{-1em}
+\begin{center}
+\begin{tabular}{r@{~~~}r|rrrrr}
+		&&\multicolumn{5}{c}{\it Number of Repeats}\\
+				&&1&2&3&4&LOOP\\
+				\hline
+		\it Randomly select&1, 2&R2-1&R2-2&R2-3&R2-4&R2-L\\
+		 \it from among &1, 2, 3&R3-1&R3-2&R3-3&R3-4&R3-L\\
+		\it these groups&1, 2, 3, 4&R4-1&R4-2&R4-3&R4-4&R4-L\\
+\end{tabular}
+\end{center}
+
+You can cancel at any time, and nothing will be changed.
+	  
 	\item {\bf Mark}\quad Sets a transition as the {\bf mark transition} (similar to but not to be confused with the {\it mark} discussed earlier), to be used in the copy and move commands below.
-	\item {\bf Put}\quad Inserts a new transition just before the selected transition.  The current group is placed in this transition, and you then indicate the number of repeated iterations.  This is any of \texttt{LOOP} (meaning ``forever''), 1, 2, 3, 4, 5, 6, 7, 8 9, 10, 12, 16, 24, 32, or 64.  
-	\item {\bf Edit}\quad Edits the selected transition.  You first specify the group for the transition (you'll see a \texttt{G}), or \texttt{DFLT} to select the current group, or \texttt{- - - -} to indicate {\bf more}.  If you selected a group, then you will then specify the number of repeated iterations.  This is any of \texttt{LOOP} (meaning ``forever''), 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, or 64.  
-	If you had selected {\it more} instead of a group (you'll see an {\tt M}), you'll instead be asked to specify a random-group selection or \texttt{END} (meaning ``this transition simply marks the end of the chain'').  The random-group selections are R2-1, R2-2, R2-3, R2-4, R2-L, R3-1, R3-2, R3-3, R3-4, R3-L, R4-1, R4-2, R4-3, R4-4, and R4-L.  The R{\it x} means ``Pick randomly from groups 1...{\it x}'' inclusive).  -1 means ``do one iteration''.  -2 means ``do 2 iterations''.  -3 means ``do 3 iterations''.  And -L means ``loop forever''.
-	\item {\bf Delete}\quad Deletes the selected transition, shifting all higher transitions down one slot to fill its spot.  The empty space now at the topmost transition is replaced with \texttt{END}.
+	\item {\bf Put}\quad Inserts a new transition just before the selected transition, and then edits the transition (just like {\bf Edit}.      The highest transition (\#20) will be eliminated to make room.  You can cancel at any time, and nothing will be changed (including the insertion).
+	\item {\bf Delete}\quad Deletes the selected transition, shifting all higher transitions down one slot to fill its spot.  The empty space now at the topmost transition (\#20) is replaced with \texttt{END}.
 	\item {\bf Copy}\quad Copies the {\it mark transition}, inserting it before the selected transition, and shifting all higher transitions up one slot to make room.  The topmost transition is removed.  If the mark has not been sent, you'll be told {\tt CANT}.
 	\item {\bf Move}\quad Moves the {\it mark transition} from its current location to just before the current transition.   If the mark has not been sent, you'll be told {\tt CANT}.
+	\item {\bf Go}\quad Jumps to the group associated with the selected transition.
 	\end{itemize}
 
 \item {\bf Clock Control} (or {\bf No Clock Control}) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note that regardless of the setting of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.

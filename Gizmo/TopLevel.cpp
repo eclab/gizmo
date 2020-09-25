@@ -1153,14 +1153,14 @@ void go()
         break;
         case STATE_DRUM_SEQUENCER_TRANSITION_MENU:
             {
-            const char* menuItems[7] = { PSTR("GO"), PSTR("MARK"), PSTR("PUT"), PSTR("EDIT"), PSTR("DELETE"), PSTR("COPY"), PSTR("MOVE") };
+            const char* menuItems[7] = { PSTR("EDIT"), PSTR("MARK"), PSTR("PUT"),  PSTR("DELETE"), PSTR("COPY"), PSTR("MOVE"), PSTR("GO") };
             doMenuDisplay(menuItems, 7, STATE_DRUM_SEQUENCER_TRANSITION_GO_GROUP, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
             playDrumSequencer();
             }
         break;
-        case STATE_DRUM_SEQUENCER_TRANSITION_GO_GROUP:
+        case STATE_DRUM_SEQUENCER_TRANSITION_EDIT:
             {
-            stateDrumSequencerTransitionGoGroup();
+            stateDrumSequencerTransitionEdit();
             }
         break;
         case STATE_DRUM_SEQUENCER_TRANSITION_MARK:
@@ -1171,11 +1171,6 @@ void go()
         case STATE_DRUM_SEQUENCER_TRANSITION_PUT:
             {
             stateDrumSequencerTransitionPut();
-            }
-        break;
-        case STATE_DRUM_SEQUENCER_TRANSITION_EDIT:
-            {
-            stateDrumSequencerTransitionEdit();
             }
         break;
         case STATE_DRUM_SEQUENCER_TRANSITION_COPY:
@@ -1191,6 +1186,11 @@ void go()
         case STATE_DRUM_SEQUENCER_TRANSITION_MOVE:
             {
             stateDrumSequencerTransitionMove();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRANSITION_GO_GROUP:
+            {
+            stateDrumSequencerTransitionGoGroup();
             }
         break;
         case STATE_DRUM_SEQUENCER_EDIT_TRANSITION_GROUP:

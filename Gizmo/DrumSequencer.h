@@ -131,8 +131,8 @@ There are also 20 bytes for transitions:
 		which group and then how many times to repeat it.  Each transition is 1 byte.
 			Group is 4 bits: (0...14, 15 = SPECIAL)
 			Repeat is 4 bits: 
-				If Group is SPECIAL then:	Random: Groups 0-1 (LOOP 1 time, 2..., 3..., 4...), Groups 0-2 (LOOP, 1, 2, 3, 4), Groups 0-3 (LOOP, 1, 2, 3, 4), END
-				If Group is not SPECIAL then: LOOP, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, 64
+				If Group is SPECIAL then:	END, Random: Groups 0-1 (LOOP 1 time, 2..., 3..., 4...), Groups 0-2 (LOOP, 1, 2, 3, 4), Groups 0-3 (LOOP, 1, 2, 3, 4)
+				If Group is not SPECIAL then: LOOP, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 64, BIG LOOP
 				Note that Transition 0 cannot be END.  If this happens (which it should not be able to)
 				then this is interpreted as LOOP FOREVER Group 0.
 
@@ -492,8 +492,9 @@ Menus
 #define DRUM_SEQUENCER_MAX_NOTE_VELOCITY						(7)			// 127
 #define DRUM_SEQUENCER_INITIAL_NOTE_PITCH						(60)
 #define DRUM_SEQUENCER_TRANSITION_GROUP_OTHER					(15)
-#define DRUM_SEQUENCER_TRANSITION_OTHER_END						(15)
+#define DRUM_SEQUENCER_TRANSITION_OTHER_END						(0)
 #define DRUM_SEQUENCER_TRANSITION_REPEAT_LOOP					(0)
+#define DRUM_SEQUENCER_TRANSITION_REPEAT_BIG_LOOP				(15)
 #define DRUM_SEQUENCER_NEXT_SEQUENCE_END						(0)
 #define DRUM_SEQUENCER_SEQUENCE_REPEAT_LOOP					(0)
 

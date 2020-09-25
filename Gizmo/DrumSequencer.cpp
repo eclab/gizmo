@@ -415,7 +415,6 @@ void initDrumSequencer(uint8_t format)
             local.drumSequencer.transitionRepeat[i] = DRUM_SEQUENCER_TRANSITION_OTHER_END;
             }
         }
-    memset(local.drumSequencer.transitionRepeat, DRUM_SEQUENCER_TRANSITION_REPEAT_LOOP, DRUM_SEQUENCER_NUM_TRANSITIONS);
 
     for(uint8_t i = 0; i < local.drumSequencer.numTracks; i++)
         {
@@ -498,12 +497,12 @@ void resetDrumSequencerTransitionCountdown()
         case 7: local.drumSequencer.transitionCountdown = 6; break;
         case 8: local.drumSequencer.transitionCountdown = 7; break;
         case 9: local.drumSequencer.transitionCountdown = 8; break;
-        case 10: local.drumSequencer.transitionCountdown = 9; break;
-        case 11: local.drumSequencer.transitionCountdown = 11; break;
-        case 12: local.drumSequencer.transitionCountdown = 15; break;
-        case 13: local.drumSequencer.transitionCountdown = 23; break;
-        case 14: local.drumSequencer.transitionCountdown = 31; break;
-        case 15: local.drumSequencer.transitionCountdown = 63; break;
+        case 10: local.drumSequencer.transitionCountdown = 11; break;
+        case 11: local.drumSequencer.transitionCountdown = 15; break;
+        case 12: local.drumSequencer.transitionCountdown = 23; break;
+        case 13: local.drumSequencer.transitionCountdown = 31; break;
+        case 14: local.drumSequencer.transitionCountdown = 63; break;
+        case 15: local.drumSequencer.transitionCountdown = 255; break;		// big loop
         }
     local.drumSequencer.patternCountup = 255;
     }
@@ -758,9 +757,9 @@ void goNextTransition()
 			local.drumSequencer.transitionRepeat[local.drumSequencer.currentTransition] != DRUM_SEQUENCER_TRANSITION_OTHER_END)
 			{
 			// Groups are going to be either 1-2, 1-3, or 1-4
-			uint8_t grouptype = div5(local.drumSequencer.transitionRepeat);
+			uint8_t grouptype = div5(local.drumSequencer.transitionRepeat - 1);		// remove END
 			// repeats are LOOP, 1, 2, 3, or 4
-			uint8_t repeat = DIV5_REMAINDER(grouptype, local.drumSequencer.transitionRepeat);
+			uint8_t repeat = DIV5_REMAINDER(grouptype, local.drumSequencer.transitionRepeat - 1);		// remove END
 			// Pick a group
 			uint8_t group = random(0, grouptype + 2);
 			drumSequencerUpdateGroup(group);
@@ -780,7 +779,7 @@ void goNextTransition()
 			drumSequencerUpdateGroup(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition]);
 			}
 		}
-	else if (local.drumSequencer.performanceMode && local.drumSequencer.transitionCountdown != 255)  // loop forever
+	else if (local.drumSequencer.performanceMode && local.drumSequencer.transitionCountdown != 255)
 		{
 		local.drumSequencer.transitionCountdown--;
 		
@@ -792,6 +791,31 @@ void goNextTransition()
 				uint8_t group = random(0, grouptype + 2);
 				drumSequencerUpdateGroup(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition]);
 				}
+		}
+	else if (local.drumSequencer.performanceMode && local.drumSequencer.transitionCountdown == 255 && 
+		local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition] != DRUM_SEQUENCER_TRANSITION_GROUP_OTHER &&
+		local.drumSequencer.transitionRepeat[local.drumSequencer.currentTransition] == DRUM_SEQUENCER_TRANSITION_REPEAT_BIG_LOOP)			// Big Loop
+		{
+		// It's a big loop, where do we go?
+		uint8_t newTransition = 0;
+		for(int8_t i = local.drumSequencer.currentTransition - 1; i >= 0; i--)		// notice signed
+			{
+			// did we find a former loop transition?
+			if (local.drumSequencer.transitionGroup[i] == DRUM_SEQUENCER_TRANSITION_GROUP_OTHER ||		// end or random repeat loop
+				(local.drumSequencer.transitionGroup[i] != DRUM_SEQUENCER_TRANSITION_GROUP_OTHER &&
+					(local.drumSequencer.transitionRepeat[i] == DRUM_SEQUENCER_TRANSITION_REPEAT_BIG_LOOP ||		// big loop
+				 	local.drumSequencer.transitionRepeat[i] == DRUM_SEQUENCER_TRANSITION_REPEAT_LOOP)))				// normal loop
+				 {
+				 newTransition = i + 1;
+				 break;
+				 }
+			}
+		local.drumSequencer.currentTransition = newTransition;
+		drumSequencerUpdateGroup(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition]);
+		}
+	else
+		{
+		// Loop forever
 		}
     }
         
@@ -1254,9 +1278,14 @@ uint8_t doTransitionDisplay(uint8_t initialTransition, uint8_t blink)
 				{
 				write8x5Glyph(led, GLYPH_8x5_INFINITY);
 				}
+			else if (repeat == DRUM_SEQUENCER_TRANSITION_REPEAT_BIG_LOOP)
+				{
+				write3x5Glyph(led, GLYPH_3x5_B, 1);
+				write3x5Glyph(led, GLYPH_3x5_L, 5);
+				}
 			else
 				{
-				const uint8_t repeats[15] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, 64 };
+				const uint8_t repeats[15] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 64 };
 				writeShortNumber(led, repeats[repeat - 1], false);
 				}
 			}
@@ -2029,7 +2058,7 @@ void stateDrumSequencerTransitionEditRepeat()
         defaultMenuValue = local.drumSequencer.transitionRepeat[local.drumSequencer.backup];
         }
 	secondGlyph = GLYPH_3x5_R;
-    const char* menuItems[16] = { PSTR("LOOP"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("10"), PSTR("12"), PSTR("16"), PSTR("24"), PSTR("32"), PSTR("64") };
+    const char* menuItems[16] = { PSTR("LOOP"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("12"), PSTR("16"), PSTR("24"), PSTR("32"), PSTR("64"), PSTR("BIG LOOP") };
     result = doMenuDisplay(menuItems, 16, STATE_NONE, STATE_NONE, 1);
     switch (result)
         {
@@ -2045,7 +2074,7 @@ void stateDrumSequencerTransitionEditRepeat()
 				insertTransition(local.drumSequencer.backup);
             	}
             local.drumSequencer.transitionGroup[local.drumSequencer.backup] = local.drumSequencer.transitionGroupBackup;
-            local.drumSequencer.transitionRepeat[local.drumSequencer.backup] = currentDisplay;                    
+            local.drumSequencer.transitionRepeat[local.drumSequencer.backup] = currentDisplay;   
             goUpState(STATE_DRUM_SEQUENCER_TRANSITION);
             }
         break;
@@ -2069,6 +2098,7 @@ void stateDrumSequencerTransitionEditSpecial()
             defaultMenuValue = 0;
         }
                 
+    // END:     End marker: this is not a group, it marks the termination of the sequence.  Not permitted in transition slot 0.
     // R1:      Random(choose beetween groups 0 and 1)
     // R2:      Random(choose beetween groups 0 and 2)
     // R3:      Random(choose beetween groups 0 and 3)
@@ -2077,7 +2107,6 @@ void stateDrumSequencerTransitionEditSpecial()
     // -3:      three times
     // -4:      four times
     // -L:      loop forever
-    // END:     End marker: this is not a group, it marks the termination of the sequence.  Not permitted in transition slot 0.
             
     if (local.drumSequencer.backup == 0)  // slot 0 can't have "END"
         {
@@ -2086,7 +2115,7 @@ void stateDrumSequencerTransitionEditSpecial()
         }
     else
         {
-        const char* menuItems[16] = { PSTR("R2-1"), PSTR("R2-2"), PSTR("R2-3"), PSTR("R2-4"), PSTR("R2-L"), PSTR("R3-1"), PSTR("R3-2"), PSTR("R3-3"), PSTR("R3-4"), PSTR("R3-L"), PSTR("R4-1"), PSTR("R4-2"), PSTR("R4-3"), PSTR("R4-4"), PSTR("R4-L"), PSTR("END") };
+        const char* menuItems[16] = { PSTR("END"), PSTR("R2-1"), PSTR("R2-2"), PSTR("R2-3"), PSTR("R2-4"), PSTR("R2-L"), PSTR("R3-1"), PSTR("R3-2"), PSTR("R3-3"), PSTR("R3-4"), PSTR("R3-L"), PSTR("R4-1"), PSTR("R4-2"), PSTR("R4-3"), PSTR("R4-4"), PSTR("R4-L") };
         result = doMenuDisplay(menuItems, 16, STATE_NONE, STATE_NONE, 1);
         }
                         
@@ -2103,7 +2132,14 @@ void stateDrumSequencerTransitionEditSpecial()
 				insertTransition(local.drumSequencer.backup);
             	}
             local.drumSequencer.transitionGroup[local.drumSequencer.backup] = local.drumSequencer.transitionGroupBackup;
-            local.drumSequencer.transitionRepeat[local.drumSequencer.backup] = currentDisplay;                    
+            if (local.drumSequencer.backup == 0)		// skip "END"
+            	{
+	            local.drumSequencer.transitionRepeat[local.drumSequencer.backup] = currentDisplay + 1;                    
+            	}
+            else
+            	{
+	            local.drumSequencer.transitionRepeat[local.drumSequencer.backup] = currentDisplay;                    
+	            }
             goUpState(STATE_DRUM_SEQUENCER_TRANSITION);
             }
         break;
