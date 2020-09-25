@@ -137,7 +137,7 @@ There are also 20 bytes for transitions:
 				then this is interpreted as LOOP FOREVER Group 0.
 
 There is also 1 byte for sequence repeats:
-		4 bits for overall repeats (LOOP, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, 64)
+		4 bits for overall repeats (LOOP, 1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 24, 32, 64, 128)
 		4 bits for next sequence after repeats have concluded (0 = END, 1...10 (for 0...9))
 
 There is also one global byte:

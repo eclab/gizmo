@@ -1561,8 +1561,8 @@ void stateDrumSequencerMenuPerformanceKeyboard()
         
 void stateDrumSequencerMenuPerformanceRepeat()  
     {
-// This is forever, 1 time, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, 64 times 
-    const char* menuItems[16] = {  PSTR("LOOP"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("10"), PSTR("12"), PSTR("16"), PSTR("24"), PSTR("32"), PSTR("64") };
+    // This is forever, 1 time, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 24, 32, 64, 128 times 
+    const char* menuItems[16] = {  PSTR("LOOP"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("8"), PSTR("9"), PSTR("12"), PSTR("16"), PSTR("18"), PSTR("24"), PSTR("32"), PSTR("64"), PSTR("128") };
     if (entry) 
         {
         defaultMenuValue = local.drumSequencer.repeatSequence;
