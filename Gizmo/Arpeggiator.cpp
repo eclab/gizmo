@@ -404,10 +404,12 @@ void arpeggiatorStartStopClock()
     {
     if (getClockState() == CLOCK_RUNNING)
         {
+    	options.arpeggiatorClock = false;
         stopClock(true);
         }
     else
         {
+    	options.arpeggiatorClock = true;
         local.arp.currentPosition = ARP_POSITION_START;
         startClock(true);
         }
@@ -447,9 +449,10 @@ void stateArpeggiator()
         local.arp.performanceMode = 0;
         local.arp.transpose = 0;
         sendAllSoundsOff();
+//        allowAutoReturn(false);
         }
-    const char* menuItems[17] = { PSTR(STR_UP), PSTR(STR_DOWN), PSTR(STR_UP_DOWN "+"), PSTR("RANDOM"), PSTR("ASSIGN"), PSTR("CHORD"), PSTR("0"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("CREATE")};
-    result = doMenuDisplay(menuItems, 17, STATE_NONE,  STATE_ROOT, 1);
+    const char* menuItems[18] = { PSTR(STR_UP), PSTR(STR_DOWN), PSTR(STR_UP_DOWN), PSTR("+" STR_UP_DOWN), PSTR("RANDOM"), PSTR("ASSIGN"), PSTR("CHORD"), PSTR("0"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("CREATE")};
+    result = doMenuDisplay(menuItems, 18, STATE_NONE,  STATE_ROOT, 1);
 
     entry = true;
     switch (result)
@@ -490,6 +493,16 @@ void stateArpeggiatorPlay()
             
     if (entry)
         {
+        if (options.arpeggiatorClock)
+        	{
+	        startClock(false);
+        	}
+        else
+        	{
+        	// We keep doing whatever's going on
+        	//stopClock(false);
+        	}
+        	
         local.arp.oldLeftPot = pot[LEFT_POT];
         local.arp.oldRightPot = pot[RIGHT_POT]; 
         local.arp.playing = 1;
@@ -518,9 +531,15 @@ void stateArpeggiatorPlay()
             }
         else
             {
-            write3x5Glyph(led2, arpeggiatorGlyphs[local.arp.number], 0);
         	if (local.arp.number == ARPEGGIATOR_NUMBER_UP_DOWN_2)
-            	write3x5Glyph(led2, GLYPH_3x5_PLUS, 4);
+        		{
+	            write3x5Glyph(led2, GLYPH_3x5_PLUS, 0);
+	            write3x5Glyph(led2, GLYPH_3x5_UP_DOWN, 4);
+        		}
+        	else
+            	{
+            	write3x5Glyph(led2, arpeggiatorGlyphs[local.arp.number], 0);
+            	}
             }
             
         if (local.arp.steadyNoteOff != NO_NOTE)
