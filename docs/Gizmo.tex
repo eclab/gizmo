@@ -391,12 +391,12 @@ The arpeggiator also has a {\bf performance mode} which you toggle by Long-Press
 	\end{itemize}
 You can chose which of these items occurs when you enter performance mode choosing the menu option {\bf Performance}.
 
-In some situations, you may need to manually {\bf start or stop} the clock during arpeggiation.  You can do this by Long-Pressing the Middle button.
+In certain unusual cases, you may wish the arpeggiator to send clock signals to synchronize other synthesizers with your playing.  You can manually {\bf start or stop} the clock during arpeggiation by Long-Pressing the Middle button.  If you start the clock like this, the Arpeggiator remembers this and starts the clock automatically next time you enter the arpeggiator.  If you stop the clock, then next time the Arpeggiator won't do anything when you enter the arpeggiator.  
 
 
 \begin{wrapfigure}{r}{2.7in}
 \begin{center}
-\vspace{-4em}\includegraphics[width=1in]{updown}
+\vspace{-1em}\includegraphics[width=1in]{updown}
 \vspace{-1em}
 \caption{\small Up, Down, and Up-Down Symbols}
 \vspace{-4em}
@@ -405,13 +405,13 @@ In some situations, you may need to manually {\bf start or stop} the clock durin
 
 \paragraph{Preset Arpeggios}
 
-There are six preset arpeggios: {\it up}, {\it down}, {\it up-down}, {\it random}, {\it chord repeat}, and {\it assign}.  They work as follows:
+There are seven preset arpeggio patterns available to you: {\it up}, {\it down}, {\it up-down}, {\it  \(+\) up-down}, {\it random}, {\it chord repeat}, and {\it assign}.  You can also create a new arpeggio pattern (discussed later) with {\it create}.  The presets work as follows:
 
 \begin{itemize}
 \item {\bf Up}.  Each note in your chord is played in turn, lowest note first.  When all notes are exhausted, the pattern is repeated.
 \item {\bf Down}.  Each note in your chord is played in turn, highest note first.  When all notes are exhausted, the pattern is repeated.
 \item {\bf Up-Down}.  Each note in your chord is played in turn, lowest note first, up to but not including the highest note.  When all notes are exhausted, all notes in the chord are played in turn, highest note first, down to but not including the lowest note.  When all notes are again exhausted, this pattern repeats.
-\item {\bf Up-Down \(\bm{+}\)}.  This is the same as Up-Down, except that the bottom note is added again to the very top.  For example, if you played C G, two octaves of ordinary Up-Down would be C1 G1 C2 G2 C2 G1, but two octaves of Up-Down \(+\) would be C1 G1 C2 G2 \textit{\textbf{C3}} G2 C2 G1, adding two more notes.  This is particularly useful for arpeggiating over multiple octaves.
+\item {\bf  \(\bm{+}\) Up-Down}.  This is the same as Up-Down, except that the bottom note is added again to the very top.  For example, if you played C G, two octaves of ordinary Up-Down would be C1 G1 C2 G2 C2 G1, but two octaves of Up-Down \(+\) would be C1 G1 C2 G2 \textit{\textbf{C3}} G2 C2 G1, adding two more notes.  This is particularly useful for arpeggiating over multiple octaves.
 \item {\bf Random}.  Chord notes are played at random.  Gizmo tries to not play the same note twice in a row, unless there's only one or two notes in the chord.
 \item {\bf Chord Repeat}.  The entire chord is repeatedly played in its entirety.
 \item {\bf Assign}. Each note in your chord is played in turn, in the order in which you had pressed the keys when you formed the chord.  When all notes are exhausted, the pattern is repeated.
@@ -685,7 +685,7 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 \item {\bf Duplicate}\quad Duplicate absolutely all of the data in the mark track to the current track (including note data, volume, MIDI out, etc.).  The specific mark (note) position is ignored.
 \end{itemize}
 \item {\bf Transpose (Track)} (or {\bf No Transpose (Track)})\quad This toggles whether this track responds to the user transposing the sequencer during performance mode.
-\item {\bf Clock Control} (or {\bf No Clock Control}) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note that regardless of the setting of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.
+%\item {\bf Clock Control} (or {\bf No Clock Control}) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note that regardless of the setting of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.
 \item {\bf No Echo} (or {\bf Echo}) \quad This toggles {\it no-echo mode}.  Normally when you enter a note, it's automatically played so you get some feedback.  But in some circumstances this isn't desirable: for example, if you're entering {\it and} playing notes from the same keyboard, then this default behavior will cause two notes to be played whenever you enter a note.  {\bf No Echo} will turn this off.\footnote{Another closely related feature: if you're in play position mode and you have entered a note slightly before its time, Gizmo won't play it (the first time) when its time comes up, because you just played it yourself.  This isn't the case on the Uno: you'll hear a double-played note the first time.  There's not enough space on the Uno to add this feature, sorry.}
 
 \item {\bf Performance}\quad  This brings up the Performance Mode sub-menu.  You can select these menu items from any mode (not just Performance Mode), but the impact of your changes will only be felt in Performance Mode:
@@ -702,7 +702,7 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 \end{itemize}
 
 \item {\bf Repeat Sequence}\quad This menu option specifies how many bars the sequence should play before it stops.  The default is {\tt LOOP} (forever), but you also have 1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 24, 32, 64, or 128 bars as options.
-\item {\bf Next Sequence}\quad This menu option specifies {\it which} sequence the sequencer should switch to when it has completed the given sequence.  Your options are None, or 0...9.
+\item {\bf Next Sequence}\quad This menu option specifies {\it which} sequence the sequencer should switch to when it has completed the given sequence.  Your options are {\tt - - - -} (stop), or 0...9.
 \end{itemize} 
 
 \item {\bf Save} \quad This saves the sequence. You then choose the slot to save in.  Slots are displayed by number, plus an \texttt{S} (for Save), plus optionally an \texttt{R} or \texttt{S} or \texttt{D} (for Recorder or Step Sequencer or Drum Sequencer) if the slot is already used by that application.  This letter {\bf blinks} if the file isn't the type of your current application to warn you that you will be overwriting the other application's slot.
@@ -812,33 +812,33 @@ Note that this doesn't change the Advance Mute in Performance Mode behavior, jus
 \section {The Drum Sequencer}
 \label{drumsequencersec}
 
-\noindent {\bf Note}\quad{\it The Drum Sequencer will require a Mega.}\vspace{1em}
+\noindent {\bf Note: }{\it The Drum Sequencer can't run on the Arduino Uno.}\vspace{1em}
 
 \begin{wrapfigure}{r}{3in}
 \vspace{-5.5em}\includegraphics[width=3in]{drumsequencer}
-\vspace{-2em}\caption{\small Drum Sequencer Display}\vspace{-2em}
+\vspace{-1em}\caption{\small Drum Sequencer Display}\vspace{-2em}
 \label{drumsequencer}
 \end{wrapfigure}
 
 The Drum Sequencer is very similar to the Step Sequencer, but it has features and tradeoffs more oriented towards drum machine style sequencing:
 
 \begin{itemize}
-\item The Step Sequencer only plays one repeating multitrack sequence at a time.   But the Drum Sequencer can chain up to 15 of them to make a drum rhythm for a whole song.  These sequences can vary in length and speed.
+\item The Step Sequencer only plays one repeating multitrack sequence at a time.   But the Drum Sequencer can use up to 15 of them (known as {\bf groups}) to make a drum rhythm for a whole song.  Groups can vary in length and speed.  The term {\bf sequence} is reserved for all the groups together as a whole.
 \end{itemize}
 
 \begin{itemize}
-\item The Drum Sequencer can organize these (up to 15) sequences in a chain 20 sequences long (meaning that the same sequence can show up multiple times).  Each step in the chain can specify how many times the sequence repeats before going on to the next; and there are various randomization options as well.
-\item The Drum Sequenecer has the memory for these things because it doesn't store nearly the amount of per-step information the Step Sequencer does. Step Sequencer stores in its steps {\it notes} with pitches and velocities; or {\it control changes} like CC or NRPN.  But in the Drum Sequencer each track is tied to a single drum note played at a given velocity on a given MIDI channel.  Each step in the track is simply an ``on'' or ``off'', indicating that the drum should be triggered.
-\item The Step Sequencer both plays notes (MIDI Note On) and releases them (MIDI Note Off).  The Drum Sequencer only plays notes.  It never releases them.
-\item The Drum Sequencer offers many more tracks and initialization formats than the Step Sequencer.
+\item The Drum Sequencer can string these (up to 15) groups in a {\bf chain} 20 groups long; the same group can show up multiple times.  Each step in the chain (known as a {\bf transition}) states the group and how many times repeats before going on to the next; and there are various randomization options as well.
+\item The Drum Sequenecer has sufficient memory for these things because it doesn't store nearly the amount of per-step information the Step Sequencer does. Step Sequencer stores in its steps {\it notes} with pitches and velocities; or {\it control changes} like CC or NRPN.  But in the Drum Sequencer each track is tied to a single {\bf drum note} played at a given velocity on a given MIDI channel.  Each step in the track is simply an ``on'' or ``off'', indicating that the drum should be triggered.
+\item The Step Sequencer both plays notes (MIDI Note On) and releases them (MIDI Note Off).  The Drum Sequencer only plays notes (MIDI Note On).  It never releases them: drums typically don't need that.
+\item The Drum Sequencer offers many more {\bf tracks} and {\bf initialization formats} than the Step Sequencer.
 \end{itemize}
 
 \paragraph{Basic Organization} A drum sequencer's sequence is organized as follows:
 
 \begin{itemize} 
-\item The sequence is divided into \(G \leq 15\) {\it groups.}\footnote{In drum sequence terminology, these are commonly called {\it patterns}.  Why aren't we using this terminology?  Because Gizmo uses {\it pattern} to mean something else.}
+\item The sequence is divided into \(\leq 15\) {\it groups.}\footnote{In drum sequence terminology, these are commonly called {\it patterns}.  Why aren't we using this terminology?  Because Gizmo uses {\it pattern} to mean something else.}
 \item Each group is a repeating ``sequence'' in and of itself in the Step Sequencer sense of the term.  Each group has a maximum length (number of steps) which you specified up front when you chose the drum sequence format\,---\,8, 16, 32, or 64\,---\,but you can shorten individual group lengths to less than this.  Each group also has a {\it speed} which may be a multiple or fraction of the standard tempo.
-\item Each group has \(R \leq 20\) rows of steps.  A thread of rows through all the groups\,---\,row \#5 running through groups 0...15, say\,---\, is collectively a {\it track}.  Each track is associated with a {\it drum note}.  A drum note is a MIDI note pitch, note velocity, and MIDI channel.  When a step on that track is played, Gizmo will send a Note On message with that pitch and velocity to that channel.\footnote{This means that the Drum Sequencer does not support accents.  How do you do an accent then?  Just use a new track and change its volume.  There's a convenience menu option to help you.} Tracks can also be muted and soloed.
+\item Each group has \(\leq 20\) rows of steps.  A thread of rows through all the groups\,---\,row \#5 running through groups 0...15, say\,---\, is collectively a {\it track}.  Each track is associated with a {\it drum note}.  A drum note is a MIDI note pitch, note velocity, and MIDI channel.  When a step on that track is played, Gizmo will send a Note On message with that pitch and velocity to that channel.\footnote{This means that the Drum Sequencer does not support accents.  How do you do an accent then?  Just use a new track and change its volume.  There's a convenience menu option to help you.} Tracks can also be muted and soloed.
 \item Each row in each group can have its own four-bar {\it pattern} in the Step Sequencer sense of the term.
 \item Just like the Step Sequencer, the Drum Sequencer has a {\it performance mode}.  In performance mode, the sequencer will (among other things) play groups in a certain order according to a {\bf chain} of up to 20 {\it transitions}.\footnote{Again, traditionally, the term for this is probably a {\it chain} of {\it patterns}.}  Each transition specifies a group to play, plus how many times to play it before transitioning to the next one.  Transitions can also be set up to play random groups.  In performance mode you can trigger a premature transition manually if you like.
 \end{itemize}
@@ -1021,8 +1021,8 @@ There are also {\bf special transitions}.  These are chosen by selecting {\tt - 
 
 \begin{itemize}
 \item Repeatedly play forever (\texttt{LOOP}), 1, 2, 3, or 4 times.  Each time, randomly select from among groups 1--2 which group to play.
-\item Repeatedly play forever (\texttt{LOOP}) 1, 2, 3, or 4 times.  Each time, randomly select from among groups 1--3 which group to play.  
-\item Repeatedly play forever (\texttt{LOOP}) 1, 2, 3, or 4 times.  Each time, randomly select from among groups 1--4 which group to play.
+\item Repeatedly play forever (\texttt{LOOP}), 1, 2, 3, or 4 times.  Each time, randomly select from among groups 1--3 which group to play.  
+\item Repeatedly play forever (\texttt{LOOP}), 1, 2, 3, or 4 times.  Each time, randomly select from among groups 1--4 which group to play.
 \item Mark this transition as the {\bf end}.  When at the end of the transitions, the Drum Sequencer will stop, repeat the whole chain, or continue to the next sequence as you specified in the {\bf Menu} options.  If none of your transitions is {\bf end}, then the Drum Sequencer will make this decision after exhausting the chain.   The very first transition in a chain is not permitted to be {\bf end}.
 \end{itemize}
 
@@ -1034,9 +1034,9 @@ There are also {\bf special transitions}.  These are chosen by selecting {\tt - 
 
 And now to {\tt BIG LOOP}.  When in performance mode (discussed below) you can manually force a transition to occur at the end of the current bar, even if the number of repeats hasn't been completed yet.  This is useful in the following way: you could set up Transition 1 to be (say) group 1 repeated forever (LOOP), then Transition 2 to be group 2 repeated forever, then Transition 3 to be group 3 repeated forever, etc.  When playing the chain, you'll be in group 1 until you decide to force the transition, which would take you to group 2, and then another manual forced transition at the desired time would go to group 3.
 
-This is all fine and good, but another common need would be to loop though multiple groups forever until manually forced to transition out of them.  For example, imagine you wanted to loop forever through groups 1, 7, and 3 as a sequence, then loop forever through group 2, then loop forever through groups 3, 4, and 6 as a sequence.  This is where {\tt BIG LOOP} comes in.  When a transition is set to {\tt BIG LOOP}, then after playing its group {\it once}, it will hunt back though previous transitions until it finds the first transition {\it after} some other infinite loop (a BIG LOOP, a LOOP, or a random LOOP).  If it finds none, it will use the very first transition.  It then loops back to this transition.  As shown in Figure~\ref{bigloop}, this can be used to chain together multi-transition groups separated by manual transitions.\footnote{You can't chain together groups with non-infinite loops for automated play: to do this, you'd need to use multiple sequences.}
+This is all fine and good, but another common need would be to loop though multiple groups forever until manually forced to transition out of them.  For example, imagine you wanted to loop forever through groups 1, 7, and 3 as a sequence, then loop forever through group 2, then loop forever through groups 3, 4, and 6 as a sequence.  This is where {\tt BIG LOOP} comes in.  When a transition is set to {\tt BIG LOOP}, then after playing its group {\it once}, it will hunt back though previous transitions until it finds the first transition {\it after} some other infinite loop (a BIG LOOP, a LOOP, or a random LOOP).  If it finds none, it will use the very first transition.  It then loops back to this transition.  As shown in Figure~\ref{bigloop}, this can be used to chain together multi-transition groups separated by manual transitions.\footnote{BIG LOOP is infinite.  You can't chain together groups with finite ``big loops'': instead, you should use multiple sequences.}
 
-One weakness of BIG LOOP is that the final transition in the loop will be played exactly 1 time.  That's the way it is.  Other transitions can be repeated multiple (non-infinite) times, though most commonly they'd be 1 time each as well.
+One weakness of BIG LOOP is that the final transition in the loop will be played exactly 1 time.  That's the way it is.  Other transitions in the loop may be repeated multiple (non-infinite) times, as shown in Figure~\ref{bigloop}, though most commonly they'd be 1 time each as well.
 
 
 \paragraph{Performance Mode}  The function of Performance Mode is to make it easy to perform a chain of transitions; it works much like Performance Mode does in the Step Sequencer. No, we've not discussed how to edit transitions yet\,---\,we'll get to that when we discuss the menus.  Performance Mode is entered by long-pressing the Select and Middle buttons together while in any of the other three modes.  In Performance Mode, the cursor will look the same as the Play Position cursor.
@@ -1073,15 +1073,19 @@ If you include a CC control surface (see {\it Remote Control over CC} below) you
 If you Long Press the Select button at any time, you'll call up the Drum Sequencer's menu.  The Drum Sequencer has many menu options:
 
 \begin{itemize}
-\item {\bf Solo} (or {\bf No Solo}) {\it Except Performance Mode}\quad This plays only the current track, muting the others.
-\item {\bf Pause} {\it Performance Mode Only}\quad This pauses the Drum Sequencer rather than stops it.  Starting again will start from the current position rather than from the beginning of the transition chain.
-\item {\bf Mark}\quad This sets the {\bf mark}.  The mark is a position in the sequence: a specific group, track, and step position.  It's used for a number of copy and swap operations discussed below.
+\item {\bf Solo} (or {\bf No Solo}) {\it All modes except Performance Mode}\quad This plays only the current track, muting the others.
+\item {\bf Pause} {\it Performance Mode only}\quad This pauses the Drum Sequencer rather than stops it.  Starting again will start from the current position rather than from the beginning of the transition chain.
+\item {\bf Mark}\quad This sets the {\bf mark} to the current group, track, and step.  The mark is a location in the sequence, and it's used for a number of copy and swap operations discussed below.
+
+\bump
+
 \item {\bf Local} {\it Submenu for dealing with a given track in a given group} \quad 
 \begin{itemize}
 \item {\bf Pattern}\quad Lets you specify the four-bar pattern for this track in this group.  An {\tt O} indicates that the track will be played, and a {\tt -} indicates that it will be hushed.  Your options are: \texttt{OOOO, O-O-, -O-O, OOO-, ---O, O--O, -OO-, OO--, --OO, OO-O, --O-, R1/8, R1/4, R1/2, R3/4,} or\ \ {\tt EXCL}.  The four which start with {\tt R} hush at random: the fraction indicates the probability that the track will be played.  {\tt EXCL} is {\it exclusive random:} if multiple tracks are designated as {\tt EXCL} then at any time exactly one of them will be played (and the others will be hushed).  If only one track is {\tt EXCL}, it's always played.  Note that many of the non-random patterns are in pairs so you can swap the track being played.
-\item {\bf Copy Track}\quad This copies the track specified by the {\it mark} onto the current track, but just within this group.
-\item {\bf Swap Tracks}\quad This swaps the track specified by the {\it mark} with the current track, but just within this group.
+\item {\bf Copy Track}\quad Copies the track specified by the {\it mark} onto the current track,  just within this group.
+\item {\bf Swap Tracks}\quad Swaps the track specified by the {\it mark} with the current track, just within this group.
 \end{itemize}
+
 \item {\bf Track} {\it Submenu for dealing with entire sequence-wide tracks} \quad 
 \begin{itemize}
 \item {\bf Velocity}\footnote{If you're looking to change the Drum Note, Long-Press the Middle button in Edit Mode.}\quad This lets you specify the velocity (volume) of the MIDI note, hence drum, that this track sends messages to.  This is a value 1...8.  The default value is 4, which corresponds to a MIDI velocity of 63. The minimum value, 1, is not silent: it corresponds to to a MIDI velocity of 15.  The maximum value corresponds to a MIDI velocity of 127.  Beware that some drum synthesizers may be configured to play the same velocity no matter what is sent to them.
@@ -1205,7 +1209,8 @@ You can cancel at any time, and nothing will be changed.
 	\item {\bf Go}\quad Jumps to the group associated with the selected transition.
 	\end{itemize}
 
-\item {\bf Clock Control} (or {\bf No Clock Control}) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note that regardless of the setting of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.
+%\item {\bf Clock Control} (or {\bf No Clock Control}) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note that regardless of the setting of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.
+
 \item {\bf Performance} {\it Submenu for options that affect Performance Mode} 
 \begin{itemize}
 \item {\bf Keyboard}\quad  This menu option lets you specify what happens when you press keys or send other MIDI information during Performance Mode.  Your options are:
@@ -1217,8 +1222,8 @@ You can cancel at any time, and nothing will be changed.
 	\item {1--16} \quad Play along with the sequencer: MIDI data is routed out the channel specified.
 \end{itemize}
 
-\item {\bf Repeat Sequence}\quad This menu option specifies how many bars the sequence should play before it stops.  The default is ``Forever'', but you also have 1, 2, 3, 4, 5, 6, 7, 8,9, 10, 12, 16, 24, 32, or 64 bars as options.
-\item {\bf Next Sequence}\quad This menu option specifies {\it which} sequence the sequencer should switch to when it has completed the given sequence.  Your options are None, or 0...9.
+\item {\bf Repeat Sequence}\quad This menu option specifies how many times the sequence as a whole should play before it stops.  The default is {\tt LOOP} (forever), but you also have 1, 2, 3, 4, 5, 6, 7, 8,9, 10, 12, 16, 24, 32, or 64 repeats as options.
+\item {\bf Next Sequence}\quad This menu option specifies {\it which} sequence the sequencer should switch to when it has completed the given sequence including all its repeats.  Your options are {\tt - - - -} (stop), or 0...9.
 \end{itemize} 
 
 \item {\bf Save} \quad This saves the sequence. You then choose the slot to save in.  Slots are displayed by number, plus an \texttt{S} (for Save), plus optionally an \texttt{R} or \texttt{S} or \texttt{D} (for Recorder or Step Sequencer or Drum Sequencer) if the slot is already used by that application.  This letter {\bf blinks} if the file isn't the type of your current application to warn you that you will be overwriting the other application's slot.
@@ -1242,7 +1247,7 @@ In MIDI& Out MIDI&Control MIDI&MIDI Clock&Volume\\
 \vspace{1em}
 Of particular use are Tempo, Note Speed, Swing, and especially Click.
 
-The Drum Sequencer also responds to the {\it Transpose} option (because all applications do) but this is a nuisance as it changes the drum notes.  I strongly suggest you set Transpose to 0.
+The Drum Sequencer also responds to the {\it Transpose} option (because all applications do) but this is a nuisance as it changes the drum notes.  I strongly suggest you set Transpose to 0 in Options when using the Drum Sequencer.
 
 
 \paragraph{Controls Summary}  The Drum Sequencer's controls can be a bit complex.  Here's what they do in each mode.  Note that once you're changing the tempo, you can also tap the middle button to adjust the tempo in addition to moving the knob.
@@ -2142,7 +2147,7 @@ Gizmo's sysex dump format is simple.  Bytes 0--6 are as follows:\quad\texttt{0xF
 		You can also start/stop the clock via by Long-Pressing the Middle button while in the Options menu.  And you can start/continue the clock by Long-Pressing the Select button while in the Options menu.   See also {\bf Starting, Stopping, and Continuing the Clock} in Section \ref{startingclock}.
 
 	\item{\bf Divide}\\
-	If your MIDI Clock option is set to {\bf Use}, {\bf Ignore}, or {\bf Generate} (that is, something which causes Gizmo to emit MIDI Clock), then you have the option of slowing down the emitted MIDI clock by {\it dividing} it by some constant \(N\)  For example, if your clock is presently running at 120 BPM, and you're doing Generate, and \(N=3\), then Gizmo's emitted MIDI clock will be at 40BPM.   Or if you're doing Use and the incoming MIDI Clock is at 100BPM, and \(N=2\), then Gizmo will adjust this to 50BPM when sent out.  Note that Gizmo's internal applications will use the original clock speed.  Note that {\bf Bypass Mode} disables all this nonsense.
+	If your MIDI Clock option is set to {\bf Use}, {\bf Ignore}, {\bf Merge}, or {\bf Generate} (that is, something which causes Gizmo to emit MIDI Clock), then you have the option of slowing down the emitted MIDI clock by {\it dividing} it by some constant \(N\)  For example, if your clock is presently running at 120 BPM, and you're doing Generate, and \(N=3\), then Gizmo's emitted MIDI clock will be at 40BPM.   Or if you're doing Use and the incoming MIDI Clock is at 100BPM, and \(N=2\), then Gizmo will adjust this to 50BPM when sent out.  Note that Gizmo's internal applications will use the original clock speed.  Note that {\bf Bypass Mode} disables all this nonsense.
 	
 Why is this useful?  Here's an example scenario.  You have a sequencer on Device A which is playing a song at 120 BPM, and you want to slave another sequencer, on Device B, to it which plays its part at half that speed.  You can do this by having Device A send to Gizmo, and Gizmo send to Device B with a divided clock.
 
@@ -2299,6 +2304,7 @@ The files are in certain categories:
 				in the callback functions when possible.)\\
 	\tt Arpeggiator.h/cpp & 	The arpeggiator \\ 
 	\tt StepSequencer.h/cpp  & 	The step sequencer \\ 
+	\tt DrumSequencer.h/cpp  & 	The drum sequencer \\ 
 	\tt Control.h/cpp	& 	The MIDI control surface \\ 
 	\tt Gauge.h	& 		The MIDI gauge.  There's no \texttt{Gauge.cpp} because it's
 				entirely contained within the state machine in
@@ -2390,38 +2396,25 @@ add the following:
 
 \paragraph{Modifying the Root Menu}
 
-We also need to modify the root menu to include your application.  In the file \texttt{TopLevel.cpp}, look for the line
+We also need to modify the root menu to include your application.  It depends on whether you're using a Mega or an Uno.  In the file \texttt{All.h}, change the lines:
 
 \begin{verbatim}
-        case STATE_ROOT:
+#define MENU_ITEMS()     const char* menuItems[11] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("DRUM SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), options_p };
+#define NUM_MENU_ITEMS  (11)
 \end{verbatim}
 
-Here you'll find a chunk of code which looks something like this (the exact number of apps may be different):
+... to something like ...
 
 \begin{verbatim}
-#if defined(__MEGA__)
-            const char* menuItems[10] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), 
-                        PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"),
-                        PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), options_p };
-            doMenuDisplay(menuItems, 10, FIRST_APPLICATION, STATE_ROOT, 1);
-#endif
+#define MENU_ITEMS()     const char* menuItems[12] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("DRUM SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), PSTR("FOO"),  options_p };
+#define NUM_MENU_ITEMS  (12)
 \end{verbatim}
 
-You need to modify this to add a label in the menu corresponding to the position of your application in the state machine.  Your application appears immediately before the Options application, so you'd modify it this way:
-
-\begin{verbatim}
-#if defined(__MEGA__)
-            const char* menuItems[11] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), 
-                        PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"),
-                        PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), PSTR("FOO"), options_p };
-            doMenuDisplay(menuItems, 11, FIRST_APPLICATION, STATE_ROOT, 1);
-#endif
-\end{verbatim}
-
-Notice h
+This adds your application FOO as a menu option just before Options.  If you're using Sysex, this exceeds your total number of apps: you'll need to remove one (or mess around with TopLevel.h/cpp to increase the total apps).
 
 This adds a state which, when called, will call the \texttt{stateFoo()} method.  Additional states would typically 
 get tacked onto the end of the \texttt{\#define} list and be called stuff like \texttt{STATE\_FOO\_EDIT} or \texttt{STATE\_FOO\_WHATEVER}.  
+
 The critical item here is that your \texttt{\#define}s in \texttt{TopLevel.h} and \texttt{TopLevel.cpp} must be in the same position,
 so the switch statement stays contiguous and can remain a jump table.
 
