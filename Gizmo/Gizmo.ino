@@ -152,8 +152,9 @@ void setup()
     defaultState = STATE_NONE;
 
     // start clock
-    startClock(true);
-
+    //startClock(true);
+    initializeClock();
+     
     // reset ticks and pulses
     uint32_t m = micros();
 
