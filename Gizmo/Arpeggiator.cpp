@@ -404,12 +404,10 @@ void arpeggiatorStartStopClock()
     {
     if (getClockState() == CLOCK_RUNNING)
         {
-    	options.arpeggiatorClock = false;
         stopClock(true);
         }
     else
         {
-    	options.arpeggiatorClock = true;
         local.arp.currentPosition = ARP_POSITION_START;
         startClock(true);
         }
@@ -493,16 +491,6 @@ void stateArpeggiatorPlay()
             
     if (entry)
         {
-        if (options.arpeggiatorClock)
-        	{
-	        startClock(false);
-        	}
-        else
-        	{
-        	// We keep doing whatever's going on
-        	//stopClock(false);
-        	}
-        	
         local.arp.oldLeftPot = pot[LEFT_POT];
         local.arp.oldRightPot = pot[RIGHT_POT]; 
         local.arp.playing = 1;

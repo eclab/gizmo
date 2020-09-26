@@ -78,7 +78,6 @@ struct _options
     uint8_t arpeggiatorPlayVelocity;
     uint8_t arpeggiatorLatch;  
     uint8_t arpeggiatorPlayAlongChannel;
-	uint8_t arpeggiatorClock;
 #endif
 
 #ifdef INCLUDE_RECORDER
