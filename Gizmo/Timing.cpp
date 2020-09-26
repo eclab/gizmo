@@ -196,6 +196,10 @@ void sendDividedClock()
     if (--dividePulseCountdown == 0)
         {
         dividePulseCountdown = options.clockDivisor;
+        // we don't send the clock if we're a generator and the clock is currently stopped
+        if ((options.clock == GENERATE_MIDI_CLOCK || options.clock == MERGE_MIDI_CLOCK) && 
+        	clockState == CLOCK_STOPPED)
+        	return;
         sendClock(MIDIClock, false);
         }
     }
@@ -216,9 +220,6 @@ void resetDividedClock()
 
 uint8_t pulseClock(uint8_t fromButton)
     {
-    if (clockState == CLOCK_STOPPED)
-        return 0;
-
     // update our external clock pulse estimate
     if (USING_EXTERNAL_CLOCK())
         updateExternalClock(); 
@@ -280,6 +281,17 @@ extern uint8_t drawBeatToggle;
 extern uint8_t drawNotePulseToggle;
 
 
+void initializeClock()
+	{
+    dividePulseCountdown = 1;
+    notePulseCountdown = 1;
+    beatCountdown = 1;
+    drawBeatToggle = 0;
+    drawNotePulseToggle = 0;
+    pulseCount = 0;
+    swingToggle = 0;
+	}
+
 // This method is only called when a user presses a BUTTON
 // or when an external MIDI comes in and we're dong USE or CONSUME.
 //
@@ -293,17 +305,11 @@ uint8_t startClock(uint8_t fromButton)
     {
     if (fromButton && (USING_EXTERNAL_CLOCK() || clockState != CLOCK_STOPPED))
         return 0;
-        
+
+	initializeClock();        
     sendClock(MIDIStart, fromButton);
 
-    dividePulseCountdown = 1;
-    notePulseCountdown = 1;
-    beatCountdown = 1;
-    drawBeatToggle = 0;
-    drawNotePulseToggle = 0;
-    pulseCount = 0;
     clockState = CLOCK_RUNNING;
-    swingToggle = 0;
 
     // When we start the clock we want to have applications starting at their initial points.
     // NOTE: It may be that instead actually want to START them playing.  But I don't think so.

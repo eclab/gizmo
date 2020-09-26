@@ -201,6 +201,7 @@ void sendClock(midi::MidiType signal, uint8_t fromButton);
 //// Returns the current clock state, one of CLOCK_STOPPED and CLOCK_RUNNING
 uint8_t getClockState();
 
+void initializeClock();
 
 void sendDividedClock();
 void resetDividedClock();
