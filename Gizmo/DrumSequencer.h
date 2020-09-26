@@ -488,7 +488,7 @@ Menus
 #define DRUM_SEQUENCER_GROUP_LENGTH_DEFAULT					(0)
 #define DRUM_SEQUENCER_NOTE_SPEED_DEFAULT						(0)
 #define DRUM_SEQUENCER_NO_MIDI_OUT 							(0)
-#define DRUM_SEQUENCER_MIDI_OUT_DEFAULT						(16)		// for now?  I'd prefer zero, see initDrumSequencer
+#define DRUM_SEQUENCER_MIDI_OUT_DEFAULT						(17)		// for now?  I'd prefer zero, see initDrumSequencer
 #define DRUM_SEQUENCER_MAX_NOTE_VELOCITY						(7)			// 127
 #define DRUM_SEQUENCER_INITIAL_NOTE_PITCH						(60)
 #define DRUM_SEQUENCER_TRANSITION_GROUP_OTHER					(15)

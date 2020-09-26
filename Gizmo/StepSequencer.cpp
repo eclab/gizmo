@@ -964,7 +964,7 @@ void stateStepSequencerPlay()
     else if (isUpdated(SELECT_BUTTON, RELEASED))
         {
         //// START / STOP
-        if (options.stepSequencerSendClock)
+        if (1) //if (options.stepSequencerSendClock)
             {
             // we always stop the clock just in case, even if we're immediately restarting it
             stopClock(true);
@@ -974,7 +974,7 @@ void stateStepSequencerPlay()
             case PLAY_STATE_STOPPED:
                 {
                 local.stepSequencer.playState = PLAY_STATE_WAITING;
-                if (options.stepSequencerSendClock)
+                if (1) //if (options.stepSequencerSendClock)
                     {
                     // Possible bug condition:
                     // The MIDI spec says that there "should" be at least 1 ms between
@@ -1603,7 +1603,7 @@ void stateStepSequencerMenu()
     uint8_t result;
 
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
-    const char* menuItems[15] = {    
+    const char* menuItems[14] = {    
         (local.stepSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),
         PSTR("RESET TRACK"),
         PSTR("LENGTH (TRACK)"),
@@ -1614,15 +1614,15 @@ void stateStepSequencerMenu()
         PSTR("PATTERN (TRACK)"),
         local.stepSequencer.transposable[local.stepSequencer.currentTrack] ? PSTR("NO TRANSPOSE (TRACK)") : PSTR("TRANSPOSE (TRACK)"),
         PSTR("EDIT"),
-        options.stepSequencerSendClock ? PSTR("NO CLOCK CONTROL") : PSTR("CLOCK CONTROL"),
+        //options.stepSequencerSendClock ? PSTR("NO CLOCK CONTROL") : PSTR("CLOCK CONTROL"),
         options.stepSequencerNoEcho ? PSTR("ECHO") : PSTR("NO ECHO"), 
         PSTR("PERFORMANCE"),
         PSTR("SAVE"), 
         options_p 
         };
-    result = doMenuDisplay(menuItems, 15, STATE_NONE, STATE_NONE, 1);
+    result = doMenuDisplay(menuItems, 14, STATE_NONE, STATE_NONE, 1);
 #else
-    const char* menuItems[15] = {    
+    const char* menuItems[13] = {    
         (local.stepSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),
         PSTR("RESET TRACK"),
         PSTR("LENGTH (TRACK)"),
@@ -1632,13 +1632,13 @@ void stateStepSequencerMenu()
         PSTR("PATTERN (TRACK)"),
         local.stepSequencer.transposable[local.stepSequencer.currentTrack] ? PSTR("NO TRANSPOSE (TRACK)") : PSTR("TRANSPOSE (TRACK)"),
         PSTR("EDIT"),
-        options.stepSequencerSendClock ? PSTR("NO CLOCK CONTROL") : PSTR("CLOCK CONTROL"),
+        //options.stepSequencerSendClock ? PSTR("NO CLOCK CONTROL") : PSTR("CLOCK CONTROL"),
         options.stepSequencerNoEcho ? PSTR("ECHO") : PSTR("NO ECHO"), 
         PSTR("PERFORMANCE"),
         PSTR("SAVE"), 
         options_p 
         };
-    result = doMenuDisplay(menuItems, 15, STATE_NONE, STATE_NONE, 1);
+    result = doMenuDisplay(menuItems, 13, STATE_NONE, STATE_NONE, 1);
 #endif INCLUDE_ADVANCED_STEP_SEQUENCER
 
     playStepSequencer();
@@ -1709,6 +1709,7 @@ void stateStepSequencerMenu()
                     state = STATE_STEP_SEQUENCER_MENU_EDIT;
                     }
                 break;
+                /*
                 case STEP_SEQUENCER_MENU_SEND_CLOCK:
                     {
                     options.stepSequencerSendClock = !options.stepSequencerSendClock;
@@ -1729,6 +1730,7 @@ void stateStepSequencerMenu()
                     saveOptions();
                     }
                 break;
+                */
                 case STEP_SEQUENCER_MENU_NO_ECHO:
                     {
                     options.stepSequencerNoEcho = !options.stepSequencerNoEcho;

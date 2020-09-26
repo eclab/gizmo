@@ -1216,7 +1216,7 @@ void stateDrumSequencerMenuDistributeTrackInfo()
 void pauseDrumSequencer()
     {
     local.drumSequencer.playState = PLAY_STATE_PAUSED;
-	if (options.drumSequencerSendClock)
+	if (1) //if (options.drumSequencerSendClock)
 		{
 		stopClock(true);
 		}
@@ -1347,10 +1347,10 @@ void stateDrumSequencerTransition()
 #define DRUM_SEQUENCER_MENU_TRACK 3
 #define DRUM_SEQUENCER_MENU_GROUP 4
 #define DRUM_SEQUENCER_MENU_TRANSITION 5
-#define DRUM_SEQUENCER_MENU_SEND_CLOCK 6
-#define DRUM_SEQUENCER_MENU_PERFORMANCE 7
-#define DRUM_SEQUENCER_MENU_SAVE 8
-#define DRUM_SEQUENCER_MENU_OPTIONS 9
+//#define DRUM_SEQUENCER_MENU_SEND_CLOCK 6
+#define DRUM_SEQUENCER_MENU_PERFORMANCE 6
+#define DRUM_SEQUENCER_MENU_SAVE 7
+#define DRUM_SEQUENCER_MENU_OPTIONS 8
 
 
 // Gives other options
@@ -1358,7 +1358,7 @@ void stateDrumSequencerMenu()
     {
     uint8_t result;
     
-	const char* menuItems[10] = 
+	const char* menuItems[9] = 
 		{    
 		local.drumSequencer.performanceMode ? PSTR("PAUSE") : (local.drumSequencer.solo ? PSTR("NO SOLO") : PSTR("SOLO")),
 		PSTR("MARK"),
@@ -1366,12 +1366,12 @@ void stateDrumSequencerMenu()
 		PSTR("TRACK"),
 		PSTR("GROUP"),
 		PSTR("CHAIN"),
-		options.drumSequencerSendClock ? PSTR("NO CLOCK CONTROL") : PSTR("CLOCK CONTROL"),
+		//options.drumSequencerSendClock ? PSTR("NO CLOCK CONTROL") : PSTR("CLOCK CONTROL"),
 		PSTR("PERFORMANCE"),
 		PSTR("SAVE"), 
 		options_p 
 		};
-	result = doMenuDisplay(menuItems, 10, STATE_NONE, STATE_NONE, 1);
+	result = doMenuDisplay(menuItems, 9, STATE_NONE, STATE_NONE, 1);
 
     playDrumSequencer();
     switch (result)
@@ -1424,6 +1424,7 @@ void stateDrumSequencerMenu()
 	                    state = STATE_DRUM_SEQUENCER_TRANSITION;
                     }
                 break;
+                /*
                 case DRUM_SEQUENCER_MENU_SEND_CLOCK:
                     {
                     options.drumSequencerSendClock = !options.drumSequencerSendClock;
@@ -1444,6 +1445,7 @@ void stateDrumSequencerMenu()
                     saveOptions();
                     }
                 break;
+                */
                 case DRUM_SEQUENCER_MENU_PERFORMANCE:
                     {
 	                state = STATE_DRUM_SEQUENCER_PERFORMANCE;   
@@ -2371,9 +2373,9 @@ void drawDrumSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
 void sendTrackNote(uint8_t track)
     {
     uint8_t velocity = getNoteMIDIVelocity(track);
-    uint8_t out = getMIDIChannel(track);
+    uint8_t out = getMIDIChannel(track);			
     uint8_t note = getNotePitch(track);
-    if (out == DRUM_SEQUENCER_MIDI_OUT_DEFAULT) 
+    if (out == DRUM_SEQUENCER_MIDI_OUT_DEFAULT)		// 17 
         out = options.channelOut;
     if (out != DRUM_SEQUENCER_NO_MIDI_OUT)
         {
@@ -2651,7 +2653,7 @@ void stateDrumSequencerPlay()
     else if (isUpdated(SELECT_BUTTON, RELEASED))
         {
 		//// START/STOP
-		if (options.drumSequencerSendClock)
+		if (1) // if (options.drumSequencerSendClock)
 			{
 			// we always stop the clock just in case, even if we're immediately restarting it
 			stopClock(true);
@@ -2675,7 +2677,7 @@ void stateDrumSequencerPlay()
 				local.drumSequencer.currentPlayPosition = getGroupLength(local.drumSequencer.currentGroup) - 1;
 				resetDrumSequencerSequenceCountdown();		// this will call resetDrumSequencerTransitionCountdown();
 
-				if (options.drumSequencerSendClock)
+				if (1) //if (options.drumSequencerSendClock)
 					{
 					// Possible bug condition:
 					// The MIDI spec says that there "should" be at least 1 ms between
@@ -2696,7 +2698,7 @@ void stateDrumSequencerPlay()
 				{
 				local.drumSequencer.playState = PLAY_STATE_PLAYING;
 
-				if (options.drumSequencerSendClock)
+				if (1) //if (options.drumSequencerSendClock)
 					{
 					continueClock(true);
 					}
