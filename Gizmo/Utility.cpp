@@ -38,7 +38,7 @@ void removeAutoReturnTime()
     
 void setAutoReturnTime()
     {
-    if (entry)
+//    if (entry)
         {
         if (autoReturn && (options.autoReturnInterval != NO_AUTO_RETURN))
             {
@@ -134,6 +134,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
                 
         newDisplay = FORCE_NEW_DISPLAY;                                         // This tells us that we MUST compute a new display
         defaultState = STATE_NONE;                                              // We're done with this
+
         setAutoReturnTime();
 
         entry = false;
@@ -148,14 +149,14 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
             newDisplay = (uint8_t) (pot[LEFT_POT] / potDivisor); //(uint8_t)((potUpdated[LEFT_POT] ? pot[LEFT_POT] : pot[RIGHT_POT]) / potDivisor);
             if (newDisplay >= menuLen)        // this can happen because potDivisor is discrete
                 newDisplay = menuLen - 1; 
-            setAutoReturnTime();
+       		setAutoReturnTime();
             }
         else if (isUpdated(MIDDLE_BUTTON, RELEASED))
             {
             newDisplay++;
             if (newDisplay >= menuLen)
                 newDisplay = 0; 
-            setAutoReturnTime();
+       		setAutoReturnTime();
             }
         }
 
@@ -185,14 +186,29 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
             }
         return MENU_CANCELLED;
         }
-    else if (isUpdated(SELECT_BUTTON, RELEASED) || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime))
+    else if (isUpdated(SELECT_BUTTON, RELEASED) || ((autoReturnTime != NO_AUTO_RETURN_TIME_SET) && (tickCount > autoReturnTime)))
         {
-        removeAutoReturnTime();
+		/// This code seems to cure a heisenbug in the compiler.  Without it, 
+		/// auto-return is magically turned ON in the arpeggiator's arpeggio type
+		/// selector.  I'm guessing it's because the call to debug(...) is not inlineable
+		/// and this forces some stack check on the  || ((autoReturnTime != NO_AUTO_RETURN_TIME_SET) && (tickCount > autoReturnTime)))
+		/// bit.
+
+		if (autoReturnTime != NO_AUTO_RETURN_TIME_SET)
+			{
+			if (tickCount <= autoReturnTime)		// this will never happen due to the if-statement above
+				debug(999);
+			}
+			
+		/// End purposeless heisenbug fix
+
         if (baseState != STATE_NONE)
             {
             state = baseState + currentDisplay;
             entry = true;
             }
+            
+        removeAutoReturnTime();        
         return MENU_SELECTED;
         }
 
@@ -342,6 +358,7 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
         currentDisplay += potFineTune;
 
         currentDisplay = boundValue(currentDisplay, minValue, maxValue);
+        setAutoReturnTime();
         }        
 
     if (updateDisplay)
@@ -526,9 +543,7 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
         removeAutoReturnTime();
         return MENU_CANCELLED;
         }
-    else if (isUpdated(SELECT_BUTTON, PRESSED)
-        || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime)
-        )
+    else if (isUpdated(SELECT_BUTTON, PRESSED) || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime))
         {
         removeAutoReturnTime();
         return MENU_SELECTED;
@@ -618,8 +633,6 @@ uint16_t medianOfFive(uint16_t array[])
             }
         }
     }
-
-
 
 
 
