@@ -361,6 +361,9 @@ extern _local local;
 #define MIDDLE_BUTTON 1
 #define SELECT_BUTTON 2
 
+/// "Extra" buttons that are really just presses from a controller
+#define DOWN_BUTTON 0
+
 #define NUM_POTS (4)
 #define LEFT_POT 0
 #define RIGHT_POT 1
@@ -388,6 +391,9 @@ void setupPots();
 void clearReleased();
 
 void updateButtons(uint8_t buttonPressed[]);
+
+void setExtraButton(uint8_t n, uint8_t val);
+uint8_t getExtraButton(uint8_t n);
 
 // Returns if the given button is in the given value state (PRESSED, RELEASED, PRESSED_AND_RELEASED, RELEASED_LONG)
 // ALSO: 

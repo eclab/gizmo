@@ -150,6 +150,7 @@ extern uint8_t itemChannel;				// Channel of the incoming item.  One of 1...16
 #define NRPN_START_PARAMETER                    7
 #define NRPN_STOP_PARAMETER                     8       
 #define NRPN_CONTINUE_PARAMETER                 9
+#define NRPN_DOWN_PARAMETER                 	10
 
 // The non-relative Pot CC parameters and extra parameters S...Z are 14-bit (MSB+LSB).
 // All others are 7-bit.
@@ -198,6 +199,7 @@ extern uint8_t itemChannel;				// Channel of the incoming item.  One of 1...16
 #define CC_START_PARAMETER                    107
 #define CC_STOP_PARAMETER                     108     
 #define CC_CONTINUE_PARAMETER                 109
+#define CC_DOWN_PARAMETER					  127
 //#define CC_LEFT_POT_RELATIVE_PARAMETER        110
 //#define CC_RIGHT_POT_RELATIVE_PARAMETER       111
 #define CC_EXTRA_PARAMETER_A			      64
@@ -247,7 +249,7 @@ extern uint8_t itemChannel;				// Channel of the incoming item.  One of 1...16
 #define CC_EXTRA_PARAMETER_17				  124
 #define CC_EXTRA_PARAMETER_18				  125
 #define CC_EXTRA_PARAMETER_19				  126
-#define CC_EXTRA_PARAMETER_20				  127
+// parameter 20 was taken for "DOWN", see MidiInterface.cpp
 
 
 // If this is TRUE then the various left pot parameter equivalent CCs will

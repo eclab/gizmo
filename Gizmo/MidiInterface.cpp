@@ -542,7 +542,7 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
         lockoutPots = 1;
 
         if ((number >= 64 && number < 96) ||
-            (number >= 110 && number < 127))		// we allow control signals clear to 127
+            (number >= 110 && number < 126))		// we allow control signals clear to 127, but 127 is taken for CC_DOWN_PARAMETER
             {
             newItem = NEW_ITEM;
             itemType = MIDI_CUSTOM_CONTROLLER;
@@ -683,6 +683,11 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
                      continueClock(true);
                      }
                  break;
+                 case CC_DOWN_PARAMETER:
+                     {
+                     setExtraButton(DOWN_BUTTON, 1);
+                     }
+                 break;
                  /*
                    case CC_LEFT_POT_RELATIVE_PARAMETER:
                    {
@@ -807,6 +812,11 @@ void handleNRPN(byte channel, uint16_t parameter, uint16_t value, uint8_t valueT
             case NRPN_CONTINUE_PARAMETER:
                 {
                 continueClock(true);
+                }
+            break;
+            case NRPN_DOWN_PARAMETER:
+                {
+                setExtraButton(DOWN_BUTTON, 1);
                 }
             break;
             }

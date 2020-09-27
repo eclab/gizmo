@@ -134,6 +134,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
                 
         newDisplay = FORCE_NEW_DISPLAY;                                         // This tells us that we MUST compute a new display
         defaultState = STATE_NONE;                                              // We're done with this
+	    setExtraButton(DOWN_BUTTON, 0);
 
         setAutoReturnTime();
 
@@ -158,6 +159,15 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
                 newDisplay = 0; 
        		setAutoReturnTime();
             }
+		else if (getExtraButton(DOWN_BUTTON))
+			{
+			if (newDisplay == 0)
+				newDisplay = menuLen - 1;
+			else
+				newDisplay--;
+			setExtraButton(DOWN_BUTTON, 0);
+			setAutoReturnTime();
+			}
         }
 
     if (newDisplay != currentDisplay)                                           // we're starting fresh (FORCE_NEW_DISPLAY) or have something new
@@ -310,6 +320,8 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
             potDivisor = 1024 / (maxValue - minValue + 1);
             }
         potFineTune = 0;
+	    setExtraButton(DOWN_BUTTON, 0);
+
         setAutoReturnTime();
         entry = false;
         }
@@ -339,6 +351,15 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
             }
         setAutoReturnTime();
         }
+    else if (getExtraButton(DOWN_BUTTON))
+    	{
+    	if (currentDisplay == minValue)
+    		currentDisplay = maxValue;
+    	else
+    		currentDisplay--;
+			setExtraButton(DOWN_BUTTON, 0);
+        setAutoReturnTime();
+    	}
     else if (isUpdated(MIDDLE_BUTTON, RELEASED))
         {
         currentDisplay++;
@@ -536,6 +557,7 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
         potDivisor = 1024 / numGlyphs;
         memcpy(glyphs, _glyphs, numGlyphs);
         entry = false;
+	    setExtraButton(DOWN_BUTTON, 0);
         }
     
     if (isUpdated(BACK_BUTTON, RELEASED))
@@ -556,6 +578,15 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
             currentDisplay = numGlyphs - 1;
         setAutoReturnTime();
         }
+    else if (getExtraButton(DOWN_BUTTON))
+    	{
+    	if (currentDisplay == 0)
+    		currentDisplay = numGlyphs - 1;
+    	else
+    		currentDisplay--;
+			setExtraButton(DOWN_BUTTON, 0);
+        setAutoReturnTime();
+    	}
     else if (isUpdated(MIDDLE_BUTTON, RELEASED))
         {
         currentDisplay++;

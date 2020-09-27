@@ -106,6 +106,7 @@ void toggleBypass(uint8_t channel)
 // UPDATING.  We don't update the buttons or pots every tick, because it is expensive.  Instead
 // we update them every 4 ticks (the pots are updated a different tick than the buttons).
 
+GLOBAL uint8_t extraButtons = 0;
 GLOBAL uint8_t button[NUM_BUTTONS];
 GLOBAL uint8_t buttonUpdated[NUM_BUTTONS] = { NO_CHANGE, NO_CHANGE, NO_CHANGE };
 GLOBAL static uint8_t ignoreNextButtonRelease[NUM_BUTTONS] = { false, false, false };
@@ -116,6 +117,23 @@ GLOBAL uint8_t potUpdated[NUM_POTS];       // has the pot been updated?  CHANGED
 GLOBAL static uint16_t potCurrent[NUM_POTS][3];     // The filtered current pot value
 GLOBAL static uint16_t potCurrentFinal[NUM_POTS];    //  
 GLOBAL static uint16_t potLast[NUM_POTS];     // The last pot value submitted 
+
+void setExtraButton(uint8_t n, uint8_t val)
+	{
+	if (val)
+		{
+		extraButtons |= 0x01 << n;
+		}
+	else
+		{
+		extraButtons &= ~(0x01 << n);
+		}
+	}
+
+uint8_t getExtraButton(uint8_t n)
+	{
+	return (extraButtons >> n) & 0x01;
+	}
 
 
 // SETUP POTS
