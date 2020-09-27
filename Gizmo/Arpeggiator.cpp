@@ -130,7 +130,8 @@ void playArpeggio()
     //
     // The last condition is because if the note length is 100% we want to NEVER turn off unless there's
     // a note pulse, even if the off time is exceeded, because we're doing fully legato.
-    if (!bypassOut && local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || (currentTime >= local.arp.offTime && options.noteLength < 100)) &&
+//    if (!bypassOut && local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || (currentTime >= local.arp.offTime && options.noteLength < 100)) &&
+      if (!bypassOut && local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || (TIME_GREATER_THAN_OR_EQUAL(currentTime, local.arp.offTime) && options.noteLength < 100)) &&
         // we don't want to turn off the note if the next note is a tie
         !((local.arp.number > ARPEGGIATOR_NUMBER_CHORD_REPEAT &&                                                                                                                  // we're doing a custom arpeggio AND
                 ARP_NOTEX(local.arp.currentPosition + 1 >= data.arp.length ? 0 : local.arp.currentPosition + 1) == ARP_TIE)))    // the next note is a TIE

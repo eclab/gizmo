@@ -1862,7 +1862,8 @@ void clearNotesOnTracks(uint8_t clearEvenIfNoteNotFinished)
         uint8_t note = data.slot.data.stepSequencer.buffer[pos];
         
         if (local.stepSequencer.noteOff[track] < NO_NOTE &&             // there's something to turn off
-            (clearEvenIfNoteNotFinished || (currentTime >= local.stepSequencer.offTime[track])) &&  // it's time to clear the note
+            //(clearEvenIfNoteNotFinished || (currentTime >= local.stepSequencer.offTime[track])) &&  // it's time to clear the note
+            (clearEvenIfNoteNotFinished || (TIME_GREATER_THAN_OR_EQUAL(currentTime, local.stepSequencer.offTime[track]))) &&  // it's time to clear the note
             (!((vel == 0) && (note == 1))))                                     // not a tie
             {
             uint8_t out = (local.stepSequencer.outMIDI[track] == MIDI_OUT_DEFAULT ? options.channelOut : local.stepSequencer.outMIDI[track]);

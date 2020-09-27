@@ -151,7 +151,8 @@ void playThru()
     {
     // here we check if it's time to submit a NOTE OFF
     if (local.thru.debounceState == DEBOUNCE_STATE_FIRST_NOTE_UP_IGNORED && 
-        local.thru.debounceTime + ((uint32_t)options.thruDebounceMilliseconds) * 1000 <= currentTime)
+        //local.thru.debounceTime + ((uint32_t)options.thruDebounceMilliseconds) * 1000 <= currentTime)
+		TIME_GREATER_THAN_OR_EQUAL(currentTime, local.thru.debounceTime + ((uint32_t)options.thruDebounceMilliseconds) * 1000))
         {
         performThruNoteOff(local.thru.debounceNote, 127, options.channelOut);
         local.thru.debounceState = DEBOUNCE_STATE_OFF;
@@ -171,7 +172,8 @@ void playThru()
             else if (itemNumber != local.thru.debounceNote ||
                 local.thru.debounceState == DEBOUNCE_STATE_OFF ||
                     ((local.thru.debounceState == DEBOUNCE_STATE_FIRST_NOTE_UP_IGNORED) &&
-                    local.thru.debounceTime + ((uint32_t)options.thruDebounceMilliseconds) * 1000 <= currentTime))
+                    //local.thru.debounceTime + ((uint32_t)options.thruDebounceMilliseconds) * 1000 <= currentTime))
+					TIME_GREATER_THAN_OR_EQUAL(currentTime, local.thru.debounceTime + ((uint32_t)options.thruDebounceMilliseconds) * 1000)))
                 {
                 if (itemNumber != local.thru.debounceNote && local.thru.debounceState == DEBOUNCE_STATE_FIRST_NOTE_UP_IGNORED)  // new note, kill the old one
                     {
@@ -201,7 +203,8 @@ void playThru()
                 local.thru.debounceState == DEBOUNCE_STATE_FIRST_NOTE_DOWN && 
                 local.thru.debounceNote == itemNumber)
                 {
-                if (local.thru.debounceTime + ((uint32_t)options.thruDebounceMilliseconds) * 1000 >= currentTime)                               
+                //if (local.thru.debounceTime + ((uint32_t)options.thruDebounceMilliseconds) * 1000 >= currentTime)  
+                if (TIME_GREATER_THAN_OR_EQUAL(local.thru.debounceTime + ((uint32_t)options.thruDebounceMilliseconds) * 1000, currentTime))
                     {
                     local.thru.debounceState = DEBOUNCE_STATE_FIRST_NOTE_UP_IGNORED;
                     local.thru.debounceTime = currentTime;

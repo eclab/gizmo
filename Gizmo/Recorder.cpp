@@ -237,7 +237,8 @@ void stateRecorderPlay()
                 uint16_t time = (local.recorder.tick <= 0 ? 0 : local.recorder.tick);
                                 
                 if ((!local.recorder.tickoff) &&
-                    (2 * (targetNextPulseTime - currentTime) <= getMicrosecsPerPulse()))  // if we're closer to the NEXT pulse than we are to the CURRENT one
+                    //(2 * (targetNextPulseTime - currentTime) <= getMicrosecsPerPulse()))  // if we're closer to the NEXT pulse than we are to the CURRENT one
+                    (TIME_GREATER_THAN_OR_EQUAL(getMicrosecsPerPulse(), 2 * (targetNextPulseTime - currentTime))))  // if we're closer to the NEXT pulse than we are to the CURRENT one
                     {
                     // round up to next
                     time++;

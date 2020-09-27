@@ -196,12 +196,12 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
             }
         return MENU_CANCELLED;
         }
-    else if (isUpdated(SELECT_BUTTON, RELEASED) || ((autoReturnTime != NO_AUTO_RETURN_TIME_SET) && (tickCount > autoReturnTime)))
+    else if (isUpdated(SELECT_BUTTON, RELEASED) || ((autoReturnTime != NO_AUTO_RETURN_TIME_SET) && TIME_GREATER_THAN(tickCount, autoReturnTime)))   //(tickCount > autoReturnTime)))
         {
 		/// This code seems to cure a heisenbug in the compiler.  Without it, 
 		/// auto-return is magically turned ON in the arpeggiator's arpeggio type
 		/// selector.  I'm guessing it's because the call to debug(...) is not inlineable
-		/// and this forces some stack check on the  || ((autoReturnTime != NO_AUTO_RETURN_TIME_SET) && (tickCount > autoReturnTime)))
+		/// and this forces some stack check on the  || ((autoReturnTime != NO_AUTO_RETURN_TIME_SET) && TIME_GREATER_THAN(tickCount, autoReturnTime)))
 		/// bit.
 
 		if (autoReturnTime != NO_AUTO_RETURN_TIME_SET)
@@ -331,7 +331,7 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
         removeAutoReturnTime();
         return MENU_CANCELLED;
         }
-    else if (isUpdated(SELECT_BUTTON, PRESSED) || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime))
+    else if (isUpdated(SELECT_BUTTON, PRESSED) || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && TIME_GREATER_THAN(tickCount, autoReturnTime)))   //(tickCount > autoReturnTime)))
         {
         removeAutoReturnTime();
         return MENU_SELECTED;
@@ -565,7 +565,7 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
         removeAutoReturnTime();
         return MENU_CANCELLED;
         }
-    else if (isUpdated(SELECT_BUTTON, PRESSED) || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime))
+    else if (isUpdated(SELECT_BUTTON, PRESSED) || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && TIME_GREATER_THAN(tickCount, autoReturnTime)))   //(tickCount > autoReturnTime)))
         {
         removeAutoReturnTime();
         return MENU_SELECTED;

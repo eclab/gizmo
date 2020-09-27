@@ -18,7 +18,6 @@ GLOBAL uint32_t currentTime;
 
 
 
-
 //// TICKS
 
 /// Estimated time of the next TICK (in microseconds)
@@ -86,7 +85,6 @@ GLOBAL uint8_t beatCountdown = 1;
 GLOBAL uint8_t beat;
 
 
-
 ///// UPDATE TICKS AND WAIT
 ///// Called only by loop().  This does a delay the proper amount of time
 ///// in order sleep to the next tick, then updates the tick.
@@ -94,19 +92,33 @@ void updateTicksAndWait()
     {
     targetNextTickTime += TARGET_TICK_TIMESTEP;
     currentTime = micros();
-    if (currentTime > targetNextTickTime)
+    if (TIME_GREATER_THAN(currentTime, targetNextTickTime)) //(currentTime > targetNextTickTime)
         {
-        // uh oh, this will happen once per hour or so when micros rolls over. 
-        // otherwise it implies that we're not processing fast enough so we might
-        // want to debug here.
-        
-        // Makes things really slow
-        //delayMicroseconds(targetNextTickTime - currentTime);  // this should be right, as we wrap around
+        // we're too far ahead, do nothing
         }
     else
         {
-        // sleep until the target time
-        delayMicroseconds(targetNextTickTime - currentTime);
+        // sleep until the target time.
+        // According to https://www.arduino.cc/reference/en/language/functions/time/delaymicroseconds/
+        // the Arduino is not accurate less than 3 or more than 16383 (which should use delay() instead)
+#define MIN_DELAY 3
+#define MAX_DELAY 16383
+        uint32_t delayTime = targetNextTickTime - currentTime;
+        if (delayTime < MIN_DELAY) 
+        	{
+        	delayTime = MIN_DELAY;
+        	}
+        
+        if (delayTime <= MAX_DELAY)
+        	{
+	        delayMicroseconds(delayTime);
+	        }
+	    else			// this will be rare, like after a debug or something really bad
+	    	{
+	    	debug(100);
+	    	// we'll estimate milliseconds by dividing by 1024, that is, right-shifting by 10
+	    	delay(delayTime >> 10);
+	    	}
         }
     
     // this better be accurate...
@@ -155,6 +167,10 @@ void updateExternalClock()
         externalMicrosecsPerPulse = currentTime - lastExternalPulseTime;
         }
     lastExternalPulseTime = currentTime;
+    if (lastExternalPulseTime == 0) // not allowed to be 0
+    	{
+    	lastExternalPulseTime--;			// hope this doesn't create problems
+    	}
     }
 
 
@@ -383,7 +399,8 @@ void setPulseRate(uint16_t bpm)
     microsecsPerPulse = (((uint32_t) 2500000) / bpm);
   
     // update the target pulse time, but don't starve if we're constantly changing the pulse rate
-    targetNextPulseTime =  (targetNextPulseTime - currentTime > microsecsPerPulse ? currentTime + microsecsPerPulse : targetNextPulseTime);
+    targetNextPulseTime =  (TIME_GREATER_THAN(targetNextPulseTime - currentTime, microsecsPerPulse) ? currentTime + microsecsPerPulse : targetNextPulseTime);
+	//(targetNextPulseTime - currentTime > microsecsPerPulse ? currentTime + microsecsPerPulse : targetNextPulseTime);
     }
 
   
@@ -437,14 +454,14 @@ void updateTimers()
     // update our internal clock if we're making one
     if (!USING_EXTERNAL_CLOCK())
         {
-        if (currentTime > targetNextPulseTime)
+        if (TIME_GREATER_THAN(currentTime, targetNextPulseTime))		// (currentTime > targetNextPulseTime)
             {
             targetNextPulseTime += microsecsPerPulse;
             pulseClock(false);  // note that the 'false' is ignored
             }
         }
 
-    if (swingTime != 0 && currentTime >= swingTime)
+    if (swingTime != 0 && TIME_GREATER_THAN_OR_EQUAL(currentTime, swingTime))		//(swingTime != 0 && currentTime >= swingTime)
         {
         // play!
         notePulse = 1;

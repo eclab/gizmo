@@ -59,7 +59,14 @@
 /// The current TIME in microseconds.  It's updated every tick.
 extern uint32_t currentTime;
 
-
+//// COMPARATORS FOR TIMESTAMPS
+//// These comparators work even when you have rollover, assuming the difference is less than MID_TIME, which is enormous
+#define MIN_TIME (0)
+#define MAX_TIME (4294967295)
+#define MID_TIME (2147483647)
+#define TIME_GREATER_THAN(x, y) ( (x) - (y) < (MID_TIME))			// because otherwise we roll over and it's really big
+//#define TIME_GREATER_THAN_OR_EQUAL(x, y) ( ((x) == (y)) || TIME_GREATER_THAN(x, y))
+#define TIME_GREATER_THAN_OR_EQUAL(x, y) (!TIME_GREATER_THAN(y, x))
 
 
 
@@ -68,10 +75,6 @@ extern uint32_t currentTime;
 // Microseconds per tick to maintain MIDI transmission speed.
 // 1/3125 sec is exactly 320 microsec
 #define TARGET_TICK_TIMESTEP 320
-
-// 1073741823 is 4294967296 / 4
-#define ROLLOVER_BUFFER_LOW ( 1073741823 )
-#define ROLLOVER_BUFFER_HIGH ( 4294967295 - 1073741823 )
 
 /// Estimated time of the next TICK (in microseconds)
 extern uint32_t targetNextTickTime; 

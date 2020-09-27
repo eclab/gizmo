@@ -987,24 +987,32 @@ void stateControllerPlay()
 
         int8_t winner = -1;
         uint32_t winnerTime = 0;
-        if (local.control.potWaiting[LEFT_POT] && (currentTime - local.control.potUpdateTime[LEFT_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
+        //if (local.control.potWaiting[LEFT_POT] && (currentTime - local.control.potUpdateTime[LEFT_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
+        if (local.control.potWaiting[LEFT_POT] && (TIME_GREATER_THAN_OR_EQUAL(currentTime - local.control.potUpdateTime[LEFT_POT], MINIMUM_CONTROLLER_POT_DELAY)))
             {
-            if (local.control.potUpdateTime[LEFT_POT] - currentTime > winnerTime) { winner = LEFT_POT; winnerTime = currentTime - local.control.potUpdateTime[LEFT_POT]; }
+            // if (local.control.potUpdateTime[LEFT_POT] - currentTime > winnerTime) { winner = LEFT_POT; winnerTime = currentTime - local.control.potUpdateTime[LEFT_POT]; }
+            if (TIME_GREATER_THAN(local.control.potUpdateTime[LEFT_POT] - currentTime, winnerTime)) { winner = LEFT_POT; winnerTime = currentTime - local.control.potUpdateTime[LEFT_POT]; }
             }
 
-        if (local.control.potWaiting[RIGHT_POT] && (currentTime - local.control.potUpdateTime[RIGHT_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
+        //if (local.control.potWaiting[RIGHT_POT] && (currentTime - local.control.potUpdateTime[RIGHT_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
+        if (local.control.potWaiting[RIGHT_POT] && (TIME_GREATER_THAN_OR_EQUAL(currentTime - local.control.potUpdateTime[RIGHT_POT], MINIMUM_CONTROLLER_POT_DELAY)))
             {
-            if (local.control.potUpdateTime[RIGHT_POT] - currentTime > winnerTime) { winner = RIGHT_POT; winnerTime = currentTime - local.control.potUpdateTime[RIGHT_POT]; }
+            //if (local.control.potUpdateTime[RIGHT_POT] - currentTime > winnerTime) { winner = RIGHT_POT; winnerTime = currentTime - local.control.potUpdateTime[RIGHT_POT]; }
+            if (TIME_GREATER_THAN(local.control.potUpdateTime[RIGHT_POT] - currentTime, winnerTime)) { winner = RIGHT_POT; winnerTime = currentTime - local.control.potUpdateTime[RIGHT_POT]; }
             }
 
-        if (local.control.potWaiting[A2_POT] && (currentTime - local.control.potUpdateTime[A2_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
+        //if (local.control.potWaiting[A2_POT] && (currentTime - local.control.potUpdateTime[A2_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
+        if (local.control.potWaiting[A2_POT] && (TIME_GREATER_THAN_OR_EQUAL(currentTime - local.control.potUpdateTime[A2_POT], MINIMUM_CONTROLLER_POT_DELAY)))
             {
-            if (local.control.potUpdateTime[A2_POT] - currentTime > winnerTime) { winner = A2_POT; winnerTime = currentTime - local.control.potUpdateTime[A2_POT]; }
+            //if (local.control.potUpdateTime[A2_POT] - currentTime > winnerTime) { winner = A2_POT; winnerTime = currentTime - local.control.potUpdateTime[A2_POT]; }
+            if (TIME_GREATER_THAN(local.control.potUpdateTime[A2_POT] - currentTime, winnerTime)) { winner = A2_POT; winnerTime = currentTime - local.control.potUpdateTime[A2_POT]; }
             }
 
-        if (local.control.potWaiting[A3_POT] && (currentTime - local.control.potUpdateTime[A3_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
+        //if (local.control.potWaiting[A3_POT] && (currentTime - local.control.potUpdateTime[A3_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
+        if (local.control.potWaiting[A3_POT] && (TIME_GREATER_THAN_OR_EQUAL(currentTime - local.control.potUpdateTime[A3_POT], MINIMUM_CONTROLLER_POT_DELAY)))
             {
-            if (local.control.potUpdateTime[A3_POT] - currentTime > winnerTime) { winner = A3_POT; winnerTime = currentTime - local.control.potUpdateTime[A3_POT]; }
+            //if (local.control.potUpdateTime[A3_POT] - currentTime > winnerTime) { winner = A3_POT; winnerTime = currentTime - local.control.potUpdateTime[A3_POT]; }
+            if (TIME_GREATER_THAN(local.control.potUpdateTime[A3_POT] - currentTime, winnerTime)) { winner = A3_POT; winnerTime = currentTime - local.control.potUpdateTime[A3_POT]; }
             }
                                         
         // here we go
