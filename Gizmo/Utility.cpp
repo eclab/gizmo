@@ -34,12 +34,13 @@ void allowAutoReturn(uint8_t state)
 void removeAutoReturnTime()
     {
     autoReturnTime = NO_AUTO_RETURN_TIME_SET;
+    autoReturn = false;
     }
     
 void setAutoReturnTime()
     {
 //    if (entry)
-        {
+//        {
         if (autoReturn && (options.autoReturnInterval != NO_AUTO_RETURN))
             {
             autoReturnTime = tickCount + ((uint32_t)3125) * (uint32_t)(options.autoReturnInterval);
@@ -48,8 +49,8 @@ void setAutoReturnTime()
             {
             removeAutoReturnTime();
             }
-        }
-    autoReturn = false;
+//        }
+    //autoReturn = false;
     }
 
 
@@ -184,7 +185,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
         if (state == STATE_ROOT)
             application = FIRST_APPLICATION + currentDisplay;
         }
-
+        
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
         removeAutoReturnTime();
@@ -326,6 +327,20 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
         entry = false;
         }
     
+    /*
+	if (autoReturnTime != NO_AUTO_RETURN_TIME_SET)
+		{
+			debug(998);
+		}
+		
+	if (autoReturnTime != NO_AUTO_RETURN_TIME_SET && 
+		!TIME_GREATER_THAN(tickCount, autoReturnTime) &&
+		(tickCount > autoReturnTime))
+			{
+			debug(999);
+			}
+		*/
+			
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
         removeAutoReturnTime();
