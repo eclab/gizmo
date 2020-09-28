@@ -2210,14 +2210,14 @@ Why is this useful?  Here's an example scenario.  You have a sequencer on Device
 	\end{description}
 
 \clearpage
-	\section{About the Clock}
+%	\section{About the Clock}
 
-	\subsection{The Internal Clock}
-	\label{internalclock}
+%	\subsection{The Internal Clock}
+%	\label{internalclock}
 
-The Arduino has an internal clock with 32 bits, yielding a maximum of 42,949,672,95 ticks (one tick per microsecond) before it rolls back over to 0.  This sounds like a lot, but it's not: it's a bit over an hour.\footnote{71.5827882666 minutes to be exact.}  This means that once an hour, Gizmo might do something odd, if you're using the internal clock.  Most likely it could drop a single pulse (1/24 of a quarter note), so it might be off by that much with respect to other instruments synced to it.  You've been warned.
+%The Arduino has an internal clock with 32 bits, yielding a maximum of 42,949,672,96 ticks (one tick per microsecond) before it rolls back over to 0.  This sounds like a lot, but it's not: it's a bit over an hour.\footnote{71.5827882666 minutes to be exact.}  This means that once an hour, Gizmo might do something odd, if you're using the internal clock.  Most likely it could drop a single pulse (1/24 of a quarter note), so it might be off by that much with respect to other instruments synced to it.  You've been warned.
 
-\subsection{Starting, Stopping, and Continuing the Clock }
+\section{Starting, Stopping, and Continuing the Clock }
 	\label{startingclock}
 
 		You can start, stop, and continue the clock via NRPN/CC as discussed earlier (see {\bf Control MIDI} in Section \ref{options}).   But there's another ``secret'' way to do it using Gizmo's buttons.  If you are in the Options menu, or if you're at the Root (top-level) menu, long-press the Middle Button: this toggles {\bf starting} or {\bf stopping} the clock.  And if you long-press the Select button, you can toggle {\bf continuing} or {\bf stopping} the clock.  Remember that you can also get to the Options menu from inside the Arpeggiator, Step Sequencer, or Recorder.

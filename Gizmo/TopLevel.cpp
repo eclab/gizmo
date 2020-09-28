@@ -585,11 +585,12 @@ void go()
 
             MENU_ITEMS();                   // See All.h
             if (doMenuDisplay(menuItems, NUM_MENU_ITEMS, FIRST_APPLICATION, STATE_ROOT, 1) == MENU_SELECTED)
-
+				{
 #if defined(TOPLEVEL_BYPASS)
                 if (bypass == BYPASS_FIRST_ON)
                     toggleBypass(0); // the channel doesn't matter, it'll get ignored
 #endif TOPLEVEL_BYPASS
+				}
             }
         break;  
 #ifdef INCLUDE_ARPEGGIATOR
