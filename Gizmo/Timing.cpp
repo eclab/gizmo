@@ -294,7 +294,7 @@ extern uint8_t drawNotePulseToggle;
 
 void initializeClock()
     {
-    resetDividedClock = 1;
+    resetDividedClock();
     notePulseCountdown = 1;
     beatCountdown = 1;
     drawBeatToggle = 0;
