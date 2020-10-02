@@ -41,14 +41,14 @@ void setAutoReturnTime()
     {
 //    if (entry)
 //        {
-        if (autoReturn && (options.autoReturnInterval != NO_AUTO_RETURN))
-            {
-            autoReturnTime = tickCount + ((uint32_t)3125) * (uint32_t)(options.autoReturnInterval);
-            }
-        else 
-            {
-            removeAutoReturnTime();
-            }
+    if (autoReturn && (options.autoReturnInterval != NO_AUTO_RETURN))
+        {
+        autoReturnTime = tickCount + ((uint32_t)3125) * (uint32_t)(options.autoReturnInterval);
+        }
+    else 
+        {
+        removeAutoReturnTime();
+        }
 //        }
     //autoReturn = false;
     }
@@ -112,7 +112,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
     
     if (entry)
         {
-		
+                
         // copy over the PSTRs but don't convert them.
         memcpy(menu, _menu, menuLen * sizeof(const char*));
     
@@ -135,7 +135,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
                 
         newDisplay = FORCE_NEW_DISPLAY;                                         // This tells us that we MUST compute a new display
         defaultState = STATE_NONE;                                              // We're done with this
-	    setExtraButton(DOWN_BUTTON, 0);
+        setExtraButton(DOWN_BUTTON, 0);
 
         setAutoReturnTime();
 
@@ -151,24 +151,24 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
             newDisplay = (uint8_t) (pot[LEFT_POT] / potDivisor); //(uint8_t)((potUpdated[LEFT_POT] ? pot[LEFT_POT] : pot[RIGHT_POT]) / potDivisor);
             if (newDisplay >= menuLen)        // this can happen because potDivisor is discrete
                 newDisplay = menuLen - 1; 
-       		setAutoReturnTime();
+            setAutoReturnTime();
             }
         else if (isUpdated(MIDDLE_BUTTON, RELEASED))
             {
             newDisplay++;
             if (newDisplay >= menuLen)
                 newDisplay = 0; 
-       		setAutoReturnTime();
+            setAutoReturnTime();
             }
-		else if (getExtraButton(DOWN_BUTTON))
-			{
-			if (newDisplay == 0)
-				newDisplay = menuLen - 1;
-			else
-				newDisplay--;
-			setExtraButton(DOWN_BUTTON, 0);
-			setAutoReturnTime();
-			}
+        else if (getExtraButton(DOWN_BUTTON))
+            {
+            if (newDisplay == 0)
+                newDisplay = menuLen - 1;
+            else
+                newDisplay--;
+            setExtraButton(DOWN_BUTTON, 0);
+            setAutoReturnTime();
+            }
         }
 
     if (newDisplay != currentDisplay)                                           // we're starting fresh (FORCE_NEW_DISPLAY) or have something new
@@ -199,19 +199,19 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
         }
     else if (isUpdated(SELECT_BUTTON, RELEASED) || ((autoReturnTime != NO_AUTO_RETURN_TIME_SET) && TIME_GREATER_THAN(tickCount, autoReturnTime)))   //(tickCount > autoReturnTime)))
         {
-		/// This code seems to cure a heisenbug in the compiler.  Without it, 
-		/// auto-return is magically turned ON in the arpeggiator's arpeggio type
-		/// selector.  I'm guessing it's because the call to debug(...) is not inlineable
-		/// and this forces some stack check on the  || ((autoReturnTime != NO_AUTO_RETURN_TIME_SET) && TIME_GREATER_THAN(tickCount, autoReturnTime)))
-		/// bit.
+        /// This code seems to cure a heisenbug in the compiler.  Without it, 
+        /// auto-return is magically turned ON in the arpeggiator's arpeggio type
+        /// selector.  I'm guessing it's because the call to debug(...) is not inlineable
+        /// and this forces some stack check on the  || ((autoReturnTime != NO_AUTO_RETURN_TIME_SET) && TIME_GREATER_THAN(tickCount, autoReturnTime)))
+        /// bit.
 
-		if (autoReturnTime != NO_AUTO_RETURN_TIME_SET)
-			{
-			if (tickCount <= autoReturnTime)		// this will never happen due to the if-statement above
-				debug(999);
-			}
-			
-		/// End purposeless heisenbug fix
+        if (autoReturnTime != NO_AUTO_RETURN_TIME_SET)
+            {
+            if (tickCount <= autoReturnTime)                // this will never happen due to the if-statement above
+                debug(999);
+            }
+                        
+        /// End purposeless heisenbug fix
 
         if (baseState != STATE_NONE)
             {
@@ -321,26 +321,26 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
             potDivisor = 1024 / (maxValue - minValue + 1);
             }
         potFineTune = 0;
-	    setExtraButton(DOWN_BUTTON, 0);
+        setExtraButton(DOWN_BUTTON, 0);
 
         setAutoReturnTime();
         entry = false;
         }
     
     /*
-	if (autoReturnTime != NO_AUTO_RETURN_TIME_SET)
-		{
-			debug(998);
-		}
-		
-	if (autoReturnTime != NO_AUTO_RETURN_TIME_SET && 
-		!TIME_GREATER_THAN(tickCount, autoReturnTime) &&
-		(tickCount > autoReturnTime))
-			{
-			debug(999);
-			}
-		*/
-			
+      if (autoReturnTime != NO_AUTO_RETURN_TIME_SET)
+      {
+      debug(998);
+      }
+                
+      if (autoReturnTime != NO_AUTO_RETURN_TIME_SET && 
+      !TIME_GREATER_THAN(tickCount, autoReturnTime) &&
+      (tickCount > autoReturnTime))
+      {
+      debug(999);
+      }
+    */
+                        
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
         removeAutoReturnTime();
@@ -367,14 +367,14 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
         setAutoReturnTime();
         }
     else if (getExtraButton(DOWN_BUTTON))
-    	{
-    	if (currentDisplay == minValue)
-    		currentDisplay = maxValue;
-    	else
-    		currentDisplay--;
-			setExtraButton(DOWN_BUTTON, 0);
+        {
+        if (currentDisplay == minValue)
+            currentDisplay = maxValue;
+        else
+            currentDisplay--;
+        setExtraButton(DOWN_BUTTON, 0);
         setAutoReturnTime();
-    	}
+        }
     else if (isUpdated(MIDDLE_BUTTON, RELEASED))
         {
         currentDisplay++;
@@ -572,7 +572,7 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
         potDivisor = 1024 / numGlyphs;
         memcpy(glyphs, _glyphs, numGlyphs);
         entry = false;
-	    setExtraButton(DOWN_BUTTON, 0);
+        setExtraButton(DOWN_BUTTON, 0);
         }
     
     if (isUpdated(BACK_BUTTON, RELEASED))
@@ -594,14 +594,14 @@ uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t 
         setAutoReturnTime();
         }
     else if (getExtraButton(DOWN_BUTTON))
-    	{
-    	if (currentDisplay == 0)
-    		currentDisplay = numGlyphs - 1;
-    	else
-    		currentDisplay--;
-			setExtraButton(DOWN_BUTTON, 0);
+        {
+        if (currentDisplay == 0)
+            currentDisplay = numGlyphs - 1;
+        else
+            currentDisplay--;
+        setExtraButton(DOWN_BUTTON, 0);
         setAutoReturnTime();
-    	}
+        }
     else if (isUpdated(MIDDLE_BUTTON, RELEASED))
         {
         currentDisplay++;
@@ -956,8 +956,8 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                         //// FIXME:  Need to stop the sequencer?  Etc.
 
                         unpackDrumSequenceData();
-					    local.drumSequencer.playState = PLAY_STATE_STOPPED;
-					    local.drumSequencer.performanceMode = false;
+                        local.drumSequencer.playState = PLAY_STATE_STOPPED;
+                        local.drumSequencer.performanceMode = false;
 
                         // FIXME: did I fix the issue of synchronizing the beats with the sequencer notes?
                         local.drumSequencer.currentPlayPosition = 
@@ -1028,15 +1028,15 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                 }
 
 #ifdef INCLUDE_STEP_SEQUENCER
-if (application == STATE_STEP_SEQUENCER)
-			{                                
-            local.stepSequencer.solo = 0;
-            local.stepSequencer.currentTrack = 0;
-            local.stepSequencer.transpose = 0;
-            setParseRawCC(local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_CC);
-            local.stepSequencer.currentEditPosition = 0;
-            stopStepSequencer();
-            }
+            if (application == STATE_STEP_SEQUENCER)
+                {                                
+                local.stepSequencer.solo = 0;
+                local.stepSequencer.currentTrack = 0;
+                local.stepSequencer.transpose = 0;
+                setParseRawCC(local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_CC);
+                local.stepSequencer.currentEditPosition = 0;
+                stopStepSequencer();
+                }
 #endif INCLUDE_STEP_SEQUENCER
                 
             defaultState = STATE_NONE;
@@ -1103,7 +1103,7 @@ void stateCant(uint8_t nextState)
     if (updateDisplay)
         {
         clearScreen();
-		write3x5Glyphs(GLYPH_CANT);
+        write3x5Glyphs(GLYPH_CANT);
         }
 
     if (isUpdated(BACK_BUTTON, RELEASED) || isUpdated(SELECT_BUTTON, RELEASED))

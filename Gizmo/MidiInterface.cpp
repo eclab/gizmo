@@ -542,7 +542,7 @@ void handleControlChange(byte channel, byte number, uint16_t value, byte type)
         lockoutPots = 1;
 
         if ((number >= 64 && number < 96) ||
-            (number >= 110 && number < 126))		// we allow control signals clear to 127, but 127 is taken for CC_DOWN_PARAMETER
+            (number >= 110 && number < 126))            // we allow control signals clear to 127, but 127 is taken for CC_DOWN_PARAMETER
             {
             newItem = NEW_ITEM;
             itemType = MIDI_CUSTOM_CONTROLLER;

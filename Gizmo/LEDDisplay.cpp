@@ -41,51 +41,51 @@
 /// Defines which make it easy to write bitmap fonts
 // The << 3 shifts the 5 bits to the top of the LED screen
 
-#define A00000A  (0 << 3)
-#define A10000A  (1 << 3)
-#define A01000A  (2 << 3)
-#define A11000A  (3 << 3)
-#define A00100A  (4 << 3)
-#define A10100A  (5 << 3)
-#define A01100A  (6 << 3)
-#define A11100A  (7 << 3)
-#define A00010A  (8 << 3)
-#define A10010A  (9 << 3)
-#define A01010A  (10 << 3)
-#define A11010A  (11 << 3)
-#define A00110A  (12 << 3)
-#define A10110A  (13 << 3)
-#define A01110A  (14 << 3)
-#define A11110A  (15 << 3)
-#define A00001A  (16 << 3)
-#define A10001A  (17 << 3)
-#define A01001A  (18 << 3)
-#define A11001A  (19 << 3)
-#define A00101A  (20 << 3)
-#define A10101A  (21 << 3)
-#define A01101A  (22 << 3)
-#define A11101A  (23 << 3)
-#define A00011A  (24 << 3)
-#define A10011A  (25 << 3)
-#define A01011A  (26 << 3)
-#define A11011A  (27 << 3)
-#define A00111A  (28 << 3)
-#define A10111A  (29 << 3)
-#define A01111A  (30 << 3)
-#define A11111A  (31 << 3)
-
-
-  const char PROGMEM font_2x5[1][2] = {
-  { //1
-  A00010A,
-  A11111A
-  },
-  };
+#define A00000A  ((char)(0 << 3))
+#define A10000A  ((char)(1 << 3))
+#define A01000A  ((char)(2 << 3))
+#define A11000A  ((char)(3 << 3))
+#define A00100A  ((char)(4 << 3))
+#define A10100A  ((char)(5 << 3))
+#define A01100A  ((char)(6 << 3))
+#define A11100A  ((char)(7 << 3))
+#define A00010A  ((char)(8 << 3))
+#define A10010A  ((char)(9 << 3))
+#define A01010A  ((char)(10 << 3))
+#define A11010A  ((char)(11 << 3))
+#define A00110A  ((char)(12 << 3))
+#define A10110A  ((char)(13 << 3))
+#define A01110A  ((char)(14 << 3))
+#define A11110A  ((char)(15 << 3))
+#define A00001A  ((char)(16 << 3))
+#define A10001A  ((char)(17 << 3))
+#define A01001A  ((char)(18 << 3))
+#define A11001A  ((char)(19 << 3))
+#define A00101A  ((char)(20 << 3))
+#define A10101A  ((char)(21 << 3))
+#define A01101A  ((char)(22 << 3))
+#define A11101A  ((char)(23 << 3))
+#define A00011A  ((char)(24 << 3))
+#define A10011A  ((char)(25 << 3))
+#define A01011A  ((char)(26 << 3))
+#define A11011A  ((char)(27 << 3))
+#define A00111A  ((char)(28 << 3))
+#define A10111A  ((char)(29 << 3))
+#define A01111A  ((char)(30 << 3))
+#define A11111A  ((char)(31 << 3))
 
 
 // This semicolon is critical to clue Emacs into properly
 // indenting the following array.  Go figure.
 ;
+
+const char PROGMEM font_2x5[1][2] = {
+        { //1
+        A00010A,
+        A11111A
+        },
+    };
+
 
 const char PROGMEM font_3x5[47][3] = {
         { // (
@@ -494,7 +494,7 @@ const char PROGMEM font_5x5[5][5] = {
 /////
 /////   Additionally, we have infinity, 1/8, 1/6, 1/4, 1/3, and 1/2.
 /////
-/////	Plus we have some two-part glyphs: "SURE?", "GIZMO x" (for various numbers x: 8 bits high), and some waves that I'm not using right now.
+/////   Plus we have some two-part glyphs: "SURE?", "GIZMO x" (for various numbers x: 8 bits high), and some waves that I'm not using right now.
 
 const char PROGMEM font_8x5[
 #ifdef INCLUDE_EXTENDED_FONT        
@@ -1827,71 +1827,71 @@ void writeNote(unsigned char* mat, unsigned char note)
 void drawRange(uint8_t *mat, uint8_t x, uint8_t y, uint8_t total, uint8_t val)
     {
     if (total > 16)
-    	{
-		if (val == 51)
-			{
-			for(uint8_t i = 0; i < 6; i++)
-				{
-				setPoint(mat, i + x, y);
-				}
-			setPoint(mat, 7 + x, y);
-			}
-		else if (val >= 48)
-			{
-			for(uint8_t i = 0; i < 5; i++)
-				{
-				setPoint(mat, i + x, y);
-				}
-			drawRange(mat, x + 6, y, 4, val - 48);
-			}
-		else if (val >= 43)
-			{
-			for(uint8_t i = 0; i < 4; i++)
-				{
-				setPoint(mat, i + x, y);
-				}
-			drawRange(mat, x + 5, y, 6, val - 43);
-			}
-		else if (val >= 36)
-			{
-			for(uint8_t i = 0; i < 3; i++)
-				{
-				setPoint(mat, i + x, y);
-				}
-			drawRange(mat, x + 4, y, 8, val - 36);
-			}
-		else if (val >= 27)
-			{
-			setPoint(mat, 0 + x, y);
-			setPoint(mat, 1 + x, y);
-			drawRange(mat, x + 3, y, 10, val - 27);
-			}
-		else if (val >= 16)
-			{
-			setPoint(mat, 0 + x, y);    	
-			drawRange(mat, x + 2, y, 12, val - 16);
-			}
-		else
-			{
-			drawRange(mat, x, y, 16, val);
-			}
-		}
+        {
+        if (val == 51)
+            {
+            for(uint8_t i = 0; i < 6; i++)
+                {
+                setPoint(mat, i + x, y);
+                }
+            setPoint(mat, 7 + x, y);
+            }
+        else if (val >= 48)
+            {
+            for(uint8_t i = 0; i < 5; i++)
+                {
+                setPoint(mat, i + x, y);
+                }
+            drawRange(mat, x + 6, y, 4, val - 48);
+            }
+        else if (val >= 43)
+            {
+            for(uint8_t i = 0; i < 4; i++)
+                {
+                setPoint(mat, i + x, y);
+                }
+            drawRange(mat, x + 5, y, 6, val - 43);
+            }
+        else if (val >= 36)
+            {
+            for(uint8_t i = 0; i < 3; i++)
+                {
+                setPoint(mat, i + x, y);
+                }
+            drawRange(mat, x + 4, y, 8, val - 36);
+            }
+        else if (val >= 27)
+            {
+            setPoint(mat, 0 + x, y);
+            setPoint(mat, 1 + x, y);
+            drawRange(mat, x + 3, y, 10, val - 27);
+            }
+        else if (val >= 16)
+            {
+            setPoint(mat, 0 + x, y);        
+            drawRange(mat, x + 2, y, 12, val - 16);
+            }
+        else
+            {
+            drawRange(mat, x, y, 16, val);
+            }
+        }
     else
-    	{
-		uint8_t halftotal = (total >> 1);
-		if (val < halftotal)
-			{
-			for(uint8_t i = 0; i < val + 1; i++)
-				{
-				setPoint(mat, i + x, y);
-				}
-			}
-		else
-			{
-			for(uint8_t i = val - halftotal + 1; i < halftotal; i++)
-				setPoint(mat, i + x, y);
-			} 
-		}
+        {
+        uint8_t halftotal = (total >> 1);
+        if (val < halftotal)
+            {
+            for(uint8_t i = 0; i < val + 1; i++)
+                {
+                setPoint(mat, i + x, y);
+                }
+            }
+        else
+            {
+            for(uint8_t i = val - halftotal + 1; i < halftotal; i++)
+                setPoint(mat, i + x, y);
+            } 
+        }
     }
 
 
@@ -1915,7 +1915,7 @@ void writeNotePitchLong(unsigned char* mat, unsigned char* mat2, unsigned char n
     uint16_t octave = div12(note);
     uint16_t n = DIV12_REMAINDER(octave, note);
     writeNote(mat, (uint8_t) n);
-	writeShortNumber(mat2, octave, true);
+    writeShortNumber(mat2, octave, true);
     }
 
 

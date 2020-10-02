@@ -61,11 +61,16 @@ extern uint32_t currentTime;
 
 //// COMPARATORS FOR TIMESTAMPS
 //// These comparators work even when you have rollover, assuming the difference is less than MID_TIME, which is enormous
+//// The purpose of these comparators is to allow you to compute > and >= despite rollover effects, since the
+//// rollover for the Arduino clock is about every 71 minutes.
+////
+//// You can use these comparators for tickCount or pulseCount as well, and I'm doing so in Auto Return Time,
+//// though it's a bit silly to do so since the rollover for tickCount (and the minimum rollover for pulseCount) is 15 days 
+
 #define MIN_TIME (0)
 #define MAX_TIME (4294967295)
 #define MID_TIME (2147483647)
-#define TIME_GREATER_THAN(x, y) ( (x) - (y) < (MID_TIME))			// because otherwise we roll over and it's really big
-//#define TIME_GREATER_THAN_OR_EQUAL(x, y) ( ((x) == (y)) || TIME_GREATER_THAN(x, y))
+#define TIME_GREATER_THAN(x, y) ( (x) - (y) < MID_TIME)
 #define TIME_GREATER_THAN_OR_EQUAL(x, y) (!TIME_GREATER_THAN(y, x))
 
 
@@ -95,10 +100,6 @@ void updateTicksAndWait();
 
 // Estimated time of the next PULSE (in microseconds)
 extern  uint32_t targetNextPulseTime;
-
-// Number of microseconds between PULSES.  20833 is a tempo of 120 BPM (our default)
-//extern uint32_t microsecsPerPulse;  // 120 BPM by default
-//extern uint32_t externalMicrosecsPerPulse;
 
 // Number of microseconds between PULSES.  20833 is a tempo of 120 BPM (our default)
 uint32_t getMicrosecsPerPulse();

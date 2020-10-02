@@ -360,9 +360,9 @@ void stateControllerPlayWaveEnvelope()
             }
         }
     else if (newItem && itemType == MIDI_NOTE_ON && (options.envelopeMode == ENVELOPE_MODE_FADED))
-    	{
+        {
         local.control.wavePosition = -1;
-    	}
+        }
     
     // If we haven't started yet and got a MIDI_NOTE_ON *or* we're free
     if (local.control.wavePosition == -1 && ((newItem && itemType == MIDI_NOTE_ON) || (options.envelopeMode == ENVELOPE_MODE_FREE)))

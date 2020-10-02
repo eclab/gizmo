@@ -48,22 +48,21 @@ uint16_t div10(uint16_t dividend)
 /// (for 16-bit ints).  See http://homepage.cs.uiowa.edu/~jones/bcd/divide.html
 /// If this were converted from uint16_t to uint32_t, its range would be 
 /// 0 ... 534890 but would be only 89 times per ms
+uint16_t div10slow(uint16_t dividend)
+    {
+    uint16_t div = ((dividend >> 1) + dividend) >> 1;
+    div = ((div >> 4) + div); 
+    div = ((div >> 8) + div) >> 3;
 
-// uint16_t div10(uint16_t A)
-// {
-// uint16_t Q = ((A >> 1) + A) >> 1;
-//      Q = ((Q >> 4) + Q); 
-//      Q = ((Q >> 8) + Q) >> 3;
-//
-//      uint16_t remainder = ((Q << 2) + Q) << 1;
-//      remainder = A - remainder;
-//      if (remainder >= 10) 
-//              {
-//              remainder = remainder - 10;
-//              Q = Q + 1;
-//              }
-//      return Q;
-//  }
+    uint16_t remainder = ((div << 2) + div) << 1;
+    remainder = dividend - remainder;
+    if (remainder >= 10) 
+        {
+        remainder = remainder - 10;
+        div = div + 1;
+        }
+    return div;
+    }
 
 
 // Range of 0...16391

@@ -311,7 +311,7 @@ void stateStepSequencerMenuPerformanceRepeat()
         case MENU_SELECTED:
             {
             data.slot.data.stepSequencer.repeat = ((data.slot.data.stepSequencer.repeat & 0xF0) | (currentDisplay & 0x0F));
-			resetStepSequencerCountdown();
+            resetStepSequencerCountdown();
             goUpState(immediateReturnState);
             }
         break;
@@ -937,20 +937,20 @@ void stateStepSequencerPlay()
                     local.stepSequencer.currentEditPosition = incrementAndWrap(local.stepSequencer.currentEditPosition, trackLen);  
                     local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
                     }
-				// don't add if a rest precedes it or a tie is after it
-               else if (((data.slot.data.stepSequencer.buffer[v + 1] == 0) &&           // rest before
-                            (data.slot.data.stepSequencer.buffer[v] == 0)) ||
-                            ((data.slot.data.stepSequencer.buffer[v2 + 1] == 1) &&          // tie after
-                            (data.slot.data.stepSequencer.buffer[v2] == 0)))
-					{
-					// do nothing
-					}
-				else
-					{
-					loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + local.stepSequencer.currentEditPosition, 1, 0);
-					local.stepSequencer.currentEditPosition = incrementAndWrap(local.stepSequencer.currentEditPosition, trackLen);
-					local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
-					}
+                // don't add if a rest precedes it or a tie is after it
+                else if (((data.slot.data.stepSequencer.buffer[v + 1] == 0) &&           // rest before
+                        (data.slot.data.stepSequencer.buffer[v] == 0)) ||
+                        ((data.slot.data.stepSequencer.buffer[v2 + 1] == 1) &&          // tie after
+                        (data.slot.data.stepSequencer.buffer[v2] == 0)))
+                    {
+                    // do nothing
+                    }
+                else
+                    {
+                    loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + local.stepSequencer.currentEditPosition, 1, 0);
+                    local.stepSequencer.currentEditPosition = incrementAndWrap(local.stepSequencer.currentEditPosition, trackLen);
+                    local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
+                    }
                 }
             else 
                 {
@@ -1709,26 +1709,26 @@ void stateStepSequencerMenu()
                     }
                 break;
                 /*
-                case STEP_SEQUENCER_MENU_SEND_CLOCK:
-                    {
-                    options.stepSequencerSendClock = !options.stepSequencerSendClock;
-                    if (options.stepSequencerSendClock)
-                        {
-                        // the logic here is that if we are suddenly NOW sending the clock,
-                        // we should stop the clock so we're not just constantly sending pulses
-                        // if we're currently playing
-                        stopClock(true);
-                        }
-                    else
-                        {
-                        // the logic here is that if we are suddenly no longer sending the
-                        // clock, we don't want to leave the clock OFF because the user
-                        // has no easy way of turning it on again!
-                        continueClock(true);
-                        }
-                    saveOptions();
-                    }
-                break;
+                  case STEP_SEQUENCER_MENU_SEND_CLOCK:
+                  {
+                  options.stepSequencerSendClock = !options.stepSequencerSendClock;
+                  if (options.stepSequencerSendClock)
+                  {
+                  // the logic here is that if we are suddenly NOW sending the clock,
+                  // we should stop the clock so we're not just constantly sending pulses
+                  // if we're currently playing
+                  stopClock(true);
+                  }
+                  else
+                  {
+                  // the logic here is that if we are suddenly no longer sending the
+                  // clock, we don't want to leave the clock OFF because the user
+                  // has no easy way of turning it on again!
+                  continueClock(true);
+                  }
+                  saveOptions();
+                  }
+                  break;
                 */
                 case STEP_SEQUENCER_MENU_NO_ECHO:
                     {

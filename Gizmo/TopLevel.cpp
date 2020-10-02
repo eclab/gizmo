@@ -119,21 +119,21 @@ GLOBAL static uint16_t potCurrentFinal[NUM_POTS];    //
 GLOBAL static uint16_t potLast[NUM_POTS];     // The last pot value submitted 
 
 void setExtraButton(uint8_t n, uint8_t val)
-	{
-	if (val)
-		{
-		extraButtons |= 0x01 << n;
-		}
-	else
-		{
-		extraButtons &= ~(0x01 << n);
-		}
-	}
+    {
+    if (val)
+        {
+        extraButtons |= 0x01 << n;
+        }
+    else
+        {
+        extraButtons &= ~(0x01 << n);
+        }
+    }
 
 uint8_t getExtraButton(uint8_t n)
-	{
-	return (extraButtons >> n) & 0x01;
-	}
+    {
+    return (extraButtons >> n) & 0x01;
+    }
 
 
 // SETUP POTS
@@ -511,31 +511,31 @@ GLOBAL uint8_t defaultMenuValue = 0;
 
 
 void checkForClockStartStop()
-	{
-	if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
-		{
-		if (getClockState() == CLOCK_RUNNING)
-			{
-			stopClock(true);
-			}
-		else
-			{
-			startClock(true);
-			}
-		}
-		
-	else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
-		{
-		if (getClockState() == CLOCK_RUNNING)
-			{
-			stopClock(true);
-			}
-		else
-			{
-			continueClock(true);
-			}
-		}
-		
+    {
+    if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
+        {
+        if (getClockState() == CLOCK_RUNNING)
+            {
+            stopClock(true);
+            }
+        else
+            {
+            startClock(true);
+            }
+        }
+                
+    else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
+        {
+        if (getClockState() == CLOCK_RUNNING)
+            {
+            stopClock(true);
+            }
+        else
+            {
+            continueClock(true);
+            }
+        }
+                
     }
 
 
@@ -581,16 +581,16 @@ void go()
                 immediateReturnState = STATE_ROOT;
                 }
 
-			checkForClockStartStop();
+            checkForClockStartStop();
 
             MENU_ITEMS();                   // See All.h
             if (doMenuDisplay(menuItems, NUM_MENU_ITEMS, FIRST_APPLICATION, STATE_ROOT, 1) == MENU_SELECTED)
-				{
+                {
 #if defined(TOPLEVEL_BYPASS)
                 if (bypass == BYPASS_FIRST_ON)
                     toggleBypass(0); // the channel doesn't matter, it'll get ignored
 #endif TOPLEVEL_BYPASS
-				}
+                }
             }
         break;  
 #ifdef INCLUDE_ARPEGGIATOR
@@ -726,7 +726,7 @@ void go()
 
         case STATE_OPTIONS:
             {
-			checkForClockStartStop();
+            checkForClockStartStop();
                         
 #if defined(__MEGA__)
             const char* menuItems[16] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
@@ -1154,14 +1154,14 @@ void go()
         case STATE_DRUM_SEQUENCER_GROUP_CLEAR_SURE:
             {
             stateSure(STATE_DRUM_SEQUENCER_PLAY, STATE_DRUM_SEQUENCER_GROUP_CLEAR);
-    		playDrumSequencer();
+            playDrumSequencer();
             }
         break;
         case STATE_DRUM_SEQUENCER_GROUP_CLEAR:
             {
             clearCurrentGroup();
-			goUpState(STATE_DRUM_SEQUENCER_PLAY);
-    		playDrumSequencer();
+            goUpState(STATE_DRUM_SEQUENCER_PLAY);
+            playDrumSequencer();
             }
         break;
         case STATE_DRUM_SEQUENCER_GROUP_SPEED_CANT:
@@ -1477,7 +1477,7 @@ void go()
                 lastTempoTapTime = 0;
                 }
 
-			if (isUpdated(MIDDLE_BUTTON, PRESSED))
+            if (isUpdated(MIDDLE_BUTTON, PRESSED))
                 {
                 if (lastTempoTapTime != 0)
                     {

@@ -533,31 +533,31 @@ GLOBAL uint8_t itemChannel = CHANNEL_OFF;
 
 
 void checkForClockStartStop()
-	{
-	if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
-		{
-		if (getClockState() == CLOCK_RUNNING)
-			{
-			stopClock(true);
-			}
-		else
-			{
-			startClock(true);
-			}
-		}
-		
-	else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
-		{
-		if (getClockState() == CLOCK_RUNNING)
-			{
-			stopClock(true);
-			}
-		else
-			{
-			continueClock(true);
-			}
-		}
-		
+    {
+    if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
+        {
+        if (getClockState() == CLOCK_RUNNING)
+            {
+            stopClock(true);
+            }
+        else
+            {
+            startClock(true);
+            }
+        }
+                
+    else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
+        {
+        if (getClockState() == CLOCK_RUNNING)
+            {
+            stopClock(true);
+            }
+        else
+            {
+            continueClock(true);
+            }
+        }
+                
     }
 
 
@@ -629,7 +629,7 @@ void go()
                 immediateReturnState = STATE_ROOT;
 #endif
 #ifdef INCLUDE_CLOCK_IN_OPTIONS
-				checkForClockStartStop();
+                checkForClockStartStop();
 #endif
                 }
 #if defined(__MEGA__)
@@ -1172,7 +1172,7 @@ void go()
         case STATE_OPTIONS:
             {
 #ifdef INCLUDE_CLOCK_IN_OPTIONS
-checkForClockStartStop();
+            checkForClockStartStop();
 #endif
                         
 #if defined(__MEGA__)

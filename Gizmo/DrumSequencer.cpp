@@ -26,7 +26,7 @@
 #define GET_TRACK1(track)                                       (data.slot.data.drumSequencer.data[TRACK_OFFSET + (track) * 2 + 1])
 #define SET_TRACK0(track, val)                                  (data.slot.data.drumSequencer.data[TRACK_OFFSET + (track) * 2 + 0] = (val))
 #define SET_TRACK1(track, val)                                  (data.slot.data.drumSequencer.data[TRACK_OFFSET + (track) * 2 + 1] = (val))
-#define TRACK_DATALEN                                           (local.drumSequencer.numTracks * 2)			// this maxes out at 40 bytes
+#define TRACK_DATALEN                                           (local.drumSequencer.numTracks * 2)                     // this maxes out at 40 bytes
 
 
 //// GROUP DATA
@@ -34,7 +34,7 @@
 #define GROUP_OFFSET                                            (TRACK_OFFSET + TRACK_DATALEN)                  // I don't think we need to make this uint16_t but it might not hurt
 #define GET_GROUP(group)                                        (data.slot.data.drumSequencer.data[GROUP_OFFSET + (group)])
 #define SET_GROUP(group, val)                                   (data.slot.data.drumSequencer.data[GROUP_OFFSET + (group)] = (val))
-#define GROUP_DATALEN                                           (local.drumSequencer.numGroups)					// This maxes out at 70 bytes
+#define GROUP_DATALEN                                           (local.drumSequencer.numGroups)                                 // This maxes out at 70 bytes
 
 
 //// GROUP-TRACK DATA
@@ -43,7 +43,7 @@
 #define NUM_TRACKPAIRS                                          (local.drumSequencer.numTracks >> 1)            // evaluates to 1/2 the number of tracks
 #define GET_GROUPTRACK_PAIR(group, trackpair)                   (data.slot.data.drumSequencer.data[GROUPTRACK_OFFSET + NUM_TRACKPAIRS * (group) + (trackpair)])
 #define SET_GROUPTRACK_PAIR(group, trackpair, val)              (data.slot.data.drumSequencer.data[GROUPTRACK_OFFSET + NUM_TRACKPAIRS * (group) + (trackpair)] = (val))
-#define GROUPTRACK_DATALEN                                      (NUM_TRACKPAIRS * local.drumSequencer.numGroups)	// This maxes out at 220 bytes
+#define GROUPTRACK_DATALEN                                      (NUM_TRACKPAIRS * local.drumSequencer.numGroups)        // This maxes out at 220 bytes
 
 
 //// NOTE DATA
@@ -60,23 +60,23 @@
 ///// A NOTE ON GROUP LENGTHS
 /////
 ///// Each group has a maximum length determined by the format.  This length can be computed using
-/////			numFormatNotes(data.slot.data.drumSequencer.format)
+/////                   numFormatNotes(data.slot.data.drumSequencer.format)
 ///// This value is stored locally, and in most cases can be accessed more conveniently, as
-/////			local.drumSequencer.numNotes
+/////                   local.drumSequencer.numNotes
 ///// numNotes is set during initialization and loading, so in general it's always correct.
 ///// An individual group can be resized to a value less than this.  The actual length of the group is unchanged,
 /////       but Gizmo will not permit you to enter notes beyond the length, nor will it play them.  You cannot
 /////       reduce the group size to less than 1.  This is accessed using the function:
-/////			getGroupLength(group)			[returns a value from 1...64]
+/////                   getGroupLength(group)                   [returns a value from 1...64]
 ///// The ACTUAL storage of the group length is a value 0...63, where 0 means "Default" ("Full Length"), and
-/////		1...63 means "use this length instead".  This is accessed and set using the functions
-/////			getGroupLengthData(group)		[returns a value 0...63]
-/////			setGroupLengthData(group, val)
+/////           1...63 means "use this length instead".  This is accessed and set using the functions
+/////                   getGroupLengthData(group)               [returns a value 0...63]
+/////                   setGroupLengthData(group, val)
 ///// Finally, the number of actual bytes used to store the notes in a given track in a given group, if for
-/////		some reason you needed that, is specified as
-/////			(NUM_NOTE_BYTES)
+/////           some reason you needed that, is specified as
+/////                   (NUM_NOTE_BYTES)
 ///// ... which just expands to (since 8 notes are packed in one byte):
-/////			(local.drumSequencer.numNotes >> 3)
+/////                   (local.drumSequencer.numNotes >> 3)
 
 
 // Extract a note from data.slot.data.drumSequencer.data
@@ -110,7 +110,7 @@ void setNote(uint8_t group, uint8_t track, uint8_t note, uint8_t val)
 // Toggle a note from data.slot.data.drumSequencer.data
 void toggleNote(uint8_t group, uint8_t track, uint8_t note)
     {
-    setNote(group, track, note, !getNote(group, track, note));		// this could of course be more efficient...
+    setNote(group, track, note, !getNote(group, track, note));          // this could of course be more efficient...
     }
 
 // Set (to 1) a note from data.slot.data.drumSequencer.data
@@ -189,9 +189,9 @@ uint8_t getGroupLength(uint8_t group)
     {
     uint8_t gl = getGroupLengthData(group);
     if (gl == DRUM_SEQUENCER_GROUP_LENGTH_DEFAULT) 
-    	return local.drumSequencer.numNotes;
-    if (gl > local.drumSequencer.numNotes) 	/// uh... that's an error
-    	gl = local.drumSequencer.numNotes;
+        return local.drumSequencer.numNotes;
+    if (gl > local.drumSequencer.numNotes)      /// uh... that's an error
+        gl = local.drumSequencer.numNotes;
     else return gl;
     }
 
@@ -357,12 +357,12 @@ void initDrumSequencer(uint8_t format)
     local.drumSequencer.solo = 0;
     local.drumSequencer.playState = PLAY_STATE_STOPPED;
     local.drumSequencer.performanceMode = false;
-	local.drumSequencer.transitionCountdown = 255;
-	local.drumSequencer.sequenceCountdown = 255;
-	local.drumSequencer.patternCountup = 255;
-	// backups don't matter
-	local.drumSequencer.goNextTransition = false;
-	local.drumSequencer.goNextSequence = 0;
+    local.drumSequencer.transitionCountdown = 255;
+    local.drumSequencer.sequenceCountdown = 255;
+    local.drumSequencer.patternCountup = 255;
+    // backups don't matter
+    local.drumSequencer.goNextTransition = false;
+    local.drumSequencer.goNextSequence = 0;
     local.drumSequencer.markGroup = DRUM_SEQUENCER_NO_MARK;
     local.drumSequencer.markPosition = DRUM_SEQUENCER_NO_MARK;
     local.drumSequencer.markTrack = DRUM_SEQUENCER_NO_MARK;
@@ -385,12 +385,12 @@ void initDrumSequencer(uint8_t format)
             }
         }
         
-	for(uint8_t g = 0; g < numFormatGroups(format); g++)
-		{
-		// per-group data
-		setGroupLengthData(g, DRUM_SEQUENCER_GROUP_LENGTH_DEFAULT);
-		setNoteSpeed(g, DRUM_SEQUENCER_NOTE_SPEED_DEFAULT);	
-		}
+    for(uint8_t g = 0; g < numFormatGroups(format); g++)
+        {
+        // per-group data
+        setGroupLengthData(g, DRUM_SEQUENCER_GROUP_LENGTH_DEFAULT);
+        setNoteSpeed(g, DRUM_SEQUENCER_NOTE_SPEED_DEFAULT);     
+        }
     
     // The initial transition pattern is:
     // 1 LOOP
@@ -419,7 +419,7 @@ void initDrumSequencer(uint8_t format)
     for(uint8_t i = 0; i < local.drumSequencer.numTracks; i++)
         {
         local.drumSequencer.muted[i] = (getMute(i) ? DRUM_SEQUENCER_MUTED : DRUM_SEQUENCER_NOT_MUTED);
-        local.drumSequencer.shouldPlay[i] = 1;	// doesn't matter
+        local.drumSequencer.shouldPlay[i] = 1;  // doesn't matter
         }
     }
 
@@ -429,7 +429,7 @@ void initDrumSequencer(uint8_t format)
 void stateDrumSequencerFormat()
     {
     uint8_t result;
-	defaultMenuValue = DRUM_SEQUENCER_DEFAULT_FORMAT;
+    defaultMenuValue = DRUM_SEQUENCER_DEFAULT_FORMAT;
     const char* menuItems[16] = {  PSTR("8/10/20"), PSTR("16/6/20"), PSTR("32/3/20"), PSTR("8/13/16"), PSTR("16/8/16"), PSTR("32/4/16"), PSTR("64/2/16"), PSTR("8/15/12"), PSTR("16/11/12"), PSTR("32/6/12"), PSTR("64/3/12"), PSTR("16/15/8"), PSTR("32/9/8"), PSTR("64/5/8"), PSTR("32/12/6"), PSTR("64/10/4") }; 
     result = doMenuDisplay(menuItems, 16, STATE_NONE, 0, 1);
     switch (result)
@@ -450,7 +450,7 @@ void stateDrumSequencerFormat()
             local.drumSequencer.patternCountup = 255;
             local.drumSequencer.performanceMode = 0;
             local.drumSequencer.goNextTransition = 0;
-			local.drumSequencer.goNextSequence = 0;
+            local.drumSequencer.goNextSequence = 0;
             local.drumSequencer.solo = 0;
             setNotePulseRate(options.noteSpeedType);
             goDownState(STATE_DRUM_SEQUENCER_FORMAT_NOTE);
@@ -471,10 +471,10 @@ void stateDrumSequencerFormatNote()
         {
         // distribute notes
         for(uint8_t i = 0; i < local.drumSequencer.numTracks; i++)
-        	{
-	        setNotePitch(i, note);
-	        if (note < 255) note++;
-	        }
+            {
+            setNotePitch(i, note);
+            if (note < 255) note++;
+            }
         goDownState(STATE_DRUM_SEQUENCER_PLAY);
         }
     }
@@ -502,7 +502,7 @@ void resetDrumSequencerTransitionCountdown()
         case 12: local.drumSequencer.transitionCountdown = 23; break;
         case 13: local.drumSequencer.transitionCountdown = 31; break;
         case 14: local.drumSequencer.transitionCountdown = 63; break;
-        case 15: local.drumSequencer.transitionCountdown = 255; break;		// big loop
+        case 15: local.drumSequencer.transitionCountdown = 255; break;          // big loop
         }
     local.drumSequencer.patternCountup = 255;
     }
@@ -559,7 +559,7 @@ void packDrumSequenceData()
 
 void unpackDrumSequenceData()
     {
-	// initialization
+    // initialization
     // set these first so the later computations work right
     local.drumSequencer.format = (data.slot.data.drumSequencer.format & 0x0F);
     local.drumSequencer.numGroups = numFormatGroups(local.drumSequencer.format);
@@ -571,18 +571,18 @@ void unpackDrumSequenceData()
     local.drumSequencer.currentEditPosition = 0;
     local.drumSequencer.currentPlayPosition = 0;
     local.drumSequencer.solo = 0;
-	local.drumSequencer.transitionCountdown = 255;
-	local.drumSequencer.sequenceCountdown = 255;
-	local.drumSequencer.patternCountup = 255;
-	// backups don't matter
-	local.drumSequencer.goNextTransition = false;
-	local.drumSequencer.goNextSequence = 0;
+    local.drumSequencer.transitionCountdown = 255;
+    local.drumSequencer.sequenceCountdown = 255;
+    local.drumSequencer.patternCountup = 255;
+    // backups don't matter
+    local.drumSequencer.goNextTransition = false;
+    local.drumSequencer.goNextSequence = 0;
     local.drumSequencer.markGroup = DRUM_SEQUENCER_NO_MARK;
     local.drumSequencer.markPosition = DRUM_SEQUENCER_NO_MARK;
     local.drumSequencer.markTrack = DRUM_SEQUENCER_NO_MARK;
     local.drumSequencer.markTransition = DRUM_SEQUENCER_NO_MARK;
 
-	// unpacking
+    // unpacking
     local.drumSequencer.nextSequence = (data.slot.data.drumSequencer.repeat & 0x0F);
     local.drumSequencer.repeatSequence = (data.slot.data.drumSequencer.repeat >> 4);
     for(uint8_t i = 0; i < DRUM_SEQUENCER_NUM_TRANSITIONS; i++)
@@ -593,7 +593,7 @@ void unpackDrumSequenceData()
     for(uint8_t i = 0; i < local.drumSequencer.numTracks; i++)
         {
         local.drumSequencer.muted[i] = (getMute(i) ? DRUM_SEQUENCER_MUTED : DRUM_SEQUENCER_NOT_MUTED);
-        local.drumSequencer.shouldPlay[i] = 1;	// doesn't matter
+        local.drumSequencer.shouldPlay[i] = 1;  // doesn't matter
         }
     }
 
@@ -608,8 +608,8 @@ void loadDrumSequence(uint8_t slot)
     else
         {
         loadSlot(slot);
-        unpackDrumSequenceData();		// will this reset too much stuff?
-        resetDrumSequencerSequenceCountdown();		// do I need this?
+        unpackDrumSequenceData();               // will this reset too much stuff?
+        resetDrumSequencerSequenceCountdown();          // do I need this?
         }
     }
            
@@ -648,9 +648,9 @@ static uint8_t potChangedBy(uint16_t* potVals, uint8_t potNum, uint16_t amount)
 int16_t drumSequencerGetNewCursorXPos(uint8_t trackLen)
     {
     int16_t val = ((int16_t)(((pot[RIGHT_POT] >> 1) * (trackLen + CURSOR_MARGIN * 2 + 1)) >> 9)) - CURSOR_MARGIN;
-    if ((val < 0) && (val > -CURSOR_MARGIN))								// left gutter
+    if ((val < 0) && (val > -CURSOR_MARGIN))                                                            // left gutter
         val = 0;
-    else if ((val >= trackLen) && (val < trackLen + CURSOR_MARGIN))			// right gutter, hope I got this right
+    else if ((val >= trackLen) && (val < trackLen + CURSOR_MARGIN))                     // right gutter, hope I got this right
         val = trackLen - 1;
     return val;
     }
@@ -660,11 +660,11 @@ int16_t drumSequencerGetNewCursorXPos(uint8_t trackLen)
 
 // Resets the sequence playing
 void resetDrumSequencer()
-	{
-	// reset drum sequencer
+    {
+    // reset drum sequencer
     local.drumSequencer.currentPlayPosition = getGroupLength(local.drumSequencer.currentGroup) - 1;
     resetDrumSequencerTransitionCountdown();
-	}
+    }
 
 
 
@@ -676,29 +676,29 @@ void resetDrumSequencer()
 // Changes the group, resets the countdown, and resets the play position to the end.
 // This is used when you manually change the group in Group mode etc.
 void drumSequencerChangeGroup(uint8_t group)
-	{	
-	local.drumSequencer.currentGroup = group;
+    {       
+    local.drumSequencer.currentGroup = group;
     
-	// revise the edit position
-	uint8_t atRight = (local.drumSequencer.currentEditPosition >= getGroupLength(local.drumSequencer.currentGroup));
+    // revise the edit position
+    uint8_t atRight = (local.drumSequencer.currentEditPosition >= getGroupLength(local.drumSequencer.currentGroup));
     uint8_t trackLen = getGroupLength(local.drumSequencer.currentGroup);
-	if (atRight)
-		local.drumSequencer.currentEditPosition	= trackLen;				// keep it at right
-	else if (local.drumSequencer.currentEditPosition >= trackLen)
-		local.drumSequencer.currentEditPosition = trackLen - 1;			// make it a rational value
-	
-	resetDrumSequencer();
-	}
+    if (atRight)
+        local.drumSequencer.currentEditPosition = trackLen;                             // keep it at right
+    else if (local.drumSequencer.currentEditPosition >= trackLen)
+        local.drumSequencer.currentEditPosition = trackLen - 1;                 // make it a rational value
+        
+    resetDrumSequencer();
+    }
 
 // Changes the group, resets the countdown, but does NOT reset the play position to the end.
 // This is used by the transition facility during performance mode.
 void drumSequencerUpdateGroup(uint8_t group)
-	{
-	uint8_t play = local.drumSequencer.currentPlayPosition;
-	drumSequencerChangeGroup(group);
-	// because changing the group revises the play position, we reset it here
-	local.drumSequencer.currentPlayPosition = play;
-	}
+    {
+    uint8_t play = local.drumSequencer.currentPlayPosition;
+    drumSequencerChangeGroup(group);
+    // because changing the group revises the play position, we reset it here
+    local.drumSequencer.currentPlayPosition = play;
+    }
 
 
 //// Checks to see if it's time to transition to the next group.  If so,
@@ -710,113 +710,113 @@ void drumSequencerUpdateGroup(uint8_t group)
 void goNextTransition()
     {
     if (local.drumSequencer.goNextTransition || local.drumSequencer.goNextSequence ||
-    	(local.drumSequencer.performanceMode && local.drumSequencer.transitionCountdown == 0))
+        (local.drumSequencer.performanceMode && local.drumSequencer.transitionCountdown == 0))
         {
-		local.drumSequencer.goNextTransition = 0;
-		local.drumSequencer.currentTransition++;
-			
-		// are we at the end?
-		if (local.drumSequencer.currentTransition > DRUM_SEQUENCER_NUM_TRANSITIONS || local.drumSequencer.goNextSequence  ||
-			(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition] == DRUM_SEQUENCER_TRANSITION_GROUP_OTHER &&
-			local.drumSequencer.transitionRepeat[local.drumSequencer.currentTransition] == DRUM_SEQUENCER_TRANSITION_OTHER_END))
-			{
- 			if (local.drumSequencer.sequenceCountdown == 0 || local.drumSequencer.goNextSequence)
-				{
-				uint8_t nextSequence = local.drumSequencer.nextSequence;
-				if (nextSequence == DRUM_SEQUENCER_NEXT_SEQUENCE_END)  // STOP
-					{
-					stopDrumSequencer(); 
-					}
-				else            // maybe this will work out of the box?  hmmm
-					{ 
-					loadDrumSequence(nextSequence - 1); 
-					resetDrumSequencerTransitionCountdown();                        // FIXME -- do I need this?
-					}  
-				}
-			// This should never happen.  We can't have END as the first START.  This will be interpreted
-			// as repeating group 1 in a loop
-			else if (local.drumSequencer.currentTransition == 0)
-				{
-				// do nothing
-				drumSequencerUpdateGroup(0);
-				}
-			else if (local.drumSequencer.sequenceCountdown == 255)  // loop forever
-				{
-				local.drumSequencer.currentTransition = 0;
-				drumSequencerUpdateGroup(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition]);
-				}       
-			else
-				{
-				local.drumSequencer.sequenceCountdown--;
-				local.drumSequencer.currentTransition = 0;
-				drumSequencerUpdateGroup(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition]);
-				}
-			}                       
-		// are we picking a group at random?
-		else if (local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition] == DRUM_SEQUENCER_TRANSITION_GROUP_OTHER &&
-			local.drumSequencer.transitionRepeat[local.drumSequencer.currentTransition] != DRUM_SEQUENCER_TRANSITION_OTHER_END)
-			{
-			// Groups are going to be either 1-2, 1-3, or 1-4
-			uint8_t grouptype = div5(local.drumSequencer.transitionRepeat - 1);		// remove END
-			// repeats are LOOP, 1, 2, 3, or 4
-			uint8_t repeat = DIV5_REMAINDER(grouptype, local.drumSequencer.transitionRepeat - 1);		// remove END
-			// Pick a group
-			uint8_t group = random(0, grouptype + 2);
-			drumSequencerUpdateGroup(group);
-			// override the countdown which was set by resetDrumSequencerTransitionCountdown() called by drumSequencerUpdateGroup()
-			if (repeat == 0)		// LOOP
-				{
-				local.drumSequencer.transitionCountdown = 255;
-				}
-			else
-				{
-				local.drumSequencer.transitionCountdown = repeat - 1;
-				}
-			}
-		// just grab the group and repeat
-		else
-			{
-			drumSequencerUpdateGroup(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition]);
-			}
-		}
-	else if (local.drumSequencer.performanceMode && local.drumSequencer.transitionCountdown != 255)
-		{
-		local.drumSequencer.transitionCountdown--;
-		
-		if (local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition] == DRUM_SEQUENCER_TRANSITION_GROUP_OTHER &&
-			local.drumSequencer.transitionRepeat[local.drumSequencer.currentTransition] != DRUM_SEQUENCER_TRANSITION_OTHER_END)
-				{
-				// gotta pick a new random group
-				uint8_t grouptype = div5(local.drumSequencer.transitionRepeat);
-				uint8_t group = random(0, grouptype + 2);
-				drumSequencerUpdateGroup(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition]);
-				}
-		}
-	else if (local.drumSequencer.performanceMode && local.drumSequencer.transitionCountdown == 255 && 
-		local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition] != DRUM_SEQUENCER_TRANSITION_GROUP_OTHER &&
-		local.drumSequencer.transitionRepeat[local.drumSequencer.currentTransition] == DRUM_SEQUENCER_TRANSITION_REPEAT_BIG_LOOP)			// Big Loop
-		{
-		// It's a big loop, where do we go?
-		uint8_t newTransition = 0;
-		for(int8_t i = local.drumSequencer.currentTransition - 1; i >= 0; i--)		// notice signed
-			{
-			// did we find a former loop transition?
-			if (local.drumSequencer.transitionGroup[i] == DRUM_SEQUENCER_TRANSITION_GROUP_OTHER ||		// end or random repeat loop
-				(local.drumSequencer.transitionGroup[i] != DRUM_SEQUENCER_TRANSITION_GROUP_OTHER &&
-					(local.drumSequencer.transitionRepeat[i] == DRUM_SEQUENCER_TRANSITION_REPEAT_BIG_LOOP ||		// big loop
-				 	local.drumSequencer.transitionRepeat[i] == DRUM_SEQUENCER_TRANSITION_REPEAT_LOOP)))				// normal loop
-				 {
-				 newTransition = i + 1;
-				 break;
-				 }
-			}
-		local.drumSequencer.currentTransition = newTransition;
-		drumSequencerUpdateGroup(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition]);
-		}
-	else
-		{
-		// Loop forever
-		}
+        local.drumSequencer.goNextTransition = 0;
+        local.drumSequencer.currentTransition++;
+                        
+        // are we at the end?
+        if (local.drumSequencer.currentTransition > DRUM_SEQUENCER_NUM_TRANSITIONS || local.drumSequencer.goNextSequence  ||
+                (local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition] == DRUM_SEQUENCER_TRANSITION_GROUP_OTHER &&
+                local.drumSequencer.transitionRepeat[local.drumSequencer.currentTransition] == DRUM_SEQUENCER_TRANSITION_OTHER_END))
+            {
+            if (local.drumSequencer.sequenceCountdown == 0 || local.drumSequencer.goNextSequence)
+                {
+                uint8_t nextSequence = local.drumSequencer.nextSequence;
+                if (nextSequence == DRUM_SEQUENCER_NEXT_SEQUENCE_END)  // STOP
+                    {
+                    stopDrumSequencer(); 
+                    }
+                else            // maybe this will work out of the box?  hmmm
+                    { 
+                    loadDrumSequence(nextSequence - 1); 
+                    resetDrumSequencerTransitionCountdown();                        // FIXME -- do I need this?
+                    }  
+                }
+            // This should never happen.  We can't have END as the first START.  This will be interpreted
+            // as repeating group 1 in a loop
+            else if (local.drumSequencer.currentTransition == 0)
+                {
+                // do nothing
+                drumSequencerUpdateGroup(0);
+                }
+            else if (local.drumSequencer.sequenceCountdown == 255)  // loop forever
+                {
+                local.drumSequencer.currentTransition = 0;
+                drumSequencerUpdateGroup(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition]);
+                }       
+            else
+                {
+                local.drumSequencer.sequenceCountdown--;
+                local.drumSequencer.currentTransition = 0;
+                drumSequencerUpdateGroup(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition]);
+                }
+            }                       
+        // are we picking a group at random?
+        else if (local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition] == DRUM_SEQUENCER_TRANSITION_GROUP_OTHER &&
+            local.drumSequencer.transitionRepeat[local.drumSequencer.currentTransition] != DRUM_SEQUENCER_TRANSITION_OTHER_END)
+            {
+            // Groups are going to be either 1-2, 1-3, or 1-4
+            uint8_t grouptype = div5(local.drumSequencer.transitionRepeat - 1);             // remove END
+            // repeats are LOOP, 1, 2, 3, or 4
+            uint8_t repeat = DIV5_REMAINDER(grouptype, local.drumSequencer.transitionRepeat - 1);           // remove END
+            // Pick a group
+            uint8_t group = random(0, grouptype + 2);
+            drumSequencerUpdateGroup(group);
+            // override the countdown which was set by resetDrumSequencerTransitionCountdown() called by drumSequencerUpdateGroup()
+            if (repeat == 0)                // LOOP
+                {
+                local.drumSequencer.transitionCountdown = 255;
+                }
+            else
+                {
+                local.drumSequencer.transitionCountdown = repeat - 1;
+                }
+            }
+        // just grab the group and repeat
+        else
+            {
+            drumSequencerUpdateGroup(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition]);
+            }
+        }
+    else if (local.drumSequencer.performanceMode && local.drumSequencer.transitionCountdown != 255)
+        {
+        local.drumSequencer.transitionCountdown--;
+                
+        if (local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition] == DRUM_SEQUENCER_TRANSITION_GROUP_OTHER &&
+            local.drumSequencer.transitionRepeat[local.drumSequencer.currentTransition] != DRUM_SEQUENCER_TRANSITION_OTHER_END)
+            {
+            // gotta pick a new random group
+            uint8_t grouptype = div5(local.drumSequencer.transitionRepeat);
+            uint8_t group = random(0, grouptype + 2);
+            drumSequencerUpdateGroup(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition]);
+            }
+        }
+    else if (local.drumSequencer.performanceMode && local.drumSequencer.transitionCountdown == 255 && 
+        local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition] != DRUM_SEQUENCER_TRANSITION_GROUP_OTHER &&
+        local.drumSequencer.transitionRepeat[local.drumSequencer.currentTransition] == DRUM_SEQUENCER_TRANSITION_REPEAT_BIG_LOOP)                       // Big Loop
+        {
+        // It's a big loop, where do we go?
+        uint8_t newTransition = 0;
+        for(int8_t i = local.drumSequencer.currentTransition - 1; i >= 0; i--)          // notice signed
+            {
+            // did we find a former loop transition?
+            if (local.drumSequencer.transitionGroup[i] == DRUM_SEQUENCER_TRANSITION_GROUP_OTHER ||          // end or random repeat loop
+                    (local.drumSequencer.transitionGroup[i] != DRUM_SEQUENCER_TRANSITION_GROUP_OTHER &&
+                        (local.drumSequencer.transitionRepeat[i] == DRUM_SEQUENCER_TRANSITION_REPEAT_BIG_LOOP ||                // big loop
+                        local.drumSequencer.transitionRepeat[i] == DRUM_SEQUENCER_TRANSITION_REPEAT_LOOP)))                             // normal loop
+                {
+                newTransition = i + 1;
+                break;
+                }
+            }
+        local.drumSequencer.currentTransition = newTransition;
+        drumSequencerUpdateGroup(local.drumSequencer.transitionGroup[local.drumSequencer.currentTransition]);
+        }
+    else
+        {
+        // Loop forever
+        }
     }
         
 
@@ -895,331 +895,331 @@ void drumSequencerAdvanceSolo()
 
 // Sets the mark
 void stateDrumSequencerMenuEditMark()
-	{
-	  local.drumSequencer.markTrack = local.drumSequencer.currentTrack;
-	  local.drumSequencer.markGroup = local.drumSequencer.currentGroup;
-	  local.drumSequencer.markPosition = local.drumSequencer.currentEditPosition;
-	  if (local.drumSequencer.markPosition < 0)
-		local.drumSequencer.markPosition = 0;
-	  uint8_t len = getGroupLength(local.drumSequencer.currentGroup);
-	  if (local.drumSequencer.markPosition > len)
-		local.drumSequencer.markPosition = len;
-	  goUpState(STATE_DRUM_SEQUENCER_PLAY);
-	  playDrumSequencer();
-	}
-	
+    {
+    local.drumSequencer.markTrack = local.drumSequencer.currentTrack;
+    local.drumSequencer.markGroup = local.drumSequencer.currentGroup;
+    local.drumSequencer.markPosition = local.drumSequencer.currentEditPosition;
+    if (local.drumSequencer.markPosition < 0)
+        local.drumSequencer.markPosition = 0;
+    uint8_t len = getGroupLength(local.drumSequencer.currentGroup);
+    if (local.drumSequencer.markPosition > len)
+        local.drumSequencer.markPosition = len;
+    goUpState(STATE_DRUM_SEQUENCER_PLAY);
+    playDrumSequencer();
+    }
+        
 // Swaps two groups
 void stateDrumSequencerMenuSwapGroup()
-	{
-	uint8_t fromGroup = local.drumSequencer.markGroup;
-	uint8_t toGroup = local.drumSequencer.currentGroup;
-	if (fromGroup == DRUM_SEQUENCER_NO_MARK)
-		{
-		state = STATE_DRUM_SEQUENCER_CANT;
-		}
-	else
-		{
+    {
+    uint8_t fromGroup = local.drumSequencer.markGroup;
+    uint8_t toGroup = local.drumSequencer.currentGroup;
+    if (fromGroup == DRUM_SEQUENCER_NO_MARK)
+        {
+        state = STATE_DRUM_SEQUENCER_CANT;
+        }
+    else
+        {
         resetDrumSequencer();
-		for(uint8_t t = 0; t < local.drumSequencer.numTracks; t++)
-			{
-			// exchange notes
-			for(uint8_t n = 0; n < local.drumSequencer.numNotes; n++)				// This is okay instead of getGroupLength()
-				{
-				uint8_t fromNote = getNote(fromGroup, t, n);
-				uint8_t toNote = getNote(toGroup, t, n);
-				setNote(fromGroup, t, n, toNote);
-				setNote(toGroup, t, n, fromNote);
-				}
-			// exchange patterns
-			uint8_t fromPattern = getPattern(fromGroup, t);
-			uint8_t toPattern = getPattern(toGroup, t);
-			setPattern(fromGroup, t, toPattern);
-			setPattern(toGroup, t, fromPattern);
-			}
-		// exchange group lengths
-		uint8_t fromGL = getGroupLengthData(fromGroup);
-		uint8_t toGL = getGroupLengthData(toGroup);
-		setGroupLengthData(fromGroup, toGL);
-		setGroupLengthData(toGroup, fromGL);
-		// exchange note speeds
-		uint8_t fromSpeed = getNoteSpeed(fromGroup);
-		uint8_t toSpeed = getNoteSpeed(toGroup);
-		setNoteSpeed(fromGroup, toSpeed);
-		setNoteSpeed(toGroup, fromSpeed);
+        for(uint8_t t = 0; t < local.drumSequencer.numTracks; t++)
+            {
+            // exchange notes
+            for(uint8_t n = 0; n < local.drumSequencer.numNotes; n++)                               // This is okay instead of getGroupLength()
+                {
+                uint8_t fromNote = getNote(fromGroup, t, n);
+                uint8_t toNote = getNote(toGroup, t, n);
+                setNote(fromGroup, t, n, toNote);
+                setNote(toGroup, t, n, fromNote);
+                }
+            // exchange patterns
+            uint8_t fromPattern = getPattern(fromGroup, t);
+            uint8_t toPattern = getPattern(toGroup, t);
+            setPattern(fromGroup, t, toPattern);
+            setPattern(toGroup, t, fromPattern);
+            }
+        // exchange group lengths
+        uint8_t fromGL = getGroupLengthData(fromGroup);
+        uint8_t toGL = getGroupLengthData(toGroup);
+        setGroupLengthData(fromGroup, toGL);
+        setGroupLengthData(toGroup, fromGL);
+        // exchange note speeds
+        uint8_t fromSpeed = getNoteSpeed(fromGroup);
+        uint8_t toSpeed = getNoteSpeed(toGroup);
+        setNoteSpeed(fromGroup, toSpeed);
+        setNoteSpeed(toGroup, fromSpeed);
 
-		goUpState(STATE_DRUM_SEQUENCER_PLAY);
-		}
-	playDrumSequencer();
-	}
+        goUpState(STATE_DRUM_SEQUENCER_PLAY);
+        }
+    playDrumSequencer();
+    }
 
 
 // Copies two groups
 void stateDrumSequencerMenuCopyGroups(uint8_t fromGroup, uint8_t toGroup)
-	{
-	if (fromGroup == DRUM_SEQUENCER_NO_MARK)
-		{
-		state = STATE_DRUM_SEQUENCER_CANT;
-		}
-	else
-		{
+    {
+    if (fromGroup == DRUM_SEQUENCER_NO_MARK)
+        {
+        state = STATE_DRUM_SEQUENCER_CANT;
+        }
+    else
+        {
         resetDrumSequencer();
-		for(uint8_t t = 0; t < local.drumSequencer.numTracks; t++)
-			{
-			// exchange notes
-			for(uint8_t n = 0; n < local.drumSequencer.numNotes; n++)			// This is okay instead of getGroupLength()
-				{
-				uint8_t fromNote = getNote(fromGroup, t, n);
-				setNote(toGroup, t, n, fromNote);
-				}
-			// exchange patterns
-			uint8_t fromPattern = getPattern(fromGroup, t);
-			setPattern(toGroup, t, fromPattern);
-			}
-		// exchange group lengths
-		uint8_t fromGL = getGroupLengthData(fromGroup);
-		setGroupLengthData(toGroup, fromGL);
-		// exchange note speeds
-		uint8_t fromSpeed = getNoteSpeed(fromGroup);
-		setNoteSpeed(toGroup, fromSpeed);
+        for(uint8_t t = 0; t < local.drumSequencer.numTracks; t++)
+            {
+            // exchange notes
+            for(uint8_t n = 0; n < local.drumSequencer.numNotes; n++)                       // This is okay instead of getGroupLength()
+                {
+                uint8_t fromNote = getNote(fromGroup, t, n);
+                setNote(toGroup, t, n, fromNote);
+                }
+            // exchange patterns
+            uint8_t fromPattern = getPattern(fromGroup, t);
+            setPattern(toGroup, t, fromPattern);
+            }
+        // exchange group lengths
+        uint8_t fromGL = getGroupLengthData(fromGroup);
+        setGroupLengthData(toGroup, fromGL);
+        // exchange note speeds
+        uint8_t fromSpeed = getNoteSpeed(fromGroup);
+        setNoteSpeed(toGroup, fromSpeed);
 
-		goUpState(STATE_DRUM_SEQUENCER_PLAY);
-		}
-	playDrumSequencer();
-	}
+        goUpState(STATE_DRUM_SEQUENCER_PLAY);
+        }
+    playDrumSequencer();
+    }
 
 // Copies two groups
 void stateDrumSequencerMenuCopyGroup()
-	{
-	uint8_t fromGroup = local.drumSequencer.markGroup;
-	uint8_t toGroup = local.drumSequencer.currentGroup;
-	stateDrumSequencerMenuCopyGroups(fromGroup, toGroup);
-	playDrumSequencer();
-	}
-	
+    {
+    uint8_t fromGroup = local.drumSequencer.markGroup;
+    uint8_t toGroup = local.drumSequencer.currentGroup;
+    stateDrumSequencerMenuCopyGroups(fromGroup, toGroup);
+    playDrumSequencer();
+    }
+        
 // Copies a group to the next one
 void stateDrumSequencerCopyGroupToNext()
-	{
-	uint8_t fromGroup = local.drumSequencer.currentGroup;
-	if (fromGroup >= local.drumSequencer.numGroups - 1)	// not enough room
-		{
-		state = STATE_DRUM_SEQUENCER_CANT;
-		}
-	else
-		{
-		stateDrumSequencerMenuCopyGroups(fromGroup, fromGroup + 1);
-		drumSequencerChangeGroup(fromGroup + 1);
-		goUpState(STATE_DRUM_SEQUENCER_PLAY);
-		}
-	playDrumSequencer();
-	}
+    {
+    uint8_t fromGroup = local.drumSequencer.currentGroup;
+    if (fromGroup >= local.drumSequencer.numGroups - 1)     // not enough room
+        {
+        state = STATE_DRUM_SEQUENCER_CANT;
+        }
+    else
+        {
+        stateDrumSequencerMenuCopyGroups(fromGroup, fromGroup + 1);
+        drumSequencerChangeGroup(fromGroup + 1);
+        goUpState(STATE_DRUM_SEQUENCER_PLAY);
+        }
+    playDrumSequencer();
+    }
 
 
 
 
 // Swaps specific tracks within two groups
 void stateDrumSequencerMenuSwapGroupTracks()
-	{
-	uint8_t fromGroup = local.drumSequencer.markGroup;
-	uint8_t toGroup = local.drumSequencer.currentGroup;
-	uint8_t fromTrack = local.drumSequencer.markTrack;
-	uint8_t toTrack = local.drumSequencer.currentTrack;
-	if (fromTrack == DRUM_SEQUENCER_NO_MARK || fromGroup == DRUM_SEQUENCER_NO_MARK)
-		{
-		state = STATE_DRUM_SEQUENCER_CANT;
-		}
-	else
-		{
-		// don't need to stop the sequencer
-		// copy notes
-		for(uint8_t n = 0; n < local.drumSequencer.numNotes; n++)					// This is okay instead of getGroupLength()
-			{
-			uint8_t fromNote = getNote(fromGroup, fromTrack, n);
-			uint8_t toNote = getNote(toGroup, toTrack, n);
-			setNote(toGroup, toTrack, n, fromNote);
-			setNote(fromGroup, fromTrack, n, toNote);
-			}
-		// copy patterns
-		uint8_t fromPattern = getPattern(fromGroup, fromTrack);
-		uint8_t toPattern = getPattern(toGroup, toTrack);
-		setPattern(toGroup, toTrack, fromPattern);
-		setPattern(fromGroup, fromTrack, toPattern);
+    {
+    uint8_t fromGroup = local.drumSequencer.markGroup;
+    uint8_t toGroup = local.drumSequencer.currentGroup;
+    uint8_t fromTrack = local.drumSequencer.markTrack;
+    uint8_t toTrack = local.drumSequencer.currentTrack;
+    if (fromTrack == DRUM_SEQUENCER_NO_MARK || fromGroup == DRUM_SEQUENCER_NO_MARK)
+        {
+        state = STATE_DRUM_SEQUENCER_CANT;
+        }
+    else
+        {
+        // don't need to stop the sequencer
+        // copy notes
+        for(uint8_t n = 0; n < local.drumSequencer.numNotes; n++)                                       // This is okay instead of getGroupLength()
+            {
+            uint8_t fromNote = getNote(fromGroup, fromTrack, n);
+            uint8_t toNote = getNote(toGroup, toTrack, n);
+            setNote(toGroup, toTrack, n, fromNote);
+            setNote(fromGroup, fromTrack, n, toNote);
+            }
+        // copy patterns
+        uint8_t fromPattern = getPattern(fromGroup, fromTrack);
+        uint8_t toPattern = getPattern(toGroup, toTrack);
+        setPattern(toGroup, toTrack, fromPattern);
+        setPattern(fromGroup, fromTrack, toPattern);
 
-		goUpState(STATE_DRUM_SEQUENCER_PLAY);
-		}
-	playDrumSequencer();
-	}
+        goUpState(STATE_DRUM_SEQUENCER_PLAY);
+        }
+    playDrumSequencer();
+    }
 
 
 // Copies specific track notes within two groups
 void stateDrumSequencerMenuCopyGroupTrack()
-	{
-	uint8_t fromGroup = local.drumSequencer.markGroup;
-	uint8_t toGroup = local.drumSequencer.currentGroup;
-	uint8_t fromTrack = local.drumSequencer.markTrack;
-	uint8_t toTrack = local.drumSequencer.currentTrack;
-	if (fromTrack == DRUM_SEQUENCER_NO_MARK || fromGroup == DRUM_SEQUENCER_NO_MARK)
-		{
-		state = STATE_DRUM_SEQUENCER_CANT;
-		}
-	else
-		{
-		// don't need to stop the sequencer
-		// copy notes
-		for(uint8_t n = 0; n < local.drumSequencer.numNotes; n++)					// This is okay instead of getGroupLength()
-			{
-			uint8_t fromNote = getNote(fromGroup, fromTrack, n);
-			setNote(toGroup, toTrack, n, fromNote);
-			}
-		// copy patterns
-		uint8_t fromPattern = getPattern(fromGroup, fromTrack);
-		setPattern(toGroup, toTrack, fromPattern);
+    {
+    uint8_t fromGroup = local.drumSequencer.markGroup;
+    uint8_t toGroup = local.drumSequencer.currentGroup;
+    uint8_t fromTrack = local.drumSequencer.markTrack;
+    uint8_t toTrack = local.drumSequencer.currentTrack;
+    if (fromTrack == DRUM_SEQUENCER_NO_MARK || fromGroup == DRUM_SEQUENCER_NO_MARK)
+        {
+        state = STATE_DRUM_SEQUENCER_CANT;
+        }
+    else
+        {
+        // don't need to stop the sequencer
+        // copy notes
+        for(uint8_t n = 0; n < local.drumSequencer.numNotes; n++)                                       // This is okay instead of getGroupLength()
+            {
+            uint8_t fromNote = getNote(fromGroup, fromTrack, n);
+            setNote(toGroup, toTrack, n, fromNote);
+            }
+        // copy patterns
+        uint8_t fromPattern = getPattern(fromGroup, fromTrack);
+        setPattern(toGroup, toTrack, fromPattern);
 
-		goUpState(STATE_DRUM_SEQUENCER_PLAY);
-		}
-	playDrumSequencer();
-	}
+        goUpState(STATE_DRUM_SEQUENCER_PLAY);
+        }
+    playDrumSequencer();
+    }
 
-	
+        
 // Swaps two tracks, including info
 void stateDrumSequencerMenuSwapTracks()
-	{
-	uint8_t fromTrack = local.drumSequencer.markTrack;
-	uint8_t toTrack = local.drumSequencer.currentTrack;
-	if (fromTrack == DRUM_SEQUENCER_NO_MARK)
-		{
-		state = STATE_DRUM_SEQUENCER_CANT;
-		}
-	else
-		{
-		// don't need to stop the sequencer
-		// copy notes
-		for(uint8_t g = 0; g < local.drumSequencer.numGroups; g++)
-			{
-			for(uint8_t n = 0; n < local.drumSequencer.numNotes; n++)		// this is okay instead of getGroupLength()
-				{
-				uint8_t fromNote = getNote(g, fromTrack, n);
-				uint8_t toNote = getNote(g, toTrack, n);
-				setNote(g, toTrack, n, fromNote);
-				setNote(g, fromTrack, n, toNote);
-				}
-			// copy patterns
-			uint8_t fromPattern = getPattern(g, fromTrack);
-			uint8_t toPattern = getPattern(g, toTrack);
-			setPattern(g, toTrack, fromPattern);
-			setPattern(g, fromTrack, toPattern);
-			}
-		uint8_t fromMIDIChannel = getMIDIChannel(fromTrack);
-		uint8_t toMIDIChannel = getMIDIChannel(toTrack);
-		setMIDIChannel(toTrack, fromMIDIChannel);
-		setMIDIChannel(fromTrack, toMIDIChannel);
-		uint8_t fromNoteVelocity = getNoteVelocity(fromTrack);
-		uint8_t toNoteVelocity = getNoteVelocity(toTrack);
-		setNoteVelocity(toTrack, fromNoteVelocity);
-		setNoteVelocity(fromTrack, toNoteVelocity);
-		uint8_t fromNotePitch = getNotePitch(fromTrack);
-		uint8_t toNotePitch = getNotePitch(toTrack);
-		setNotePitch(toTrack, fromNotePitch);
-		setNotePitch(fromTrack, toNotePitch);
-		uint8_t fromMute = local.drumSequencer.muted[fromTrack];
-		uint8_t toMute = local.drumSequencer.muted[toTrack];
-		local.drumSequencer.muted[toTrack] = fromNotePitch;
-		local.drumSequencer.muted[fromTrack] = toNotePitch;
+    {
+    uint8_t fromTrack = local.drumSequencer.markTrack;
+    uint8_t toTrack = local.drumSequencer.currentTrack;
+    if (fromTrack == DRUM_SEQUENCER_NO_MARK)
+        {
+        state = STATE_DRUM_SEQUENCER_CANT;
+        }
+    else
+        {
+        // don't need to stop the sequencer
+        // copy notes
+        for(uint8_t g = 0; g < local.drumSequencer.numGroups; g++)
+            {
+            for(uint8_t n = 0; n < local.drumSequencer.numNotes; n++)               // this is okay instead of getGroupLength()
+                {
+                uint8_t fromNote = getNote(g, fromTrack, n);
+                uint8_t toNote = getNote(g, toTrack, n);
+                setNote(g, toTrack, n, fromNote);
+                setNote(g, fromTrack, n, toNote);
+                }
+            // copy patterns
+            uint8_t fromPattern = getPattern(g, fromTrack);
+            uint8_t toPattern = getPattern(g, toTrack);
+            setPattern(g, toTrack, fromPattern);
+            setPattern(g, fromTrack, toPattern);
+            }
+        uint8_t fromMIDIChannel = getMIDIChannel(fromTrack);
+        uint8_t toMIDIChannel = getMIDIChannel(toTrack);
+        setMIDIChannel(toTrack, fromMIDIChannel);
+        setMIDIChannel(fromTrack, toMIDIChannel);
+        uint8_t fromNoteVelocity = getNoteVelocity(fromTrack);
+        uint8_t toNoteVelocity = getNoteVelocity(toTrack);
+        setNoteVelocity(toTrack, fromNoteVelocity);
+        setNoteVelocity(fromTrack, toNoteVelocity);
+        uint8_t fromNotePitch = getNotePitch(fromTrack);
+        uint8_t toNotePitch = getNotePitch(toTrack);
+        setNotePitch(toTrack, fromNotePitch);
+        setNotePitch(fromTrack, toNotePitch);
+        uint8_t fromMute = local.drumSequencer.muted[fromTrack];
+        uint8_t toMute = local.drumSequencer.muted[toTrack];
+        local.drumSequencer.muted[toTrack] = fromNotePitch;
+        local.drumSequencer.muted[fromTrack] = toNotePitch;
 
-		goUpState(STATE_DRUM_SEQUENCER_PLAY);
-		}
-	playDrumSequencer();
-	}
+        goUpState(STATE_DRUM_SEQUENCER_PLAY);
+        }
+    playDrumSequencer();
+    }
 
 
 
 // Copies two tracks, including info
 void stateDrumSequencerMenuCopyTrack()
-	{
-	uint8_t fromTrack = local.drumSequencer.markTrack;
-	uint8_t toTrack = local.drumSequencer.currentTrack;
-	if (fromTrack == DRUM_SEQUENCER_NO_MARK)
-		{
-		state = STATE_DRUM_SEQUENCER_CANT;
-		}
-	else
-		{
-		// don't need to stop the sequencer
-		// copy notes
-		for(uint8_t g = 0; g < local.drumSequencer.numGroups; g++)
-			{
-			for(uint8_t n = 0; n < local.drumSequencer.numNotes; n++)		// this is okay instead of getGroupLength()
-				{
-				uint8_t fromNote = getNote(g, fromTrack, n);
-				setNote(g, toTrack, n, fromNote);
-				}
-			// copy patterns
-			uint8_t fromPattern = getPattern(g, fromTrack);
-			setPattern(g, toTrack, fromPattern);
-			}
+    {
+    uint8_t fromTrack = local.drumSequencer.markTrack;
+    uint8_t toTrack = local.drumSequencer.currentTrack;
+    if (fromTrack == DRUM_SEQUENCER_NO_MARK)
+        {
+        state = STATE_DRUM_SEQUENCER_CANT;
+        }
+    else
+        {
+        // don't need to stop the sequencer
+        // copy notes
+        for(uint8_t g = 0; g < local.drumSequencer.numGroups; g++)
+            {
+            for(uint8_t n = 0; n < local.drumSequencer.numNotes; n++)               // this is okay instead of getGroupLength()
+                {
+                uint8_t fromNote = getNote(g, fromTrack, n);
+                setNote(g, toTrack, n, fromNote);
+                }
+            // copy patterns
+            uint8_t fromPattern = getPattern(g, fromTrack);
+            setPattern(g, toTrack, fromPattern);
+            }
 
-		uint8_t fromMIDIChannel = getMIDIChannel(fromTrack);
-		setMIDIChannel(toTrack, fromMIDIChannel);
-		uint8_t fromNoteVelocity = getNoteVelocity(fromTrack);
-		setNoteVelocity(toTrack, fromNoteVelocity);
-		uint8_t fromNotePitch = getNotePitch(fromTrack);
-		setNotePitch(toTrack, fromNotePitch);
-		uint8_t fromMute = local.drumSequencer.muted[fromTrack];
-		local.drumSequencer.muted[toTrack] = fromNotePitch;
+        uint8_t fromMIDIChannel = getMIDIChannel(fromTrack);
+        setMIDIChannel(toTrack, fromMIDIChannel);
+        uint8_t fromNoteVelocity = getNoteVelocity(fromTrack);
+        setNoteVelocity(toTrack, fromNoteVelocity);
+        uint8_t fromNotePitch = getNotePitch(fromTrack);
+        setNotePitch(toTrack, fromNotePitch);
+        uint8_t fromMute = local.drumSequencer.muted[fromTrack];
+        local.drumSequencer.muted[toTrack] = fromNotePitch;
 
-		goUpState(STATE_DRUM_SEQUENCER_PLAY);
-		}
-	playDrumSequencer();
-	}
+        goUpState(STATE_DRUM_SEQUENCER_PLAY);
+        }
+    playDrumSequencer();
+    }
 
 
 // Copies two tracks, including info
 void stateDrumSequencerMenuAccentTrack()
-	{
-	uint8_t fromTrack = local.drumSequencer.markTrack;
-	uint8_t toTrack = local.drumSequencer.currentTrack;
-    const uint8_t accents[8] = { 1, 2, 3, 5, 6, 7, 7, 7 };		// approximately 150% ? 
-	
-	if (fromTrack == DRUM_SEQUENCER_NO_MARK)
-		{
-		state = STATE_DRUM_SEQUENCER_CANT;
-		}
-	else
-		{
-		// don't need to stop the sequencer
-		uint8_t fromNoteVelocity = getNoteVelocity(fromTrack);
-		setNoteVelocity(toTrack, accents[fromNoteVelocity]);
-		uint8_t fromNotePitch = getNotePitch(fromTrack);
-		setNotePitch(toTrack, fromNotePitch);
-		uint8_t fromMIDIChannel = getMIDIChannel(fromTrack);
-		setMIDIChannel(toTrack, fromMIDIChannel);
-		goUpState(STATE_DRUM_SEQUENCER_PLAY);
-		}
-	playDrumSequencer();
-	}
+    {
+    uint8_t fromTrack = local.drumSequencer.markTrack;
+    uint8_t toTrack = local.drumSequencer.currentTrack;
+    const uint8_t accents[8] = { 1, 2, 3, 5, 6, 7, 7, 7 };              // approximately 150% ? 
+        
+    if (fromTrack == DRUM_SEQUENCER_NO_MARK)
+        {
+        state = STATE_DRUM_SEQUENCER_CANT;
+        }
+    else
+        {
+        // don't need to stop the sequencer
+        uint8_t fromNoteVelocity = getNoteVelocity(fromTrack);
+        setNoteVelocity(toTrack, accents[fromNoteVelocity]);
+        uint8_t fromNotePitch = getNotePitch(fromTrack);
+        setNotePitch(toTrack, fromNotePitch);
+        uint8_t fromMIDIChannel = getMIDIChannel(fromTrack);
+        setMIDIChannel(toTrack, fromMIDIChannel);
+        goUpState(STATE_DRUM_SEQUENCER_PLAY);
+        }
+    playDrumSequencer();
+    }
 
 
 // Distributes track info from current track, except for note pitch
 void stateDrumSequencerMenuDistributeTrackInfo()
-	{
-	uint8_t fromMIDIChannel = getMIDIChannel(local.drumSequencer.currentTrack);
-	uint8_t fromNoteVelocity = getNoteVelocity(local.drumSequencer.currentTrack);
-	for(uint8_t t = 1; t < local.drumSequencer.numTracks; t++)
-		{
-		setMIDIChannel(t, fromMIDIChannel);
-		setNoteVelocity(t, fromNoteVelocity);
-		}
-	goUpState(STATE_DRUM_SEQUENCER_PLAY);
-	playDrumSequencer();
-	}
-	
+    {
+    uint8_t fromMIDIChannel = getMIDIChannel(local.drumSequencer.currentTrack);
+    uint8_t fromNoteVelocity = getNoteVelocity(local.drumSequencer.currentTrack);
+    for(uint8_t t = 1; t < local.drumSequencer.numTracks; t++)
+        {
+        setMIDIChannel(t, fromMIDIChannel);
+        setNoteVelocity(t, fromNoteVelocity);
+        }
+    goUpState(STATE_DRUM_SEQUENCER_PLAY);
+    playDrumSequencer();
+    }
+        
 /// Stops the drum sequencer but does not reset it
 void pauseDrumSequencer()
     {
     local.drumSequencer.playState = PLAY_STATE_PAUSED;
-	if (1) //if (options.drumSequencerSendClock)
-		{
-		stopClock(true);
-		}
+    if (1) //if (options.drumSequencerSendClock)
+        {
+        stopClock(true);
+        }
     }
 
 
@@ -1227,7 +1227,7 @@ void pauseDrumSequencer()
 
 // Draws a transition display.
 // We will display:
-// 1. The GROUP at left		(or 'R1' etc., or 'E')
+// 1. The GROUP at left         (or 'R1' etc., or 'E')
 // 2. The REPEATS at right
 // 3. The GROUP as a range in row 1  [for convenience] 
 // 4. The TRANSITION as a range in row 0
@@ -1236,78 +1236,78 @@ void pauseDrumSequencer()
 //    such as copying from one transition and pasting to another.
 
 uint8_t doTransitionDisplay(uint8_t initialTransition, uint8_t blink)
-	{
+    {
     uint8_t result = doNumericalDisplay(0, 19, initialTransition, false, GLYPH_NONE);
     if (result == NO_MENU_SELECTED)
-    	{
-    	// revise the display
-    	clearScreen();
+        {
+        // revise the display
+        clearScreen();
 
-		uint8_t group = local.drumSequencer.transitionGroup[currentDisplay];
-		uint8_t repeat = local.drumSequencer.transitionRepeat[currentDisplay];
-		if (group == DRUM_SEQUENCER_TRANSITION_GROUP_OTHER)
-			{
-			if (repeat == DRUM_SEQUENCER_TRANSITION_OTHER_END)
-				{
-				write3x5Glyph(led2, GLYPH_3x5_E, 0);
-				write3x5Glyph(led2, GLYPH_3x5_N, 4);
-				write3x5Glyph(led, GLYPH_3x5_D, 0);
-				}
-			else		// value 0 ... 14
-				{
-				uint8_t grps = div5(repeat);
-				uint8_t reps = DIV5_REMAINDER(grps, repeat);
-				
-				write3x5Glyph(led2, GLYPH_3x5_R, 0);
-				write3x5Glyph(led2, GLYPH_3x5_2 + grps, 4);
-				
-				if (reps == 4)  // L
-					{
-					write8x5Glyph(led, GLYPH_8x5_INFINITY);
-					}
-				else
-					{
-					write3x5Glyph(led, GLYPH_3x5_1 + reps, 4);
-					}
-				}
-			}
-		else
-			{
-			writeShortNumber(led2, (group + 1), false);
-			if (repeat == DRUM_SEQUENCER_TRANSITION_REPEAT_LOOP)
-				{
-				write8x5Glyph(led, GLYPH_8x5_INFINITY);
-				}
-			else if (repeat == DRUM_SEQUENCER_TRANSITION_REPEAT_BIG_LOOP)
-				{
-				write3x5Glyph(led, GLYPH_3x5_B, 1);
-				write3x5Glyph(led, GLYPH_3x5_L, 5);
-				}
-			else
-				{
-				const uint8_t repeats[15] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 64 };
-				writeShortNumber(led, repeats[repeat - 1], false);
-				}
-			}
+        uint8_t group = local.drumSequencer.transitionGroup[currentDisplay];
+        uint8_t repeat = local.drumSequencer.transitionRepeat[currentDisplay];
+        if (group == DRUM_SEQUENCER_TRANSITION_GROUP_OTHER)
+            {
+            if (repeat == DRUM_SEQUENCER_TRANSITION_OTHER_END)
+                {
+                write3x5Glyph(led2, GLYPH_3x5_E, 0);
+                write3x5Glyph(led2, GLYPH_3x5_N, 4);
+                write3x5Glyph(led, GLYPH_3x5_D, 0);
+                }
+            else            // value 0 ... 14
+                {
+                uint8_t grps = div5(repeat);
+                uint8_t reps = DIV5_REMAINDER(grps, repeat);
+                                
+                write3x5Glyph(led2, GLYPH_3x5_R, 0);
+                write3x5Glyph(led2, GLYPH_3x5_2 + grps, 4);
+                                
+                if (reps == 4)  // L
+                    {
+                    write8x5Glyph(led, GLYPH_8x5_INFINITY);
+                    }
+                else
+                    {
+                    write3x5Glyph(led, GLYPH_3x5_1 + reps, 4);
+                    }
+                }
+            }
+        else
+            {
+            writeShortNumber(led2, (group + 1), false);
+            if (repeat == DRUM_SEQUENCER_TRANSITION_REPEAT_LOOP)
+                {
+                write8x5Glyph(led, GLYPH_8x5_INFINITY);
+                }
+            else if (repeat == DRUM_SEQUENCER_TRANSITION_REPEAT_BIG_LOOP)
+                {
+                write3x5Glyph(led, GLYPH_3x5_B, 1);
+                write3x5Glyph(led, GLYPH_3x5_L, 5);
+                }
+            else
+                {
+                const uint8_t repeats[15] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 64 };
+                writeShortNumber(led, repeats[repeat - 1], false);
+                }
+            }
 
-		drawRange(led2, 0, 1, MAX_DRUM_SEQUENCER_GROUPS, group);
-		drawRange(led2, 0, 0, DRUM_SEQUENCER_NUM_TRANSITIONS, currentDisplay);
-		
-		if (blink)
-			{
-			for(uint8_t i = 0; i < 8; i++)
-				{
-				blinkPoint(led, i, 1);
-				}
-			}
-    	}
+        drawRange(led2, 0, 1, MAX_DRUM_SEQUENCER_GROUPS, group);
+        drawRange(led2, 0, 0, DRUM_SEQUENCER_NUM_TRANSITIONS, currentDisplay);
+                
+        if (blink)
+            {
+            for(uint8_t i = 0; i < 8; i++)
+                {
+                blinkPoint(led, i, 1);
+                }
+            }
+        }
     return result;
     }
 
 
 
 void stateDrumSequencerTransition()
-	{
+    {
     uint8_t result;
     if (entry) 
         {
@@ -1322,7 +1322,7 @@ void stateDrumSequencerTransition()
         case MENU_SELECTED:
             {
             local.drumSequencer.backup = currentDisplay;
-			goDownState(STATE_DRUM_SEQUENCER_TRANSITION_MENU);
+            goDownState(STATE_DRUM_SEQUENCER_TRANSITION_MENU);
             }
         break;
         case MENU_CANCELLED:
@@ -1332,7 +1332,7 @@ void stateDrumSequencerTransition()
         break;
         }            
     playDrumSequencer();
-	}
+    }
 
 
 
@@ -1358,20 +1358,20 @@ void stateDrumSequencerMenu()
     {
     uint8_t result;
     
-	const char* menuItems[9] = 
-		{    
-		local.drumSequencer.performanceMode ? PSTR("PAUSE") : (local.drumSequencer.solo ? PSTR("NO SOLO") : PSTR("SOLO")),
-		PSTR("MARK"),
-		PSTR("LOCAL"),
-		PSTR("TRACK"),
-		PSTR("GROUP"),
-		PSTR("CHAIN"),
-		//options.drumSequencerSendClock ? PSTR("NO CLOCK CONTROL") : PSTR("CLOCK CONTROL"),
-		PSTR("PERFORMANCE"),
-		PSTR("SAVE"), 
-		options_p 
-		};
-	result = doMenuDisplay(menuItems, 9, STATE_NONE, STATE_NONE, 1);
+    const char* menuItems[9] = 
+        {    
+        local.drumSequencer.performanceMode ? PSTR("PAUSE") : (local.drumSequencer.solo ? PSTR("NO SOLO") : PSTR("SOLO")),
+        PSTR("MARK"),
+        PSTR("LOCAL"),
+        PSTR("TRACK"),
+        PSTR("GROUP"),
+        PSTR("CHAIN"),
+        //options.drumSequencerSendClock ? PSTR("NO CLOCK CONTROL") : PSTR("CLOCK CONTROL"),
+        PSTR("PERFORMANCE"),
+        PSTR("SAVE"), 
+        options_p 
+        };
+    result = doMenuDisplay(menuItems, 9, STATE_NONE, STATE_NONE, 1);
 
     playDrumSequencer();
     switch (result)
@@ -1390,13 +1390,13 @@ void stateDrumSequencerMenu()
                 case DRUM_SEQUENCER_MENU_SOLO:
                     {
                     if (local.drumSequencer.performanceMode)
-                    	{
-                    	pauseDrumSequencer();
-                    	}
+                        {
+                        pauseDrumSequencer();
+                        }
                     else
-                    	{
-	                    local.drumSequencer.solo = !local.drumSequencer.solo;
-	                    }
+                        {
+                        local.drumSequencer.solo = !local.drumSequencer.solo;
+                        }
                     }
                 break;
                 case DRUM_SEQUENCER_MENU_MARK:
@@ -1416,39 +1416,39 @@ void stateDrumSequencerMenu()
                 break;
                 case DRUM_SEQUENCER_MENU_GROUP:
                     {
-	                    state = STATE_DRUM_SEQUENCER_GROUP;                            
+                    state = STATE_DRUM_SEQUENCER_GROUP;                            
                     }
                 break;
                 case DRUM_SEQUENCER_MENU_TRANSITION:
                     {
-	                    state = STATE_DRUM_SEQUENCER_TRANSITION;
+                    state = STATE_DRUM_SEQUENCER_TRANSITION;
                     }
                 break;
                 /*
-                case DRUM_SEQUENCER_MENU_SEND_CLOCK:
-                    {
-                    options.drumSequencerSendClock = !options.drumSequencerSendClock;
-                    if (options.drumSequencerSendClock)
-                        {
-                        // the logic here is that if we are suddenly NOW sending the clock,
-                        // we should stop the clock so we're not just constantly sending pulses
-                        // if we're currently playing
-                        stopClock(true);
-                        }
-                    else
-                        {
-                        // the logic here is that if we are suddenly no longer sending the
-                        // clock, we don't want to leave the clock OFF because the user
-                        // has no easy way of turning it on again!
-                        continueClock(true);
-                        }
-                    saveOptions();
-                    }
-                break;
+                  case DRUM_SEQUENCER_MENU_SEND_CLOCK:
+                  {
+                  options.drumSequencerSendClock = !options.drumSequencerSendClock;
+                  if (options.drumSequencerSendClock)
+                  {
+                  // the logic here is that if we are suddenly NOW sending the clock,
+                  // we should stop the clock so we're not just constantly sending pulses
+                  // if we're currently playing
+                  stopClock(true);
+                  }
+                  else
+                  {
+                  // the logic here is that if we are suddenly no longer sending the
+                  // clock, we don't want to leave the clock OFF because the user
+                  // has no easy way of turning it on again!
+                  continueClock(true);
+                  }
+                  saveOptions();
+                  }
+                  break;
                 */
                 case DRUM_SEQUENCER_MENU_PERFORMANCE:
                     {
-	                state = STATE_DRUM_SEQUENCER_PERFORMANCE;   
+                    state = STATE_DRUM_SEQUENCER_PERFORMANCE;   
                     }
                 break;
                 /*
@@ -1582,7 +1582,7 @@ void stateDrumSequencerMenuPerformanceRepeat()
         case MENU_SELECTED:
             {
             local.drumSequencer.repeatSequence = currentDisplay;
-			resetDrumSequencerSequenceCountdown();
+            resetDrumSequencerSequenceCountdown();
             goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
             }
         break;
@@ -1736,25 +1736,25 @@ void stateDrumSequencerPitchBack()
     clearScreen();
     writeNotePitchLong(led2, led, getNotePitch(local.drumSequencer.currentTrack));
     if (isUpdated(BACK_BUTTON, RELEASED))
-		{
-        goUpState(immediateReturnState);		
-		}
-	else if (isUpdated(SELECT_BUTTON, RELEASED))
-		{
-		state = STATE_DRUM_SEQUENCER_TRACK_PITCH;  // return to it
-		}
+        {
+        goUpState(immediateReturnState);                
+        }
+    else if (isUpdated(SELECT_BUTTON, RELEASED))
+        {
+        state = STATE_DRUM_SEQUENCER_TRACK_PITCH;  // return to it
+        }
 
-	// allow play-through
-   	if (newItem && (itemType == MIDI_NOTE_ON))   //// there is a note played
-   		{
-		uint8_t out = getMIDIChannel(local.drumSequencer.currentTrack);
-		if (out == DRUM_SEQUENCER_MIDI_OUT_DEFAULT) 
-			out = options.channelOut;
-		if (out != DRUM_SEQUENCER_NO_MIDI_OUT)
-			{
-			sendNoteOn(itemNumber, getNoteMIDIVelocity(local.drumSequencer.currentTrack), out);
-			}
-		}
+    // allow play-through
+    if (newItem && (itemType == MIDI_NOTE_ON))   //// there is a note played
+        {
+        uint8_t out = getMIDIChannel(local.drumSequencer.currentTrack);
+        if (out == DRUM_SEQUENCER_MIDI_OUT_DEFAULT) 
+            out = options.channelOut;
+        if (out != DRUM_SEQUENCER_NO_MIDI_OUT)
+            {
+            sendNoteOn(itemNumber, getNoteMIDIVelocity(local.drumSequencer.currentTrack), out);
+            }
+        }
 
     playDrumSequencer();
     }
@@ -1771,33 +1771,33 @@ void stateDrumSequencerPitch()
     }
 
 /*
-void stateDrumSequencerChangeGroup()
-	{
-    uint8_t result;
-    if (entry) 
-        {
-        }
-    result = doNumericalDisplay(1, local.drumSequencer.numGroups, local.drumSequencer.currentGroup, false, GLYPH_NONE);
-    switch (result)
-        {
-        case NO_MENU_SELECTED:
-            {
-            }
-        break;
-        case MENU_SELECTED:
-            {
-            drumSequencerChangeGroup(currentDisplay - 1);
-            goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
-            }
-        // FALL THRU
-        case MENU_CANCELLED:
-            {
-            goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
-            }
-        break;
-        }            
-    playDrumSequencer();
-	}
+  void stateDrumSequencerChangeGroup()
+  {
+  uint8_t result;
+  if (entry) 
+  {
+  }
+  result = doNumericalDisplay(1, local.drumSequencer.numGroups, local.drumSequencer.currentGroup, false, GLYPH_NONE);
+  switch (result)
+  {
+  case NO_MENU_SELECTED:
+  {
+  }
+  break;
+  case MENU_SELECTED:
+  {
+  drumSequencerChangeGroup(currentDisplay - 1);
+  goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+  }
+  // FALL THRU
+  case MENU_CANCELLED:
+  {
+  goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+  }
+  break;
+  }            
+  playDrumSequencer();
+  }
 */
 
 void stateDrumSequencerGroupLength()
@@ -1807,7 +1807,7 @@ void stateDrumSequencerGroupLength()
         {
         }
     // we're going 1...numNotes
-    result = doNumericalDisplay(1, local.drumSequencer.numNotes, getGroupLength(local.drumSequencer.currentGroup), false, GLYPH_NONE);	// notice getGroupLength, not getGroupLengthData
+    result = doNumericalDisplay(1, local.drumSequencer.numNotes, getGroupLength(local.drumSequencer.currentGroup), false, GLYPH_NONE);  // notice getGroupLength, not getGroupLengthData
                 
     switch (result)
         {
@@ -1818,15 +1818,15 @@ void stateDrumSequencerGroupLength()
         case MENU_SELECTED:
             {
             // we're 1...numNotes, need to convert to DEFAULT=0, 1...numNotes-1
-            if (currentDisplay == local.drumSequencer.numNotes)		// should be "default"
-            	{
-            	setGroupLengthData(local.drumSequencer.currentGroup, DRUM_SEQUENCER_GROUP_LENGTH_DEFAULT);		// because we can't set to 64
-            	}
+            if (currentDisplay == local.drumSequencer.numNotes)         // should be "default"
+                {
+                setGroupLengthData(local.drumSequencer.currentGroup, DRUM_SEQUENCER_GROUP_LENGTH_DEFAULT);              // because we can't set to 64
+                }
             else
-            	{
-            	setGroupLengthData(local.drumSequencer.currentGroup, currentDisplay);
-            	}
-			drumSequencerChangeGroup(local.drumSequencer.currentGroup);    // makes play and edit positions rational
+                {
+                setGroupLengthData(local.drumSequencer.currentGroup, currentDisplay);
+                }
+            drumSequencerChangeGroup(local.drumSequencer.currentGroup);    // makes play and edit positions rational
             }
         // FALL THRU
         case MENU_CANCELLED:
@@ -1871,65 +1871,65 @@ void stateDrumSequencerGroupSpeed()
         
         
 void insertTransition(uint8_t pos)
-	{
-	if (local.drumSequencer.performanceMode) resetDrumSequencer();
-	
-	for(uint8_t i = DRUM_SEQUENCER_NUM_TRANSITIONS - 1; i > pos ; i--)
-		{
-		local.drumSequencer.transitionGroup[i] = local.drumSequencer.transitionGroup[i + 1];
-		local.drumSequencer.transitionRepeat[i] = local.drumSequencer.transitionRepeat[i + 1];
-		}
-	}
+    {
+    if (local.drumSequencer.performanceMode) resetDrumSequencer();
+        
+    for(uint8_t i = DRUM_SEQUENCER_NUM_TRANSITIONS - 1; i > pos ; i--)
+        {
+        local.drumSequencer.transitionGroup[i] = local.drumSequencer.transitionGroup[i + 1];
+        local.drumSequencer.transitionRepeat[i] = local.drumSequencer.transitionRepeat[i + 1];
+        }
+    }
 
 void copyTransition(uint8_t from, uint8_t to)
-	{
-	if (local.drumSequencer.performanceMode) resetDrumSequencer();
-	
-	uint8_t group = local.drumSequencer.transitionGroup[from]; 
-	uint8_t repeat = local.drumSequencer.transitionRepeat[from]; 
-	insertTransition(to);
-	local.drumSequencer.transitionGroup[to] = group; 
-	local.drumSequencer.transitionRepeat[to] = repeat; 
-	}
+    {
+    if (local.drumSequencer.performanceMode) resetDrumSequencer();
+        
+    uint8_t group = local.drumSequencer.transitionGroup[from]; 
+    uint8_t repeat = local.drumSequencer.transitionRepeat[from]; 
+    insertTransition(to);
+    local.drumSequencer.transitionGroup[to] = group; 
+    local.drumSequencer.transitionRepeat[to] = repeat; 
+    }
 
 void deleteTransition(uint8_t pos)
-	{
-	if (local.drumSequencer.performanceMode) resetDrumSequencer();
-	
-	for(uint8_t i = currentDisplay; i < DRUM_SEQUENCER_NUM_TRANSITIONS - 1; i++)
-		{
-		local.drumSequencer.transitionGroup[i] = local.drumSequencer.transitionGroup[i - 1];
-		local.drumSequencer.transitionRepeat[i] = local.drumSequencer.transitionRepeat[i - 1];
-		}
-	local.drumSequencer.transitionGroup[DRUM_SEQUENCER_NUM_TRANSITIONS - 1] = DRUM_SEQUENCER_TRANSITION_GROUP_OTHER;
-	local.drumSequencer.transitionRepeat[DRUM_SEQUENCER_NUM_TRANSITIONS - 1] = DRUM_SEQUENCER_TRANSITION_OTHER_END;
-	}
-	
+    {
+    if (local.drumSequencer.performanceMode) resetDrumSequencer();
+        
+    for(uint8_t i = currentDisplay; i < DRUM_SEQUENCER_NUM_TRANSITIONS - 1; i++)
+        {
+        local.drumSequencer.transitionGroup[i] = local.drumSequencer.transitionGroup[i - 1];
+        local.drumSequencer.transitionRepeat[i] = local.drumSequencer.transitionRepeat[i - 1];
+        }
+    local.drumSequencer.transitionGroup[DRUM_SEQUENCER_NUM_TRANSITIONS - 1] = DRUM_SEQUENCER_TRANSITION_GROUP_OTHER;
+    local.drumSequencer.transitionRepeat[DRUM_SEQUENCER_NUM_TRANSITIONS - 1] = DRUM_SEQUENCER_TRANSITION_OTHER_END;
+    }
+        
 void moveTransition(uint8_t from, uint8_t to)
-	{
-	if (local.drumSequencer.performanceMode) resetDrumSequencer();
-	
-	uint8_t group = local.drumSequencer.transitionGroup[from]; 
-	uint8_t repeat = local.drumSequencer.transitionRepeat[from]; 
-	deleteTransition(from);
-	insertTransition(to);
-	local.drumSequencer.transitionGroup[to] = group; 
-	local.drumSequencer.transitionRepeat[to] = repeat; 
-	}
+    {
+    if (local.drumSequencer.performanceMode) resetDrumSequencer();
+        
+    uint8_t group = local.drumSequencer.transitionGroup[from]; 
+    uint8_t repeat = local.drumSequencer.transitionRepeat[from]; 
+    deleteTransition(from);
+    insertTransition(to);
+    local.drumSequencer.transitionGroup[to] = group; 
+    local.drumSequencer.transitionRepeat[to] = repeat; 
+    }
 
 
 void stateDrumSequencerTransitionGoGroup()
     {
-	uint8_t group = local.drumSequencer.transitionGroup[local.drumSequencer.backup];
-	if (group == DRUM_SEQUENCER_TRANSITION_GROUP_OTHER)
-		{
-		goUpState(STATE_DRUM_SEQUENCER_CANT);
-		}
-	else
-		{
-		drumSequencerChangeGroup(group);
-		goUpState(STATE_DRUM_SEQUENCER_PLAY);
-		}
+    uint8_t group = local.drumSequencer.transitionGroup[local.drumSequencer.backup];
+    if (group == DRUM_SEQUENCER_TRANSITION_GROUP_OTHER)
+        {
+        goUpState(STATE_DRUM_SEQUENCER_CANT);
+        }
+    else
+        {
+        drumSequencerChangeGroup(group);
+        goUpState(STATE_DRUM_SEQUENCER_PLAY);
+        }
     playDrumSequencer();
     }
 
@@ -1937,14 +1937,14 @@ void stateDrumSequencerTransitionGoGroup()
 void stateDrumSequencerTransitionCopy()
     {
     if (local.drumSequencer.markTransition == DRUM_SEQUENCER_NO_MARK)
-		{
-		state = STATE_DRUM_SEQUENCER_CANT;
-		}
-	else
-		{
-    	copyTransition(local.drumSequencer.markTransition, local.drumSequencer.backup);
-    	state = (immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
-    	}
+        {
+        state = STATE_DRUM_SEQUENCER_CANT;
+        }
+    else
+        {
+        copyTransition(local.drumSequencer.markTransition, local.drumSequencer.backup);
+        state = (immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+        }
     playDrumSequencer();
     }
 
@@ -1952,14 +1952,14 @@ void stateDrumSequencerTransitionCopy()
 void stateDrumSequencerTransitionMove()
     {
     if (local.drumSequencer.markTransition == DRUM_SEQUENCER_NO_MARK)
-		{
-		state = STATE_DRUM_SEQUENCER_CANT;
-		}
-	else
-		{
-    	moveTransition(local.drumSequencer.markTransition, local.drumSequencer.backup);
-    	state = (immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
-    	}
+        {
+        state = STATE_DRUM_SEQUENCER_CANT;
+        }
+    else
+        {
+        moveTransition(local.drumSequencer.markTransition, local.drumSequencer.backup);
+        state = (immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+        }
     playDrumSequencer();
     }
 
@@ -1976,33 +1976,33 @@ void stateDrumSequencerTransitionDelete()
 #define DRUM_SEQUENCER_PUT 2
 
 /*
-void stateDrumSequencerTransitionInsert()
-    {
-    local.drumSequencer.transitionOperationBackup = DRUM_SEQUENCER_INSERT;
-    stateDrumSequencerEditOrInsertTransition();
-    }
+  void stateDrumSequencerTransitionInsert()
+  {
+  local.drumSequencer.transitionOperationBackup = DRUM_SEQUENCER_INSERT;
+  stateDrumSequencerEditOrInsertTransition();
+  }
 */
 
 void stateDrumSequencerTransitionEdit()
     {
     local.drumSequencer.transitionOperationBackup = DRUM_SEQUENCER_EDIT;
-	goDownState(STATE_DRUM_SEQUENCER_EDIT_TRANSITION_GROUP);
+    goDownState(STATE_DRUM_SEQUENCER_EDIT_TRANSITION_GROUP);
     playDrumSequencer();
     }
 
 
 void stateDrumSequencerTransitionPut()
     {
-	local.drumSequencer.transitionOperationBackup = DRUM_SEQUENCER_PUT;
-	local.drumSequencer.transitionGroupBackup = local.drumSequencer.currentGroup;		// 0 ... 14
-	goDownState(STATE_DRUM_SEQUENCER_EDIT_TRANSITION_REPEAT);
+    local.drumSequencer.transitionOperationBackup = DRUM_SEQUENCER_PUT;
+    local.drumSequencer.transitionGroupBackup = local.drumSequencer.currentGroup;           // 0 ... 14
+    goDownState(STATE_DRUM_SEQUENCER_EDIT_TRANSITION_REPEAT);
     playDrumSequencer();
     }
 
 void stateDrumSequencerTransitionMark()
     {
-	local.drumSequencer.markTransition = local.drumSequencer.backup;
-	goDownState(STATE_DRUM_SEQUENCER_TRANSITION);
+    local.drumSequencer.markTransition = local.drumSequencer.backup;
+    goDownState(STATE_DRUM_SEQUENCER_TRANSITION);
     playDrumSequencer();
     }
 
@@ -2016,7 +2016,7 @@ void stateDrumSequencerTransitionEditGroup()
     if (entry) 
         {
         }
-	secondGlyph = GLYPH_3x5_G;
+    secondGlyph = GLYPH_3x5_G;
     result = doNumericalDisplay(0, local.drumSequencer.numGroups + 1, local.drumSequencer.transitionGroup[local.drumSequencer.backup] + 1, true, GLYPH_DEFAULT);
     switch (result)
         {
@@ -2028,19 +2028,19 @@ void stateDrumSequencerTransitionEditGroup()
             {
             if (currentDisplay == 0)
                 {
-            	local.drumSequencer.transitionGroupBackup = DRUM_SEQUENCER_TRANSITION_GROUP_OTHER;
+                local.drumSequencer.transitionGroupBackup = DRUM_SEQUENCER_TRANSITION_GROUP_OTHER;
                 goDownState(STATE_DRUM_SEQUENCER_EDIT_TRANSITION_SPECIAL);
                 }
             else if (currentDisplay == local.drumSequencer.numGroups + 1)
                 {
-            	local.drumSequencer.transitionGroupBackup = local.drumSequencer.currentGroup;
+                local.drumSequencer.transitionGroupBackup = local.drumSequencer.currentGroup;
                 goDownState(STATE_DRUM_SEQUENCER_EDIT_TRANSITION_REPEAT);
                 }
             else
-            	{
-            	local.drumSequencer.transitionGroupBackup = currentDisplay - 1;
+                {
+                local.drumSequencer.transitionGroupBackup = currentDisplay - 1;
                 goDownState(STATE_DRUM_SEQUENCER_EDIT_TRANSITION_REPEAT);
-            	}
+                }
             }
         break;
         case MENU_CANCELLED:
@@ -2059,7 +2059,7 @@ void stateDrumSequencerTransitionEditRepeat()
         {
         defaultMenuValue = local.drumSequencer.transitionRepeat[local.drumSequencer.backup];
         }
-	secondGlyph = GLYPH_3x5_R;
+    secondGlyph = GLYPH_3x5_R;
     const char* menuItems[16] = { PSTR("LOOP"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("12"), PSTR("16"), PSTR("24"), PSTR("32"), PSTR("64"), PSTR("BIG LOOP") };
     result = doMenuDisplay(menuItems, 16, STATE_NONE, STATE_NONE, 1);
     switch (result)
@@ -2071,10 +2071,10 @@ void stateDrumSequencerTransitionEditRepeat()
         case MENU_SELECTED:
             {
             if (local.drumSequencer.transitionOperationBackup == DRUM_SEQUENCER_INSERT ||
-            	local.drumSequencer.transitionOperationBackup == DRUM_SEQUENCER_PUT)
-            	{
-				insertTransition(local.drumSequencer.backup);
-            	}
+                local.drumSequencer.transitionOperationBackup == DRUM_SEQUENCER_PUT)
+                {
+                insertTransition(local.drumSequencer.backup);
+                }
             local.drumSequencer.transitionGroup[local.drumSequencer.backup] = local.drumSequencer.transitionGroupBackup;
             local.drumSequencer.transitionRepeat[local.drumSequencer.backup] = currentDisplay;   
             goUpState(STATE_DRUM_SEQUENCER_TRANSITION);
@@ -2130,18 +2130,18 @@ void stateDrumSequencerTransitionEditSpecial()
         case MENU_SELECTED:
             {
             if (local.drumSequencer.transitionOperationBackup == DRUM_SEQUENCER_INSERT)
-            	{
-				insertTransition(local.drumSequencer.backup);
-            	}
+                {
+                insertTransition(local.drumSequencer.backup);
+                }
             local.drumSequencer.transitionGroup[local.drumSequencer.backup] = local.drumSequencer.transitionGroupBackup;
-            if (local.drumSequencer.backup == 0)		// skip "END"
-            	{
-	            local.drumSequencer.transitionRepeat[local.drumSequencer.backup] = currentDisplay + 1;                    
-            	}
+            if (local.drumSequencer.backup == 0)                // skip "END"
+                {
+                local.drumSequencer.transitionRepeat[local.drumSequencer.backup] = currentDisplay + 1;                    
+                }
             else
-            	{
-	            local.drumSequencer.transitionRepeat[local.drumSequencer.backup] = currentDisplay;                    
-	            }
+                {
+                local.drumSequencer.transitionRepeat[local.drumSequencer.backup] = currentDisplay;                    
+                }
             goUpState(STATE_DRUM_SEQUENCER_TRANSITION);
             }
         break;
@@ -2225,10 +2225,10 @@ void drawDrumSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
                     && !local.drumSequencer.performanceMode) ||   // main cursor
                 // draw play position cursor, plus the crosshatch, always if we're in play position mode
                     ((local.drumSequencer.currentEditPosition < 0 || local.drumSequencer.performanceMode) && 
-                    		((d == local.drumSequencer.currentPlayPosition) ||  ((t == local.drumSequencer.currentTrack) && (abs(d - local.drumSequencer.currentPlayPosition) == 2)))) ||  // crosshatch
- 					((local.drumSequencer.currentEditPosition >= trackLen && !(local.drumSequencer.performanceMode)) && 
-                    		((d == local.drumSequencer.currentPlayPosition) ||  ((t == local.drumSequencer.currentTrack) && (abs(d - local.drumSequencer.currentPlayPosition) == 1)))) ||  // smaller crosshatch	
-                    // draw edit cursor
+                    ((d == local.drumSequencer.currentPlayPosition) ||  ((t == local.drumSequencer.currentTrack) && (abs(d - local.drumSequencer.currentPlayPosition) == 2)))) ||  // crosshatch
+                    ((local.drumSequencer.currentEditPosition >= trackLen && !(local.drumSequencer.performanceMode)) && 
+                    ((d == local.drumSequencer.currentPlayPosition) ||  ((t == local.drumSequencer.currentTrack) && (abs(d - local.drumSequencer.currentPlayPosition) == 1)))) ||  // smaller crosshatch    
+                // draw edit cursor
                     ((t == local.drumSequencer.currentTrack) && (d == local.drumSequencer.currentEditPosition) 
                     && !local.drumSequencer.performanceMode) ||
                 
@@ -2299,15 +2299,15 @@ void drawDrumSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
 
     // Next the Group Number or Transition Number
     if (local.drumSequencer.performanceMode)
-    	{
-    	uint8_t trans = local.drumSequencer.currentTransition;
-    	if (trans == DRUM_SEQUENCER_TRANSITION_START) trans = 0;
-	    drawRange(led2, 0, 0, DRUM_SEQUENCER_NUM_TRANSITIONS, trans);
-	    }
-	else
-		{
-	    drawRange(led2, 0, 0, MAX_DRUM_SEQUENCER_GROUPS, local.drumSequencer.currentGroup);
-	    }
+        {
+        uint8_t trans = local.drumSequencer.currentTransition;
+        if (trans == DRUM_SEQUENCER_TRANSITION_START) trans = 0;
+        drawRange(led2, 0, 0, DRUM_SEQUENCER_NUM_TRANSITIONS, trans);
+        }
+    else
+        {
+        drawRange(led2, 0, 0, MAX_DRUM_SEQUENCER_GROUPS, local.drumSequencer.currentGroup);
+        }
 
     // draw pattern position
     drawRange(led, 0, 1, 4, local.drumSequencer.patternCountup & 3);
@@ -2318,7 +2318,7 @@ void drawDrumSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
         blinkPoint(led, 2, 1);
         // are we going to the next transition?  (Or sequence?)
         if (local.drumSequencer.goNextSequence)
-           blinkPoint(led, 3, 1);
+            blinkPoint(led, 3, 1);
         else if (local.drumSequencer.goNextTransition)
             setPoint(led, 3, 1);
         }       
@@ -2329,30 +2329,30 @@ void drawDrumSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
                 
     // draw drum region
     if (local.drumSequencer.currentEditPosition < 0 || local.drumSequencer.currentEditPosition >= trackLen)
-    	{
-    	int8_t val = local.drumSequencer.drumRegion;
-    	// val should be -1, -2, or -3.  If it is not, we make it -1
-    	if (val >= 0 || val < -3) val = -1;
-    	val = (- val) - 1;		// convert to 0, 1, 2
-    	drawRange(led, 5, 1, 4, (uint8_t) val);
-    	}
+        {
+        int8_t val = local.drumSequencer.drumRegion;
+        // val should be -1, -2, or -3.  If it is not, we make it -1
+        if (val >= 0 || val < -3) val = -1;
+        val = (- val) - 1;              // convert to 0, 1, 2
+        drawRange(led, 5, 1, 4, (uint8_t) val);
+        }
     else
-    	{
-    	int8_t val = local.drumSequencer.drumRegion;
-    	// val should be 0, 1, 2, or 3.  If it is not, we make it 0
-    	if (val < 0 || val > 3) val = 0;
-    	drawRange(led, 5, 1, 4, (uint8_t) val);
-    	}
+        {
+        int8_t val = local.drumSequencer.drumRegion;
+        // val should be 0, 1, 2, or 3.  If it is not, we make it 0
+        if (val < 0 || val > 3) val = 0;
+        drawRange(led, 5, 1, 4, (uint8_t) val);
+        }
 
     // Are we stopped?
     if (local.drumSequencer.playState != PLAY_STATE_PLAYING)
-    	{
+        {
         setPoint(led, 7, 1);
         }
     else if (local.drumSequencer.invalidNoteSpeed)
-    	{
+        {
         blinkPoint(led, 7, 1);
-    	}
+        }
     }
 
 
@@ -2373,9 +2373,9 @@ void drawDrumSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
 void sendTrackNote(uint8_t track)
     {
     uint8_t velocity = getNoteMIDIVelocity(track);
-    uint8_t out = getMIDIChannel(track);			
+    uint8_t out = getMIDIChannel(track);                        
     uint8_t note = getNotePitch(track);
-    if (out == DRUM_SEQUENCER_MIDI_OUT_DEFAULT)		// 17 
+    if (out == DRUM_SEQUENCER_MIDI_OUT_DEFAULT)         // 17 
         out = options.channelOut;
     if (out != DRUM_SEQUENCER_NO_MIDI_OUT)
         {
@@ -2401,47 +2401,47 @@ void playDrumSequencer()
         local.drumSequencer.currentPlayPosition = incrementAndWrap(local.drumSequencer.currentPlayPosition, trackLen);
         
         if (local.drumSequencer.currentPlayPosition == 0)
-        	{
-        	if (local.drumSequencer.performanceMode)
-	        	goNextTransition();
-        	
-			uint8_t noteSpeed = getNoteSpeed(local.drumSequencer.currentGroup);
-			uint8_t expectedRate = getNotePulseRateFor(options.noteSpeedType);
-			if (noteSpeed == 1)	// x2
-				{
-				local.drumSequencer.invalidNoteSpeed = (((expectedRate >> 1) * 2) != expectedRate);  // uh oh
-				expectedRate = expectedRate >> 1;	// divide by two
-				if (expectedRate == 0) expectedRate = 1;
-				}
-			else if (noteSpeed == 2)	// x2
-				{
-				local.drumSequencer.invalidNoteSpeed = (((expectedRate >> 2) * 4) != expectedRate);  // uh oh
-				expectedRate = expectedRate >> 2;	// divide by four
-				if (expectedRate == 0) expectedRate = 1;
-				}
-			else if (noteSpeed == 3)	// /2
-				{
-				local.drumSequencer.invalidNoteSpeed = (expectedRate >= 144);	// uh oh
-				if (expectedRate < 144)
-					expectedRate = expectedRate << 1;	// multiply by two
-				}
-			
-			//// FIXME: this will divide some rates by two that don't exist.
-			//// For example, 36 can't be divided by 4 (there is no 9)
-			//// and 8 can't be divided by 2 (there is no 9) and
-			//// 6 can't be divided by 4 (there is no 1.5) and
-			//// 3 can't be divided by 2 or 4 and
-			//// 2 can't be divided by 2 and
-			//// 1 can't be divided by 2 or 4 and
-			//// 144 and 192 can't be multiplied against 2
-			//// We'll make sure it doesn't go to 0 but beyond that we have
-			//// to figure out what the appropriate behavior should be
-			
-			if (notePulseRate != expectedRate)	// gotta change it
-				{
-				setRawNotePulseRate(expectedRate, false);
-				}
-			}
+            {
+            if (local.drumSequencer.performanceMode)
+                goNextTransition();
+                
+            uint8_t noteSpeed = getNoteSpeed(local.drumSequencer.currentGroup);
+            uint8_t expectedRate = getNotePulseRateFor(options.noteSpeedType);
+            if (noteSpeed == 1)     // x2
+                {
+                local.drumSequencer.invalidNoteSpeed = (((expectedRate >> 1) * 2) != expectedRate);  // uh oh
+                expectedRate = expectedRate >> 1;       // divide by two
+                if (expectedRate == 0) expectedRate = 1;
+                }
+            else if (noteSpeed == 2)        // x2
+                {
+                local.drumSequencer.invalidNoteSpeed = (((expectedRate >> 2) * 4) != expectedRate);  // uh oh
+                expectedRate = expectedRate >> 2;       // divide by four
+                if (expectedRate == 0) expectedRate = 1;
+                }
+            else if (noteSpeed == 3)        // /2
+                {
+                local.drumSequencer.invalidNoteSpeed = (expectedRate >= 144);   // uh oh
+                if (expectedRate < 144)
+                    expectedRate = expectedRate << 1;       // multiply by two
+                }
+                        
+            //// FIXME: this will divide some rates by two that don't exist.
+            //// For example, 36 can't be divided by 4 (there is no 9)
+            //// and 8 can't be divided by 2 (there is no 9) and
+            //// 6 can't be divided by 4 (there is no 1.5) and
+            //// 3 can't be divided by 2 or 4 and
+            //// 2 can't be divided by 2 and
+            //// 1 can't be divided by 2 or 4 and
+            //// 144 and 192 can't be multiplied against 2
+            //// We'll make sure it doesn't go to 0 but beyond that we have
+            //// to figure out what the appropriate behavior should be
+                        
+            if (notePulseRate != expectedRate)      // gotta change it
+                {
+                setRawNotePulseRate(expectedRate, false);
+                }
+            }
         
         // change scheduled mute?
         if (local.drumSequencer.performanceMode && local.drumSequencer.currentPlayPosition == 0)
@@ -2548,35 +2548,35 @@ void playDrumSequencer()
 void stopDrumSequencer()
     {
     if (local.drumSequencer.performanceMode)
-    	{
-		local.drumSequencer.currentGroup = 0;
-		// for performance mode
-		local.drumSequencer.currentTransition = DRUM_SEQUENCER_TRANSITION_START;			// gotta make sure this is drawn right
-		local.drumSequencer.goNextTransition = 1;			// should be enough to trigger going to the next transition?
-		local.drumSequencer.goNextSequence = 0;
-    	}
-    	
+        {
+        local.drumSequencer.currentGroup = 0;
+        // for performance mode
+        local.drumSequencer.currentTransition = DRUM_SEQUENCER_TRANSITION_START;                        // gotta make sure this is drawn right
+        local.drumSequencer.goNextTransition = 1;                       // should be enough to trigger going to the next transition?
+        local.drumSequencer.goNextSequence = 0;
+        }
+        
     local.drumSequencer.currentPlayPosition = getGroupLength(local.drumSequencer.currentGroup) - 1;
-	resetDrumSequencerSequenceCountdown();		// this will call resetDrumSequencerTransitionCountdown();
+    resetDrumSequencerSequenceCountdown();          // this will call resetDrumSequencerTransitionCountdown();
     local.drumSequencer.playState = PLAY_STATE_STOPPED;
     sendAllSoundsOff();
     }
 
 void goNextGroup()
-	{
-	uint8_t g = local.drumSequencer.currentGroup + 1;
-	if (g >= local.drumSequencer.numGroups) g = 0;
-	drumSequencerChangeGroup(g);
-	}
+    {
+    uint8_t g = local.drumSequencer.currentGroup + 1;
+    if (g >= local.drumSequencer.numGroups) g = 0;
+    drumSequencerChangeGroup(g);
+    }
 
 void goPreviousGroup()
-	{
-	uint8_t g = local.drumSequencer.currentGroup;
-	if (g == 0 || g >= local.drumSequencer.numGroups) 
-		g = local.drumSequencer.numGroups - 1;
-	else g--;
-	drumSequencerChangeGroup(g);
-	}
+    {
+    uint8_t g = local.drumSequencer.currentGroup;
+    if (g == 0 || g >= local.drumSequencer.numGroups) 
+        g = local.drumSequencer.numGroups - 1;
+    else g--;
+    drumSequencerChangeGroup(g);
+    }
 
 
 // Top-level editor function for the sequencer
@@ -2652,59 +2652,59 @@ void stateDrumSequencerPlay()
         }
     else if (isUpdated(SELECT_BUTTON, RELEASED))
         {
-		//// START/STOP
-		if (1) // if (options.drumSequencerSendClock)
-			{
-			// we always stop the clock just in case, even if we're immediately restarting it
-			stopClock(true);
-			}
-		switch(local.drumSequencer.playState)
-			{
-			case PLAY_STATE_STOPPED:
-				{
-				local.drumSequencer.playState = PLAY_STATE_WAITING;
+        //// START/STOP
+        if (1) // if (options.drumSequencerSendClock)
+            {
+            // we always stop the clock just in case, even if we're immediately restarting it
+            stopClock(true);
+            }
+        switch(local.drumSequencer.playState)
+            {
+            case PLAY_STATE_STOPPED:
+                {
+                local.drumSequencer.playState = PLAY_STATE_WAITING;
 
-				if (local.drumSequencer.performanceMode)
-					{
-					local.drumSequencer.currentGroup = 0;
-					// for performance mode
-					local.drumSequencer.currentTransition = DRUM_SEQUENCER_TRANSITION_START;			// gotta make sure this is drawn right
-					local.drumSequencer.goNextTransition = 1;			// should be enough to trigger going to the next transition?
-					local.drumSequencer.goNextSequence = 0;
-					}
-					
-				// Though this is done in stopDrumSequencer we have to do it again because we may be in a different group now. 
-				local.drumSequencer.currentPlayPosition = getGroupLength(local.drumSequencer.currentGroup) - 1;
-				resetDrumSequencerSequenceCountdown();		// this will call resetDrumSequencerTransitionCountdown();
+                if (local.drumSequencer.performanceMode)
+                    {
+                    local.drumSequencer.currentGroup = 0;
+                    // for performance mode
+                    local.drumSequencer.currentTransition = DRUM_SEQUENCER_TRANSITION_START;                        // gotta make sure this is drawn right
+                    local.drumSequencer.goNextTransition = 1;                       // should be enough to trigger going to the next transition?
+                    local.drumSequencer.goNextSequence = 0;
+                    }
+                                        
+                // Though this is done in stopDrumSequencer we have to do it again because we may be in a different group now. 
+                local.drumSequencer.currentPlayPosition = getGroupLength(local.drumSequencer.currentGroup) - 1;
+                resetDrumSequencerSequenceCountdown();          // this will call resetDrumSequencerTransitionCountdown();
 
-				if (1) //if (options.drumSequencerSendClock)
-					{
-					// Possible bug condition:
-					// The MIDI spec says that there "should" be at least 1 ms between
-					// starting the clock and the first clock pulse.  I don't know if that
-					// will happen here consistently.
-					startClock(true);
-					}
-				}
-			break;
-			case PLAY_STATE_WAITING:
-				// Fall Thru
-			case PLAY_STATE_PLAYING:
-				{
-				stopDrumSequencer();
-				}
-			break;
-			case PLAY_STATE_PAUSED:
-				{
-				local.drumSequencer.playState = PLAY_STATE_PLAYING;
+                if (1) //if (options.drumSequencerSendClock)
+                    {
+                    // Possible bug condition:
+                    // The MIDI spec says that there "should" be at least 1 ms between
+                    // starting the clock and the first clock pulse.  I don't know if that
+                    // will happen here consistently.
+                    startClock(true);
+                    }
+                }
+            break;
+            case PLAY_STATE_WAITING:
+                // Fall Thru
+            case PLAY_STATE_PLAYING:
+                {
+                stopDrumSequencer();
+                }
+            break;
+            case PLAY_STATE_PAUSED:
+                {
+                local.drumSequencer.playState = PLAY_STATE_PLAYING;
 
-				if (1) //if (options.drumSequencerSendClock)
-					{
-					continueClock(true);
-					}
-				}
-			break;
-			}
+                if (1) //if (options.drumSequencerSendClock)
+                    {
+                    continueClock(true);
+                    }
+                }
+            break;
+            }
         }
     else if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
         {
@@ -2714,16 +2714,16 @@ void stateDrumSequencerPlay()
 
             if (local.drumSequencer.performanceMode)
                 {
-            	//// SCHEDULE TRANSITION
-            	local.drumSequencer.goNextTransition = !local.drumSequencer.goNextTransition;
+                //// SCHEDULE TRANSITION
+                local.drumSequencer.goNextTransition = !local.drumSequencer.goNextTransition;
                 }
             else
                 {
                 //// ENTER PERFORMANCE MODE
                 local.drumSequencer.performanceMode = true;
-				local.drumSequencer.currentTransition = DRUM_SEQUENCER_TRANSITION_START;			// gotta make sure this is drawn right
-				local.drumSequencer.goNextTransition = 1;			// should be enough to trigger going to the next transition?
-				local.drumSequencer.goNextSequence = 0;
+                local.drumSequencer.currentTransition = DRUM_SEQUENCER_TRANSITION_START;                        // gotta make sure this is drawn right
+                local.drumSequencer.goNextTransition = 1;                       // should be enough to trigger going to the next transition?
+                local.drumSequencer.goNextSequence = 0;
                 resetDrumSequencerTransitionCountdown();  // otherwise we'll miss jumps to other sequences
                 setParseRawCC(true);
                 }
@@ -2749,7 +2749,7 @@ void stateDrumSequencerPlay()
                 {
                 //// CHANGE TRACK NOTE
                 immediateReturnState = STATE_DRUM_SEQUENCER_PLAY;
-				goDownState(STATE_DRUM_SEQUENCER_TRACK_PITCH);
+                goDownState(STATE_DRUM_SEQUENCER_TRACK_PITCH);
                 }
             }
         }
@@ -2760,15 +2760,15 @@ void stateDrumSequencerPlay()
             isUpdated(MIDDLE_BUTTON, PRESSED);  // kill the long release on the middle button
             if (local.drumSequencer.performanceMode)
                 {
-            	//// SCHEDULE TRANSITION
-            	local.drumSequencer.goNextTransition = !local.drumSequencer.goNextTransition;
+                //// SCHEDULE TRANSITION
+                local.drumSequencer.goNextTransition = !local.drumSequencer.goNextTransition;
                 }
             else
                 {
                 //// ENTER PERFORMANCE MODE
                 local.drumSequencer.performanceMode = true;
                 local.drumSequencer.goNextTransition = false;
-				local.drumSequencer.goNextSequence = 0;
+                local.drumSequencer.goNextSequence = 0;
                 resetDrumSequencerTransitionCountdown();  // otherwise we'll miss jumps to other sequences
                 setParseRawCC(true);
                 }
@@ -2785,17 +2785,17 @@ void stateDrumSequencerPlay()
         if (!local.drumSequencer.performanceMode && local.drumSequencer.currentEditPosition >= trackLen)
             {
             /*
-            //// CHANGE GROUP
-#define BIG_POT_UPDATE (32)
-            if (potChangedBy(local.drumSequencer.pots, LEFT_POT, BIG_POT_UPDATE))
+          //// CHANGE GROUP
+          #define BIG_POT_UPDATE (32)
+          if (potChangedBy(local.drumSequencer.pots, LEFT_POT, BIG_POT_UPDATE))
             */
             //// CHANGE GROUP
             uint8_t group = ((pot[LEFT_POT] * local.drumSequencer.numGroups) >> 10);         //  / 1024;
             group = bound(group, 0, local.drumSequencer.numGroups);
-			drumSequencerChangeGroup(group);
+            drumSequencerChangeGroup(group);
             }
         else
-        	{
+            {
             //// CHANGE TRACK
             local.drumSequencer.currentTrack = ((pot[LEFT_POT] * numTracks) >> 10);         //  / 1024;
             local.drumSequencer.currentTrack = bound(local.drumSequencer.currentTrack, 0, numTracks);
@@ -2881,352 +2881,352 @@ void stateDrumSequencerPlay()
             }
         }
     else if (newItem && (itemType == MIDI_CUSTOM_CONTROLLER))
-      {
-      switch (itemNumber)
-      {
-      case CC_EXTRA_PARAMETER_A:
-      case CC_EXTRA_PARAMETER_B:
-      case CC_EXTRA_PARAMETER_C:
-      case CC_EXTRA_PARAMETER_D:
-      case CC_EXTRA_PARAMETER_E:
-      case CC_EXTRA_PARAMETER_F:
-      case CC_EXTRA_PARAMETER_G:
-      case CC_EXTRA_PARAMETER_H:
-      case CC_EXTRA_PARAMETER_I:
-      case CC_EXTRA_PARAMETER_J:
-      case CC_EXTRA_PARAMETER_K:
-      case CC_EXTRA_PARAMETER_L:
-      case CC_EXTRA_PARAMETER_M:
-      case CC_EXTRA_PARAMETER_N:
-      case CC_EXTRA_PARAMETER_O:
-      case CC_EXTRA_PARAMETER_P:
-      case CC_EXTRA_PARAMETER_Q:
-      case CC_EXTRA_PARAMETER_R:
-      case CC_EXTRA_PARAMETER_S:
-      case CC_EXTRA_PARAMETER_T:
-      {
-      // Set Track
-      uint8_t track = itemNumber - CC_EXTRA_PARAMETER_A;
-      if (track < local.drumSequencer.numTracks)
-      	local.drumSequencer.currentTrack = track;
-      break;
-      }
-      case CC_EXTRA_PARAMETER_U:
-      {
-      // Set Drum Note
-      immediateReturnState = STATE_DRUM_SEQUENCER_PLAY;
-      goDownState(STATE_DRUM_SEQUENCER_TRACK_PITCH);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_V:
-      {
-      // Previous Group
-      goPreviousGroup();
-      break;
-      }
-      case CC_EXTRA_PARAMETER_W:
-      {
-      // Next Group
-	  goNextGroup();
-      break;
-      }
-      case CC_EXTRA_PARAMETER_X:
-      {
-      // Toggle/Schedule Mute
-        if (local.drumSequencer.performanceMode)
+        {
+        switch (itemNumber)
             {
-            //// SCHEDULE MUTE
-            drumSequencerAdvanceMute(local.drumSequencer.currentTrack);
-            }
-        else
-            {
-            //// TOGGLE MUTE
-            local.drumSequencer.muted[local.drumSequencer.currentTrack] = !local.drumSequencer.muted[local.drumSequencer.currentTrack];
-            }
-      break;
-      }
-      case CC_EXTRA_PARAMETER_Y:
-      {
-      // Toggle/Schedule Solo
-            if (local.drumSequencer.performanceMode)
+            case CC_EXTRA_PARAMETER_A:
+            case CC_EXTRA_PARAMETER_B:
+            case CC_EXTRA_PARAMETER_C:
+            case CC_EXTRA_PARAMETER_D:
+            case CC_EXTRA_PARAMETER_E:
+            case CC_EXTRA_PARAMETER_F:
+            case CC_EXTRA_PARAMETER_G:
+            case CC_EXTRA_PARAMETER_H:
+            case CC_EXTRA_PARAMETER_I:
+            case CC_EXTRA_PARAMETER_J:
+            case CC_EXTRA_PARAMETER_K:
+            case CC_EXTRA_PARAMETER_L:
+            case CC_EXTRA_PARAMETER_M:
+            case CC_EXTRA_PARAMETER_N:
+            case CC_EXTRA_PARAMETER_O:
+            case CC_EXTRA_PARAMETER_P:
+            case CC_EXTRA_PARAMETER_Q:
+            case CC_EXTRA_PARAMETER_R:
+            case CC_EXTRA_PARAMETER_S:
+            case CC_EXTRA_PARAMETER_T:
                 {
-                drumSequencerAdvanceSolo();
+                // Set Track
+                uint8_t track = itemNumber - CC_EXTRA_PARAMETER_A;
+                if (track < local.drumSequencer.numTracks)
+                    local.drumSequencer.currentTrack = track;
+                break;
                 }
-			else
-				{
-	            local.drumSequencer.solo = !local.drumSequencer.solo;
-				}
-      break;
-      }
-      case CC_EXTRA_PARAMETER_Z:
-      {
-      // Clear Group
+            case CC_EXTRA_PARAMETER_U:
+                {
+                // Set Drum Note
+                immediateReturnState = STATE_DRUM_SEQUENCER_PLAY;
+                goDownState(STATE_DRUM_SEQUENCER_TRACK_PITCH);
+                break;
+                }
+            case CC_EXTRA_PARAMETER_V:
+                {
+                // Previous Group
+                goPreviousGroup();
+                break;
+                }
+            case CC_EXTRA_PARAMETER_W:
+                {
+                // Next Group
+                goNextGroup();
+                break;
+                }
+            case CC_EXTRA_PARAMETER_X:
+                {
+                // Toggle/Schedule Mute
+                if (local.drumSequencer.performanceMode)
+                    {
+                    //// SCHEDULE MUTE
+                    drumSequencerAdvanceMute(local.drumSequencer.currentTrack);
+                    }
+                else
+                    {
+                    //// TOGGLE MUTE
+                    local.drumSequencer.muted[local.drumSequencer.currentTrack] = !local.drumSequencer.muted[local.drumSequencer.currentTrack];
+                    }
+                break;
+                }
+            case CC_EXTRA_PARAMETER_Y:
+                {
+                // Toggle/Schedule Solo
+                if (local.drumSequencer.performanceMode)
+                    {
+                    drumSequencerAdvanceSolo();
+                    }
+                else
+                    {
+                    local.drumSequencer.solo = !local.drumSequencer.solo;
+                    }
+                break;
+                }
+            case CC_EXTRA_PARAMETER_Z:
+                {
+                // Clear Group
                 goDownState(STATE_DRUM_SEQUENCER_GROUP_CLEAR_SURE);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_1:
-      {
-      // Clear Track in Group
-                clearCurrentTrackInGroup();
-      break;
-      }
-      case CC_EXTRA_PARAMETER_2:
-      {
-      // Schedule Transition
-            if (local.drumSequencer.performanceMode)
-                {
-            	//// SCHEDULE TRANSITION
-            	local.drumSequencer.goNextTransition = !local.drumSequencer.goNextTransition;
+                break;
                 }
-      break;
-      }
-      case CC_EXTRA_PARAMETER_3:
-      {
-      // Toggle Click Track
+            case CC_EXTRA_PARAMETER_1:
+                {
+                // Clear Track in Group
+                clearCurrentTrackInGroup();
+                break;
+                }
+            case CC_EXTRA_PARAMETER_2:
+                {
+                // Schedule Transition
+                if (local.drumSequencer.performanceMode)
+                    {
+                    //// SCHEDULE TRANSITION
+                    local.drumSequencer.goNextTransition = !local.drumSequencer.goNextTransition;
+                    }
+                break;
+                }
+            case CC_EXTRA_PARAMETER_3:
+                {
+                // Toggle Click Track
                 IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
                 goDownState(STATE_OPTIONS_CLICK);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_4:
-      {
-      // Set Mark
+                break;
+                }
+            case CC_EXTRA_PARAMETER_4:
+                {
+                // Set Mark
                 goDownState(STATE_DRUM_SEQUENCER_MARK);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_5:
-      {
-      // Copy Track (Local)
+                break;
+                }
+            case CC_EXTRA_PARAMETER_5:
+                {
+                // Copy Track (Local)
                 IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
                 goDownState(STATE_DRUM_SEQUENCER_LOCAL_COPY);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_6:
-      {
-      // Swap Tracks (Local)
+                break;
+                }
+            case CC_EXTRA_PARAMETER_6:
+                {
+                // Swap Tracks (Local)
                 IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
                 goDownState(STATE_DRUM_SEQUENCER_LOCAL_SWAP);
-      break;
-      }
+                break;
+                }
       
-      // IN ORDER THOUGH IT DOESNT LOOK LIKE IT
+            // IN ORDER THOUGH IT DOESNT LOOK LIKE IT
       
-      case CC_EXTRA_PARAMETER_11:
-      {
-      // UNUSED
-      break;
-      }
-      case CC_EXTRA_PARAMETER_12:
-      {
-      // UNUSED
-      break;
-      }
+            case CC_EXTRA_PARAMETER_11:
+                {
+                // UNUSED
+                break;
+                }
+            case CC_EXTRA_PARAMETER_12:
+                {
+                // UNUSED
+                break;
+                }
 
-      case CC_EXTRA_PARAMETER_13:
-      {
-      // Copy Whole Tracks
+            case CC_EXTRA_PARAMETER_13:
+                {
+                // Copy Whole Tracks
                 IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
                 goDownState(STATE_DRUM_SEQUENCER_TRACK_COPY);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_14:
-      {
-      // Swap Whole Tracks
+                break;
+                }
+            case CC_EXTRA_PARAMETER_14:
+                {
+                // Swap Whole Tracks
                 IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
                 goDownState(STATE_DRUM_SEQUENCER_TRACK_SWAP);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_15:
-      {
-      // Copy Group
+                break;
+                }
+            case CC_EXTRA_PARAMETER_15:
+                {
+                // Copy Group
                 IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
                 goDownState(STATE_DRUM_SEQUENCER_GROUP_COPY);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_16:
-      {
-      // Swap Groups
+                break;
+                }
+            case CC_EXTRA_PARAMETER_16:
+                {
+                // Swap Groups
                 IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
                 goDownState(STATE_DRUM_SEQUENCER_GROUP_SWAP);
-      break;
-      }
+                break;
+                }
 
 
-      case CC_EXTRA_PARAMETER_7:
-      {
-      // Stamp Group
+            case CC_EXTRA_PARAMETER_7:
+                {
+                // Stamp Group
                 goDownState(STATE_DRUM_SEQUENCER_COPY_TO_NEXT);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_8:
-      {
-      // Accent Track
+                break;
+                }
+            case CC_EXTRA_PARAMETER_8:
+                {
+                // Accent Track
                 IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
                 goDownState(STATE_DRUM_SEQUENCER_TRACK_ACCENT);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_9:
-      {
-      // Distribute Track Info
+                break;
+                }
+            case CC_EXTRA_PARAMETER_9:
+                {
+                // Distribute Track Info
                 IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
                 goDownState(STATE_DRUM_SEQUENCER_TRACK_DISTRIBUTE);
-      break;
-      }
-      case CC_EXTRA_PARAMETER_10:
-      {
-      // (Performance Mode) Pause
-        pauseDrumSequencer();
-      break;
-      }
+                break;
+                }
+            case CC_EXTRA_PARAMETER_10:
+                {
+                // (Performance Mode) Pause
+                pauseDrumSequencer();
+                break;
+                }
                         
-      case CC_EXTRA_PARAMETER_17:
-      {
-      // Schedule Next Sequence
-      local.drumSequencer.goNextSequence = !local.drumSequencer.goNextSequence;
-      break;
-      }
+            case CC_EXTRA_PARAMETER_17:
+                {
+                // Schedule Next Sequence
+                local.drumSequencer.goNextSequence = !local.drumSequencer.goNextSequence;
+                break;
+                }
                         
-      // this is a discontinuity, hope compiler can handle it
+            // this is a discontinuity, hope compiler can handle it
                         
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_1:
-      {
-      // Set Group Speed Multiplier
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      leftPotParameterEquivalent = true;
-      goDownState(STATE_DRUM_SEQUENCER_GROUP_SPEED);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_2:
-      {
-      // midi out
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      leftPotParameterEquivalent = true;
-      goDownState(STATE_DRUM_SEQUENCER_TRACK_MIDI_CHANNEL_OUT);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_3:
-      {
-      // velocity
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      leftPotParameterEquivalent = true;
-      goDownState(STATE_DRUM_SEQUENCER_TRACK_VELOCITY);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_4:
-      {
-      // group length
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      leftPotParameterEquivalent = true;
-      goDownState(STATE_DRUM_SEQUENCER_GROUP_LENGTH);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_5:
-      {
-      // pattern
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_DRUM_SEQUENCER_LOCAL_PATTERN);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_6:
-      {
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_OPTIONS_TEMPO);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_7:
-      {
-      //// IRRELEVANT
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_OPTIONS_TRANSPOSE);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_8:
-      {
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_OPTIONS_VOLUME);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_9:
-      {
-      //// STUPID
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_OPTIONS_NOTE_SPEED);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_10:
-      {
-      /*
-      ///// IRRELEVANT
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_OPTIONS_PLAY_LENGTH);
-      */
-	  // Save
-      leftPotParameterEquivalent = true;
-      goDownState(STATE_DRUM_SEQUENCER_SAVE);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_11:
-      {
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_OPTIONS_SWING);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_12:
-      {
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_KEYBOARD);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_13:
-      {
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_REPEAT);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_14:
-      {
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_NEXT);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_15:
-      {
-		// Select Transition
-      leftPotParameterEquivalent = true;
-      //AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_DRUM_SEQUENCER_TRANSITION);
-      break;
-      }
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_16:
-      {
-      // Update pot as if it were a left parameter equivalent (see line 586 of MidiInterface)
-	  uint16_t equivalentPot = (itemValue >> 4); 
-		//// CHANGE GROUP
-		uint8_t group = ((equivalentPot * local.drumSequencer.numGroups) >> 10);         //  / 1024;
-		group = bound(group, 0, local.drumSequencer.numGroups);
-		drumSequencerChangeGroup(group);
-      break;
-      }
-		// Do I need any more of these?
-      case CC_LEFT_POT_PARAMETER_EQUIVALENT_6_LSB:
-      {
-      leftPotParameterEquivalent = true;
-      AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-      goDownState(STATE_OPTIONS_TEMPO);
-      break;
-      }
-      }
-      }
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_1:
+                {
+                // Set Group Speed Multiplier
+                AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                leftPotParameterEquivalent = true;
+                goDownState(STATE_DRUM_SEQUENCER_GROUP_SPEED);
+                break;
+                }
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_2:
+                {
+                // midi out
+                AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                leftPotParameterEquivalent = true;
+                goDownState(STATE_DRUM_SEQUENCER_TRACK_MIDI_CHANNEL_OUT);
+                break;
+                }
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_3:
+                {
+                // velocity
+                AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                leftPotParameterEquivalent = true;
+                goDownState(STATE_DRUM_SEQUENCER_TRACK_VELOCITY);
+                break;
+                }
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_4:
+                {
+                // group length
+                AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                leftPotParameterEquivalent = true;
+                goDownState(STATE_DRUM_SEQUENCER_GROUP_LENGTH);
+                break;
+                }
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_5:
+                {
+                // pattern
+                leftPotParameterEquivalent = true;
+                AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_DRUM_SEQUENCER_LOCAL_PATTERN);
+                break;
+                }
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_6:
+                {
+                leftPotParameterEquivalent = true;
+                AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_OPTIONS_TEMPO);
+                break;
+                }
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_7:
+                {
+                //// IRRELEVANT
+                leftPotParameterEquivalent = true;
+                AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_OPTIONS_TRANSPOSE);
+                break;
+                }
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_8:
+                {
+                leftPotParameterEquivalent = true;
+                AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_OPTIONS_VOLUME);
+                break;
+                }
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_9:
+                {
+                //// STUPID
+                leftPotParameterEquivalent = true;
+                AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_OPTIONS_NOTE_SPEED);
+                break;
+                }
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_10:
+                {
+                /*
+             ///// IRRELEVANT
+             leftPotParameterEquivalent = true;
+             AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+             goDownState(STATE_OPTIONS_PLAY_LENGTH);
+                */
+                // Save
+                leftPotParameterEquivalent = true;
+                goDownState(STATE_DRUM_SEQUENCER_SAVE);
+                break;
+                }
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_11:
+                {
+                leftPotParameterEquivalent = true;
+                AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_OPTIONS_SWING);
+                break;
+                }
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_12:
+                {
+                leftPotParameterEquivalent = true;
+                AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_KEYBOARD);
+                break;
+                }
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_13:
+                {
+                leftPotParameterEquivalent = true;
+                AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_REPEAT);
+                break;
+                }
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_14:
+                {
+                leftPotParameterEquivalent = true;
+                AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_NEXT);
+                break;
+                }
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_15:
+                {
+                // Select Transition
+                leftPotParameterEquivalent = true;
+                //AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_DRUM_SEQUENCER_TRANSITION);
+                break;
+                }
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_16:
+                {
+                // Update pot as if it were a left parameter equivalent (see line 586 of MidiInterface)
+                uint16_t equivalentPot = (itemValue >> 4); 
+                //// CHANGE GROUP
+                uint8_t group = ((equivalentPot * local.drumSequencer.numGroups) >> 10);         //  / 1024;
+                group = bound(group, 0, local.drumSequencer.numGroups);
+                drumSequencerChangeGroup(group);
+                break;
+                }
+            // Do I need any more of these?
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_6_LSB:
+                {
+                leftPotParameterEquivalent = true;
+                AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
+                goDownState(STATE_OPTIONS_TEMPO);
+                break;
+                }
+            }
+        }
 
   
     else if (bypass)
@@ -3234,149 +3234,149 @@ void stateDrumSequencerPlay()
         // do nothing
         }
         
-	// everything after this should be denied if we're in bypass
+    // everything after this should be denied if we're in bypass
 
     else if (newItem && (itemType == MIDI_NOTE_ON))   //// there is a note played
         {
         TOGGLE_IN_LED();
         uint8_t note = itemNumber;
 
-		/// We have different ways of entering drum note information depending on the edit mode
-			
-		uint8_t len = getGroupLength(local.drumSequencer.currentGroup);
-		uint16_t octave = div12(note);
-		
-		if (octave >= 5)  // middle c and up
-			{
-			uint16_t val = DIV12_REMAINDER(octave, note);
-			const uint8_t keys[12] = { 0, -1, 1, -2, 2, 3, -3, 4, -4, 5, -6, 6 };  // 7 , -1, 8, -2, 9, 10, -3, 11, -4, 12, -6, 13, 14, -1, 15, -2, 16, 17, -3, 18, -4, 19, -5, 20, 21};
-			int8_t key = keys[val];
+        /// We have different ways of entering drum note information depending on the edit mode
+                        
+        uint8_t len = getGroupLength(local.drumSequencer.currentGroup);
+        uint16_t octave = div12(note);
+                
+        if (octave >= 5)  // middle c and up
+            {
+            uint16_t val = DIV12_REMAINDER(octave, note);
+            const uint8_t keys[12] = { 0, -1, 1, -2, 2, 3, -3, 4, -4, 5, -6, 6 };  // 7 , -1, 8, -2, 9, 10, -3, 11, -4, 12, -6, 13, 14, -1, 15, -2, 16, 17, -3, 18, -4, 19, -5, 20, 21};
+            int8_t key = keys[val];
 
-			if (local.drumSequencer.currentEditPosition >= 0 && local.drumSequencer.currentEditPosition < len)
-				{
-				if (local.drumSequencer.drumRegion < 0)
-					local.drumSequencer.drumRegion = 0;
-					
-				//// We're in EDIT MODE
+            if (local.drumSequencer.currentEditPosition >= 0 && local.drumSequencer.currentEditPosition < len)
+                {
+                if (local.drumSequencer.drumRegion < 0)
+                    local.drumSequencer.drumRegion = 0;
+                                        
+                //// We're in EDIT MODE
 
-				// STRATEGY:
-				// If the key is >= 0, it reflects the drum beat we want to toggle, plus the octave.
-				// These are WHITE NOTES
-				// If the key is -1, -2, -3, or -4, it reflects the REGION of the drum beat (we have four regions because we have up to 0...63).
-				// These are the BLACK NOTES Db, Eb, Gb, and Ab
-				// If the key is -6, means to toggle the CURRENT NOTE
-				// This is the BLACK NOTE Bb
-				
-				if (key >= 0)
-					{
-					if (octave == 5 || octave == 6 || (octave == 7 && (key == 0 || key == 1)))		// only valid ones
-						{
-						// compute the proper key
-						if (octave == 6) key += 7;
-						else if (octave == 7) key += 14;
-						
-						// at this point key should range from 0...15
+                // STRATEGY:
+                // If the key is >= 0, it reflects the drum beat we want to toggle, plus the octave.
+                // These are WHITE NOTES
+                // If the key is -1, -2, -3, or -4, it reflects the REGION of the drum beat (we have four regions because we have up to 0...63).
+                // These are the BLACK NOTES Db, Eb, Gb, and Ab
+                // If the key is -6, means to toggle the CURRENT NOTE
+                // This is the BLACK NOTE Bb
+                                
+                if (key >= 0)
+                    {
+                    if (octave == 5 || octave == 6 || (octave == 7 && (key == 0 || key == 1)))              // only valid ones
+                        {
+                        // compute the proper key
+                        if (octave == 6) key += 7;
+                        else if (octave == 7) key += 14;
+                                                
+                        // at this point key should range from 0...15
 
-						uint8_t toggle = key + 16 * local.drumSequencer.drumRegion;
-						if (toggle < len)
-							{
-							toggleNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, toggle);
-							}
-						}
-					}
-				else if (key == -6)
-					{
-					toggleNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition);
-            		local.drumSequencer.currentEditPosition = incrementAndWrap(local.drumSequencer.currentEditPosition, len);
-					}
-				else
-					{
-					local.drumSequencer.drumRegion = (0 - key - 1);
-					}
-				}
-			else
-				{
+                        uint8_t toggle = key + 16 * local.drumSequencer.drumRegion;
+                        if (toggle < len)
+                            {
+                            toggleNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, toggle);
+                            }
+                        }
+                    }
+                else if (key == -6)
+                    {
+                    toggleNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition);
+                    local.drumSequencer.currentEditPosition = incrementAndWrap(local.drumSequencer.currentEditPosition, len);
+                    }
+                else
+                    {
+                    local.drumSequencer.drumRegion = (0 - key - 1);
+                    }
+                }
+            else
+                {
 #define DRUM_OPERATION_TOGGLE (-1)
 #define DRUM_OPERATION_SET (-3)
 #define DRUM_OPERATION_CLEAR (-2)
 //#define DRUM_OPERATION_CLEAR_ALWAYS (-4)
 
-				if (local.drumSequencer.drumRegion >= 0)
-					local.drumSequencer.drumRegion = DRUM_OPERATION_TOGGLE;
-					
-				// Try to add some slop so the user can come in at the right time
-				uint8_t pos = local.drumSequencer.currentPlayPosition + (notePulseCountdown <= (notePulseRate >> 1) ? 1 : 0);
-				if (pos >= len) pos = 0;
+                if (local.drumSequencer.drumRegion >= 0)
+                    local.drumSequencer.drumRegion = DRUM_OPERATION_TOGGLE;
+                                        
+                // Try to add some slop so the user can come in at the right time
+                uint8_t pos = local.drumSequencer.currentPlayPosition + (notePulseCountdown <= (notePulseRate >> 1) ? 1 : 0);
+                if (pos >= len) pos = 0;
 
-				//// We're in PLAY POSITION MODE or RIGHT mode
-				
-				// STRATEGY:
-				// If the key is >= 0, it reflects the TRACK we want to apply our operation to, plus the octave.
-				// These are WHITE NOTES
-				// If the key is -1, it turns on TOGGLING the note
-				// If the key is -2, it turns on SETTING the note
-				// If the key is -3, it turns on CLEARING the note
-				// If the key is -4, it does nothing [for now]
-				// These are the BLACK NOTES Db, Eb, Gb, and Ab
-				// If the key is -6, means to apply the opertion to the the CURRENT NOTE
-				// This is the BLACK NOTE Bb
-				
-				if (key >= 0)	// perform the operation on the track indicated
-					{
-					uint8_t track = ((octave - 5) * 7 + key);
-					if (track < local.drumSequencer.numTracks)
-						{
-						if (local.drumSequencer.drumRegion == DRUM_OPERATION_TOGGLE)
-							{
-							uint8_t n = getNote(local.drumSequencer.currentGroup, track, pos);
-							setNote(local.drumSequencer.currentGroup, track, pos, !n);
-							if (n == 0) 
-								sendTrackNote(track);
-							}
-						else if (local.drumSequencer.drumRegion == DRUM_OPERATION_SET)
-							{
-							setNote(local.drumSequencer.currentGroup, track, pos, 1);
-							sendTrackNote(track);
-							}
-						else // if (local.drumSequencer.drumRegion == DRUM_OPERATION_SET)
-							{
-							setNote(local.drumSequencer.currentGroup, track, pos, 0);
-							}
-						}
-					}
-				else if (key == -6)	// perform the operation locally
-					{
-					if (local.drumSequencer.drumRegion == DRUM_OPERATION_TOGGLE)
-						{
-						uint8_t n = getNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, pos);
-						setNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, pos, !n);
-						if (n == 0) 
-							sendTrackNote(local.drumSequencer.currentTrack);
-						}
-					else if (local.drumSequencer.drumRegion == DRUM_OPERATION_SET)
-						{
-						setNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, pos, 1);
-						sendTrackNote(local.drumSequencer.currentTrack);
-						}
-					else // if (local.drumSequencer.drumRegion == DRUM_OPERATION_SET)
-						{
-						setNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, pos, 0);
-						}
-					}
-				else if (key == -4)  // just play the note
-					{
-					// sendTrackNote(local.drumSequencer.currentTrack);			// we're not doing this right now, it's confusing
-					}
-				else // key is -1, -2, -3			// set the operation
-					{
-					local.drumSequencer.drumRegion = key;
-					}
-				}
-			}
-		else
-			{
-			sendTrackNote(local.drumSequencer.currentTrack);
-			}
+                //// We're in PLAY POSITION MODE or RIGHT mode
+                                
+                // STRATEGY:
+                // If the key is >= 0, it reflects the TRACK we want to apply our operation to, plus the octave.
+                // These are WHITE NOTES
+                // If the key is -1, it turns on TOGGLING the note
+                // If the key is -2, it turns on SETTING the note
+                // If the key is -3, it turns on CLEARING the note
+                // If the key is -4, it does nothing [for now]
+                // These are the BLACK NOTES Db, Eb, Gb, and Ab
+                // If the key is -6, means to apply the opertion to the the CURRENT NOTE
+                // This is the BLACK NOTE Bb
+                                
+                if (key >= 0)   // perform the operation on the track indicated
+                    {
+                    uint8_t track = ((octave - 5) * 7 + key);
+                    if (track < local.drumSequencer.numTracks)
+                        {
+                        if (local.drumSequencer.drumRegion == DRUM_OPERATION_TOGGLE)
+                            {
+                            uint8_t n = getNote(local.drumSequencer.currentGroup, track, pos);
+                            setNote(local.drumSequencer.currentGroup, track, pos, !n);
+                            if (n == 0) 
+                                sendTrackNote(track);
+                            }
+                        else if (local.drumSequencer.drumRegion == DRUM_OPERATION_SET)
+                            {
+                            setNote(local.drumSequencer.currentGroup, track, pos, 1);
+                            sendTrackNote(track);
+                            }
+                        else // if (local.drumSequencer.drumRegion == DRUM_OPERATION_SET)
+                            {
+                            setNote(local.drumSequencer.currentGroup, track, pos, 0);
+                            }
+                        }
+                    }
+                else if (key == -6)     // perform the operation locally
+                    {
+                    if (local.drumSequencer.drumRegion == DRUM_OPERATION_TOGGLE)
+                        {
+                        uint8_t n = getNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, pos);
+                        setNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, pos, !n);
+                        if (n == 0) 
+                            sendTrackNote(local.drumSequencer.currentTrack);
+                        }
+                    else if (local.drumSequencer.drumRegion == DRUM_OPERATION_SET)
+                        {
+                        setNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, pos, 1);
+                        sendTrackNote(local.drumSequencer.currentTrack);
+                        }
+                    else // if (local.drumSequencer.drumRegion == DRUM_OPERATION_SET)
+                        {
+                        setNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, pos, 0);
+                        }
+                    }
+                else if (key == -4)  // just play the note
+                    {
+                    // sendTrackNote(local.drumSequencer.currentTrack);                     // we're not doing this right now, it's confusing
+                    }
+                else // key is -1, -2, -3                       // set the operation
+                    {
+                    local.drumSequencer.drumRegion = key;
+                    }
+                }
+            }
+        else
+            {
+            sendTrackNote(local.drumSequencer.currentTrack);
+            }
         }
     // NOTE: we ignore NOTE_OFF
     

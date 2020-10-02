@@ -76,7 +76,7 @@ Gizmo applications can also be set with a {\it note value} (or {\it note speed})
 
 \item {\bf In and Out MIDI Channels}\quad Gizmo can be configured with input and output MIDI channels (some applications will use these: others will have multiple channels and will treat these as defaults).  Both channels can be turned off, and the input channel can be OMNI.  Gizmo pulses on-board LEDs indicating incoming and outgoing MIDI data.  
 
-\item {\bf Remote Control via MIDI NRPN.}\quad Gizmo can be controlled remotely via NRPN rather than using its on-board controls.  If you start using the controls, Gizmo's onboard potentiometers are locked out so their noise will not interfere with your remote control.  You can unlock the potentiometers by pressing a button on-board Gizmo, or by sending Gizmo's {\it Release} NRPN message. Gizmo can be remote-controlled via CC.
+\item {\bf Remote Control via MIDI CC or NRPN.}\quad Gizmo can be controlled remotely via CC or NRPN rather than using its on-board controls.  If you start using the controls, Gizmo's onboard potentiometers are locked out so their noise will not interfere with your remote control.  You can unlock the potentiometers by pressing a button on-board Gizmo, or by sending Gizmo's {\it Release} NRPN message.  
 
 \item {\bf Bypass.}\quad You can quickly put Gizmo in Bypass mode, to pass through all MIDI signals and generate no new ones (with the exception of the Controller, see Section~\ref{controller}, and the ``Merge'' MIDI clock option, see Section~\ref{options}).  Putting Gizmo in Bypass mode will also send an All Notes Off message, so toggling Bypass is also a useful way to hush your synthesizer.
 
@@ -202,6 +202,20 @@ Gizmo has a debounce mechanism built-in: it ignores secondary apparent button-pr
 
 After about four months of extremely heavy use, my select and back buttons began to fail: if I pressed either one the right way it wouldn't indicate that it's been pressed.  If you reach this state you may have to replace the buttons, though that's kind of hard to do: I just built a new board with different, better-quality low-profile buttons (just look on Adafruit for 12mm pushbutton switches).  Fingers crossed.
 
+\subsection{A Bootloader Bug on the Arduino Mega}
+
+Many versions of the Arduino Mega have an error in their bootloader which may cause the Arduino to hang if you've got a MIDI device cables plugged into MIDI IN when you power Gizmo up.  Similarly, if you press the reset button, it'll look like it's not booting up, but just frozen.  The issue is simple: if on bootup the Mega hears data coming in on MIDI IN (which is its serial port), the bootloader assumes that you're downloading a new program and immediately goes into program-load mode.    But in fact it's probably just MIDI Clock or Active Sensing commands from a chatty synthesizer.  You have four options:
+
+\begin{itemize}
+\item Turn on or Reboot Gizmo without anything plugged into MIDI IN, then plug the cable in.
+\item Turn off the synthesizer, turn on or Reboot Gizmo, then turn the synthesizer back on.
+\item Turn on or Reboot Gizmo with its switch set to ``Prog'', then when it's running, switch it to ``Run''.  I suggest this one.
+\item Permanently fix the issue by burning a new bootloader.  This is an involved process, and I don't suggest it.  See https:/\!/github.com/arduino/Arduino/issues/2101
+\end{itemize}
+
+
+\clearpage
+
 \clearpage
 \section{Initializing Gizmo}
 
@@ -217,6 +231,18 @@ Gizmo must be initialized before it can be used.  You can do a factory reset on 
 Gizmo will reset all of its flash RAM and reboot.  This means that all options will be set to their default state, and all file storage (including arpeggios) will be emptied.
 
 \paragraph{Doing a ``Partial Reset''} Whenever you load new Gizmo software, you should reinitialize Gizmo or strange things will happen.  However a full factory reset also erases your saved files (sequences, arpeggios, recordings).  If you want to preserve these but just reset the options, just hold down the left and right buttons instead of all three (don't hold down the middle button).
+
+\subsection{Starting Gizmo}
+
+\begin{wrapfigure}{r}{2in}
+\vspace{-1.5em}\includegraphics[width=2in]{Gizmo1.pdf}
+\vspace{-2em}\caption{\small Boot Screen}\vspace{-2em}
+\label{BootScreen}
+\end{wrapfigure}
+
+If you power up Gizmo, or press its reset button, it will display its {\bf boot screen}, which includes the version number (at right, the version number is ``1'').
+
+Gizmo will then show the {\bf root menu}.  Use the left potentiometer to scroll to any of the following applications, and use the select button to select an application.  
 
 \subsection{Starting Gizmo Headless}
 
@@ -264,31 +290,6 @@ Now you need to modify Gizmo's code to run headless, so it doesn't bother lighti
 \end{enumerate}
 
 I make no guarantees that this will work: but it might.
-
-\clearpage
-\section{Starting Gizmo}
-
-\begin{wrapfigure}{r}{2in}
-\vspace{-1.5em}\includegraphics[width=2in]{Gizmo1.pdf}
-\vspace{-2em}\caption{\small Boot Screen}\vspace{-2em}
-\label{BootScreen}
-\end{wrapfigure}
-
-If you power up Gizmo, or press its reset button, it will display its {\bf boot screen}, which includes the version number (at right, the version number is ``1'').
-
-Gizmo will then show the {\bf root menu}.  Use the left potentiometer to scroll to any of the following applications, and use the select button to select an application.  Available applications are:
-
-\subsection{A Bootloader Bug on the Arduino Mega}
-
-Many versions of the Arduino Mega have an error in their bootloader which may cause the Arduino to hang if you've got a MIDI device cables plugged into MIDI IN when you power Gizmo up.  Similarly, if you press the reset button, it'll look like it's not booting up, but just frozen.  The issue is simple: if on bootup the Mega hears data coming in on MIDI IN (which is its serial port), the bootloader assumes that you're downloading a new program and immediately goes into program-load mode.    But in fact it's probably just MIDI Clock or Active Sensing commands from a chatty synthesizer.  You have four options:
-
-\begin{itemize}
-\item Turn on or Reboot Gizmo without anything plugged into MIDI IN, then plug the cable in.
-\item Turn off the synthesizer, turn on or Reboot Gizmo, then turn the synthesizer back on.
-\item Turn on or Reboot Gizmo with its switch set to ``Prog'', then when it's running, switch it to ``Run''.  I suggest this one.
-\item Permanently fix the issue by burning a new bootloader.  This is an involved process, and I don't suggest it.  See https:/\!/github.com/arduino/Arduino/issues/2101
-\end{itemize}
-
 
 \clearpage
 

@@ -34,7 +34,7 @@ GLOBAL uint32_t tickCount = 0;
 // Estimated time of the next PULSE (in microseconds)
 GLOBAL uint32_t targetNextPulseTime = 0;
 
-// Number of microseconds between PULSES.  20833 microseconds per pulse is  is a tempo of 120 BPM (our default)
+// Number of microseconds between PULSES.  20833 microseconds per pulse is a tempo of 120 BPM (our default)
 // Specifically: 120 BEAT/MIN * 1 MIN / 60 SEC * 1 SEC / 1000000 MSEC * 24 PULSE/BEAT = 3/62500 PULSE/MSEC
 // Flipping that we have 62500 MSEC / 3 PULSE ~ 20833 MSEC/PULSE
 GLOBAL uint32_t microsecsPerPulse = 20833;
@@ -100,43 +100,30 @@ void updateTicksAndWait()
         {
         // sleep until the target time.
         // According to https://www.arduino.cc/reference/en/language/functions/time/delaymicroseconds/
-        // the Arduino is not accurate less than 3 or more than 16383 (which should use delay() instead)
+        // the Arduino is not accurate when less than 3 or more than 16383 (which should use delay() instead)
 #define MIN_DELAY 3
 #define MAX_DELAY 16383
         uint32_t delayTime = targetNextTickTime - currentTime;
-        if (delayTime < MIN_DELAY) 
-        	{
-        	delayTime = MIN_DELAY;
-        	}
+        if (delayTime < MIN_DELAY)              // we can use < here because there's no wrap-around, delayTime is a difference not an absolute value
+            {
+            delayTime = MIN_DELAY;
+            }
         
-        if (delayTime <= MAX_DELAY)
-        	{
-	        delayMicroseconds(delayTime);
-	        }
-	    else			// this will be rare, like after a debug or something really bad
-	    	{
-	    	debug(100);
-	    	// we'll estimate milliseconds by dividing by 1024, that is, right-shifting by 10
-	    	delay(delayTime >> 10);
-	    	}
+        if (delayTime <= MAX_DELAY)     // we can use >= here because there's no wrap-around, delayTime is a difference not an absolute value
+            {
+            delayMicroseconds(delayTime);
+            }
+        else                        // this will be extremely rare, like after a debug or something really bad
+            {
+            // we'll underestimate milliseconds by dividing by 1024, that is, right-shifting by 10
+            delay(delayTime >> 10);
+            }
         }
     
     // this better be accurate...
     ++tickCount;
     }
 
-/*
-// Returns whether we are using a clock command which allows us to emit a clock message
-// in response to a button press, internal pulse, or 
-uint8_t shouldEmitClockMessages()
-    {
-    return      
-    	options.clock == MERGE_MIDI_CLOCK ||
-    	(!bypass &&
-        	(options.clock == GENERATE_MIDI_CLOCK ||
-        	options.clock == USE_MIDI_CLOCK));
-    }
-*/
 
 
 uint32_t lastExternalPulseTime = 0;
@@ -168,16 +155,16 @@ void updateExternalClock()
         }
     lastExternalPulseTime = currentTime;
     if (lastExternalPulseTime == 0) // not allowed to be 0
-    	{
-    	lastExternalPulseTime--;			// hope this doesn't create problems
-    	}
+        {
+        lastExternalPulseTime--;                        // hope this doesn't create problems
+        }
     }
 
 
 
 /// This function is called in a variety of contexts.
 /// 
-///     1. Directly from handleClockCommand, if starting/stopping/continuing/pulsing,
+/// 1. Directly from handleClockCommand, if starting/stopping/continuing/pulsing,
 ///    or if ignoring the clock.  In these cases we want to send it out unless bypass
 ///    is on.
 /// 2. From pulseClock or from sendDivided clock.  Here we want to send it out unless bypass
@@ -193,12 +180,12 @@ void updateExternalClock()
 
 void sendClock(midi::MidiType signal, uint8_t fromButton)
     {
-    if (options.clock == MERGE_MIDI_CLOCK ||				// allow a send if I'm MERGING AND a button was pressed regardless of bypass
-    	(!bypass &&                                         // don't send if I'm bypassed
-            (
-            (options.clock == IGNORE_MIDI_CLOCK && !fromButton) ||  // allow a send if I'm IGNORING -- ignore calls this to pass it through
-            (options.clock == USE_MIDI_CLOCK && !fromButton) ||             // allow a send if I'm USING (and passing through) but NOT if the button was pressed
-            (options.clock == GENERATE_MIDI_CLOCK))))	        // allow a send if I'm GENERATING AND a button was pressed		
+    if (options.clock == MERGE_MIDI_CLOCK ||                            // allow a send if I'm MERGING AND a button was pressed regardless of bypass
+            (!bypass &&                                         // don't send if I'm bypassed
+                (
+                (options.clock == IGNORE_MIDI_CLOCK && !fromButton) ||  // allow a send if I'm IGNORING -- ignore calls this to pass it through
+                (options.clock == USE_MIDI_CLOCK && !fromButton) ||             // allow a send if I'm USING (and passing through) but NOT if the button was pressed
+                (options.clock == GENERATE_MIDI_CLOCK))))           // allow a send if I'm GENERATING AND a button was pressed              
         {
         MIDI.sendRealTime(signal);
         TOGGLE_OUT_LED();
@@ -206,6 +193,9 @@ void sendClock(midi::MidiType signal, uint8_t fromButton)
     }
 
 
+// Gizmo can emit divided-down MIDI clock messages as an option.  This method is called every time 
+// we want to send out a MIDI clock message.  It sends the clock message only every options.clockDivisor
+// times, using an internal countdown called dividePulseCountdown.
 
 void sendDividedClock()
     {
@@ -214,12 +204,16 @@ void sendDividedClock()
         dividePulseCountdown = options.clockDivisor;
         // we don't send the clock if we're a generator and the clock is currently stopped
         if ((options.clock == GENERATE_MIDI_CLOCK || options.clock == MERGE_MIDI_CLOCK) && 
-        	clockState == CLOCK_STOPPED)
-        	return;
+            clockState == CLOCK_STOPPED)
+            return;
         sendClock(MIDIClock, false);
         }
     }
         
+// Gizmo can emit divided-down MIDI clock messages as an option.  This method sets things up
+// so that the next call to sendDividedClock() will emit a clock message, and calls thereafter
+// will emit a clock message every options.clockDivisor times.
+
 void resetDividedClock()
     {
     dividePulseCountdown = 1;
@@ -229,8 +223,7 @@ void resetDividedClock()
 // The fromButton parameter is ALWAYS false.
 //
 // If we have an external pulse, we want to update to reflect this.
-// If we're doing USE or GENERATE, pass it through (on the UNO).
-// On the mega, we'll do this via division in updateTimers()
+// If we're doing USE or GENERATE, we'll do this via division in updateTimers()
 //
 // Returns 1 if successful
 
@@ -297,16 +290,18 @@ extern uint8_t drawBeatToggle;
 extern uint8_t drawNotePulseToggle;
 
 
+// Completely resets the clock, pulses, beats, and swing toggle
+
 void initializeClock()
-	{
-    dividePulseCountdown = 1;
+    {
+    resetDividedClock = 1;
     notePulseCountdown = 1;
     beatCountdown = 1;
     drawBeatToggle = 0;
     drawNotePulseToggle = 0;
     pulseCount = 0;
     swingToggle = 0;
-	}
+    }
 
 // This method is only called when a user presses a BUTTON
 // or when an external MIDI comes in and we're dong USE or CONSUME.
@@ -322,7 +317,7 @@ uint8_t startClock(uint8_t fromButton)
     if (fromButton && (USING_EXTERNAL_CLOCK() || clockState != CLOCK_STOPPED))
         return 0;
 
-	initializeClock();        
+    initializeClock();        
     sendClock(MIDIStart, fromButton);
 
     clockState = CLOCK_RUNNING;
@@ -377,6 +372,8 @@ uint8_t continueClock(uint8_t fromButton)
     return 1;
     }     
         
+// Returns either CLOCK_RUNNING or CLOCK_STOPPED
+
 uint8_t getClockState()
     {
     return clockState;
@@ -400,7 +397,7 @@ void setPulseRate(uint16_t bpm)
   
     // update the target pulse time, but don't starve if we're constantly changing the pulse rate
     targetNextPulseTime =  (TIME_GREATER_THAN(targetNextPulseTime - currentTime, microsecsPerPulse) ? currentTime + microsecsPerPulse : targetNextPulseTime);
-	//(targetNextPulseTime - currentTime > microsecsPerPulse ? currentTime + microsecsPerPulse : targetNextPulseTime);
+    //(targetNextPulseTime - currentTime > microsecsPerPulse ? currentTime + microsecsPerPulse : targetNextPulseTime);
     }
 
   
@@ -417,9 +414,9 @@ void setRawNotePulseRate(uint8_t rate, uint8_t sync)
         drawNotePulseToggle = (uint8_t)((pulseCount / notePulseRate) & 1);          // that is, %2
         }
     else
-    	{
+        {
         notePulseCountdown = notePulseRate;
-    	}
+        }
     }
     
 //// Table of note pulse rates corresponding to each note speed (such as NOTE_SPEED_QUARTER)
@@ -436,10 +433,13 @@ void setNotePulseRate(uint8_t noteSpeedType)
 ///// GET NOTE PULSE RATE FOR
 ///// Returns what the note pulse rate would be for the given speed type.
 uint8_t getNotePulseRateFor(uint8_t noteSpeedType)
-	{
-	return notePulseRateTable[noteSpeedType];
-	}
+    {
+    return notePulseRateTable[noteSpeedType];
+    }
 
+///// GET MICROSECS PER PULSE
+///// Returns the number of microseconds between pulses.  This may either be computed using
+///// the internal clock or an estimate based on an incoming external MIDI clock
 uint32_t getMicrosecsPerPulse()
     {
     if (externalMicrosecsPerPulse)
@@ -454,14 +454,14 @@ void updateTimers()
     // update our internal clock if we're making one
     if (!USING_EXTERNAL_CLOCK())
         {
-        if (TIME_GREATER_THAN(currentTime, targetNextPulseTime))		// (currentTime > targetNextPulseTime)
+        if (TIME_GREATER_THAN(currentTime, targetNextPulseTime))                // (currentTime > targetNextPulseTime)
             {
             targetNextPulseTime += microsecsPerPulse;
             pulseClock(false);  // note that the 'false' is ignored
             }
         }
 
-    if (swingTime != 0 && TIME_GREATER_THAN_OR_EQUAL(currentTime, swingTime))		//(swingTime != 0 && currentTime >= swingTime)
+    if (swingTime != 0 && TIME_GREATER_THAN_OR_EQUAL(currentTime, swingTime))           //(swingTime != 0 && currentTime >= swingTime)
         {
         // play!
         notePulse = 1;

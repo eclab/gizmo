@@ -19,8 +19,7 @@
 //// just consist of doing a right shift.
 ////
 //// In most cases the functions here assume 16-bit numbers with limited range.
-//// div100 assumes 32-bit numbers but suggests options for 16-bit numbers which
-//// will be faster.
+//// div100 assumes 32-bit numbers.
 
 
 // Divides dividend by 3, returning the quotient.
@@ -30,7 +29,7 @@
 uint16_t div3(uint16_t dividend);
 
 // Given the original dividend and the quotient resulting from div3(dividend),
-// returns the remainder, that is, the result of dividend % 3
+// returns the remainder, that is, the result of dividend % 3a
 //
 // Example usage: computes both 9234 / 3 and 9234 % 3
 // uint16_t dividend 9234;
@@ -111,12 +110,28 @@ uint16_t div9(uint16_t dividend);
 // Range of 0...10929
 // You can get the remainder afterwards via DIV10_REMAINDER
 // This is significantly faster than using / or % (or both!)
+// It runs 220 times per ms on the arduino, about 3 times faster
+// than plain division, and you get mod for free.
 //
 // Note that you could instead do div5(dividend) >> 1, which
 // is only just slightly slower but would have a range of 0...65535
-//
-// Also note an alternative method in Division.cpp
 uint16_t div10(uint16_t dividend);
+
+// Divides dividend by 10, returning the quotient.
+// Range of 0...43690
+// You can get the remainder afterwards via DIV10_REMAINDER
+// This version is slower than div10(...)  (180 times per ms
+// vs 220 times per ms) *but* has four times the range.  It is
+// still significantly faster than using / or % (or both!),
+// and you get mod for free.
+//
+// If you need still larger range, you can convert this to uint32_t,
+// which would give you 0...534890 (!) but would only be 89 times per ms
+// See http://homepage.cs.uiowa.edu/~jones/bcd/divide.html
+//
+// Note that you could instead do div5(dividend) >> 1, which
+// is only just slightly slower but would have a range of 0...65535
+uint16_t div10slow(uint16_t dividend);
 
 // Given the original dividend and the quotient resulting from div10(dividend),
 // returns the remainder, that is, the result of dividend % 10
