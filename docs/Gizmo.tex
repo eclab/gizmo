@@ -26,7 +26,7 @@
 \begin{document}
 
 \noindent {\Huge\bf Gizmo}\\[0.5em]
-{\large \bf An Arduino MIDI Tool, Version 6\\
+{\large \bf An Arduino MIDI Tool, Version 7\\
 By Sean Luke\quad sean@cs.gmu.edu} 
 \hspace{\fill}{\it \textbf{For Aric}}\\
 
@@ -213,8 +213,13 @@ Many versions of the Arduino Mega have an error in their bootloader which may ca
 \item Permanently fix the issue by burning a new bootloader.  This is an involved process, and I don't suggest it.  See https:/\!/github.com/arduino/Arduino/issues/2101
 \end{itemize}
 
+\subsection{Earlier Versions of Gizmo}
 
-\clearpage
+Gizmo versions 1 through 6 attempted to run the full suite of applications, more or less, on both the Mega and the Uno: the Uno would run ``reduced'' versions of many of them.  This resulted in an awful mess of {\tt \#ifdef} statements and bizarre tweaks to squeeze out the last bit of memory from the Uno.
+
+Gizmo 7 and on no longer do this.  Instead, all the applications run fine on the Mega: but only one application at a time will run on the Uno.  Furthermore, the Step Sequencer has a ``reduced'' version which runs on the Uno (the ``full'' version is too large), and the Drum Sequencer is simply too large to run on the Uno at all.
+
+If you're on an Uno and want to have a large complement of applications, you might try Gizmo 6, which can be found in the {\tt old/} subdirectory.  Note that this version will no longer be maintained.  Otherwise, you are strongly encouraged to get a Mega instead.
 
 \clearpage
 \section{Initializing Gizmo}
@@ -615,7 +620,7 @@ Typically you'll start in Edit Mode.  Somewhere on the screen there will be a si
 
 You enter notes by moving the edit cursor to the desired location, then playing keys.  You can also press the Middle Button to enter a rest, or Long Press the Middle Button to enter a {\it tie}.  A tie just means ``keep playing the previous note'': it essentially lengthens the previous note.  You can enter multiple ties in series to make a note as long as you like.
 
-\paragraph{The Advanced Step Sequencer: sequencing data}.  The Advanced version of the step sequencer only fits on a Mega (there's not enough room on the Uno), and allows you to store other kinds of data besides Note-On and Note-Off.  Specifically, you can set a given track to store and replay any one of (raw) CC, 14 Bit CC, NRPN, RPN, Pitch Bend, Channel Aftertouch, or Program Change commands by choosing {\bf Type} from the menu (see {\bf Menu Options} below).  If you select (raw) CC, 14 Bit CC, NRPN, or RPN, you will be further prompted to specify which parameter number you'd like to sequence (for example, CC\# 42 or NRPN\# 12312).
+\paragraph{The Advanced Step Sequencer: Sequencing Data}.  The Advanced version of the step sequencer only fits on a Mega (there's not enough room on the Uno), and allows you to store other kinds of data besides Note-On and Note-Off.  Specifically, you can set a given track to store and replay any one of (raw) CC, 14 Bit CC, NRPN, RPN, Pitch Bend, Channel Aftertouch, or Program Change commands by choosing {\bf Type} from the menu (see {\bf Menu Options} below).  If you select (raw) CC, 14 Bit CC, NRPN, or RPN, you will be further prompted to specify which parameter number you'd like to sequence (for example, CC\# 42 or NRPN\# 12312).
 
 Non-note data is entered differently than note data.  To enter non-note events, send an event to the MIDI In Channel, then press the {\bf middle button}: the most recent sent event will then be recorded at the current position.  You can erase data at the current position (essentially send a rest) by long-pressing the middle button.\footnote{This may be confusing as rests are entered by simply {\it pressing} the middle button for note data, but I figured entering data was more important than entering rests in the non-note case.  Sorry.}
 
