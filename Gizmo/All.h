@@ -148,8 +148,8 @@
 #if defined(__UNO__)
 
 // You can pick ONE of these
-#define INCLUDE_ARPEGGIATOR
-// #define INCLUDE_STEP_SEQUENCER
+//#define INCLUDE_ARPEGGIATOR
+#define INCLUDE_STEP_SEQUENCER
 // #define INCLUDE_RECORDER
 // #define INCLUDE_CONTROLLER
 // #define INCLUDE_GAUGE

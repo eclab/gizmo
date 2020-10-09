@@ -845,7 +845,7 @@ void stateSave(uint8_t backState)
 #ifdef INCLUDE_STEP_SEQUENCER
                 case STATE_STEP_SEQUENCER:
                     {
-                    uint8_t len = GET_TRACK_LENGTH();
+                    uint8_t len = GET_TRACK_FULL_LENGTH();
                     uint8_t num = GET_NUM_TRACKS();
                                         
                     // pack the high-bit parts
@@ -960,8 +960,7 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                         local.drumSequencer.performanceMode = false;
 
                         // FIXME: did I fix the issue of synchronizing the beats with the sequencer notes?
-                        local.drumSequencer.currentPlayPosition = 
-                            div12((24 - beatCountdown) * notePulseRate) >> 1;   // get in sync with beats
+                        local.drumSequencer.currentPlayPosition = div12((24 - beatCountdown) * notePulseRate) >> 1;   // get in sync with beats
                         }
                     else
 #endif INCLUDE_DRUM_SEQUENCER
@@ -969,10 +968,9 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                         if (application == STATE_STEP_SEQUENCER)
                             {
                             // FIXME: did I fix the issue of synchronizing the beats with the sequencer notes?
-                            local.stepSequencer.currentPlayPosition = 
-                                div12((24 - beatCountdown) * notePulseRate) >> 1;   // get in sync with beats
+                            local.stepSequencer.currentPlayPosition = div12((24 - beatCountdown) * notePulseRate) >> 1;   // get in sync with beats
 
-                            uint8_t len = GET_TRACK_LENGTH();
+                            uint8_t len = GET_TRACK_FULL_LENGTH();
                             uint8_t num = GET_NUM_TRACKS();
                                 
                             // unpack the high-bit info

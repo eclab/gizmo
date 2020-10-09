@@ -48,6 +48,10 @@
 //
 // A step sequence consists of a FORMAT byte, a REPEAT byte, an UNUSED byte, and a 384 byte BUFFER holding the notes.  
 //
+// The FORMAT byte has two parts.  The low 3 bits indicate the maximum track length (one of 16, 18, 20, 24, 32, 36, 48, and 64).
+// The high 5 bits indicate the actual track length, (one of MAX, 1, 2, ..., 31).
+// Thus a track length of 64 cannot be reasonably shortened.
+//
 // Embedded in each track is some per-track data.  This data is stored in the single high unused bit in each byte in the buffer
 // [recall that MIDI pitch and velocity are only 7 bits each].  Tracks can have as little as 32 bytes (16 notes x 2 bytes per note),
 // so we have 32 bits to pack stuff into.  The data is (in order):
@@ -277,18 +281,16 @@ struct _stepSequencerLocal
 #define DONT_CLEAR_TRACK_FIRST 2
 */
 
-#define MAXIMUM_TRACK_LENGTH (64)
-
 #define FADER_IDENTITY_VALUE 16
 
 /// DATA
 
-// There are five step sequencer formats available
+// There are four step sequencer formats available
 #define STEP_SEQUENCER_FORMAT_16x12_ 0
 #define STEP_SEQUENCER_FORMAT_24x8_ 1
 #define STEP_SEQUENCER_FORMAT_32x6_ 2
-#define STEP_SEQUENCER_FORMAT_48x4_ 3
-#define STEP_SEQUENCER_FORMAT_64x3_ 4
+// #define STEP_SEQUENCER_FORMAT_48x4_ 3
+#define STEP_SEQUENCER_FORMAT_64x3_ 3
 
 #define CHANNEL_ADD_TO_STEP_SEQUENCER (-1)		// The default: performance notes just get put into the step sequencer as normal
 #define CHANNEL_DEFAULT_MIDI_OUT (0)			// Performance notes are routed to MIDI_OUT
@@ -307,21 +309,36 @@ struct _stepSequencer
 
 
 // Used by GET_TRACK_LENGTH to return the length of tracks in the current format
-extern uint8_t _trackLength[5];
+extern uint8_t _trackLength[4];
 // Used by GET_NUM_TRACKS to return the number of tracks in the current format
-extern uint8_t _numTracks[5];
+extern uint8_t _numTracks[4];
 
+// The largest track size
+#define MAXIMUM_TRACK_LENGTH (64)
+// The custom length value which indicates that the track has no custom length
+#define TRACK_LENGTH_FULL (0)
+// Returns the custom length, or TRACK_LENGTH_FULL
+#define GET_TRACK_CUSTOM_LENGTH() 	((data.slot.data.stepSequencer.format >> 2) & 63)
+// Returns the full track length irrespective of the custom length
+#define GET_TRACK_FORMAT() 	(data.slot.data.stepSequencer.format & 3)
+// Returns the full track length irrespective of the custom length
+#define GET_TRACK_FULL_LENGTH() 	(_trackLength[GET_TRACK_FORMAT()])
+// Returns the minimum custom length
+#define GET_MINIMUM_CUSTOM_LENGTH() (GET_TRACK_FORMAT() == STEP_SEQUENCER_FORMAT_64x3_ ? 33 : 1)
 // Returns the track length in the current format
-#define GET_TRACK_LENGTH() (_trackLength[data.slot.data.stepSequencer.format])
+#define GET_TRACK_LENGTH() 	((GET_TRACK_CUSTOM_LENGTH() == TRACK_LENGTH_FULL) ? GET_TRACK_FULL_LENGTH() : (GET_TRACK_FORMAT() == STEP_SEQUENCER_FORMAT_64x3_ ? GET_TRACK_CUSTOM_LENGTH() + 32 : GET_TRACK_CUSTOM_LENGTH()))
 // Returns the number of tracks in the current format
-#define GET_NUM_TRACKS() (_numTracks[data.slot.data.stepSequencer.format])
+#define GET_NUM_TRACKS() (_numTracks[GET_TRACK_FORMAT()])
+
+
+
 
 // Turns off all notes as appropriate (rests and ties aren't cleared),
 // unless clearAbsolutely is true, in which case absolutely everything gets cleared regardless
 void clearNotesOnTracks(uint8_t clearEvenIfNoteNotFinished);
 
 // Draws the sequence with the given track length, number of tracks, and skip size
-void drawStepSequencer(uint8_t tracklen, uint8_t numTracks, uint8_t skip);
+//void drawStepSequencer(uint8_t tracklen, uint8_t numTracks, uint8_t skip);
 
 // Reformats the sequence as requested by the user
 void stateStepSequencerFormat();
@@ -344,6 +361,7 @@ void stopStepSequencer();
 
 void resetStepSequencer();
 
+void stateStepSequencerMenuLength();
 
 // Performance Options
 void stateStepSequencerMenuPerformanceKeyboard();

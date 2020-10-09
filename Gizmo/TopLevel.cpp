@@ -885,7 +885,7 @@ void go()
             playStepSequencer();
             }
         break;
-        case STATE_STEP_SEQUENCER_LENGTH:
+        case STATE_STEP_SEQUENCER_NOTE_LENGTH:
             {
             // 101 represents DEFAULT length
             stateNumerical(0, 101, local.stepSequencer.noteLength[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_DEFAULT,
@@ -957,6 +957,12 @@ void go()
             stateStepSequencerMenuEditDuplicate();
             playStepSequencer();
             }
+        break;
+        case STATE_STEP_SEQUENCER_MENU_LENGTH:
+            {
+            stateStepSequencerMenuLength();
+            }
+        break;
         case STATE_STEP_SEQUENCER_MENU_PERFORMANCE:
             {
             const char* menuItems[3] = { PSTR("KEYBOARD"), PSTR("REPEAT SEQUENCE"), PSTR("NEXT SEQUENCE") };
