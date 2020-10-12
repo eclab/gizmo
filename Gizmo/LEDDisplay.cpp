@@ -1164,6 +1164,13 @@ void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
     uint8_t mat[8];
     uint8_t mat2[8];
 
+#ifdef ROTATE_WHOLE_SCREEN
+	// swap the two matrices. We'll rotate each one 180 later. This results in a full rotation of the combined screen
+	unsigned char* temp = matrix;
+	matrix = matrix2;
+	matrix2 = temp;
+#endif ROTATE_WHOLE_SCREEN
+
     // the display of the matrices is rotated 90 degrees, so we need to tweak here
     if (rotation >= DIR_180)  // rotate to 180 if we're DIR_180 or DIR_COUNTERCLOCKWISE_90, nothing else
         {
@@ -1208,6 +1215,13 @@ void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
         matrix = mat;
         }       
 #endif
+
+#ifdef ROTATE_WHOLE_SCREEN
+	// rotate the two matrices. We swapped them earlier. This results in a full rotation of the combined screen
+	rotateMatrix(matrix, DIR_180);
+	rotateMatrix(matrix2, DIR_180);
+#endif ROTATE_WHOLE_SCREEN
+
 
     Wire.beginTransmission(I2C_ADDRESS);
     Wire.write(0);

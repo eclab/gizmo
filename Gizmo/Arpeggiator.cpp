@@ -571,10 +571,6 @@ void stateArpeggiatorPlay()
             goUpState(STATE_ARPEGGIATOR);
             }
         }
-    else if (isUpdated(SELECT_BUTTON, RELEASED))
-        {
-        local.arp.advance = true;
-        }
     else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
         {
         if (button[MIDDLE_BUTTON])
@@ -583,7 +579,13 @@ void stateArpeggiatorPlay()
             arpeggiatorEnterPerformanceMode();
             }
         else
+        	{
             goDownState(STATE_ARPEGGIATOR_MENU);
+            }
+        }
+    else if (isUpdated(SELECT_BUTTON, RELEASED))
+        {
+        local.arp.advance = true;
         }
     else if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
         {
@@ -888,18 +890,18 @@ void stateArpeggiatorCreateEdit()
         sendAllSoundsOff();
         state = STATE_ARPEGGIATOR_CREATE_EXIT;
         }
-    else if (isUpdated(SELECT_BUTTON, PRESSED))
+    else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
         {
         // save!
         sendAllSoundsOff();
         state = STATE_ARPEGGIATOR_CREATE_SAVE;
         entry = true;
         }
-    else if (isUpdated(MIDDLE_BUTTON, RELEASED))
+    else if (isUpdated(SELECT_BUTTON, RELEASED))
         {
         arpeggiatorEnterRest();
         }
-    else if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG) && 
+    else if (isUpdated(MIDDLE_BUTTON, RELEASED) && 
         local.arp.currentPosition > 0 &&                                                               // tie can't be the first thing
         ARP_NOTEX(local.arp.currentPosition - 1) != ARP_REST)           // can't have ties after rests.  Though this probably doesn't matter.
         {
