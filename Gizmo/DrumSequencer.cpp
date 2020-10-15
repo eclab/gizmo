@@ -362,7 +362,7 @@ void initDrumSequencer(uint8_t format)
     local.drumSequencer.patternCountup = 255;
     // backups don't matter
     local.drumSequencer.goNextTransition = false;
-    local.drumSequencer.goNextSequence = 0;
+    local.drumSequencer.goNextSequence = false;
     local.drumSequencer.markGroup = DRUM_SEQUENCER_NO_MARK;
     local.drumSequencer.markPosition = DRUM_SEQUENCER_NO_MARK;
     local.drumSequencer.markTrack = DRUM_SEQUENCER_NO_MARK;
@@ -449,8 +449,8 @@ void stateDrumSequencerFormat()
             local.drumSequencer.sequenceCountdown = 255;
             local.drumSequencer.patternCountup = 255;
             local.drumSequencer.performanceMode = 0;
-            local.drumSequencer.goNextTransition = 0;
-            local.drumSequencer.goNextSequence = 0;
+            local.drumSequencer.goNextTransition = false;
+            local.drumSequencer.goNextSequence = false;
             local.drumSequencer.solo = 0;
             setNotePulseRate(options.noteSpeedType);
             goDownState(STATE_DRUM_SEQUENCER_FORMAT_NOTE);
@@ -576,7 +576,7 @@ void unpackDrumSequenceData()
     local.drumSequencer.patternCountup = 255;
     // backups don't matter
     local.drumSequencer.goNextTransition = false;
-    local.drumSequencer.goNextSequence = 0;
+    local.drumSequencer.goNextSequence = false;
     local.drumSequencer.markGroup = DRUM_SEQUENCER_NO_MARK;
     local.drumSequencer.markPosition = DRUM_SEQUENCER_NO_MARK;
     local.drumSequencer.markTrack = DRUM_SEQUENCER_NO_MARK;
@@ -712,8 +712,15 @@ void goNextTransition()
     if (local.drumSequencer.goNextTransition || local.drumSequencer.goNextSequence ||
         (local.drumSequencer.performanceMode && local.drumSequencer.transitionCountdown == 0))
         {
-        local.drumSequencer.goNextTransition = 0;
-        local.drumSequencer.currentTransition++;
+        if (local.drumSequencer.goNextTransition >= 2)		// it's a *specific* transition
+	        {
+	        local.drumSequencer.currentTransition = local.drumSequencer.goNextTransition - 2;
+	        }
+	    else
+	    	{
+	        local.drumSequencer.currentTransition++;
+	        }
+        local.drumSequencer.goNextTransition = false;
                         
         // are we at the end?
         if (local.drumSequencer.currentTransition > DRUM_SEQUENCER_NUM_TRANSITIONS || local.drumSequencer.goNextSequence  ||
@@ -1532,7 +1539,7 @@ void stateDrumSequencerMenuPattern()
 
 void stateDrumSequencerMenuPerformanceKeyboard()
     {
-    uint8_t result = doNumericalDisplay(CHANNEL_ADD_TO_DRUM_SEQUENCER, 16, options.drumSequencerPlayAlongChannel, true, GLYPH_NONE);
+    uint8_t result = doNumericalDisplay(CHANNEL_ADD_TO_DRUM_SEQUENCER, 17, options.drumSequencerPlayAlongChannel, true, GLYPH_PICK);
     playDrumSequencer();
     switch (result)
         {
@@ -2301,7 +2308,8 @@ void drawDrumSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
     if (local.drumSequencer.performanceMode)
         {
         uint8_t trans = local.drumSequencer.currentTransition;
-        if (trans == DRUM_SEQUENCER_TRANSITION_START) trans = 0;
+        if (trans == DRUM_SEQUENCER_TRANSITION_START) 
+        	trans = 0;
         drawRange(led2, 0, 0, DRUM_SEQUENCER_NUM_TRANSITIONS, trans);
         }
     else
@@ -2319,7 +2327,7 @@ void drawDrumSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
         // are we going to the next transition?  (Or sequence?)
         if (local.drumSequencer.goNextSequence)
             blinkPoint(led, 3, 1);
-        else if (local.drumSequencer.goNextTransition)
+        else if (local.drumSequencer.goNextTransition)			// including specific transitions
             setPoint(led, 3, 1);
         }       
         
@@ -2552,8 +2560,8 @@ void stopDrumSequencer()
         local.drumSequencer.currentGroup = 0;
         // for performance mode
         local.drumSequencer.currentTransition = DRUM_SEQUENCER_TRANSITION_START;                        // gotta make sure this is drawn right
-        local.drumSequencer.goNextTransition = 1;                       // should be enough to trigger going to the next transition?
-        local.drumSequencer.goNextSequence = 0;
+        local.drumSequencer.goNextTransition = true;                       // should be enough to trigger going to the next transition?
+        local.drumSequencer.goNextSequence = false;
         }
         
     local.drumSequencer.currentPlayPosition = getGroupLength(local.drumSequencer.currentGroup) - 1;
@@ -2669,8 +2677,8 @@ void stateDrumSequencerPlay()
                     local.drumSequencer.currentGroup = 0;
                     // for performance mode
                     local.drumSequencer.currentTransition = DRUM_SEQUENCER_TRANSITION_START;                        // gotta make sure this is drawn right
-                    local.drumSequencer.goNextTransition = 1;                       // should be enough to trigger going to the next transition?
-                    local.drumSequencer.goNextSequence = 0;
+                    local.drumSequencer.goNextTransition = true;                       // should be enough to trigger going to the next transition?
+                    local.drumSequencer.goNextSequence = false;
                     }
                                         
                 // Though this is done in stopDrumSequencer we have to do it again because we may be in a different group now. 
@@ -2715,15 +2723,15 @@ void stateDrumSequencerPlay()
             if (local.drumSequencer.performanceMode)
                 {
                 //// SCHEDULE TRANSITION
-                local.drumSequencer.goNextTransition = !local.drumSequencer.goNextTransition;
+                local.drumSequencer.goNextTransition = !local.drumSequencer.goNextTransition;		// this should convert > TRUE ("specific" transitions) to FALSE as well
                 }
             else
                 {
                 //// ENTER PERFORMANCE MODE
                 local.drumSequencer.performanceMode = true;
                 local.drumSequencer.currentTransition = DRUM_SEQUENCER_TRANSITION_START;                        // gotta make sure this is drawn right
-                local.drumSequencer.goNextTransition = 1;                       // should be enough to trigger going to the next transition?
-                local.drumSequencer.goNextSequence = 0;
+                local.drumSequencer.goNextTransition = true;                       // should be enough to trigger going to the next transition?
+                local.drumSequencer.goNextSequence = false;
                 resetDrumSequencerTransitionCountdown();  // otherwise we'll miss jumps to other sequences
                 setParseRawCC(true);
                 }
@@ -2761,14 +2769,14 @@ void stateDrumSequencerPlay()
             if (local.drumSequencer.performanceMode)
                 {
                 //// SCHEDULE TRANSITION
-                local.drumSequencer.goNextTransition = !local.drumSequencer.goNextTransition;
+                local.drumSequencer.goNextTransition = !local.drumSequencer.goNextTransition;		// this should convert > TRUE ("specific" transitions) to FALSE as well
                 }
             else
                 {
                 //// ENTER PERFORMANCE MODE
                 local.drumSequencer.performanceMode = true;
                 local.drumSequencer.goNextTransition = false;
-                local.drumSequencer.goNextSequence = 0;
+                local.drumSequencer.goNextSequence = false;
                 resetDrumSequencerTransitionCountdown();  // otherwise we'll miss jumps to other sequences
                 setParseRawCC(true);
                 }
@@ -2835,7 +2843,8 @@ void stateDrumSequencerPlay()
     if (newItem && 
         itemType != MIDI_CUSTOM_CONTROLLER && 
         local.drumSequencer.performanceMode && 
-        options.drumSequencerPlayAlongChannel != CHANNEL_ADD_TO_DRUM_SEQUENCER)
+        options.drumSequencerPlayAlongChannel != CHANNEL_ADD_TO_DRUM_SEQUENCER &&
+        options.drumSequencerPlayAlongChannel != CHANNEL_PICK)
         {
         TOGGLE_IN_LED();
         // figure out what the channel should be
@@ -2976,7 +2985,7 @@ void stateDrumSequencerPlay()
                 if (local.drumSequencer.performanceMode)
                     {
                     //// SCHEDULE TRANSITION
-                    local.drumSequencer.goNextTransition = !local.drumSequencer.goNextTransition;
+                    local.drumSequencer.goNextTransition = !local.drumSequencer.goNextTransition;	// this should convert > TRUE ("specific" transitions) to FALSE as well
                     }
                 break;
                 }
@@ -3236,6 +3245,20 @@ void stateDrumSequencerPlay()
         
     // everything after this should be denied if we're in bypass
 
+    else if (newItem && (itemType == MIDI_NOTE_ON) && 
+    	local.drumSequencer.performanceMode && 
+        options.drumSequencerPlayAlongChannel == CHANNEL_PICK)
+    	{
+    	if (itemNumber >= MIDDLE_C && itemNumber < (MIDDLE_C + 34))
+    		{
+            const int8_t keys[34] = { 0, -1, 1, -1, 2, 3, -1, 4, -1, 5, -1, 6, 7, -1, 8, -1, 9, 10, -1, 11, -1, 12, -1, 13, 14, -1, 15, -1, 16, 17, -1, 18, -1, 19 }; 
+			itemNumber -= MIDDLE_C;
+			if (keys[itemNumber] != -1)
+				{
+		    	local.drumSequencer.goNextTransition = keys[itemNumber] + 2;		// load a "specific" transition into goNextTransition, not just TRUE
+		    	}
+    		}
+    	}
     else if (newItem && (itemType == MIDI_NOTE_ON))   //// there is a note played
         {
         TOGGLE_IN_LED();
@@ -3249,7 +3272,7 @@ void stateDrumSequencerPlay()
         if (octave >= 5)  // middle c and up
             {
             uint16_t val = DIV12_REMAINDER(octave, note);
-            const uint8_t keys[12] = { 0, -1, 1, -2, 2, 3, -3, 4, -4, 5, -6, 6 };  // 7 , -1, 8, -2, 9, 10, -3, 11, -4, 12, -6, 13, 14, -1, 15, -2, 16, 17, -3, 18, -4, 19, -5, 20, 21};
+            const int8_t keys[12] = { 0, -1, 1, -2, 2, 3, -3, 4, -4, 5, -6, 6 };  // 7 , -1, 8, -2, 9, 10, -3, 11, -4, 12, -6, 13, 14, -1, 15, -2, 16, 17, -3, 18, -4, 19, -5, 20, 21};
             int8_t key = keys[val];
 
             if (local.drumSequencer.currentEditPosition >= 0 && local.drumSequencer.currentEditPosition < len)

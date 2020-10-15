@@ -502,6 +502,7 @@ Menus
 
 #define DRUM_SEQUENCER_CURRENT_RIGHT_POT_UNDEFINED			(-1)
 #define CHANNEL_ADD_TO_DRUM_SEQUENCER (-1)		// The default: performance notes just get put into the drum sequencer as normal
+#define CHANNEL_PICK (17)		
 #define DRUM_SEQUENCER_CHANNEL_DEFAULT_MIDI_OUT (0)			// Performance notes are routed to MIDI_OUT
 												// Values 1...16: performance notes are routed to this channel number
 
@@ -538,7 +539,7 @@ struct _drumSequencerLocal
     																// I think we only did it for the right pot because of lots of note positions, but with 32 tracks, maybe the left pot should do it too...
     uint8_t returnState;                                            // Used by stateDrumSequencerTransitions and stateDrumSequencerRepeat to determine where to go when cancelled
 	int8_t drumRegion;												// 0...3, multiplied against the incoming note to determine which drum to toggle, or negative, indicating a track in play position mode
-	uint8_t goNextTransition;										// should we go to the next transition?
+	uint8_t goNextTransition;										// should we go to the next transition? This value can be FALSE, TRUE (increment the transition), or X >= 2, which means to go directly to transition X - 2
 	uint8_t goNextSequence;											// should we go to the next sequence?
     uint8_t markTrack;												// Mark position for the track
     uint8_t markGroup;												// Mark position for the group

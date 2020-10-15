@@ -1059,6 +1059,7 @@ There are also {\bf special transitions}.  These are chosen by selecting {\tt - 
 \begin{figure}[t]
 \centering\includegraphics[width=6.5in]{BigLoop}
 \caption{Making looped groups with {\tt BIG LOOP}, manual transitions, and an optional repeating sequence.}
+\vspace{-1em}
 \label{bigloop}
 \end{figure}
 
@@ -1073,9 +1074,18 @@ One weakness of BIG LOOP is that the final transition in the loop will be played
 
 In Performance Mode, the left knob changes the current track as usual, but the right knob changes the {\bf tempo}.  After changing the tempo, pressing the Select button will choose the tempo and pressing the Back button will cancel.  
 
-Pressing the Select button does a start/stop, but not in the same way it does in the other modes.  Instead of starting playing the given group, this button will {\it start the transition chain}, and so begin playing the group associated with the first transition.  When the transition is finished, Performance Mode will then continue on to the next transition, and so on.   Pressing the Select button while playing will stop and reset to the beginning of the chain again.  There is a menu option to pause performance without resetting back to the first transition in the chain.
+Pressing the Select button does a start/stop, but not in the same way it does in the other modes.  Instead of starting playing the given group, this button will {\it start the transition chain}, and so begin playing the group associated with the first transition.  When the transition is finished, Performance Mode will then continue on to the next transition, and so on.   Pressing the Select button while playing will stop and reset to the beginning of the chain again.  There is also a menu option to pause performance without resetting.
 
-Performance mode handles the keyboard in much the same way as the Step Sequencer.  As determined by a {\bf menu} option, you can treat the keyboard just like Play Position Mode; or you can route the key notes out any MIDI channel.  Unlike the Step Sequencer, you cannot transpose, since that doesn't make any sense for drums.
+\begin{wrapfigure}{r}{4in}
+\vspace{-0.5em}
+\hspace{\fill}\includegraphics[width=4in]{TransitionKeys}
+\vspace{-1em}
+\caption{\small Transitions scheduled by key using {\tt PICK} in Performance Mode.}
+\vspace{-1em}
+\label{transitionkeys}
+\end{wrapfigure}
+
+Performance mode handles the keyboard in much the same way as the Step Sequencer.  As determined by a {\bf menu} option, you can treat the keyboard just like Play Position Mode; or you can route the key notes out any MIDI channel; or you can select the {\tt PICK} option, which allows you to schedule specific transitions by pressing keys.  Unlike the Step Sequencer, you cannot transpose with the keyboard.
 
 Just as in the Step Sequencer, in Performance mode you can chain together not only groups but entire sequences.  You can specify that a given sequence will {\bf repeat} for some number of iterations (through all its transitions), and then will either stop or will move on to {\it another sequence}.  This is also handled as a menu option.
 
@@ -1104,7 +1114,7 @@ If you Long Press the Select button at any time, you'll call up the Drum Sequenc
 
 \begin{itemize}
 \item {\bf Solo} (or {\bf No Solo}) {\it All modes except Performance Mode}\quad This plays only the current track, muting the others.
-\item {\bf Pause} {\it Performance Mode only}\quad This pauses the Drum Sequencer rather than stops it.  Starting again will start from the current position rather than from the beginning of the transition chain.
+\item {\bf Pause} {\it Performance Mode only}\quad This pauses the Drum Sequencer rather than stopping it.  Starting again will start from the current position rather than from the beginning of the transition chain.
 \item {\bf Mark}\quad This sets the {\bf mark} to the current group, track, and step.  The mark is a location in the sequence, and it's used for a number of copy and swap operations discussed below.
 
 \bump
@@ -1250,6 +1260,7 @@ You can cancel at any time, and nothing will be changed.
 	\item {\texttt{-~-~-~-}}\quad Played notes are entered as if in Play Position Mode.
 	\item {0} \quad Play along with the sequencer: MIDI data is routed out the default MIDI Out channel.
 	\item {1--16} \quad Play along with the sequencer: MIDI data is routed out the channel specified.
+	\item {\texttt{PICK}}\quad Pressing any of the first twenty notes starting at middle C (C, C\#, D, D\#, etc.) will cause Gizmo to schedule a jump to that transition at the end of the bar.
 \end{itemize}
 
 \item {\bf Repeat Sequence}\quad This menu option specifies how many times the sequence as a whole should play before it stops.  The default is {\tt LOOP} (forever), but you also have 1, 2, 3, 4, 5, 6, 7, 8,9, 10, 12, 16, 24, 32, or 64 repeats as options.

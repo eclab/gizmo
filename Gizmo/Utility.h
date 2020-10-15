@@ -221,7 +221,7 @@ void drawMIDIChannel(uint8_t channel);
 #define GLYPH_TRANSPOSE 19								// TRAN
 #define GLYPH_FAIL 20									// FAIL
 #define GLYPH_LOOP 21									// LOOP
-#define GLYPH_MORE 22									// MORE
+#define GLYPH_PICK 22									// PICK
 #define GLYPH_CANT 23									// CANT
 
 #define GLYPH_OTHER (254)	// reserved to represent "use this glyph instead"
