@@ -185,7 +185,9 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
         if (state == STATE_ROOT)
             application = FIRST_APPLICATION + currentDisplay;
         }
-        
+    
+    uint8_t sel;		// see heisenbug below
+    
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
         removeAutoReturnTime();
@@ -197,7 +199,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
             }
         return MENU_CANCELLED;
         }
-    else if (isUpdated(SELECT_BUTTON, RELEASED) || ((autoReturnTime != NO_AUTO_RETURN_TIME_SET) && TIME_GREATER_THAN(tickCount, autoReturnTime)))   //(tickCount > autoReturnTime)))
+    else if ((sel = isUpdated(SELECT_BUTTON, RELEASED)) || ((autoReturnTime != NO_AUTO_RETURN_TIME_SET) && TIME_GREATER_THAN(tickCount, autoReturnTime)))   //(tickCount > autoReturnTime)))
         {
         /// This code seems to cure a heisenbug in the compiler.  Without it, 
         /// auto-return is magically turned ON in the arpeggiator's arpeggio type
@@ -207,7 +209,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
 
         if (autoReturnTime != NO_AUTO_RETURN_TIME_SET)
             {
-            if (tickCount <= autoReturnTime)                // this will never happen due to the if-statement above
+            if (!sel && !TIME_GREATER_THAN(tickCount, autoReturnTime))                // this will never happen due to the if-statement above
                 debug(999);
             }
                         
@@ -1332,7 +1334,7 @@ GLOBAL static uint8_t glyphTable[24][4] =
     {GLYPH_3x5_T, GLYPH_3x5_R, GLYPH_3x5_A, GLYPH_3x5_N},   // TRAN
     {GLYPH_3x5_F, GLYPH_3x5_A, GLYPH_3x5_I, GLYPH_3x5_L},   // FAIL
     {GLYPH_3x5_L, GLYPH_3x5_O, GLYPH_3x5_O, GLYPH_3x5_P},   // LOOP
-    {GLYPH_3x5_M, GLYPH_3x5_O, GLYPH_3x5_R, GLYPH_3x5_E},   // MORE
+    {GLYPH_3x5_P, GLYPH_3x5_I, GLYPH_3x5_C, GLYPH_3x5_K},   // PICK
     {GLYPH_3x5_C, GLYPH_3x5_A, GLYPH_3x5_N, GLYPH_3x5_T},   // CANT
     };
 
