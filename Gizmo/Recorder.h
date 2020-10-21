@@ -130,9 +130,18 @@ struct _recorderLocal
 #define RECORDER_SIZE_OF_NOTE_ON        (4)
 #define RECORDER_SIZE_OF_NOTE_OFF       (2)
 
+/*
+// Low 9 bits 
+#define GET_RECORDER_LENGTH() ((uint16_t)(data.slot.data.recorder.length & 511))
+#define SET_RECORDER_LENGTH(val) (data.slot.data.recorder.length = ((data.slot.data.recorder.length & (127 << 9)) | (val & 511)))
+// High 4 bits
+#define GET_RECORDER_SPEED() ((uint8_t)((data.slot.data.recorder.length >> 12) & 15))
+#define SET_RECORDER_SPEED(val) (data.slot.data.recorder.length = ((data.slot.data.recorder.length & 511) | ((((uint16_t)val) & 15) << 12)))
+*/
+
 struct _recorder
     {
-    uint16_t length;                        // how many bytes are stored in the buffer (up to 384)
+    uint16_t length;                        // how many bytes are stored in the buffer (up to 384) (Low 9 bits) | 
     uint8_t repeat;							// how much should we repeat and where should we continue?  This is 1 time, 2, times, ..., 16 times (Low 4 bits) | 1, ..., 9 (High 4 bits)
     uint8_t buffer[RECORDER_BUFFER_SIZE];
     };

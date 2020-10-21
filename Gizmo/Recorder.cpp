@@ -420,4 +420,28 @@ void stateRecorderMenu()
     }
 
 
+/*
+void stateRecorderNoteSpeed()
+	{
+    const uint8_t[16] glyphs = { GLYPH_8x5_EIGHTH_TRIPLET + FONT_8x5, 
+    							GLYPH_8x5_QUARTER_TRIPLET + FONT_8x5, 
+    							GLYPH_8x5_THIRTY_SECOND + FONT_8x5, 
+    							GLYPH_8x5_HALF_TRIPLET + FONT_8x5, 
+    							GLYPH_8x5_SIXTEENTH + FONT_8x5, 
+    							GLYPH_8x5_TRIPLET + FONT_8x5, 
+    							GLYPH_8x5_EIGHTH + FONT_8x5, 
+    							GLYPH_8x5_QUARTER_NOTE_TRIPLET + FONT_8x5, 
+    							GLYPH_8x5_DOTTED_HALF + FONT_8x5, 
+    							GLYPH_8x5_QUARTER + FONT_8x5, 
+    							GLYPH_8x5_DOTTED_QUARTER + FONT_8x5, 
+    							GLYPH_8x5_HALF + FONT_8x5, 
+    							GLYPH_8x5_DOTTED_HALF + FONT_8x5, 
+    							GLYPH_8x5_WHOLE + FONT_8x5, 
+    							GLYPH_8x5_DOTTED_WHOLE + FONT_8x5, 
+    							GLYPH_8x5_DOUBLE_WHOLE + FONT_8x5
+    							};
+	result = doGlyphDisplay(glyphs, 16, NO_GLYPH, 0)
+	}
+*/
+
 #endif

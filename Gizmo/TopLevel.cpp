@@ -1550,13 +1550,9 @@ void go()
                 writeNoteSpeed(led, options.noteSpeedType);
                 }
             uint8_t i = isUpdated(SELECT_BUTTON, PRESSED);
-            if (isUpdated(BACK_BUTTON, RELEASED) || i 
-                || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime)
-                )
+            if (isUpdated(BACK_BUTTON, RELEASED) || i || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime))
                 {
-                if (i 
-                    || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime)
-                    )  // we don't want to call isUpdated(SELECT_BUTTON, ...) again as it resets things
+                if (i || (autoReturnTime != NO_AUTO_RETURN_TIME_SET && tickCount > autoReturnTime))  // we don't want to call isUpdated(SELECT_BUTTON, ...) again as it resets things
                     {
                     if (backupOptions.noteSpeedType != options.noteSpeedType)
                         {

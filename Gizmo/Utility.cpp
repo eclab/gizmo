@@ -517,6 +517,12 @@ GLOBAL uint8_t glyphs[MAX_GLYPHS];
 // used internally for doGlyphDisplay()
 void drawGlyphForGlyphDisplay(uint8_t* mat, const uint8_t glyph)
     {
+    if (glyph == NO_GLYPH)
+    	{
+    	// do nothing
+    	return;
+    	}
+    	
     switch(glyph >> 6)
         {
         case 0:         // FONT_3x5
@@ -534,9 +540,9 @@ void drawGlyphForGlyphDisplay(uint8_t* mat, const uint8_t glyph)
             write8x5Glyph(mat, glyph & 63);
             }
         break;
-        case 3:
+        case 3:			// FONT_4_3x5
             {
-            // DO NOTHING
+            write3x5Glyphs(glyph & 63);
             }
         break;
         }

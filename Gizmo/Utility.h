@@ -155,7 +155,8 @@ extern uint8_t stateNumerical(uint8_t start, uint8_t end, uint8_t &value, uint8_
 #define FONT_3x5        0
 #define FONT_4x5        64
 #define FONT_8x5        128
-#define NO_GLYPH        192
+#define FONT_4_3x5      192
+#define NO_GLYPH        255
 
 uint8_t doGlyphDisplay(const uint8_t* _glyphs, uint8_t numGlyphs, const uint8_t otherGlyph, int16_t defaultValue);
 
