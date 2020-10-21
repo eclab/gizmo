@@ -33,7 +33,7 @@ By Sean Luke\quad sean@cs.gmu.edu}
 
 \noindent Gizmo is a small MIDI device intended to be inserted between the MIDI OUT of one device and the MIDI IN of one or more other devices.  There are a number of tools like this, such as the MIDIPal\footnote{Though they share nothing in common, MIDIPal is quite similar to Gizmo in functionality and goals.  But I wasn't even aware of the existence of MIDIPal when I started building Gizmo.  And besides, re-inventing the wheel is fun!  I've since ripped off a few of MIDIPal's features.  MIDIPal's page is http:/\!/mutable-instruments.net/midipal\ \ This device has been discontinued, but its open source software lives on in other hardware clones, such as the MIDIGal (https:/\!/midisizer.com/midigal/) or MIDIBro (http:/\!/www.audiothingies.com/product/midibro/)} or a variety of tools from MIDISolutions.\footnote{http:/\!/www.midisolutions.com/}
 
-Gizmo is the unholy union of an Arduino Uno or Arduino Mega 2560,\footnote{http:/\!/arduino.cc} an Adafruit 16x8 I2C LED matrix,\footnote{https:/\!/www.adafruit.com/categories/326\quad I use the 1.2-inch 16x8 matrix with red round LEDs, which works well.  This particular model can be found at https:/\!/www.adafruit.com/products/2037} and a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898} to perform a variety of helpful MIDI tasks.  Gizmo has several built-in applications, and assuming there's space\footnote{As of this writing, Gizmo on the Arduino Uno uses 32,252 bytes out of 32,256 available.  So if you're like to extend Gizmo on the Uno, you'll need to make sure your extension fits within 4 bytes :-)  Instead: get a Mega.} you can develop additional applications for it.
+Gizmo is the unholy union of an Arduino Uno or Arduino Mega 2560,\footnote{http:/\!/arduino.cc} an Adafruit 16x8 I2C LED matrix,\footnote{https:/\!/www.adafruit.com/categories/326\quad I use the 1.2-inch 16x8 matrix with red round LEDs, which works well.    I find that the green LED options tend to make noise.  This particular model can be found at https:/\!/www.adafruit.com/products/2037} and a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898} to perform a variety of helpful MIDI tasks.  Gizmo has several built-in applications, and assuming there's space you can develop additional applications for it.
 
 This is a software project: the hardware is just three off-the-shelf boards and four wires.  There's no enclosure, no custom board.  If you'd like to make an enclosure, I'd love to see it.
 
@@ -118,7 +118,7 @@ to
 
 If you are using the standard 16x8 backpack, you should {\bf not do this}.
 
-\paragraph{Rotating the Screen} f your screen is upside down (depending on how you installed it), then in \texttt{LEDDisplay.h}, change the line:
+\paragraph{Rotating the Screen} If your screen is upside down (depending on how you installed it), then in \texttt{LEDDisplay.h}, change the line:
 
 \begin{verbatim}
 // #define ROTATE WHOLE SCREEN
@@ -414,15 +414,17 @@ The arpeggiator also has a {\bf performance mode} which you toggle by Long-Press
 	\end{itemize}
 You can chose which of these items occurs when you enter performance mode choosing the menu option {\bf Performance}.
 
-In some situations, you may need to manually {\bf start or stop} the clock during arpeggiation.  You can do this by Long-Pressing the Middle button.
+If you Long-Press the Middle button, you can toggle {\bf accompaniment} when you release.  When accompanying, every time Gizmo plays a note it will also play the same note one octave above.  That's all.
 
+In some situations, you may need to manually {\bf start or stop} the clock during arpeggiation.  You can do this with an option in the menu (long-press the Select button).
 
 \begin{wrapfigure}{r}{2.7in}
 \begin{center}
-\vspace{-4em}\includegraphics[width=1in]{updown}
+\vspace{-1em}
+\includegraphics[width=1in]{updown}
 \vspace{-1em}
 \caption{\small Up, Down, and Up-Down Symbols}
-\vspace{-4em}
+\vspace{-3em}
 \end{center}
 \end{wrapfigure}
 
@@ -432,6 +434,9 @@ There are seven preset arpeggios: {\it up}, {\it down}, {\it up-down}, {\it  +up
 
 \begin{itemize}
 \item {\bf Up}.  Each note in your chord is played in turn, lowest note first.  When all notes are exhausted, the pattern is repeated.
+\end{itemize}
+
+\begin{itemize}
 \item {\bf Down}.  Each note in your chord is played in turn, highest note first.  When all notes are exhausted, the pattern is repeated.
 \item {\bf Up-Down}.  Each note in your chord is played in turn, lowest note first, up to but not including the highest note.  When all notes are exhausted, all notes in the chord are played in turn, highest note first, down to but not including the lowest note.  When all notes are again exhausted, this pattern repeats.
 \item {\bf  +Up-Down}.  This is the same as Up-Down, except that the bottom note is added again to the very top.  This is particularly useful for arpeggiating over multiple octaves.  For example, if you played C G, two octaves of ordinary Up-Down would be C1 G1 C2 G2 C2 G1, but two octaves of +Up-Down would be C1 G1 C2 G2 \textit{\textbf{C3}} G2 C2 G1, adding two more notes.  
@@ -535,7 +540,7 @@ Back Button				& Exit				& Exit\\
 						& {\it or} Leave Performance Mode\\
 Back Button (Long)			& Toggle Bypass  & Toggle Bypass\\
 Middle Button				& Toggle Latch				& Tie \\
-Middle Button (Long)			& Start/Stop Clock\\
+Middle Button (Long)			& Toggle Accompaniment\\
 Select Button				& Advance to Next User Arpeggio & Rest \\
 						& {\it (only if currently in a user arpeggio)}\\
 Select Button (Long)			& Menu & Save Arpeggio\\
@@ -662,7 +667,7 @@ You can get out of play position mode just by turning the right knob so that the
 
 \paragraph{Performance Mode} If you simultaneously Long-Press the Select and Middle buttons when in either Edit or Play Position Mode, you'll enter Performance Mode.  This mode is meant to support performing with completed sequences.  Here, if you play notes or CC values different things might happen, depending on how you've configured things: either the notes will be entered on the track (which will be cleared first if a bar just transpired or the user just switched tracks), or the notes will be routed to some channel in MIDI Out, or the notes will be used to {\it transpose} the sequence as it's playing.  A track is transposed only if you have turned its ``Transpose'' option on (see Menu Options below).
 
-In Performance Mode, a number of controls change their function  Pressing the Back Button doesn't exit the Step Sequencer: but rather, it exits Performance Mode back into whatever previous Mode you had used.  Pressing the Middle Button toggles muting of  the track.  Long-Pressing the Middle Button toggles Soloing: only your current track is played.  You can tell you're in Solo mode because every track {\it except} for the soloed one appears to be muted (LEDs at each end of the tracks are blinking).  Pressing the Select button starts and stops playing as usual, and long-pressing the Select button brings up the menu.  The Left Knob changes tracks as usual, but the Right Knob changes the {\bf tempo}.
+In Performance Mode, a number of controls change their function  Pressing the Back Button doesn't exit the Step Sequencer: but rather, it exits Performance Mode back into whatever previous Mode you had used.  Pressing the Middle Button toggles muting of  the track.  Long-Pressing the Middle Button toggles Soloing: only your current track is played.  You can tell you're in Solo mode because every track {\it except} for the soloed one appears to be muted (LEDs at each end of the tracks are blinking).  The Left Knob changes tracks as usual, but the Right Knob changes the {\bf tempo}.  Long-pressing the Select button brings up the menu.  Pressing the Select button starts and stops playing as usual, but with a catch.  When you press the Select button to stop the sequence, in Performance mode it will instead schedule the sequence to be stopped at the end of the latest iteration.  If you press the Select button {\it again} while it's scheduled to stop, it will stop immediately.
 
 In Performance Mode, sequences can be {\bf chained together}.  You can specify that a given sequence will {\bf repeat} for some number of bars, and then will either stop or will move on to {\it another sequence}.  Since the Mega can hold up to nine sequences, you can use repeating and chaining to make some fairly long songs.  Per-track patterns, repeating, and specifying the next sequence are done in the Menu Options (see later).
 
@@ -764,7 +769,7 @@ Back Button				& Exit  & Exit & Leave Performance Mode\\
 Back Button (Long)			& Toggle Bypass & Toggle Bypass & Toggle Bypass\\
 Middle Button				& Rest & Toggle Mute Track & Schedule Mute Track\\
 Middle Button (Long)			& Tie & Clear Track & Schedule Solo\\
-Select Button				& Start/Stop & Start/Stop & Start/Stop\\
+Select Button				& Start/Stop & Start/Stop & Start/Schedule Stop/Stop*\\
 Select Button (Long)			& Menu & Menu & Menu\\
 Select + Middle Button (Long) 	&  Performance Mode &  Performance Mode & Schedule Next Sequence\\
 Left Knob					& Change Track & Change Track & Change Track\\
@@ -773,7 +778,7 @@ Right Knob				& Change Note Position & Enter Edit Mode & Change Tempo\\
 Keystrokes, CC, etc.			& Enter at Edit Cursor&Enter at Play Cursor & Enter at Play Cursor {\it or}\\
 						&				  &				   &Transpose {\it or} Route Out\\
 \end{tabular}
-}
+}\\
 
 \paragraph{Remote Control over CC}  If you have a remote control surface, you can greatly enhance the Step Sequencer's editing and performance chops by sending CC messages over Gizmo's Control MIDI Channel:
 
@@ -1072,9 +1077,7 @@ One weakness of BIG LOOP is that the final transition in the loop will be played
 
 \paragraph{Performance Mode}  The function of Performance Mode is to make it easy to perform a chain of transitions; it works much like Performance Mode does in the Step Sequencer. No, we've not discussed how to edit transitions yet\,---\,we'll get to that when we discuss the menus.  Performance Mode is entered by long-pressing the Select and Middle buttons together while in any of the other three modes.  In Performance Mode, the cursor will look the same as the Play Position cursor.
 
-In Performance Mode, the left knob changes the current track as usual, but the right knob changes the {\bf tempo}.  After changing the tempo, pressing the Select button will choose the tempo and pressing the Back button will cancel.  
-
-Pressing the Select button does a start/stop, but not in the same way it does in the other modes.  Instead of starting playing the given group, this button will {\it start the transition chain}, and so begin playing the group associated with the first transition.  When the transition is finished, Performance Mode will then continue on to the next transition, and so on.   Pressing the Select button while playing will stop and reset to the beginning of the chain again.  There is also a menu option to pause performance without resetting.
+Pressing the Select button does a start/stop, but not in the same way it does in the other modes.  Instead of starting playing the given group, this button will {\it start the transition chain}, and so begin playing the group associated with the first transition.  When the transition is finished, Performance Mode will then continue on to the next transition, and so on.   Pressing the Select button while playing will stop and reset to the beginning of the chain when the latest iteration of is complete.  If you press the Select button a second time before stopping has occurred, then it will stop and reset immediately.  There is also a menu option to pause performance without resetting.  In Performance Mode, the left knob changes the current track as usual, but the right knob changes the {\bf tempo}.  After changing the tempo, pressing Select will choose the tempo while pressing Back button will cancel.  
 
 \begin{wrapfigure}{r}{4in}
 \vspace{-0.5em}
@@ -1087,7 +1090,7 @@ Pressing the Select button does a start/stop, but not in the same way it does in
 
 Performance mode handles the keyboard in much the same way as the Step Sequencer.  As determined by a {\bf menu} option, you can treat the keyboard just like Play Position Mode; or you can route the key notes out any MIDI channel; or you can select the {\tt PICK} option, which allows you to schedule specific transitions by pressing keys.  Unlike the Step Sequencer, you cannot transpose with the keyboard.
 
-Just as in the Step Sequencer, in Performance mode you can chain together not only groups but entire sequences.  You can specify that a given sequence will {\bf repeat} for some number of iterations (through all its transitions), and then will either stop or will move on to {\it another sequence}.  This is also handled as a menu option.
+In Performance mode you can chain together not only groups but entire sequences.  You can specify that a given sequence will {\bf repeat} for some number of iterations (through all its transitions), and then will either stop or will move on to {\it another sequence}.  This is also handled as a menu option.
 
 Again, just as in the Step Sequencer, in Performance mode, you can schedule various things to occur at the next iteration of the group.  If you press the Middle button, you can {\bf schedule a mute} (or unmute) to affect the current track.  If you long-press the Middle button, you can {\bf schedule a solo} (or unsolo) on this track.  If you long-press the Select and Middle buttons together, you can {\bf schedule a transition} to happen immediately after the current iteration has finished.
 
@@ -1116,8 +1119,6 @@ If you Long Press the Select button at any time, you'll call up the Drum Sequenc
 \item {\bf Solo} (or {\bf No Solo}) {\it All modes except Performance Mode}\quad This plays only the current track, muting the others.
 \item {\bf Pause} {\it Performance Mode only}\quad This pauses the Drum Sequencer rather than stopping it.  Starting again will start from the current position rather than from the beginning of the transition chain.
 \item {\bf Mark}\quad This sets the {\bf mark} to the current group, track, and step.  The mark is a location in the sequence, and it's used for a number of copy and swap operations discussed below.
-
-\bump
 
 \item {\bf Local} {\it Submenu for dealing with a given track in a given group} \quad 
 \begin{itemize}
@@ -1251,7 +1252,7 @@ You can cancel at any time, and nothing will be changed.
 
 %\item {\bf Clock Control} (or {\bf No Clock Control}) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note that regardless of the setting of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.
 
-\item {\bf Performance} {\it Submenu for options that affect Performance Mode} 
+\item {\bf Performance} {\it Submenu for options that affect Performance Mode beyond the Chain options} 
 \begin{itemize}
 \item {\bf Keyboard}\quad  This menu option lets you specify what happens when you press keys or send other MIDI information during Performance Mode.  Your options are:
 
@@ -1260,7 +1261,7 @@ You can cancel at any time, and nothing will be changed.
 	\item {\texttt{-~-~-~-}}\quad Played notes are entered as if in Play Position Mode.
 	\item {0} \quad Play along with the sequencer: MIDI data is routed out the default MIDI Out channel.
 	\item {1--16} \quad Play along with the sequencer: MIDI data is routed out the channel specified.
-	\item {\texttt{PICK}}\quad Pressing any of the first twenty notes starting at middle C (C, C\#, D, D\#, etc.) will cause Gizmo to schedule a jump to that transition at the end of the bar.
+	\item {\texttt{PICK}}\quad Pressing various notes on the keyboard, starting at Middle C, will cause Gizmo to schedule a jump to that transition at the end of the bar.  See Figure~\ref{transitionkeys}.
 \end{itemize}
 
 \item {\bf Repeat Sequence}\quad This menu option specifies how many times the sequence as a whole should play before it stops.  The default is {\tt LOOP} (forever), but you also have 1, 2, 3, 4, 5, 6, 7, 8,9, 10, 12, 16, 24, 32, or 64 repeats as options.
@@ -1302,7 +1303,7 @@ Back Button				& Exit  & Exit & Exit &Leave Performance Mode\\
 Back Button (Long)			& Toggle Bypass & Toggle Bypass &Toggle Bypass & Toggle Bypass\\
 Middle Button				& Toggle Step & Toggle Mute Track & Next Group &Schedule Mute Track\\
 Middle Button (Long)			& Set Drum Note & Clear Track in Group & Clear Group &Schedule Solo\\
-Select Button				& Start/Stop Group & Start/Stop Group & Start/Stop Group &Start/Stop Transitions\\
+Select Button				& Start/Stop Group & Start/Stop Group & Start/Stop Group &Start/Schedule Stop/Stop\\
 Select Button (Long)			& Menu & Menu & Menu &Menu\\
 Select + Middle Button (Long) 	& Performance Mode &  Performance Mode &  Performance Mode &Schedule Transition\\
 Left Knob					& Change Track & Change Track & Change Group &Change Track\\
@@ -1332,7 +1333,7 @@ Also note that {\bf Save} (CC 25) is in an unusual position.
 \begin{tabular}{@{}rll@{}l@{}}
 \it CC Number & \it CC Value	& \it Operation\\
 \hline\\[-0.5em]
-64 ... 83	&	Any	& Go to Track \(n - 63\), that is, track 1...20\\
+64 ... 83	&	Any	& Go to Track \(\text{\it CC} - 63\), that is, track 1 ... 20\\
 84	&	Any		& Set Drum Note\\
 85	&	Any		& Previous Group&{\it Only available via CC}\\
 86	&	Any		& Next Group\\
