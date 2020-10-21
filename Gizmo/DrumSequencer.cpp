@@ -451,6 +451,7 @@ void stateDrumSequencerFormat()
             local.drumSequencer.performanceMode = 0;
             local.drumSequencer.goNextTransition = false;
             local.drumSequencer.goNextSequence = false;
+            local.drumSequencer.scheduleStop = false;
             local.drumSequencer.solo = 0;
             setNotePulseRate(options.noteSpeedType);
             goDownState(STATE_DRUM_SEQUENCER_FORMAT_NOTE);
@@ -611,6 +612,7 @@ void loadDrumSequence(uint8_t slot)
         unpackDrumSequenceData();               // will this reset too much stuff?
         resetDrumSequencerSequenceCountdown();          // do I need this?
         }
+	local.drumSequencer.scheduleStop = false;
     }
            
 
@@ -2325,7 +2327,7 @@ void drawDrumSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
         {
         blinkPoint(led, 2, 1);
         // are we going to the next transition?  (Or sequence?)
-        if (local.drumSequencer.goNextSequence)
+        if (local.drumSequencer.goNextSequence || local.drumSequencer.scheduleStop)
             blinkPoint(led, 3, 1);
         else if (local.drumSequencer.goNextTransition)			// including specific transitions
             setPoint(led, 3, 1);
@@ -2451,7 +2453,15 @@ void playDrumSequencer()
                 }
             }
         
-        // change scheduled mute?
+ 		if (local.drumSequencer.scheduleStop && local.drumSequencer.currentPlayPosition == 0) 
+			{
+			stopDrumSequencer(); 
+			local.drumSequencer.goNextSequence = false;	// totally reset
+			local.drumSequencer.goNextTransition = false;	// totally reset
+			return; 
+			}
+				
+       // change scheduled mute?
         if (local.drumSequencer.performanceMode && local.drumSequencer.currentPlayPosition == 0)
             {
             for(uint8_t track = 0; track < numTracks; track++)
@@ -2568,6 +2578,8 @@ void stopDrumSequencer()
     resetDrumSequencerSequenceCountdown();          // this will call resetDrumSequencerTransitionCountdown();
     local.drumSequencer.playState = PLAY_STATE_STOPPED;
     sendAllSoundsOff();
+	local.drumSequencer.scheduleStop = false;
+    stopClock(true);
     }
 
 void goNextGroup()
@@ -2632,86 +2644,6 @@ void stateDrumSequencerPlay()
             {
             //// EXIT SEQUENCER
             goUpState(STATE_DRUM_SEQUENCER_EXIT);
-            }
-        }
-    else if (isUpdated(MIDDLE_BUTTON, RELEASED))
-        {
-        if (local.drumSequencer.performanceMode)
-            {
-            //// SCHEDULE MUTE
-            drumSequencerAdvanceMute(local.drumSequencer.currentTrack);
-            }
-        else if (local.drumSequencer.currentEditPosition < 0)
-            {
-            //// TOGGLE MUTE
-            local.drumSequencer.muted[local.drumSequencer.currentTrack] = !local.drumSequencer.muted[local.drumSequencer.currentTrack];
-            }
-        else if (local.drumSequencer.currentEditPosition >= trackLen)
-            {
-            //// INCREMENT GROUP
-            goNextGroup();
-            }
-        else  // Edit
-            {
-            //// TOGGLE NOTE
-            toggleNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition);
-            local.drumSequencer.currentEditPosition = incrementAndWrap(local.drumSequencer.currentEditPosition, trackLen);
-            }
-        }
-    else if (isUpdated(SELECT_BUTTON, RELEASED))
-        {
-        //// START/STOP
-        if (1) // if (options.drumSequencerSendClock)
-            {
-            // we always stop the clock just in case, even if we're immediately restarting it
-            stopClock(true);
-            }
-        switch(local.drumSequencer.playState)
-            {
-            case PLAY_STATE_STOPPED:
-                {
-                local.drumSequencer.playState = PLAY_STATE_WAITING;
-
-                if (local.drumSequencer.performanceMode)
-                    {
-                    local.drumSequencer.currentGroup = 0;
-                    // for performance mode
-                    local.drumSequencer.currentTransition = DRUM_SEQUENCER_TRANSITION_START;                        // gotta make sure this is drawn right
-                    local.drumSequencer.goNextTransition = true;                       // should be enough to trigger going to the next transition?
-                    local.drumSequencer.goNextSequence = false;
-                    }
-                                        
-                // Though this is done in stopDrumSequencer we have to do it again because we may be in a different group now. 
-                local.drumSequencer.currentPlayPosition = getGroupLength(local.drumSequencer.currentGroup) - 1;
-                resetDrumSequencerSequenceCountdown();          // this will call resetDrumSequencerTransitionCountdown();
-
-                if (1) //if (options.drumSequencerSendClock)
-                    {
-                    // Possible bug condition:
-                    // The MIDI spec says that there "should" be at least 1 ms between
-                    // starting the clock and the first clock pulse.  I don't know if that
-                    // will happen here consistently.
-                    startClock(true);
-                    }
-                }
-            break;
-            case PLAY_STATE_WAITING:
-                // Fall Thru
-            case PLAY_STATE_PLAYING:
-                {
-                stopDrumSequencer();
-                }
-            break;
-            case PLAY_STATE_PAUSED:
-                {
-                local.drumSequencer.playState = PLAY_STATE_PLAYING;
-
-                if (1) //if (options.drumSequencerSendClock)
-                    {
-                    continueClock(true);
-                    }
-                }
-            break;
             }
         }
     else if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
@@ -2787,6 +2719,85 @@ void stateDrumSequencerPlay()
             state = STATE_DRUM_SEQUENCER_MENU;
             entry = true;
             }
+        }
+    else if (isUpdated(MIDDLE_BUTTON, RELEASED))
+        {
+        if (local.drumSequencer.performanceMode)
+            {
+            //// SCHEDULE MUTE
+            drumSequencerAdvanceMute(local.drumSequencer.currentTrack);
+            }
+        else if (local.drumSequencer.currentEditPosition < 0)
+            {
+            //// TOGGLE MUTE
+            local.drumSequencer.muted[local.drumSequencer.currentTrack] = !local.drumSequencer.muted[local.drumSequencer.currentTrack];
+            }
+        else if (local.drumSequencer.currentEditPosition >= trackLen)
+            {
+            //// INCREMENT GROUP
+            goNextGroup();
+            }
+        else  // Edit
+            {
+            //// TOGGLE NOTE
+            toggleNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition);
+            local.drumSequencer.currentEditPosition = incrementAndWrap(local.drumSequencer.currentEditPosition, trackLen);
+            }
+        }
+    else if (isUpdated(SELECT_BUTTON, RELEASED))
+        {
+        if (local.drumSequencer.performanceMode && local.drumSequencer.playState == PLAY_STATE_PLAYING && !local.drumSequencer.scheduleStop)
+        	{
+        	local.drumSequencer.scheduleStop = true;
+        	}
+        else
+        	{	
+			//// START/STOP
+			switch(local.drumSequencer.playState)
+				{
+				case PLAY_STATE_STOPPED:
+					{
+					local.drumSequencer.playState = PLAY_STATE_WAITING;
+
+					if (local.drumSequencer.performanceMode)
+						{
+						local.drumSequencer.currentGroup = 0;
+						// for performance mode
+						local.drumSequencer.currentTransition = DRUM_SEQUENCER_TRANSITION_START;                        // gotta make sure this is drawn right
+						local.drumSequencer.goNextTransition = true;                       // should be enough to trigger going to the next transition?
+						local.drumSequencer.goNextSequence = false;
+						}
+										
+					// Though this is done in stopDrumSequencer we have to do it again because we may be in a different group now. 
+					local.drumSequencer.currentPlayPosition = getGroupLength(local.drumSequencer.currentGroup) - 1;
+					resetDrumSequencerSequenceCountdown();          // this will call resetDrumSequencerTransitionCountdown();
+
+					// we always stop the clock just in case, even if we're immediately restarting it
+					stopClock(true);
+					// Possible bug condition:
+					// The MIDI spec says that there "should" be at least 1 ms between
+					// starting the clock and the first clock pulse.  I don't know if that
+					// will happen here consistently.
+					startClock(true);
+					}
+				break;
+				case PLAY_STATE_WAITING:
+					// Fall Thru
+				case PLAY_STATE_PLAYING:
+					{
+					stopDrumSequencer();
+					}
+				break;
+				case PLAY_STATE_PAUSED:
+					{
+					local.drumSequencer.playState = PLAY_STATE_PLAYING;
+					// we always stop the clock just in case, even if we're immediately restarting it
+					stopClock(true);
+					continueClock(true);
+					}
+				break;
+				}
+			}
         }
     else if (potUpdated[LEFT_POT])
         {

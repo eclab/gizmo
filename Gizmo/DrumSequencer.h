@@ -541,12 +541,12 @@ struct _drumSequencerLocal
 	int8_t drumRegion;												// 0...3, multiplied against the incoming note to determine which drum to toggle, or negative, indicating a track in play position mode
 	uint8_t goNextTransition;										// should we go to the next transition? This value can be FALSE, TRUE (increment the transition), or X >= 2, which means to go directly to transition X - 2
 	uint8_t goNextSequence;											// should we go to the next sequence?
+    uint8_t scheduleStop;											// We're manually scheduled to stop at the end of this iteration 
     uint8_t markTrack;												// Mark position for the track
     uint8_t markGroup;												// Mark position for the group
     int8_t markPosition;											// Mark position for the step
     uint8_t markTransition;											// Mark for the transitions
     uint8_t invalidNoteSpeed;										// Note speed is not legitimate
-
     };
 
 

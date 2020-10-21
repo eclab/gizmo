@@ -494,6 +494,7 @@ void loadSequence(uint8_t slot)
                         
         stripHighBits();
 
+		local.stepSequencer.scheduleStop = 0;
         local.stepSequencer.goNextSequence = 0;
         local.stepSequencer.solo = STEP_SEQUENCER_NO_SOLO;
         local.stepSequencer.currentTrack = 0;
@@ -708,7 +709,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
         {
         blinkPoint(led, 2, 1);
         // are we going to the next sequence?
-        if (local.stepSequencer.goNextSequence)
+        if (local.stepSequencer.goNextSequence || local.stepSequencer.scheduleStop)
             setPoint(led, 3, 1);
         }       
     // is our track scheduled to play?
@@ -766,6 +767,7 @@ void stateStepSequencerFormat()
             local.stepSequencer.transpose = 0;
             local.stepSequencer.performanceMode = 0;
             local.stepSequencer.goNextSequence = 0;
+            local.stepSequencer.scheduleStop = 0;
             //           local.stepSequencer.clearTrack = CLEAR_TRACK;
             local.stepSequencer.solo = 0;
             local.stepSequencer.currentTrack = 0;
@@ -858,8 +860,10 @@ void resetStepSequencer()
         
 void stopStepSequencer()
     {
+    stopClock(true);
     resetStepSequencer();
     local.stepSequencer.playState = PLAY_STATE_STOPPED;
+	local.stepSequencer.scheduleStop = false;
     sendAllSoundsOff();
     }
 
@@ -1013,35 +1017,35 @@ void stateStepSequencerPlay()
         }
     else if (isUpdated(SELECT_BUTTON, RELEASED))
         {
-        //// START / STOP
-        if (1) //if (options.stepSequencerSendClock)
-            {
-            // we always stop the clock just in case, even if we're immediately restarting it
-            stopClock(true);
-            }
-        switch(local.stepSequencer.playState)
-            {
-            case PLAY_STATE_STOPPED:
-                {
-                local.stepSequencer.playState = PLAY_STATE_WAITING;
-                if (1) //if (options.stepSequencerSendClock)
-                    {
-                    // Possible bug condition:
-                    // The MIDI spec says that there "should" be at least 1 ms between
-                    // starting the clock and the first clock pulse.  I don't know if that
-                    // will happen here consistently.
-                    startClock(true);
-                    }
-                }
-            break;
-            case PLAY_STATE_WAITING:
-                // Fall Thru
-            case PLAY_STATE_PLAYING:
-                {
-                stopStepSequencer();
-                }
-            break;
-            }
+        if (local.stepSequencer.performanceMode && local.stepSequencer.playState == PLAY_STATE_PLAYING && !local.stepSequencer.scheduleStop)
+        	{
+        	local.stepSequencer.scheduleStop = true;
+        	}
+        else
+        	{	
+			switch(local.stepSequencer.playState)
+				{
+				case PLAY_STATE_STOPPED:
+					{
+					local.stepSequencer.playState = PLAY_STATE_WAITING;
+					// we always stop the clock just in case, even if we're immediately restarting it
+					stopClock(true);
+					// Possible bug condition:
+					// The MIDI spec says that there "should" be at least 1 ms between
+					// starting the clock and the first clock pulse.  I don't know if that
+					// will happen here consistently.
+					startClock(true);
+					}
+				break;
+				case PLAY_STATE_WAITING:
+					// Fall Thru
+				case PLAY_STATE_PLAYING:
+					{
+					stopStepSequencer();
+					}
+				break;
+				}
+			}
         }
     else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
         {
@@ -1678,7 +1682,6 @@ void stateStepSequencerMenu()
         PSTR("PATTERN (TRACK)"),
         local.stepSequencer.transposable[local.stepSequencer.currentTrack] ? PSTR("NO TRANSPOSE (TRACK)") : PSTR("TRANSPOSE (TRACK)"),
         PSTR("EDIT"),
-        //options.stepSequencerSendClock ? PSTR("NO CLOCK CONTROL") : PSTR("CLOCK CONTROL"),
         options.stepSequencerNoEcho ? PSTR("ECHO") : PSTR("NO ECHO"), 
         PSTR("LENGTH"),
         PSTR("PERFORMANCE"),
@@ -1697,7 +1700,6 @@ void stateStepSequencerMenu()
         PSTR("PATTERN (TRACK)"),
         local.stepSequencer.transposable[local.stepSequencer.currentTrack] ? PSTR("NO TRANSPOSE (TRACK)") : PSTR("TRANSPOSE (TRACK)"),
         PSTR("EDIT"),
-        //options.stepSequencerSendClock ? PSTR("NO CLOCK CONTROL") : PSTR("CLOCK CONTROL"),
         options.stepSequencerNoEcho ? PSTR("ECHO") : PSTR("NO ECHO"), 
         PSTR("LENGTH"),
         PSTR("PERFORMANCE"),
@@ -1775,28 +1777,6 @@ void stateStepSequencerMenu()
                     state = STATE_STEP_SEQUENCER_MENU_EDIT;
                     }
                 break;
-                /*
-                  case STEP_SEQUENCER_MENU_SEND_CLOCK:
-                  {
-                  options.stepSequencerSendClock = !options.stepSequencerSendClock;
-                  if (options.stepSequencerSendClock)
-                  {
-                  // the logic here is that if we are suddenly NOW sending the clock,
-                  // we should stop the clock so we're not just constantly sending pulses
-                  // if we're currently playing
-                  stopClock(true);
-                  }
-                  else
-                  {
-                  // the logic here is that if we are suddenly no longer sending the
-                  // clock, we don't want to leave the clock OFF because the user
-                  // has no easy way of turning it on again!
-                  continueClock(true);
-                  }
-                  saveOptions();
-                  }
-                  break;
-                */
                 case STEP_SEQUENCER_MENU_NO_ECHO:
                     {
                     options.stepSequencerNoEcho = !options.stepSequencerNoEcho;
@@ -1990,12 +1970,21 @@ void playStepSequencer()
             else if (local.stepSequencer.solo == STEP_SEQUENCER_SOLO_OFF_SCHEDULED)
                 local.stepSequencer.solo = STEP_SEQUENCER_NO_SOLO;
 
-
+			if (local.stepSequencer.scheduleStop) 
+				{
+				stopStepSequencer(); 
+				local.stepSequencer.goNextSequence = false;	// totally reset
+				return; 
+				}
+					
             if (local.stepSequencer.goNextSequence || (oldPlayPosition != -1 && local.stepSequencer.countdown == 0))  // we're supposed to go
                 {
                 uint8_t nextSequence = (data.slot.data.stepSequencer.repeat >> 4);
                 if (nextSequence == 0) // STOP
-                    { stopStepSequencer(); return; }
+                    { 
+					stopStepSequencer(); 
+                    return; 
+                    }
                 else
                     { loadSequence(nextSequence - 1); }  // maybe this will work out of the box?  hmmm
                 }

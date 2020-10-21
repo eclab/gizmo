@@ -263,6 +263,7 @@ struct _stepSequencerLocal
 	int8_t transpose;				// Current transposition due to performance mode
     uint8_t performanceMode;		// We are in performane mode
     uint8_t goNextSequence;			// We're manually scheduled to go to the next sequence at the end of this iteration 
+    uint8_t scheduleStop;			// We're manually scheduled to stop at the end of this iteration 
     uint8_t countdown;				// Number of iterations left before we terminate or go to the next sequence automatically
     uint8_t countup;				// Position in the pattern
     uint16_t pots[2];				// Pot values (left and right)
