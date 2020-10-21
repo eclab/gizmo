@@ -175,6 +175,7 @@ struct _arpLocal
 	uint8_t transposeRoot;
 	uint16_t oldLeftPot;
 	uint16_t oldRightPot;
+	int8_t accompaniment;
     // We have to jump by at least 2 to start scrolling -- this is an anti-noise measure
     };
         

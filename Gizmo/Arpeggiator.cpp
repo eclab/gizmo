@@ -93,7 +93,17 @@ void playArpeggiatorNote(uint16_t note)
 
     int16_t n = note + (int16_t)local.arp.transpose;
     if (n >= 0 && n < 128)
+    	{
         sendNoteOn(local.arp.steadyNoteOff = local.arp.noteOff = (uint8_t) (n), vel, options.channelOut);
+        if (local.arp.accompaniment != 0)
+        	{
+        	int16_t n2 = n + local.arp.accompaniment;
+        	if (n2 >= 0 && n2 < 128)
+        		{
+        		sendNoteOn((uint8_t) (n2), vel, options.channelOut);
+        		}
+        	}
+        }
     updateNoteOffTime();     
     }
     
@@ -144,6 +154,14 @@ void playArpeggio()
         else
             {
             sendNoteOff(local.arp.noteOff, 127, options.channelOut);
+			if (local.arp.accompaniment != 0)
+				{
+				int16_t n2 = local.arp.noteOff + (int16_t)local.arp.accompaniment;
+				if (n2 >= 0 && n2 < 128)
+					{
+					sendNoteOff((uint8_t) (n2), 127, options.channelOut);
+					}
+				}
             }
         local.arp.noteOff = NO_NOTE;
         }
@@ -401,6 +419,12 @@ void arpeggiatorClearLatch()
     local.arp.numChordNotes = 0;  // reset arpeggiation
     }
 
+void toggleAccompaniment()
+	{
+	if (local.arp.accompaniment == 0) local.arp.accompaniment = 12;
+	else local.arp.accompaniment = 0;
+	}
+
 void arpeggiatorStartStopClock()
     {
     if (getClockState() == CLOCK_RUNNING)
@@ -596,7 +620,7 @@ void stateArpeggiatorPlay()
             }
         else
             {
-            arpeggiatorStartStopClock();
+            toggleAccompaniment();
             }
         }
     else if (isUpdated(MIDDLE_BUTTON, RELEASED))
@@ -734,10 +758,17 @@ void stateArpeggiatorPlay()
     }
 
 
+#define ARPEGGIATOR_PLAY_OCTAVES 0
+#define ARPEGGIATOR_PLAY_CLOCK 1
+#define ARPEGGIATOR_PLAY_VELOCITY 2
+#define ARPEGGIATOR_PLAY_PERFORMANCE 3
+#define ARPEGGIATOR_PLAY_OPTIONS 4
+
+
 void stateArpeggiatorMenu()
     {
-    const char* menuItems[4] = { PSTR("OCTAVES"), PSTR("VELOCITY"), PSTR("PERFORMANCE"), options_p };
-    uint8_t result = doMenuDisplay(menuItems, 4, STATE_NONE, 0, 1);
+    const char* menuItems[5] = { PSTR("OCTAVES"), getClockState() == CLOCK_RUNNING ? PSTR("STOP CLOCK") : PSTR("START CLOCK"), PSTR("VELOCITY"), PSTR("PERFORMANCE"), options_p };
+    uint8_t result = doMenuDisplay(menuItems, 5, STATE_NONE, 0, 1);
     switch (result)
         {
         case NO_MENU_SELECTED:
@@ -748,15 +779,15 @@ void stateArpeggiatorMenu()
             {
             switch(currentDisplay)
                 {
-                
-#define ARPEGGIATOR_PLAY_OCTAVES 0
-#define ARPEGGIATOR_PLAY_VELOCITY 1
-#define ARPEGGIATOR_PLAY_PERFORMANCE 2
-#define ARPEGGIATOR_PLAY_OPTIONS 3
-
                 case ARPEGGIATOR_PLAY_OCTAVES:
                     {
                     goDownState(STATE_ARPEGGIATOR_PLAY_OCTAVES);
+                    }
+                break;
+                case ARPEGGIATOR_PLAY_CLOCK:
+                    {
+					arpeggiatorStartStopClock();
+					goUpState(STATE_ARPEGGIATOR_PLAY);
                     }
                 break;
                 case ARPEGGIATOR_PLAY_VELOCITY:
