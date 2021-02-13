@@ -572,7 +572,17 @@ void stateArpeggiatorPlay()
             else
                 setPoint(led, 6, 1);
             }
-
+            
+        // draw velocity            
+		const uint8_t divisions[] = { 0, 15, 25, 35, 45, 55, 65, 75, 85, 95, 105, 115 };
+		for(uint8_t i = 11; i >= 0; i--)
+			{
+			if (local.arp.velocity >= divisions[i])  // found it
+				{
+				drawRange(led, 0, 1, 12, i);
+				break;
+				}
+			}
         }
 
     if (isUpdated(BACK_BUTTON, RELEASED))
