@@ -13,30 +13,27 @@ extern uint32_t lastTempoTapTime;
 
 
 
-////// Options struct data type.  At present, 35 bytes.
+////// Options struct data type.
 //
-// ON THE UNO    We have 78 bytes available
-// ON THE MEGA   We have only 36 bytes available!  We will need to eliminate a slot.
-// Alternatively we could merge a bunch of these: stuff like recorderRepeat is 1 bit
-// and screenBrightness is 4 bits and channelIn is 4 bits etc.  But it'd require complex
-// math and would increase the code size and right now code size is our problem.
+// ON THE UNO    We have 68 bytes available
+// ON THE MEGA   We have 424 bytes available.
 
 #define NO_MIDI_OUT (0)
  
 struct _options
     {
     // 16-bit stuff first
-    uint16_t tempo ;                             // in Beats Per Minute
+    uint16_t tempo;                             // in Beats Per Minute
 
 #ifdef INCLUDE_CONTROLLER
     uint16_t leftKnobControlNumber;
     uint16_t rightKnobControlNumber; 
     uint16_t middleButtonControlNumber;
     uint16_t selectButtonControlNumber;
-    uint16_t middleButtonControlOn ;                            // 0 is off, n is value n+1, and 129 is "decrement" (128)
-    uint16_t middleButtonControlOff  ;                          // 0 is off, n is value n+1, and 129 is "decrement" (128)
-    uint16_t selectButtonControlOn ;                            // 0 is off, n is value n+1, and 129 is "increment" (128)
-    uint16_t selectButtonControlOff ;                           // 0 is off, n is value n+1, and 129 is "increment" (128)
+    uint16_t middleButtonControlOn;                            // 0 is off, n is value n+1, and 129 is "decrement" (128)
+    uint16_t middleButtonControlOff;                          // 0 is off, n is value n+1, and 129 is "decrement" (128)
+    uint16_t selectButtonControlOn;                            // 0 is off, n is value n+1, and 129 is "increment" (128)
+    uint16_t selectButtonControlOff;                           // 0 is off, n is value n+1, and 129 is "increment" (128)
     uint16_t waveControlNumber;
     uint16_t randomControlNumber;
 	uint16_t a2ControlNumber;
@@ -45,28 +42,28 @@ struct _options
 
     // then 8-bit stuff
     uint8_t screenBrightness;
-    uint8_t clock ;                     // Chosen option for handling the MIDI clock
-    uint8_t noteSpeedType ;             // Type of note speed the user has chosen (see LEDDisplay.h for a list of them)
+    uint8_t clock;                     // Chosen option for handling the MIDI clock
+    uint8_t noteSpeedType;             // Type of note speed the user has chosen (see LEDDisplay.h for a list of them)
     uint8_t swing;
-    uint8_t channelIn ;                          // MIDI Channel I'm listening on.  0 means no channel in.  17 means ALL CHANNELS (OMNI).
-    uint8_t channelOut ;                         // MIDI Channel I'm sending to by default.    0 means no default channel out.
-    uint8_t channelControl ;                     // MIDI Channel to control the device via NRPN messages etc.  0 means no control channel.  16 means Channel In
+    uint8_t channelIn;                          // MIDI Channel I'm listening on.  0 means no channel in.  17 means ALL CHANNELS (OMNI).
+    uint8_t channelOut;                         // MIDI Channel I'm sending to by default.    0 means no default channel out.
+    uint8_t channelControl;                     // MIDI Channel to control the device via NRPN messages etc.  0 means no control channel.  16 means Channel In
 
 #ifdef INCLUDE_CONTROLLER
-    uint8_t leftKnobControlType ;
-    uint8_t rightKnobControlType  ;
-    uint8_t middleButtonControlType ;
-    uint8_t selectButtonControlType ;
+    uint8_t leftKnobControlType;
+    uint8_t rightKnobControlType;
+    uint8_t middleButtonControlType;
+    uint8_t selectButtonControlType;
 	uint8_t waveEnvelope[16];
 	uint8_t envelopeMode;
 	uint8_t controlModulationClocked;
-    uint8_t waveControlType ;
+    uint8_t waveControlType;
 	uint8_t randomMode;
 	uint8_t randomRange;
 	uint8_t randomLength;
 	uint8_t randomInitialValue;
 	uint8_t controlRandomClocked;
-    uint8_t randomControlType ;
+    uint8_t randomControlType;
 	uint8_t a2ControlType;
 	uint8_t a3ControlType;
 #endif
@@ -119,6 +116,7 @@ struct _options
     uint8_t stepSequencerNoEcho;
     uint8_t stepSequencerSendClock;
 	int8_t stepSequencerPlayAlongChannel;
+//	uint8_t stepSequencerStop;
 #endif
 
 #ifdef INCLUDE_DRUM_SEQUENCER
@@ -126,6 +124,7 @@ struct _options
 	int8_t drumSequencerPlayAlongChannel;
 	uint8_t drumSequencerResetOnStop;
 	uint8_t drumSequencerDefaultVelocity;
+	uint8_t drumSequencerStop;
 #endif
 
 #ifdef INCLUDE_RECORDER
@@ -135,6 +134,8 @@ struct _options
 #ifdef INCLUDE_GAUGE
 	uint8_t gaugeMidiInProvideRawCC;
 #endif
+
+	uint8_t routeMIDI;
     };
 
 // The options struct which is saved and loaded and used
