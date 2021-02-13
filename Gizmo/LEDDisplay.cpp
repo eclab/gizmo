@@ -795,6 +795,7 @@ const char PROGMEM font_8x5[
         // horizontally to make much sense of them.
 
 
+
             { // GIZMO VERSION x... pt 1
             0b01100111,
             0b10010100,
@@ -806,6 +807,17 @@ const char PROGMEM font_8x5[
             0b10110101,
             },
         
+//            { // GIZMO VERSION 8 pt 2
+//            0b11010101,
+//            0b10010111,
+//            0b00000000,
+//            0b00000000,
+//            0b01111100,
+//            0b01010100,
+//            0b01111100,
+//            0b00000000,
+//            },
+
             { // GIZMO VERSION 7 pt 2
             0b11010101,
             0b10010111,
@@ -1907,7 +1919,6 @@ void drawRange(uint8_t *mat, uint8_t x, uint8_t y, uint8_t total, uint8_t val)
             } 
         }
     }
-
 
 
 // Prints a note to the matrix plus a range underneath indicating the octave.

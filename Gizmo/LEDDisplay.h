@@ -37,7 +37,7 @@
 
 ///// SHOULD WE ROTATE THE ENTIRE 16x8 SCREEN 180 DEGREES?
 ///// (For example, the screen is installed upside down)
-//#define ROTATE_WHOLE_SCREEN
+#define ROTATE_WHOLE_SCREEN
 
 // SCROLLING DELAY
 #define NO_SCROLLING 65535                      // never scroll
