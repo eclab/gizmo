@@ -547,6 +547,7 @@ struct _drumSequencerLocal
     int8_t markPosition;											// Mark position for the step
     uint8_t markTransition;											// Mark for the transitions
     uint8_t invalidNoteSpeed;										// Note speed is not legitimate
+	uint8_t accent;													// is the accent on?
     };
 
 
@@ -593,6 +594,7 @@ void stateDrumSequencerMenuPerformanceNext();
 void loadDrumSequencer(uint8_t slot);
 void resetDrumSequencerTransitionCountdown();
 void stateDrumSequencerMenuPattern();
+void stateDrumSequencerMenuPerformanceStop();
 
 
 // Additional states

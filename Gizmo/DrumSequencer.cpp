@@ -770,7 +770,10 @@ void goNextTransition()
             // repeats are LOOP, 1, 2, 3, or 4
             uint8_t repeat = DIV5_REMAINDER(grouptype, local.drumSequencer.transitionRepeat - 1);           // remove END
             // Pick a group
-            uint8_t group = random(0, grouptype + 2);
+            uint8_t maxgroups = grouptype + 2;
+            if (maxgroups > local.drumSequencer.numGroups)
+            	maxgroups = local.drumSequencer.numGroups;			// make sure we're not picking an illegal group
+            uint8_t group = random(0, maxgroups);
             drumSequencerUpdateGroup(group);
             // override the countdown which was set by resetDrumSequencerTransitionCountdown() called by drumSequencerUpdateGroup()
             if (repeat == 0)                // LOOP
@@ -1184,11 +1187,14 @@ void stateDrumSequencerMenuCopyTrack()
 // Copies two tracks, including info
 void stateDrumSequencerMenuAccentTrack()
     {
-    uint8_t fromTrack = local.drumSequencer.markTrack;
-    uint8_t toTrack = local.drumSequencer.currentTrack;
+    //uint8_t fromTrack = local.drumSequencer.markTrack;
+    //uint8_t toTrack = local.drumSequencer.currentTrack;
+    uint8_t fromTrack = local.drumSequencer.currentTrack;
+    uint8_t toTrack = local.drumSequencer.currentTrack + 1;
     const uint8_t accents[8] = { 1, 2, 3, 5, 6, 7, 7, 7 };              // approximately 150% ? 
         
-    if (fromTrack == DRUM_SEQUENCER_NO_MARK)
+//    if (fromTrack == DRUM_SEQUENCER_NO_MARK)
+    if (toTrack >= local.drumSequencer.numTracks)
         {
         state = STATE_DRUM_SEQUENCER_CANT;
         }
@@ -1630,6 +1636,39 @@ void stateDrumSequencerMenuPerformanceNext()
         break;
         }
     }
+
+void stateDrumSequencerMenuPerformanceStop()
+    {
+    options.drumSequencerStop = !options.drumSequencerStop;
+    saveOptions();
+	goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+    playDrumSequencer();
+	}
+
+    /*
+    uint8_t result = doNumericalDisplay(0, 1, options.drumSequencerStop, false, GLYPH_NONE);
+    playDrumSequencer();
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            {
+// do nothing
+            }
+        break;
+        case MENU_SELECTED:
+            {
+            options.drumSequencerStop = currentDisplay;
+            goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+            }
+        break;
+        case MENU_CANCELLED:
+            {
+            goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+            }
+        break;
+        }
+    }
+    	*/
 
 
 ////  FIXME:  I note that many of these are similar.  But I can't use my standard
@@ -2453,7 +2492,7 @@ void playDrumSequencer()
                 }
             }
         
- 		if (local.drumSequencer.scheduleStop && local.drumSequencer.currentPlayPosition == 0) 
+ 		if (local.drumSequencer.performanceMode && local.drumSequencer.scheduleStop && local.drumSequencer.currentPlayPosition == options.drumSequencerStop) 
 			{
 			stopDrumSequencer(); 
 			local.drumSequencer.goNextSequence = false;	// totally reset
@@ -2552,6 +2591,12 @@ void playDrumSequencer()
 
 
 
+int8_t drumSequencerGetKey(uint8_t octave, uint8_t note)
+	{
+	uint16_t val = DIV12_REMAINDER(octave, note);
+	const int8_t keys[12] = { 0, -1, 1, -2, 2, 3, -3, 4, -4, 5, -6, 6 };  // 7 , -1, 8, -2, 9, 10, -3, 11, -4, 12, -6, 13, 14, -1, 15, -2, 16, 17, -3, 18, -4, 19, -5, 20, 21};
+	return keys[val];
+	}
 
 
 
@@ -3282,15 +3327,17 @@ void stateDrumSequencerPlay()
                 
         if (octave >= 5)  // middle c and up
             {
-            uint16_t val = DIV12_REMAINDER(octave, note);
-            const int8_t keys[12] = { 0, -1, 1, -2, 2, 3, -3, 4, -4, 5, -6, 6 };  // 7 , -1, 8, -2, 9, 10, -3, 11, -4, 12, -6, 13, 14, -1, 15, -2, 16, 17, -3, 18, -4, 19, -5, 20, 21};
-            int8_t key = keys[val];
+			int8_t key = drumSequencerGetKey(octave, note);
 
             if (local.drumSequencer.currentEditPosition >= 0 && local.drumSequencer.currentEditPosition < len)
                 {
                 if (local.drumSequencer.drumRegion < 0)
                     local.drumSequencer.drumRegion = 0;
-                                        
+                            
+            	if (octave < 5)
+            		{
+                	local.drumSequencer.accent = true;
+            		}            
                 //// We're in EDIT MODE
 
                 // STRATEGY:
@@ -3301,7 +3348,7 @@ void stateDrumSequencerPlay()
                 // If the key is -6, means to toggle the CURRENT NOTE
                 // This is the BLACK NOTE Bb
                                 
-                if (key >= 0)
+                else if (key >= 0)
                     {
                     if (octave == 5 || octave == 6 || (octave == 7 && (key == 0 || key == 1)))              // only valid ones
                         {
@@ -3314,13 +3361,27 @@ void stateDrumSequencerPlay()
                         uint8_t toggle = key + 16 * local.drumSequencer.drumRegion;
                         if (toggle < len)
                             {
-                            toggleNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, toggle);
+                            uint8_t track = local.drumSequencer.currentTrack;
+                            if (local.drumSequencer.accent && track < local.drumSequencer.numTracks - 1)  // there's another track
+                            	{
+                            	track++;
+                            	}
+	                        toggleNote(local.drumSequencer.currentGroup, track, toggle);
                             }
                         }
                     }
-                else if (key == -6)
+                else if ((octave == 7 && key > 1) || octave > 7)
+                	{
+                	local.drumSequencer.accent = true;
+                	}
+                else if (key == -6 && octave == 5)
                     {
-                    toggleNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, local.drumSequencer.currentEditPosition);
+					uint8_t track = local.drumSequencer.currentTrack;
+					if (local.drumSequencer.accent && track < local.drumSequencer.numTracks - 1)  // there's another track
+						{
+						track++;
+						}
+                    toggleNote(local.drumSequencer.currentGroup, track, local.drumSequencer.currentEditPosition);
                     local.drumSequencer.currentEditPosition = incrementAndWrap(local.drumSequencer.currentEditPosition, len);
                     }
                 else
@@ -3412,7 +3473,25 @@ void stateDrumSequencerPlay()
             sendTrackNote(local.drumSequencer.currentTrack);
             }
         }
-    // NOTE: we ignore NOTE_OFF
+    else if (newItem && (itemType == MIDI_NOTE_OFF))
+        {
+        TOGGLE_IN_LED();
+        uint8_t note = itemNumber;
+
+        /// We have different ways of entering drum note information depending on the edit mode
+                        
+        uint16_t octave = div12(note);
+                
+        if (octave >= 7 || octave < 5)
+        	{
+			int8_t key = drumSequencerGetKey(octave, note);
+			
+			if ((octave == 7 && key > 1) || octave > 7 || octave < 5)
+				{
+				local.drumSequencer.accent = false;
+				}
+			}
+		}
     
     else if (newItem && (itemType == MIDI_AFTERTOUCH || itemType == MIDI_AFTERTOUCH_POLY))
         {
