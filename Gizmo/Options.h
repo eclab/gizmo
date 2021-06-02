@@ -22,7 +22,7 @@ extern uint32_t lastTempoTapTime;
  
 struct _options
     {
-    // 16-bit stuff first
+    // 16-bit stuff first.  There are 13 of them
     uint16_t tempo;                             // in Beats Per Minute
 
 #ifdef INCLUDE_CONTROLLER
@@ -40,7 +40,7 @@ struct _options
 	uint16_t a3ControlNumber;
 #endif
 
-    // then 8-bit stuff
+    // then 8-bit stuff.  There are 16 here
     uint8_t screenBrightness;
     uint8_t clock;                     // Chosen option for handling the MIDI clock
     uint8_t noteSpeedType;             // Type of note speed the user has chosen (see LEDDisplay.h for a list of them)
@@ -48,8 +48,20 @@ struct _options
     uint8_t channelIn;                          // MIDI Channel I'm listening on.  0 means no channel in.  17 means ALL CHANNELS (OMNI).
     uint8_t channelOut;                         // MIDI Channel I'm sending to by default.    0 means no default channel out.
     uint8_t channelControl;                     // MIDI Channel to control the device via NRPN messages etc.  0 means no control channel.  16 means Channel In
+    uint8_t noteLength;
+    uint8_t click;
+    uint8_t clickVelocity;
+	uint8_t clockDivisor;
+    int8_t transpose;
+    uint8_t volume;
+#if defined(__MEGA__)
+    uint8_t menuDelay;
+    uint8_t autoReturnInterval;
+	uint8_t routeMIDI;
+#endif defined(__MEGA__)
 
 #ifdef INCLUDE_CONTROLLER
+	// There are 31 here
     uint8_t leftKnobControlType;
     uint8_t rightKnobControlType;
     uint8_t middleButtonControlType;
@@ -68,8 +80,7 @@ struct _options
 	uint8_t a3ControlType;
 #endif
 
-    uint8_t noteLength;
-    
+	// There are 4 here
 #ifdef INCLUDE_ARPEGGIATOR
     uint8_t arpeggiatorPlayOctaves;
     uint8_t arpeggiatorPlayVelocity;
@@ -81,15 +92,8 @@ struct _options
     //uint8_t recorderRepeat;
 #endif
 
-    uint8_t click;
-    uint8_t clickVelocity;
-	uint8_t clockDivisor;
-    uint8_t menuDelay;
-    uint8_t autoReturnInterval;
-    int8_t transpose;
-    uint8_t volume;
-
 #ifdef INCLUDE_SPLIT
+	// There are 4 here
     uint8_t splitControls;                                          // = 0 by default, SPLIT_RIGHT
     uint8_t splitChannel;
     uint8_t splitNote;
@@ -97,9 +101,10 @@ struct _options
 #endif
 
 #ifdef INCLUDE_THRU
+	// There are 14 here 
     uint8_t thruExtraNotes;
     uint8_t thruNumDistributionChannels;
-    uint8_t thruChordMemory[MAX_CHORD_MEMORY_NOTES];
+    uint8_t thruChordMemory[MAX_CHORD_MEMORY_NOTES];		// MAX_CHORD_MEMORY_NOTES = 8
     uint8_t thruChordMemorySize;
     uint8_t thruDebounceMilliseconds;
 //    uint8_t thruCCToNRPN;
@@ -108,34 +113,42 @@ struct _options
 #endif
 
 #ifdef INCLUDE_MEASURE
+	// there are 2 here
     uint8_t measureBeatsPerBar;
     uint8_t measureBarsPerPhrase;
 #endif
 
 #ifdef INCLUDE_STEP_SEQUENCER
+	// there are 4 here
     uint8_t stepSequencerNoEcho;
     uint8_t stepSequencerSendClock;
 	int8_t stepSequencerPlayAlongChannel;
-//	uint8_t stepSequencerStop;
+	uint8_t stepSequencerStop;
 #endif
 
 #ifdef INCLUDE_DRUM_SEQUENCER
+	// there are 8 here
     uint8_t drumSequencerSendClock;
 	int8_t drumSequencerPlayAlongChannel;
 	uint8_t drumSequencerResetOnStop;
 	uint8_t drumSequencerDefaultVelocity;
 	uint8_t drumSequencerStop;
+	uint8_t drumSequencerFill;
+	uint8_t drumSequencerNextSequence;
+	uint8_t drumSequencerRandomize;
+	uint8_t drumSequencerLinearCurve;
+	uint8_t drumSequencerDisplayGroup;
 #endif
 
 #ifdef INCLUDE_RECORDER
+	// there is 1 here
 	uint8_t recorderRepeat;
 #endif
 
 #ifdef INCLUDE_GAUGE
+	// there is 1 here
 	uint8_t gaugeMidiInProvideRawCC;
 #endif
-
-	uint8_t routeMIDI;
     };
 
 // The options struct which is saved and loaded and used
@@ -154,6 +167,20 @@ void saveOptions();
 
 // resets the current options in memory to default values(does not save them).
 void resetOptions();
+
+
+void stateOptionsTempo();
+void stateOptionsNoteSpeed();
+void stateOptionsSwing();
+void stateOptionsTranspose();
+void stateOptionsVolume();
+void stateOptionsMIDIClock();
+void stateOptionsClick();
+void stateOptionsScreenBrightness();
+#if defined(__MEGA__)
+void stateOptionsMenuDelay();
+#endif defined(__MEGA__)
+
 
 #endif
 

@@ -7,11 +7,11 @@
 
 
 // Used by GET_TRACK_LENGTH to return the length of tracks in the current format
-//GLOBAL uint8_t _trackLength[5] = { 16, 24, 32, 48, 64 };
-GLOBAL uint8_t _trackLength[4] = { 16, 24, 32, 64 };
+GLOBAL uint8_t _trackLength[6] = { 16, 24, 32, 48, 64, 96 };
+// GLOBAL uint8_t _trackLength[4] = { 16, 24, 32, 64 };
 // Used by GET_NUM_TRACKS to return the number of tracks in the current format
-//GLOBAL uint8_t _numTracks[5] = { 12, 8, 6, 4, 3 };
-GLOBAL uint8_t _numTracks[4] = { 12, 8, 6, 3 };
+GLOBAL uint8_t _numTracks[6] = { 12, 8, 6, 4, 3, 2 };
+//GLOBAL uint8_t _numTracks[4] = { 12, 8, 6, 3 };
 
 
 
@@ -215,9 +215,9 @@ static uint8_t potChangedBy(uint16_t* potVals, uint8_t potNum, uint16_t amount)
 void stateStepSequencerMenuPattern()    
     {
     const char* menuItems[16] =     { PSTR("OOOO"), PSTR("OOO-"), PSTR("---O"), PSTR("OO-O"), PSTR("--O-"), PSTR("O---"), PSTR("-O--"), PSTR("OO--"), PSTR("--OO"), PSTR("O-O-"), PSTR("-O-O"), 
-                                      PSTR("R1/8"),                      PSTR("R1/4"),                      PSTR("R1/2"),                      PSTR("R3/4"),                      PSTR("EXCL") };
+                                      PSTR("R1/8"),                      PSTR("R1/4"),                      PSTR("R1/2"),                      PSTR("---X"),                      PSTR("XXXX") };
     const uint8_t menuIndices[16] = { P1111,        P1110,        P0001,        P1101,        P0010,        P1000,        P0100,        P1100,        P0011,        P1010,        P0101,                    
-                                      STEP_SEQUENCER_PATTERN_RANDOM_1_8, STEP_SEQUENCER_PATTERN_RANDOM_1_4, STEP_SEQUENCER_PATTERN_RANDOM_1_2, STEP_SEQUENCER_PATTERN_RANDOM_3_4, STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE };
+                                      STEP_SEQUENCER_PATTERN_RANDOM_1_8, STEP_SEQUENCER_PATTERN_RANDOM_1_4, STEP_SEQUENCER_PATTERN_RANDOM_1_2, STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE_FILL, STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE };
     if (entry)
         {
         // find the pattern
@@ -353,16 +353,25 @@ void stateStepSequencerMenuPerformanceNext()
         }
     }
 
+void stateStepSequencerMenuPerformanceStop()
+    {
+    options.stepSequencerStop = !options.stepSequencerStop;
+    saveOptions();
+    goUpState(immediateReturnState);
+    playStepSequencer();
+    }
+        
 void stateStepSequencerMenuLength()
     {
     // The values are OFF, 1, ..., 31
     // or OFF, 33, ..., 63 for 64-step sequences
+    // or OFF, 65, ..., 95 for 96-step sequences
     uint8_t result = doNumericalDisplay(
-    	GET_MINIMUM_CUSTOM_LENGTH() - 1, 		// either 0 or 32, both of which will be displayed at "----"
-    	GET_TRACK_FULL_LENGTH() - 1, 			// 16, 24, 32, or 64
-    	GET_TRACK_CUSTOM_LENGTH() + GET_MINIMUM_CUSTOM_LENGTH() - 1, 		// The current custom length (0...32) plus either 0 or 32
-    	true, 									// display the 0 or 32 as "----"
-    	GLYPH_NONE);
+        GET_MINIMUM_CUSTOM_LENGTH() - 1,                // either 0 or 32 or 64, which will be displayed at "----"
+        GET_TRACK_FULL_LENGTH() - 1,                    // 16, 24, 32, 48, 64, or 96
+        GET_TRACK_CUSTOM_LENGTH() + GET_MINIMUM_CUSTOM_LENGTH() - 1,            // The current custom length (0...32) plus either 0 or 16 or 32 or 64
+        true,                                                                   // display the 0 or 32 or 64 as "----"
+        GLYPH_NONE);
     playStepSequencer();
     switch (result)
         {
@@ -374,7 +383,7 @@ void stateStepSequencerMenuLength()
         case MENU_SELECTED:
             {
             // Now we change the length
-            data.slot.data.stepSequencer.format = GET_TRACK_FORMAT() | ((currentDisplay - (GET_MINIMUM_CUSTOM_LENGTH() - 1)) << 2);
+            data.slot.data.stepSequencer.format = GET_TRACK_FORMAT() | ((currentDisplay - (GET_MINIMUM_CUSTOM_LENGTH() - 1)) << 3);
             // Now we reset it again to put the cursor in the right place
             resetStepSequencer();
             goUpState(immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_PLAY);
@@ -395,21 +404,21 @@ void resetStepSequencerCountdown()
     switch(data.slot.data.stepSequencer.repeat & 15)
         {
         case 0: local.stepSequencer.countdown = 255; break;
-        case 1: local.stepSequencer.countdown = 0; break;
-        case 2: local.stepSequencer.countdown = 1; break;
-        case 3: local.stepSequencer.countdown = 2; break;
-        case 4: local.stepSequencer.countdown = 3; break;
-        case 5: local.stepSequencer.countdown = 4; break;
-        case 6: local.stepSequencer.countdown = 5; break;
-        case 7: local.stepSequencer.countdown = 7; break;
-        case 8: local.stepSequencer.countdown = 8; break;
-        case 9: local.stepSequencer.countdown = 11; break;
-        case 10: local.stepSequencer.countdown = 15; break;
-        case 11: local.stepSequencer.countdown = 17; break;
-        case 12: local.stepSequencer.countdown = 23; break;
-        case 13: local.stepSequencer.countdown = 31; break;
-        case 14: local.stepSequencer.countdown = 63; break;
-        case 15: local.stepSequencer.countdown = 127; break;
+        case 1: local.stepSequencer.countdown = 1; break;
+        case 2: local.stepSequencer.countdown = 2; break;
+        case 3: local.stepSequencer.countdown = 3; break;
+        case 4: local.stepSequencer.countdown = 4; break;
+        case 5: local.stepSequencer.countdown = 5; break;
+        case 6: local.stepSequencer.countdown = 6; break;
+        case 7: local.stepSequencer.countdown = 8; break;
+        case 8: local.stepSequencer.countdown = 9; break;
+        case 9: local.stepSequencer.countdown = 12; break;
+        case 10: local.stepSequencer.countdown = 16; break;
+        case 11: local.stepSequencer.countdown = 18; break;
+        case 12: local.stepSequencer.countdown = 24; break;
+        case 13: local.stepSequencer.countdown = 32; break;
+        case 14: local.stepSequencer.countdown = 64; break;
+        case 15: local.stepSequencer.countdown = 128; break;
         }
     local.stepSequencer.countup = 255;
     }
@@ -431,7 +440,7 @@ void clearNoteOnTrack(uint8_t track)
 
 // This is a slightly modified version of the code in stateLoad()... I'd like to merge them but it'll
 // have an impact on the Uno.  So for NOW...
-void loadSequence(uint8_t slot)
+uint8_t loadSequence(uint8_t slot)
     {
     uint8_t num = GET_NUM_TRACKS();
     for(uint8_t i = 0; i < num; i++)
@@ -439,7 +448,7 @@ void loadSequence(uint8_t slot)
 
     if (getSlotType(slot) != slotTypeForApplication(STATE_STEP_SEQUENCER))
         {
-        stopStepSequencer();
+        return 0;
         }
     else
         {
@@ -494,15 +503,21 @@ void loadSequence(uint8_t slot)
                         
         stripHighBits();
 
-		local.stepSequencer.scheduleStop = 0;
+        local.stepSequencer.scheduleStop = 0;
         local.stepSequencer.goNextSequence = 0;
         local.stepSequencer.solo = STEP_SEQUENCER_NO_SOLO;
         local.stepSequencer.currentTrack = 0;
         local.stepSequencer.currentEditPosition = 0;
         local.stepSequencer.markTrack = 0;
         local.stepSequencer.markPosition = 0;
-                
+        local.stepSequencer.lastNote = NO_SEQUENCER_NOTE;
+        local.stepSequencer.lastNotePos = NO_SEQUENCER_POS;
+        local.stepSequencer.lastExclusiveTrack = NO_TRACK;
         resetStepSequencerCountdown();
+        // this will set the countdown one higher than it should be so...
+        if (local.stepSequencer.countdown != 255)
+            local.stepSequencer.countdown--;
+        return 1;
         }
     }
            
@@ -562,6 +577,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
     // 32 -> 2
     // 48 -> 3
     // 64 -> 4    
+    // 96 -> 6    
     uint8_t skip = ((fullLen + 15) >> 4);      // that is, trackLen / 16
 
     clearScreen();
@@ -580,19 +596,6 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
     uint8_t lastTrack = numTracks;          // lastTrack is 1+ the final track we'll be drawing
     uint8_t sixskip = 6 / skip;
     lastTrack = bound(lastTrack, 0, firstTrack + sixskip);
-
-/*
-	if (trackLen != fullLen)
-		{
-		debug(trackLen);
-		debug(fullLen);
-		debug(numTracks);
-		debug(skip);
-		debug(firstTrack);
-		debug(lastTrack);
-		debug(999);
-		}
-*/
 
     // Now we start drawing each of the tracks.  We will make blinky lights for beats or for the cursor
     // and will have solid lights or nothing for the notes or their absence.
@@ -740,8 +743,8 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
 void stateStepSequencerFormat()
     {
     uint8_t result;
-    const char* menuItems[4] = {  PSTR("16 NOTES"), PSTR("24 NOTES"), PSTR("32 NOTES"), PSTR("64 NOTES")  };
-    result = doMenuDisplay(menuItems, 4, STATE_NONE, 0, 1);
+    const char* menuItems[6] = {  PSTR("16 NOTES"), PSTR("24 NOTES"), PSTR("32 NOTES"), PSTR("48 NOTES"), PSTR("64 NOTES"), PSTR("96 NOTES") };
+    result = doMenuDisplay(menuItems, 6, STATE_NONE, 0, 1);
     switch (result)
         {
         case NO_MENU_SELECTED:
@@ -752,7 +755,7 @@ void stateStepSequencerFormat()
         case MENU_SELECTED:
             {
             data.slot.type = SLOT_TYPE_STEP_SEQUENCER;
-            data.slot.data.stepSequencer.format = currentDisplay;		// thus custom length will be 0
+            data.slot.data.stepSequencer.format = currentDisplay;               // thus custom length will be 0
             setParseRawCC(false);
             memset(data.slot.data.stepSequencer.buffer, 0, STEP_SEQUENCER_BUFFER_SIZE);
             for(uint8_t i = 0; i < GET_NUM_TRACKS(); i++)
@@ -772,6 +775,8 @@ void stateStepSequencerFormat()
             local.stepSequencer.solo = 0;
             local.stepSequencer.currentTrack = 0;
             local.stepSequencer.currentEditPosition = 0;
+            local.stepSequencer.lastNote = NO_SEQUENCER_NOTE;
+            local.stepSequencer.lastNotePos = NO_SEQUENCER_POS;
             goDownState(STATE_STEP_SEQUENCER_PLAY);
             }
         break;
@@ -784,6 +789,7 @@ void stateStepSequencerFormat()
     }
 
 
+// Deletes any stray ties AFTER position p, replacing them with rests
 void removeSuccessiveTies(uint8_t p, uint8_t trackLen)
     {
     if (local.stepSequencer.data[local.stepSequencer.currentTrack] != STEP_SEQUENCER_DATA_NOTE)
@@ -828,13 +834,33 @@ void sendTrackNote(uint8_t note, uint8_t velocity, uint8_t track)
         }
     }
 
-
-
 void loadBuffer(uint16_t position, uint8_t note, uint8_t velocity)
     {
     data.slot.data.stepSequencer.buffer[position * 2] = note;
     data.slot.data.stepSequencer.buffer[position * 2 + 1] = velocity;
     }
+
+
+
+/// Adds ties from local.stepSequencer.lastNotePos + 1 to just before pos, wrapping around,
+/// unless local.stepSequencer.lastNotePos was NO_SEQUENCER_POS or was pos itself (a note played and immediately released)
+void tieNote(uint8_t pos)
+    {
+    uint8_t trackLen = GET_TRACK_LENGTH();
+    if (local.stepSequencer.lastNotePos != NO_SEQUENCER_POS && 
+        local.stepSequencer.lastNotePos != pos)
+        {
+        uint8_t p = local.stepSequencer.lastNotePos + 1;
+        while(p != pos)
+            {
+            loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + p, 1, 0);
+            p = incrementAndWrap(p, trackLen); 
+            }
+        }
+    local.stepSequencer.lastNote = NO_SEQUENCER_NOTE;
+    local.stepSequencer.lastNotePos = NO_SEQUENCER_POS;
+    }
+
 
 
 
@@ -863,7 +889,8 @@ void stopStepSequencer()
     stopClock(true);
     resetStepSequencer();
     local.stepSequencer.playState = PLAY_STATE_STOPPED;
-	local.stepSequencer.scheduleStop = false;
+    local.stepSequencer.scheduleStop = false;
+    local.stepSequencer.lastExclusiveTrack = NO_TRACK;
     sendAllSoundsOff();
     }
 
@@ -893,6 +920,9 @@ void stateStepSequencerPlay()
 
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
+        local.stepSequencer.lastNote = NO_SEQUENCER_NOTE;
+        local.stepSequencer.lastNotePos = NO_SEQUENCER_POS;
+                
         if (local.stepSequencer.performanceMode)
             {
             //// EXIT PERFORMANCE MODE
@@ -908,6 +938,9 @@ void stateStepSequencerPlay()
         }
     else if (isUpdated(MIDDLE_BUTTON, RELEASED))
         {
+        local.stepSequencer.lastNote = NO_SEQUENCER_NOTE;
+        local.stepSequencer.lastNotePos = NO_SEQUENCER_POS;
+                
         if (local.stepSequencer.performanceMode)
             {
             //// SCHEDULE MUTE
@@ -929,6 +962,9 @@ void stateStepSequencerPlay()
             else
 #endif INCLUDE_ADVANCED_STEP_SEQUENCER
                 {
+                local.stepSequencer.lastNote = NO_SEQUENCER_NOTE;
+                local.stepSequencer.lastNotePos = NO_SEQUENCER_POS;
+                
                 // add a rest
                 loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + local.stepSequencer.currentEditPosition, 0, 0);
                 removeSuccessiveTies(local.stepSequencer.currentEditPosition, trackLen);
@@ -944,6 +980,9 @@ void stateStepSequencerPlay()
         }
     else if (isUpdated(MIDDLE_BUTTON, RELEASED_LONG))
         {
+        local.stepSequencer.lastNote = NO_SEQUENCER_NOTE;
+        local.stepSequencer.lastNotePos = NO_SEQUENCER_POS;
+                
         if (button[SELECT_BUTTON])
             {
             isUpdated(SELECT_BUTTON, PRESSED);  // kill the long release on the select button
@@ -1017,38 +1056,48 @@ void stateStepSequencerPlay()
         }
     else if (isUpdated(SELECT_BUTTON, RELEASED))
         {
+        local.stepSequencer.lastNote = NO_SEQUENCER_NOTE;
+        local.stepSequencer.lastNotePos = NO_SEQUENCER_POS;
+                
         if (local.stepSequencer.performanceMode && local.stepSequencer.playState == PLAY_STATE_PLAYING && !local.stepSequencer.scheduleStop)
-        	{
-        	local.stepSequencer.scheduleStop = true;
-        	}
+            {
+            local.stepSequencer.scheduleStop = true;
+            }
         else
-        	{	
-			switch(local.stepSequencer.playState)
-				{
-				case PLAY_STATE_STOPPED:
-					{
-					local.stepSequencer.playState = PLAY_STATE_WAITING;
-					// we always stop the clock just in case, even if we're immediately restarting it
-					stopClock(true);
-					// Possible bug condition:
-					// The MIDI spec says that there "should" be at least 1 ms between
-					// starting the clock and the first clock pulse.  I don't know if that
-					// will happen here consistently.
-					startClock(true);
-					}
-				break;
-				case PLAY_STATE_WAITING:
-					// Fall Thru
-				case PLAY_STATE_PLAYING:
-					{
-					stopStepSequencer();
-					}
-				break;
-				}
-			}
+            {       
+            switch(local.stepSequencer.playState)
+                {
+                case PLAY_STATE_STOPPED:
+                    {
+                    resetStepSequencer();
+                    local.stepSequencer.scheduleStop = false;
+                    local.stepSequencer.goNextSequence = false;
+                    local.stepSequencer.playState = PLAY_STATE_WAITING;
+                    // we always stop the clock just in case, even if we're immediately restarting it
+                    stopClock(true);
+                    // Possible bug condition:
+                    // The MIDI spec says that there "should" be at least 1 ms between
+                    // starting the clock and the first clock pulse.  I don't know if that
+                    // will happen here consistently.
+                    startClock(true);
+                    }
+                break;
+                case PLAY_STATE_WAITING:
+                    // Fall Thru
+                case PLAY_STATE_PLAYING:
+                    {
+                    stopStepSequencer();
+                    return;
+                    }
+                break;
+                }
+            }
         }
     else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
         {
+        local.stepSequencer.lastNote = NO_SEQUENCER_NOTE;
+        local.stepSequencer.lastNotePos = NO_SEQUENCER_POS;
+                
         if (button[MIDDLE_BUTTON])
             {
             isUpdated(MIDDLE_BUTTON, PRESSED);  // kill the long release on the middle button
@@ -1069,22 +1118,26 @@ void stateStepSequencerPlay()
         else
             {
             //// ENTER MENU
-        
-            state = STATE_STEP_SEQUENCER_MENU;
-            entry = true;
+            goDownState(STATE_STEP_SEQUENCER_MENU);
             }
         }
     else if (potUpdated[LEFT_POT])
         {
+        local.stepSequencer.lastNote = NO_SEQUENCER_NOTE;
+        local.stepSequencer.lastNotePos = NO_SEQUENCER_POS;
+                
         //// CHANGE TRACK
         
         local.stepSequencer.currentTrack = ((pot[LEFT_POT] * numTracks) >> 10);         //  / 1024;
         local.stepSequencer.currentTrack = bound(local.stepSequencer.currentTrack, 0, numTracks);
         setParseRawCC(local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_CC);
-//        local.stepSequencer.clearTrack = CLEAR_TRACK;
+        //        local.stepSequencer.clearTrack = CLEAR_TRACK;
         }
     else if (potUpdated[RIGHT_POT])
         {
+        local.stepSequencer.lastNote = NO_SEQUENCER_NOTE;
+        local.stepSequencer.lastNotePos = NO_SEQUENCER_POS;
+                
         if (local.stepSequencer.performanceMode)
             {
             //// CHANGE TEMPO
@@ -1115,31 +1168,43 @@ void stateStepSequencerPlay()
             }
         }
         
+    /*
+ 
+      if (local.stepSequencer.data[local.stepSequencer.currentTrack] != STEP_SEQUENCER_DATA_NOTE)
+      return;
+
+      p = incrementAndWrap(p, trackLen);
+      uint16_t v = (((uint16_t)trackLen) * local.stepSequencer.currentTrack + p) * 2 ;
+      uint8_t removed = false;
+      while((data.slot.data.stepSequencer.buffer[v + 1]== 0) &&
+      data.slot.data.stepSequencer.buffer[v] == 1)
+      {
+
+      {
+      uint16_t v = (((uint16_t)trackLen) * local.stepSequencer.currentTrack + p) * 2 ;
+      if (    local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_NOTE &&               // this track does notes
+      local.stepSequencer.currentEditPosition < 0 &&                                  // we're in play position mode
+      lastNotePos != NO_SEQUENCER_POS &&                                                              // there's a previous note played
+      lastNotePos != local.stepSequencer.currentPlayPosition &&               // it's not the current note position
+      ((local.stepSequencer.currentPlayPosition == incrementAndWrap(lastNotePos, trackLen)) ||        // we're just beyond the last note pos OR
+      (data.slot.data.stepSequencer.buffer[v + 1] == 0 && data.slot.data.stepSequencer.buffer[v] == 1)) &&    // the previous position was a tie
+      (
         
-///// INCOMING MIDI DATA
+      lastNote = NO_SEQUENCER_NOTE;
+      lastNotePos = NO_SEQUENCER_POS;
+
+      loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + pos, note, velocity);
+
+    */ 
+        
+        
+    ///// INCOMING MIDI DATA
   
-    else if (bypass)
+    if (bypass)
         {
         // do nothing
         }
     
-
-
-/*
-// This is similar to the code later on which computes slop.
-uint8_t sloppos = local.stepSequencer.currentPlayPosition + (notePulseCountdown <= (notePulseRate >> 1) ? 1 : 0);
-if (sloppos >= trackLen) sloppos = 0;
-
-if ((sloppos == 0) && (local.stepSequencer.clearTrack == DONT_CLEAR_TRACK))
-{
-local.stepSequencer.clearTrack = CLEAR_TRACK;
-}
-else if ((sloppos == 1) && (local.stepSequencer.clearTrack == DONT_CLEAR_TRACK_FIRST))
-{
-local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
-}
-*/
-
     // rerouting to new channel
     if (newItem && 
         itemType != MIDI_CUSTOM_CONTROLLER && 
@@ -1228,30 +1293,15 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
                 local.stepSequencer.currentPlayPosition + (notePulseCountdown <= (notePulseRate >> 1) ? 1 : 0) :
                 local.stepSequencer.currentEditPosition;
             if (pos >= trackLen) pos = 0;
-        
-/*
-  if ((local.stepSequencer.clearTrack == CLEAR_TRACK) && local.stepSequencer.performanceMode)
-  {
-  // clear track and notes
-  memset(data.slot.data.stepSequencer.buffer + ((uint16_t)trackLen) * local.stepSequencer.currentTrack * 2, 0, trackLen * 2);
-  clearNotesOnTracks(true);
-  local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
-  }
-*/
-
-/*      if (pos == 0)
-        {
-        local.stepSequencer.clearTrack = DONT_CLEAR_TRACK_FIRST;
-        }
-        else
-        {
-        local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
-        }
-*/
-        
-            // add a note
+            
+            // If there's a previous note which has not finished, tie it up to pos
+            tieNote(pos);
+            
+            // add the note
             loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + pos, note, velocity);
             removeSuccessiveTies(pos, trackLen);
+            local.stepSequencer.lastNote = note;
+            local.stepSequencer.lastNotePos = pos;
 
             if (local.stepSequencer.currentEditPosition >= 0
                 && !(local.stepSequencer.performanceMode))
@@ -1274,6 +1324,20 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
         && (!(local.stepSequencer.performanceMode) || options.stepSequencerPlayAlongChannel == CHANNEL_ADD_TO_STEP_SEQUENCER )
         && local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_NOTE)
         {
+        if (local.stepSequencer.lastNote == itemNumber)
+            {
+            // here we're trying to provide some slop so the user can press the note early.
+            // we basically are rounding up or down to the nearest note
+            uint8_t pos = (local.stepSequencer.currentEditPosition < 0 
+                || (local.stepSequencer.performanceMode)
+                ) ? 
+                local.stepSequencer.currentPlayPosition + (notePulseCountdown <= (notePulseRate >> 1) ? 1 : 0) :
+                local.stepSequencer.currentEditPosition;
+            if (pos >= trackLen) pos = 0;
+
+            // If we just finished the note, tie it up to pos
+            tieNote(pos);
+            }
         sendTrackNote(itemNumber + 128, itemValue, local.stepSequencer.currentTrack);
         }
     else if (newItem && (itemType == MIDI_AFTERTOUCH || itemType == MIDI_AFTERTOUCH_POLY))
@@ -1382,6 +1446,9 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
     else if (newItem && (itemType == MIDI_CUSTOM_CONTROLLER))
         {
+        local.stepSequencer.lastNote = NO_SEQUENCER_NOTE;
+        local.stepSequencer.lastNotePos = NO_SEQUENCER_POS;
+                
         switch (itemNumber)
             {
             case CC_EXTRA_PARAMETER_A:
@@ -1719,8 +1786,7 @@ void stateStepSequencerMenu()
         break;
         case MENU_SELECTED:
             {
-            state = STATE_STEP_SEQUENCER_PLAY;
-            entry = true;
+            goUpState(STATE_STEP_SEQUENCER_PLAY);
             switch(currentDisplay)
                 {
                 case STEP_SEQUENCER_MENU_SOLO:
@@ -1735,36 +1801,36 @@ void stateStepSequencerMenu()
                     }
                 case STEP_SEQUENCER_MENU_NOTE_LENGTH:
                     {
-                    state = STATE_STEP_SEQUENCER_NOTE_LENGTH;                            
+                    goDownState(STATE_STEP_SEQUENCER_NOTE_LENGTH);                            
                     }
                 break;
                 case STEP_SEQUENCER_MENU_MIDI_OUT:
                     {
                     local.stepSequencer.backup = local.stepSequencer.outMIDI[local.stepSequencer.currentTrack];
-                    state = STATE_STEP_SEQUENCER_MIDI_CHANNEL_OUT;
+                    goDownState(STATE_STEP_SEQUENCER_MIDI_CHANNEL_OUT);
                     }
                 break;
                 case STEP_SEQUENCER_MENU_VELOCITY:
                     {
-                    state = STATE_STEP_SEQUENCER_VELOCITY;
+                    goDownState(STATE_STEP_SEQUENCER_VELOCITY);
                     }
                 break;
                 case STEP_SEQUENCER_MENU_FADER:
                     {
-                    state = STATE_STEP_SEQUENCER_FADER;
+                    goDownState(STATE_STEP_SEQUENCER_FADER);
                     }
                 break;
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
                 case STEP_SEQUENCER_MENU_TYPE:
                     {
-                    state = STATE_STEP_SEQUENCER_MENU_TYPE;
+                    goDownState(STATE_STEP_SEQUENCER_MENU_TYPE);
                     }
                 break;
 #endif INCLUDE_ADVANCED_STEP_SEQUENCER
                 case STEP_SEQUENCER_MENU_PATTERN:
                     {
                     immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
-                    state = STATE_STEP_SEQUENCER_MENU_PATTERN;
+                    goDownState(STATE_STEP_SEQUENCER_MENU_PATTERN);
                     }
                 break;
                 case STEP_SEQUENCER_MENU_TRANSPOSABLE:
@@ -1774,7 +1840,7 @@ void stateStepSequencerMenu()
                 break;
                 case STEP_SEQUENCER_MENU_EDIT:
                     {
-                    state = STATE_STEP_SEQUENCER_MENU_EDIT;
+                    goDownState(STATE_STEP_SEQUENCER_MENU_EDIT);
                     }
                 break;
                 case STEP_SEQUENCER_MENU_NO_ECHO:
@@ -1786,7 +1852,7 @@ void stateStepSequencerMenu()
                 case STEP_SEQUENCER_MENU_LENGTH:
                     {
                     immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
-                    state = STATE_STEP_SEQUENCER_MENU_LENGTH;
+                    goDownState(STATE_STEP_SEQUENCER_MENU_LENGTH);
                     }
                 break;
                 case STEP_SEQUENCER_MENU_PERFORMANCE:
@@ -1797,7 +1863,7 @@ void stateStepSequencerMenu()
                 break;
                 case STEP_SEQUENCER_MENU_SAVE:
                     {
-                    state = STATE_STEP_SEQUENCER_SAVE;
+                    goDownState(STATE_STEP_SEQUENCER_SAVE);
                     }
                 break;
                 case STEP_SEQUENCER_MENU_OPTIONS:
@@ -1951,6 +2017,14 @@ void playStepSequencer()
         uint8_t oldPlayPosition = local.stepSequencer.currentPlayPosition;
         local.stepSequencer.currentPlayPosition = incrementAndWrap(local.stepSequencer.currentPlayPosition, trackLen);
         
+        if (local.stepSequencer.performanceMode && local.stepSequencer.scheduleStop && 
+            local.stepSequencer.currentPlayPosition == options.stepSequencerStop)
+            {
+            stopStepSequencer(); 
+            local.stepSequencer.goNextSequence = false;     // totally reset
+            return; 
+            }                                       
+                
         // change scheduled mute?
         if (local.stepSequencer.performanceMode && local.stepSequencer.currentPlayPosition == 0)
             {
@@ -1970,23 +2044,23 @@ void playStepSequencer()
             else if (local.stepSequencer.solo == STEP_SEQUENCER_SOLO_OFF_SCHEDULED)
                 local.stepSequencer.solo = STEP_SEQUENCER_NO_SOLO;
 
-			if (local.stepSequencer.scheduleStop) 
-				{
-				stopStepSequencer(); 
-				local.stepSequencer.goNextSequence = false;	// totally reset
-				return; 
-				}
-					
-            if (local.stepSequencer.goNextSequence || (oldPlayPosition != -1 && local.stepSequencer.countdown == 0))  // we're supposed to go
+            if (local.stepSequencer.goNextSequence || 
+                (oldPlayPosition == trackLen - 1 && local.stepSequencer.countdown == 0))  // we're supposed to go
                 {
                 uint8_t nextSequence = (data.slot.data.stepSequencer.repeat >> 4);
                 if (nextSequence == 0) // STOP
-                    { 
-					stopStepSequencer(); 
+                    {
+                    stopStepSequencer(); 
                     return; 
                     }
                 else
-                    { loadSequence(nextSequence - 1); }  // maybe this will work out of the box?  hmmm
+                    {
+                    if (!loadSequence(nextSequence - 1))  // maybe this will work out of the box?  hmmm 
+                        {
+                        stopStepSequencer();
+                        return;
+                        }
+                    }
                 }
             else if (local.stepSequencer.countdown != 255)  // not forever
                 {
@@ -1999,21 +2073,35 @@ void playStepSequencer()
             local.stepSequencer.countup++;
             }
 
-// pick an exclusive random track
-        uint8_t exclusiveTrack = 0;
+        // pick an exclusive random track
         if (local.stepSequencer.currentPlayPosition == 0)
             {
-            int trkcount = 0;
+            // determine options
+            uint8_t exclusiveTracks[MAX_STEP_SEQUENCER_TRACKS];
+            uint8_t oneExclusive = NO_TRACK;
+            uint8_t numExclusiveTracks = 0;
             for(uint8_t track = 0; track < numTracks; track++)
                 {
-                if (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE)
+                if (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE || 
+                    (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE_FILL && ((local.stepSequencer.countup & 3) == 3)))
                     {
-                    if ((trkcount == 0) || (random() < RANDOM_MAX / (trkcount + 1)))  // this could work without the trakcount == 0 but I save a call to random() here 
+                    oneExclusive = track;           // found something, might be the last one
+                    if (track != local.stepSequencer.lastExclusiveTrack)
                         {
-                        exclusiveTrack = track;
+                        exclusiveTracks[numExclusiveTracks++] = track;          // found a track that's not the last one
                         }
-                    trkcount++;
                     }
+                }
+            
+            // pick a track
+            if (numExclusiveTracks == 0)                // this happens if there are NO X tracks or ONE X track which has already been used
+                {
+                if (oneExclusive != NO_TRACK)   // if NO_TRACK, we don't want to reset so we can keep the lastExclusiveTrack to the fourth measure for ---X
+                    local.stepSequencer.lastExclusiveTrack = oneExclusive;
+                }
+            else
+                {
+                local.stepSequencer.lastExclusiveTrack = exclusiveTracks[random(numExclusiveTracks)];
                 }
             }
                         
@@ -2035,12 +2123,18 @@ void playStepSequencer()
                 // pick a random track                          
                 if (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE)
                     {
-                    local.stepSequencer.shouldPlay[track] = (track == exclusiveTrack);
+                    local.stepSequencer.shouldPlay[track] = (track == local.stepSequencer.lastExclusiveTrack);
                     }
-                else if (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_3_4)
+                else if (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE_FILL)
                     {
-                    local.stepSequencer.shouldPlay[track] = (random() < (RANDOM_MAX / 4) * 3);
+                    local.stepSequencer.shouldPlay[track] = (track == local.stepSequencer.lastExclusiveTrack && ((local.drumSequencer.patternCountup & 3) == 3));
                     }
+/*
+  else if (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_3_4)
+  {
+  local.stepSequencer.shouldPlay[track] = (random() < (RANDOM_MAX / 4) * 3);
+  }
+*/
                 else if (local.stepSequencer.pattern[track] == STEP_SEQUENCER_PATTERN_RANDOM_1_2)
                     {
                     local.stepSequencer.shouldPlay[track] = (random() < (RANDOM_MAX / 2));
@@ -2065,8 +2159,6 @@ void playStepSequencer()
             uint8_t shouldPlay = local.stepSequencer.shouldPlay[track] ;
 
 
-
-
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
             if (local.stepSequencer.data[track] != STEP_SEQUENCER_DATA_NOTE && shouldPlay)
                 {
@@ -2083,6 +2175,8 @@ void playStepSequencer()
                 }
             else 
 #endif INCLUDE_ADVANCED_STEP_SEQUENCER
+
+
                 if (vel == 0 && note == 1 && shouldPlay)  // tie
                     {
                     local.stepSequencer.offTime[track] = currentTime + (div100(notePulseRate * getMicrosecsPerPulse() * noteLength));

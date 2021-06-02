@@ -623,22 +623,22 @@ uint16_t medianOfFive(uint16_t array[])
     uint16_t c;
     memcpy(a, array, 5 * sizeof(uint16_t));
 
-// From http://stackoverflow.com/questions/11350471/finding-median-of-5-elements        
-// 1) use 3 comparisons to arrange elements in array such that a[1]<a[2] , a[4]<a[5] and a[1]<a[4]
-// a) compare a[1] and a[2] and swap if necessary
+    // From http://stackoverflow.com/questions/11350471/finding-median-of-5-elements        
+    // 1) use 3 comparisons to arrange elements in array such that a[1]<a[2] , a[4]<a[5] and a[1]<a[4]
+    // a) compare a[1] and a[2] and swap if necessary
         
     if (a[0] > a[1]) { c = a[0]; a[0] = a[1]; a[1] = c; }
         
-// b) compare a[4] and a[5] and swap if necessary 
+    // b) compare a[4] and a[5] and swap if necessary 
 
     if (a[3] > a[4]) { c = a[3]; a[3] = a[4]; a[4] = c; }
         
-// c) compare a[1] and a[4].if a[4] is smaller than a[1] , then swap a[1] wid a[4] and a[2] wid a[5]
+    // c) compare a[1] and a[4].if a[4] is smaller than a[1] , then swap a[1] wid a[4] and a[2] wid a[5]
 
     if (a[0] > a[3]) { c = a[0]; a[0] = a[3]; a[3] = c; 
         c = a[1]; a[1] = a[4]; a[4] = c; }
 
-// 2)if a[3]>a[2].if a[2]<a[4] median value = min(a[3],a[4]) else median value=min(a[2],a[5]) 
+    // 2)if a[3]>a[2].if a[2]<a[4] median value = min(a[3],a[4]) else median value=min(a[2],a[5]) 
 
     if (a[2] > a[1])
         {
@@ -652,7 +652,7 @@ uint16_t medianOfFive(uint16_t array[])
             }
         }
 
-// 3)if a[3]<a[2].if a[3]>a[4] median value = min(a[3],a[5]) else median value=min(a[2],a[4])
+    // 3)if a[3]<a[2].if a[3]>a[4] median value = min(a[3],a[5]) else median value=min(a[2],a[4])
         
     else
         {

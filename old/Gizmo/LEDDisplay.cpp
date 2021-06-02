@@ -801,49 +801,49 @@ const char PROGMEM font_8x5[
             0b00000000,
             },
 
-//            { // GIZMO VERSION 4 pt 2
-//            0b11010101,
-//            0b10010111,
-//            0b00000000,
-//            0b00000000,
-//            0b01110000,
-//            0b00010000,
-//            0b01111100,
-//            0b00000000,
-//            },
+        //            { // GIZMO VERSION 4 pt 2
+        //            0b11010101,
+        //            0b10010111,
+        //            0b00000000,
+        //            0b00000000,
+        //            0b01110000,
+        //            0b00010000,
+        //            0b01111100,
+        //            0b00000000,
+        //            },
 
-//        { // GIZMO VERSION 3 pt 2
-//        0b11010101,
-//        0b10010111,
-//        0b00000000,
-//        0b00000000,
-//        0b01000100,
-//        0b01010100,
-//        0b01111100,
-//        0b00000000,
-//        },
+        //        { // GIZMO VERSION 3 pt 2
+        //        0b11010101,
+        //        0b10010111,
+        //        0b00000000,
+        //        0b00000000,
+        //        0b01000100,
+        //        0b01010100,
+        //        0b01111100,
+        //        0b00000000,
+        //        },
 
-//        { // GIZMO VERSION 2 pt 2
-//        0b11010101,
-//        0b10010111,
-//        0b00000000,
-//        0b00000000,
-//        0b01001100,
-//        0b01010100,
-//        0b00100100,
-//        0b00000000,
-//        },
+        //        { // GIZMO VERSION 2 pt 2
+        //        0b11010101,
+        //        0b10010111,
+        //        0b00000000,
+        //        0b00000000,
+        //        0b01001100,
+        //        0b01010100,
+        //        0b00100100,
+        //        0b00000000,
+        //        },
 
-//        { // GIZMO VERSION 1 pt 2
-//        0b11010101,
-//        0b10010111,
-//        0b00000000,
-//        0b00000000,
-//        0b00100000,
-//        0b01111100,
-//        0b00000000,
-//        0b00000000,
-//        },
+        //        { // GIZMO VERSION 1 pt 2
+        //        0b11010101,
+        //        0b10010111,
+        //        0b00000000,
+        //        0b00000000,
+        //        0b00100000,
+        //        0b01111100,
+        //        0b00000000,
+        //        0b00000000,
+        //        },
 
 #ifdef INCLUDE_EXTENDED_FONT        
             {
@@ -1236,7 +1236,7 @@ void initLED()
     led_DIN_mask = digitalPinToBitMask(PIN_LED_DIN);
 
 
-// PORTS
+    // PORTS
     led_CLK = portOutputRegister(digitalPinToPort(PIN_LED_CLK));
     led_CS = portOutputRegister(digitalPinToPort(PIN_LED_CS));
     led_DIN = portOutputRegister(digitalPinToPort(PIN_LED_DIN));
@@ -1358,10 +1358,10 @@ void setVerticalLine(unsigned char* mat, uint8_t x, unsigned char line)
 void blinkPoint(unsigned char* mat, uint8_t x, uint8_t y)
     {
     setOrClearPoint(mat, x, y, blinkToggle > blinkOn);
-//    if (blinkToggle > blinkOn)
-//        mat[x] |= (0x01 << y);
-//    else
-//        mat[x] &= ~(0x01 << y);
+    //    if (blinkToggle > blinkOn)
+    //        mat[x] |= (0x01 << y);
+    //    else
+    //        mat[x] &= ~(0x01 << y);
     }
 
 // Blinks a vertical line

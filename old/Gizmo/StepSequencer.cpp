@@ -639,7 +639,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t numTracks, uint8_t skip)
                     && !local.stepSequencer.performanceMode
 #endif INCLUDE_EXTENDED_STEP_SEQUENCER
                     ) ||   // main cursor
-                // draw play position cursor, plus the crosshatch, always if we're in play position mode
+                           // draw play position cursor, plus the crosshatch, always if we're in play position mode
                     ((local.stepSequencer.currentEditPosition < 0 
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
                         || local.stepSequencer.performanceMode
@@ -1160,7 +1160,7 @@ void stateStepSequencerPlay()
         setParseRawCC(local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_CC);
 #endif INCLUDE_PROVIDE_RAW_CC
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-//        local.stepSequencer.clearTrack = CLEAR_TRACK;
+        //        local.stepSequencer.clearTrack = CLEAR_TRACK;
 #endif INCLUDE_EXTENDED_STEP_SEQUENCER
         }
     else if (potUpdated[RIGHT_POT])
@@ -1194,7 +1194,7 @@ void stateStepSequencerPlay()
         }
         
         
-///// INCOMING MIDI DATA
+    ///// INCOMING MIDI DATA
   
     else if (bypass)
         {
@@ -1204,20 +1204,20 @@ void stateStepSequencerPlay()
 
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
 
-/*
-// This is similar to the code later on which computes slop.
-uint8_t sloppos = local.stepSequencer.currentPlayPosition + (notePulseCountdown <= (notePulseRate >> 1) ? 1 : 0);
-if (sloppos >= trackLen) sloppos = 0;
+    /*
+    // This is similar to the code later on which computes slop.
+    uint8_t sloppos = local.stepSequencer.currentPlayPosition + (notePulseCountdown <= (notePulseRate >> 1) ? 1 : 0);
+    if (sloppos >= trackLen) sloppos = 0;
 
-if ((sloppos == 0) && (local.stepSequencer.clearTrack == DONT_CLEAR_TRACK))
-{
-local.stepSequencer.clearTrack = CLEAR_TRACK;
-}
-else if ((sloppos == 1) && (local.stepSequencer.clearTrack == DONT_CLEAR_TRACK_FIRST))
-{
-local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
-}
-*/
+    if ((sloppos == 0) && (local.stepSequencer.clearTrack == DONT_CLEAR_TRACK))
+    {
+    local.stepSequencer.clearTrack = CLEAR_TRACK;
+    }
+    else if ((sloppos == 1) && (local.stepSequencer.clearTrack == DONT_CLEAR_TRACK_FIRST))
+    {
+    local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
+    }
+    */
 
     // rerouting to new channel
     if (newItem && 
@@ -1320,25 +1320,25 @@ local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
             if (pos >= trackLen) pos = 0;
         
 #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-/*
-  if ((local.stepSequencer.clearTrack == CLEAR_TRACK) && local.stepSequencer.performanceMode)
-  {
-  // clear track and notes
-  memset(data.slot.data.stepSequencer.buffer + ((uint16_t)trackLen) * local.stepSequencer.currentTrack * 2, 0, trackLen * 2);
-  clearNotesOnTracks(true);
-  local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
-  }
-*/
+            /*
+              if ((local.stepSequencer.clearTrack == CLEAR_TRACK) && local.stepSequencer.performanceMode)
+              {
+              // clear track and notes
+              memset(data.slot.data.stepSequencer.buffer + ((uint16_t)trackLen) * local.stepSequencer.currentTrack * 2, 0, trackLen * 2);
+              clearNotesOnTracks(true);
+              local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
+              }
+            */
 
-/*      if (pos == 0)
-        {
-        local.stepSequencer.clearTrack = DONT_CLEAR_TRACK_FIRST;
-        }
-        else
-        {
-        local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
-        }
-*/
+            /*      if (pos == 0)
+                    {
+                    local.stepSequencer.clearTrack = DONT_CLEAR_TRACK_FIRST;
+                    }
+                    else
+                    {
+                    local.stepSequencer.clearTrack = DONT_CLEAR_TRACK;
+                    }
+            */
         
 #endif INCLUDE_EXTENDED_STEP_SEQUENCER
 
@@ -2079,7 +2079,7 @@ void playStepSequencer()
             local.stepSequencer.countup++;
             }
 
-// pick an exclusive random track
+        // pick an exclusive random track
         uint8_t exclusiveTrack = 0;
         if (local.stepSequencer.currentPlayPosition == 0)
             {

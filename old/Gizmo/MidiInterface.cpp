@@ -71,16 +71,16 @@ void handleClockCommand(uint8_t (*clockFunction)(uint8_t), midi::MidiType clockM
 
     TOGGLE_IN_LED();
     
-// Here's the logic.
-// If we're NOT doing DIVISION:
-//              IGNORE: sendClock()             -- we just pass it through, unless bypass is on [sendClock checks for bypass already so we don't do it here]
-//              GENERATE or BLOCK:              -- ignore
-//              CONSUME or USE:                 -- call the function to deal with it
-//
-// If we're doing DIVISION:
-//              IGNORE:                                 -- handle division specially, unless bypass is on [again, sendClock and sendDividedClock check for bypass already]
-//              GENERATE or BLOCK:              -- ignore
-//              CONSUME or USE:                 -- call the function to deal with it
+    // Here's the logic.
+    // If we're NOT doing DIVISION:
+    //              IGNORE: sendClock()             -- we just pass it through, unless bypass is on [sendClock checks for bypass already so we don't do it here]
+    //              GENERATE or BLOCK:              -- ignore
+    //              CONSUME or USE:                 -- call the function to deal with it
+    //
+    // If we're doing DIVISION:
+    //              IGNORE:                                 -- handle division specially, unless bypass is on [again, sendClock and sendDividedClock check for bypass already]
+    //              GENERATE or BLOCK:              -- ignore
+    //              CONSUME or USE:                 -- call the function to deal with it
 
     if (options.clock == IGNORE_MIDI_CLOCK)
 
@@ -1254,29 +1254,29 @@ void handleGeneralControlChange(byte channel, byte number, byte value)
                 }
             else
 #endif
-/** Handled internally by StepSequencer
-    #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-    if (application == STATE_STEP_SEQUENCER)
-    {
-    // Are we playing along?  Route to the play along channel
-    if (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE)
-    {
-    uint8_t channelOut = options.stepSequencerPlayAlongChannel;
-    if (channelOut == 0)
-    channelOut = options.channelOut;
-    MIDI.sendControlChange(number, value, channelOut);  // generally pass through control changes
-    TOGGLE_OUT_LED();
-    }
-    // If we're not playing along, route to Midi Out
-    else
-    {
-    MIDI.sendControlChange(number, value, options.channelOut);
-    TOGGLE_OUT_LED();
-    }
-    }
-    else
-    #endif
-*/
+                /** Handled internally by StepSequencer
+                    #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+                    if (application == STATE_STEP_SEQUENCER)
+                    {
+                    // Are we playing along?  Route to the play along channel
+                    if (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE)
+                    {
+                    uint8_t channelOut = options.stepSequencerPlayAlongChannel;
+                    if (channelOut == 0)
+                    channelOut = options.channelOut;
+                    MIDI.sendControlChange(number, value, channelOut);  // generally pass through control changes
+                    TOGGLE_OUT_LED();
+                    }
+                    // If we're not playing along, route to Midi Out
+                    else
+                    {
+                    MIDI.sendControlChange(number, value, options.channelOut);
+                    TOGGLE_OUT_LED();
+                    }
+                    }
+                    else
+                    #endif
+                */
 #ifdef INCLUDE_EXTENDED_ARPEGGIATOR
                 if (application == STATE_ARPEGGIATOR)
                     {
@@ -1365,29 +1365,29 @@ void handleProgramChange(byte channel, byte number)
             }
         else
 #endif
-/** Handled internally by StepSequencer
-    #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-    if (application == STATE_STEP_SEQUENCER)
-    {
-    // Are we playing along?  Route to the play along channel
-    if (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE)
-    {
-    uint8_t channelOut = options.stepSequencerPlayAlongChannel;
-    if (channelOut == 0)
-    channelOut = options.channelOut;
-    MIDI.sendProgramChange(number, channelOut);
-    TOGGLE_OUT_LED();
-    }
-    // If we're not playing along, route to Midi Out
-    else
-    {
-    MIDI.sendProgramChange(number, options.channelOut);
-    TOGGLE_OUT_LED();
-    }
-    }
-    else
-    #endif
-*/
+            /** Handled internally by StepSequencer
+                #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+                if (application == STATE_STEP_SEQUENCER)
+                {
+                // Are we playing along?  Route to the play along channel
+                if (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE)
+                {
+                uint8_t channelOut = options.stepSequencerPlayAlongChannel;
+                if (channelOut == 0)
+                channelOut = options.channelOut;
+                MIDI.sendProgramChange(number, channelOut);
+                TOGGLE_OUT_LED();
+                }
+                // If we're not playing along, route to Midi Out
+                else
+                {
+                MIDI.sendProgramChange(number, options.channelOut);
+                TOGGLE_OUT_LED();
+                }
+                }
+                else
+                #endif
+            */
 #ifdef INCLUDE_SPLIT
             // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
             if (application == STATE_SPLIT && local.split.playing && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
@@ -1525,28 +1525,28 @@ void handlePitchBend(byte channel, int bend)
             }
         else
 #endif
-/*
-  #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
-  if (application == STATE_STEP_SEQUENCER)
-  {
-  // are we playing along?  Route to the play along channel
-  if (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE)
-  {
-  uint8_t channelOut = options.stepSequencerPlayAlongChannel;
-  if (channelOut == 0)
-  channelOut = options.channelOut;
-  MIDI.sendPitchBend(bend, channelOut);
-  TOGGLE_OUT_LED();
-  }
-  else if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
-  {
-  MIDI.sendPitchBend(bend, options.channelOut);
-  TOGGLE_OUT_LED();
-  }
-  }
-  else
-  #endif
-*/
+            /*
+              #ifdef INCLUDE_EXTENDED_STEP_SEQUENCER
+              if (application == STATE_STEP_SEQUENCER)
+              {
+              // are we playing along?  Route to the play along channel
+              if (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE)
+              {
+              uint8_t channelOut = options.stepSequencerPlayAlongChannel;
+              if (channelOut == 0)
+              channelOut = options.channelOut;
+              MIDI.sendPitchBend(bend, channelOut);
+              TOGGLE_OUT_LED();
+              }
+              else if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
+              {
+              MIDI.sendPitchBend(bend, options.channelOut);
+              TOGGLE_OUT_LED();
+              }
+              }
+              else
+              #endif
+            */
 #ifdef INCLUDE_SPLIT
             // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
             if (application == STATE_SPLIT && local.split.playing && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
@@ -1850,7 +1850,7 @@ void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t
             
             MIDI.sendControlChange(commandNumber, msb, channel);
 #ifdef DONT_SEND_14_BIT_CC
-// do nothing
+            // do nothing
 #else
             if (commandNumber < 32 && lsb != 0)             // send optional lsb if appropriate
                 {

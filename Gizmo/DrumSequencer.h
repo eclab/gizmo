@@ -50,23 +50,20 @@ A sequence is thus a double array of GROUP by TRACK.  Each cell in this array is
 within that group.  Each such sequence can also be assigned a PATTERN of muting or playing while the group is playing.
 
 There can be no more than 15 groups.
-There are 5, 8, 12, 16, or 20 tracks. 
-There are 8, 16, 32, or 64 notes per track per group.
+The number of tracks must be even.  At present we permit 4, 6,8, 12, 16, and 20.
+The number of notes must be a multiple of 8.  At present we permit 8, 16, 32, and 64.
 
 - Each note is 1 bit, so they are packed 8 notes to the byte.
 
 - Additionally there are 2 bytes per track:
-		5 bits MIDI channel (0 = "off", 17 = "default")
-		3 bits velocity (15, 31, 47, 63, 79, 95, 111, 127)
+		5 bits MIDI channel (0 = "off", 1...16, 17 = "default", 18 = "accent")
+		3 bits velocity 
 		7 bits note
 		1 bit mute
 
 - Additionally there is 1 byte per group:
-		4 bits actual group length (0 = FULL, 1...15 is 1/16 ... 15/16 of full group length, or 1...7 if the full length is 8)
-		4 bits note speed (0 = default, 1 ... 15 is 1-15 of the standard note speeds.  This means that the fastest speed is not available)
-... or maybe
-		6 bits actual group length (0 = 1, 1 = 2, ..., 63 = 64)		// you can't have a group with no notes
-		2 bits dunno.  Note speed?  0 = default, 1 = 2x speed, 2 = 4x speed, 3 = half speed
+		6 bits actual group length (0 = Full length, 1 ... 63)
+		2 bits dunno.  Note speed?  0 = default, 1 = 2x speed, 2 = 4x speed, 3 = 1/2x speed
 
 - Additionally there is 1/2 byte per group per track
 		4 bits pattern
@@ -129,7 +126,7 @@ Side notes:
 There are also 20 bytes for transitions:
 		20 global group transitions.  These are <group, repeat> pairs indicating 
 		which group and then how many times to repeat it.  Each transition is 1 byte.
-			Group is 4 bits: (0...14, 15 = SPECIAL)
+			Group is 4 bits: (0...14, 15 = SPECIAL)   This is why there can be no more than 15 groups
 			Repeat is 4 bits: 
 				If Group is SPECIAL then:	END, Random: Groups 0-1 (LOOP 1 time, 2..., 3..., 4...), Groups 0-2 (LOOP, 1, 2, 3, 4), Groups 0-3 (LOOP, 1, 2, 3, 4)
 				If Group is not SPECIAL then: LOOP, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 64, BIG LOOP
@@ -141,8 +138,8 @@ There is also 1 byte for sequence repeats:
 		4 bits for next sequence after repeats have concluded (0 = END, 1...10 (for 0...9))
 
 There is also one global byte:
-		4 bits: up to 16 layouts.
-		4 bits: extra
+		4 bits: the layout
+		4 bits: fill group
 		
 		
 ---- Note: I think that 'transitions' is normally called a CHAIN
@@ -220,7 +217,7 @@ My current arrangement of buttons and pots is as follows:
 		Play Position:	Toggle Mute
 		Edit:			Toggle Note
 		Far right:		Increment Group
-		Performance:	Schedule Mute
+		Performance:	Schedule Mute or Schedule Fill
 		
 	LONG MIDDLE BUTTON
 		Play Position:	Clear Track in Group
@@ -439,6 +436,7 @@ Menus
 #define PLAY_STATE_PAUSED 3
 
 #define DRUM_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE (0)
+#define DRUM_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE_FILL (14)
 #define DRUM_SEQUENCER_PATTERN_RANDOM_3_4 (14)
 #define DRUM_SEQUENCER_PATTERN_RANDOM_1_2 (13)
 #define DRUM_SEQUENCER_PATTERN_RANDOM_1_4 (6)
@@ -481,7 +479,8 @@ Menus
 
 #define MAX_DRUM_SEQUENCER_TRACKS 								(20)
 #define MAX_DRUM_SEQUENCER_GROUPS 								(15)
-#define DRUM_SEQUENCER_DEFAULT_FORMAT 							(8)			// 16 note 11 group 12 track
+#define MAX_DRUM_SEQUENCER_REPEATS							(16)
+#define DRUM_SEQUENCER_DEFAULT_FORMAT 						(8)			// 16 note 11 group 12 track
 #define DRUM_SEQUENCER_NUM_FORMATS 							(16)
 #define DRUM_SEQUENCER_NUM_TRANSITIONS 						(20)
 #define DRUM_SEQUENCER_DATA_LENGTH 							(365)		// This is the largest necessary bytes
@@ -489,6 +488,7 @@ Menus
 #define DRUM_SEQUENCER_NOTE_SPEED_DEFAULT						(0)
 #define DRUM_SEQUENCER_NO_MIDI_OUT 							(0)
 #define DRUM_SEQUENCER_MIDI_OUT_DEFAULT						(17)		// for now?  I'd prefer zero, see initDrumSequencer
+#define DRUM_SEQUENCER_MIDI_ACCENT 								(18)	
 #define DRUM_SEQUENCER_MAX_NOTE_VELOCITY						(7)			// 127
 #define DRUM_SEQUENCER_INITIAL_NOTE_PITCH						(60)
 #define DRUM_SEQUENCER_TRANSITION_GROUP_OTHER					(15)
@@ -498,15 +498,26 @@ Menus
 #define DRUM_SEQUENCER_NEXT_SEQUENCE_END						(0)
 #define DRUM_SEQUENCER_SEQUENCE_REPEAT_LOOP					(0)
 
+#define DRUM_SEQUENCER_MAX_RANDOM						(100)
+
 #define DRUM_SEQUENCER_TRANSITION_START					(255)
 
 #define DRUM_SEQUENCER_CURRENT_RIGHT_POT_UNDEFINED			(-1)
 #define CHANNEL_ADD_TO_DRUM_SEQUENCER (-1)		// The default: performance notes just get put into the drum sequencer as normal
 #define CHANNEL_PICK (17)		
-#define DRUM_SEQUENCER_CHANNEL_DEFAULT_MIDI_OUT (0)			// Performance notes are routed to MIDI_OUT
+#define DRUM_SEQUENCER_CHANNEL_DEFAULT_MIDI_OUT (0)
 												// Values 1...16: performance notes are routed to this channel number
+												
 
 #define DRUM_SEQUENCER_NO_MARK					(255)
+
+#define DRUM_SEQUENCER_FILL_OFF			(0)
+#define DRUM_SEQUENCER_FILL_SCHEDULED	(1)
+#define DRUM_SEQUENCER_FILL_ON			(2)
+
+#define DRUM_SEQUENCER_ACTION_FILL (0)
+#define DRUM_SEQUENCER_ACTION_MUTE (1)
+#define DRUM_SEQUENCER_ACTION_EITHER (2)
 
 struct _drumSequencerLocal
     {
@@ -548,6 +559,10 @@ struct _drumSequencerLocal
     uint8_t markTransition;											// Mark for the transitions
     uint8_t invalidNoteSpeed;										// Note speed is not legitimate
 	uint8_t accent;													// is the accent on?
+	uint8_t fillGroup;												// what group should be used for fills? 1 ... 15
+	uint8_t scheduleFill;											// are we filling right now?
+    uint8_t lastExclusiveTrack;										// The last track chosen for exclusive random
+    uint8_t displayGroup;											// display the group in the chain editing?  Dunno if this should be a preference
     };
 
 
@@ -555,7 +570,7 @@ struct _drumSequencerLocal
 
 struct _drumSequencer
     {
-    uint8_t format;								// just the low 4 bits used, high 4 bits unused and free
+    uint8_t format;								// layout and fill group (1 ... 15)
     uint8_t repeat;								// repeatSequence and nextSequence
     uint8_t transition[DRUM_SEQUENCER_NUM_TRANSITIONS];		// transitionGroup and transitionRepeat
     uint8_t data[DRUM_SEQUENCER_DATA_LENGTH];
@@ -567,7 +582,8 @@ struct _drumSequencer
 void clearNotesOnTracks(uint8_t clearEvenIfNoteNotFinished);
 
 // Draws the sequence with the given track length, number of tracks, and skip size
-void drawDrumSequencer(uint8_t tracklen, uint8_t numTracks, uint8_t skip);
+//void drawDrumSequencer(uint8_t tracklen, uint8_t numTracks, uint8_t skip, uint8_t drawFooters);
+void drawDrumSequencer(uint8_t group, uint8_t drawFooters);
 
 // Reformats the sequence as requested by the user
 void stateDrumSequencerFormat();
@@ -591,10 +607,12 @@ void resetDrumSequencer();
 void stateDrumSequencerMenuPerformanceKeyboard();
 void stateDrumSequencerMenuPerformanceRepeat();
 void stateDrumSequencerMenuPerformanceNext();
+void stateDrumSequencerMenuPerformanceStop();
+void stateDrumSequencerMenuPerformanceFill();
+void stateDrumSequencerMenuPerformanceNextSequence();
 void loadDrumSequencer(uint8_t slot);
 void resetDrumSequencerTransitionCountdown();
 void stateDrumSequencerMenuPattern();
-void stateDrumSequencerMenuPerformanceStop();
 
 
 // Additional states
@@ -635,11 +653,11 @@ void stateDrumSequencerGroupLength();
 void stateDrumSequencerGroupSpeed();
 void stateDrumSequencerMenuCopyGroup();
 void stateDrumSequencerMenuSwapGroup();
-void stateDrumSequencerTransitionPut();
+void stateDrumSequencerTransitionAdd();
 void stateDrumSequencerTransitionEdit();
 void stateDrumSequencerTransitionGoGroup();
 void stateDrumSequencerTransitionCopy();
-//void stateDrumSequencerTransitionInsert();
+void stateDrumSequencerTransitionSwap();
 void stateDrumSequencerTransitionDelete();
 void stateDrumSequencerTransitionEdit();
 void stateDrumSequencerTransitionEditGroup();

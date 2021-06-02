@@ -12,6 +12,256 @@ GLOBAL uint8_t leftPotParameterEquivalent = false;
 
 
 
+/// MIDI OUT SUPPORT
+///
+/// The following functions foo(...) are called instead of the MIDI.foo(...)
+/// equivalents in many cases because they filter or modify the commands before
+/// they are sent out: either blocking them because we're in bypass mode,
+/// or changing the volume, or transposing, or toggling the MIDI out LED.
+
+
+/// Sends out pressure, transposing as appropriate
+void sendPolyPressure(uint8_t note, uint8_t pressure, uint8_t channel)
+    {
+    if (bypassOut) return;
+
+    int16_t n = note + (uint16_t)options.transpose;
+    n = bound(n, 0, 127);
+    MIDI.sendPolyPressure((uint8_t) n, pressure, channel);
+    TOGGLE_OUT_LED();
+    }
+            
+
+/// Sends a note on, transposing as appropriate, and adjusting
+/// the velocity as appropriate.  Also sends out CV.
+void sendNoteOn(uint8_t note, uint8_t velocity, uint8_t channel)
+    {
+    if (bypassOut) return;
+  
+    int16_t n = note + (uint16_t)options.transpose;
+    n = bound(n, 0, 127);
+    uint16_t v = velocity;
+    if (options.volume < 3)
+        v = v >> (3 - options.volume);
+    else if (options.volume > 3)
+        v = v << (options.volume - 3);
+    if (v > 127) v = 127;
+    MIDI.sendNoteOn((uint8_t) n, (uint8_t) v, channel);
+
+    TOGGLE_OUT_LED();
+    }
+
+/// Sends a note off, transposing as appropriate
+void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel)
+    {
+    if (bypassOut) return;
+
+    int16_t n = note + (uint16_t)options.transpose;
+    n = bound(n, 0, 127);
+    MIDI.sendNoteOff((uint8_t) n, velocity, channel);
+    // dont' toggle the LED because if we're going really fast it toggles
+    // the LED ON and OFF for a noteoff/noteon pair and you can't see the LED
+    }
+
+
+         
+/// Sends an all notes off on ALL channels, regardless of whether bypass is turned on or not.
+void sendAllSoundsOffDisregardBypass(uint8_t channel)
+    {
+    if (channel == CHANNEL_OMNI)
+        {
+        for(uint8_t i = LOWEST_MIDI_CHANNEL; i <= HIGHEST_MIDI_CHANNEL; i++)
+            {
+#ifdef USE_ALL_NOTES_OFF
+            MIDI.sendControlChange(123, 0, i);          // All Notes Off
+#endif
+#ifdef USE_ALL_SOUNDS_OFF
+            MIDI.sendControlChange(120, 0, i);              // All Sound Off
+#endif
+            }
+        }
+    else
+        {
+#ifdef USE_ALL_NOTES_OFF
+        MIDI.sendControlChange(123, 0, channel);        // All Notes Off
+#endif
+#ifdef USE_ALL_SOUNDS_OFF
+        MIDI.sendControlChange(120, 0, channel);        // All Sound Off
+#endif
+        }
+    }
+        
+
+/// Sends an all notes off on ALL channels, but only if bypass is off.
+void sendAllSoundsOff(uint8_t channel)
+    {
+    if (!bypassOut) 
+        sendAllSoundsOffDisregardBypass(channel);
+    }
+
+
+
+
+#define DONT_SEND_14_BIT_CC
+
+// SEND CONTROLLER COMMAND
+// Sends a controller command, one of:
+// CC, NRPN, RPN, PC
+//
+// These are defined by the CONTROL_TYPE_* constants defined elsewhere
+//
+// Some commands (CC, NRPN, RPN) have COMMAND NUMBERS.  The others ignore the provided number.
+//
+// Each command is associated with a VALUE.  All values are 14 bits and take the form
+// of an MSB (the high 7 bits) and an LSB (the low 7 bits).  Some data expects lower
+// resolution numbers than that -- in this case you must shift your data so it's zero-
+// padded on the right.  For example, if you want to pass in a 7-bit
+// number (for PC, some CC values, or AFTERTOUCH) you should do so as (myval << 7).
+// If you want to pass in a signed PITCH BEND value (an int16_t from -8192...8191), you
+// should do so as (uint16_t myval + MIDI_PITCHBEND_MIN).
+//
+// It's good practice to send a NULL RPN after sending an RPN or NRPN, but it's 50% more data
+// in an already slow command.  So Gizmo doesn't do it by default.  You can make Gizmo do it
+// with #define INCLUDE_SEND_NULL_RPN   [I'd set that somewhere in All.h]
+//
+// Here are the valid numbers and values for different commands:
+//
+// COMMAND      NUMBERS         VALUES          NOTES
+// OFF          [everything is ignored, this is just a NOP]
+// CC           0-31            0-16383         1. If you send 7-bit data (zero-padded, shifted << 7) then the LSB will not be sent.
+//                                                 Also LSB not sent if DONT_SEND_14_BIT_CC is defined (which is the default).  So this normally doesn't occur.
+// CC           32-127          0-127           1. Zero-pad your 7-bit data (shift it << 7).
+//                                                                      2. Some numbers are meant for special functions.  Unless you know what you're doing,
+//                                                                         it'd be wise not to send on numbers 6, 32--63, 96--101, or 120--127
+// NRPN/RPN     0-16383         0-16383         1. If you send 7-bit data (zero-padded) then the LSB will not be sent.
+//                                                                      2. The NULL RPN terminator will only be sent if #define INCLUDE_SEND_NULL_RPN is on.
+//                                                                         By default it's off.  See the end of http://www.philrees.co.uk/nrpnq.htm
+//                                                                      3. You can also send in an RPN/NRPN DATA INCREMENT or DECREMENT.  To do this, pass in the
+//                                                                         value CONTROL_VALUE_INCREMENT [or DECREMENT] * 128 + DELTA.  A DELTA of 0 is the 
+//                                                                         same as 1 and is the most common usage.
+// PC           [ignored]       0-127           1. Zero-pad your 7-bit data (shift it << 7)
+// BEND         [ignored]       0-16383         1. BEND is normally signed (-8192...8191).  If you have the value as a signed int16_t,
+//                                                                         pass it in as (uint16_t) (myval + MIDI_PITCHBEND_MIN)
+// AFTERTOUCH [ignored] 0-127           1. Zero-pad your 7-bit data (shift it << 7)
+
+
+void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t fullValue, uint8_t channel)
+    {
+    uint8_t msb = fullValue >> 7;
+    uint8_t lsb = fullValue & 127;
+    
+    if (bypassOut)
+        return;
+        
+    // amazingly, putting this here reduces the code by 4 bytes.  Though it could
+    // easily be removed as the switch below handles it!
+    if (commandType == CONTROL_TYPE_OFF)
+        return;
+    
+    if (channel == 0)                // we do not output
+        return;
+    
+    switch(commandType)
+        {
+        case CONTROL_TYPE_OFF:
+            {
+            // do nothing
+            }
+        break;
+        case CONTROL_TYPE_CC:
+            {
+            // There are two kinds of CC messages: ones with an MSB only,
+            // and ones with an MSB + [optional] LSB.  The second kind are messages whose
+            // command number is 0...31.  The first kind are messages > 31.
+            
+            MIDI.sendControlChange(commandNumber, msb, channel);
+#ifdef DONT_SEND_14_BIT_CC
+            // do nothing
+#else
+            if (commandNumber < 32 && lsb != 0)             // send optional lsb if appropriate
+                {
+                MIDI.sendControlChange(commandNumber + 32, lsb, channel);
+                }
+#endif
+            TOGGLE_OUT_LED(); 
+            }
+        break;
+        case CONTROL_TYPE_NRPN:
+            {
+            // Send 99 for NRPN, or 101 for RPN
+            MIDI.sendControlChange(99, commandNumber >> 7, channel);
+            MIDI.sendControlChange(98, commandNumber & 127, channel);  // LSB
+            if (msb == CONTROL_VALUE_INCREMENT)
+                {
+                MIDI.sendControlChange(96, lsb, channel);
+                }
+            else if (msb == CONTROL_VALUE_DECREMENT)
+                {
+                MIDI.sendControlChange(97, lsb, channel);
+                }
+            else
+                {
+                MIDI.sendControlChange(6, msb, channel);  // MSB
+                if (lsb != 0)
+                    MIDI.sendControlChange(38, lsb, channel);  // LSB
+                }
+#ifdef INCLUDE_SEND_NULL_RPN
+            MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
+            MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command
+#endif
+            TOGGLE_OUT_LED(); 
+            }
+        break;
+        // note merging these actually loses bytes.  I tried.
+        case CONTROL_TYPE_RPN:
+            {
+            MIDI.sendControlChange(101, commandNumber >> 7, channel);
+            MIDI.sendControlChange(100, commandNumber & 127, channel);  // LSB
+            if (msb == CONTROL_VALUE_INCREMENT)
+                {
+                MIDI.sendControlChange(96, lsb, channel);
+                }
+            else if (msb == CONTROL_VALUE_DECREMENT)
+                {
+                MIDI.sendControlChange(97, lsb, channel);
+                }
+            else
+                {
+                MIDI.sendControlChange(6, msb, channel);  // MSB
+                if (lsb != 0)
+                    MIDI.sendControlChange(38, lsb, channel);  // LSB
+                }
+#ifdef INCLUDE_SEND_NULL_RPN
+            MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
+            MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command
+#endif
+            TOGGLE_OUT_LED(); 
+            }
+        break;
+        case CONTROL_TYPE_PC:
+            {
+            if (msb <= MAXIMUM_PC_VALUE)
+                MIDI.sendProgramChange(msb, channel);
+            TOGGLE_OUT_LED(); 
+            }
+        break;
+        case CONTROL_TYPE_PITCH_BEND:
+            {
+            // move from 0...16k to -8k...8k
+            MIDI.sendPitchBend(((int)fullValue) - MIDI_PITCHBEND_MIN, channel);
+            }
+        break;
+        case CONTROL_TYPE_AFTERTOUCH:
+            {
+            MIDI.sendAfterTouch(msb, channel);
+            }
+        break;
+        }
+    }
+        
+        
+        
+
 
 
 ////////// MIDI HANDLERS  
@@ -32,7 +282,8 @@ uint8_t updateMIDI(byte channel, uint8_t _itemType, uint16_t _itemNumber, uint16
         return 0;
         }
     else 
-#endif
+#endif INCLUDE_SYNTH
+
 #ifdef INCLUDE_CONTROLLER
         if (state == STATE_CONTROLLER_PLAY_WAVE_ENVELOPE && 
             (channel == options.channelIn || options.channelIn == CHANNEL_OMNI) &&
@@ -43,8 +294,12 @@ uint8_t updateMIDI(byte channel, uint8_t _itemType, uint16_t _itemNumber, uint16
             return 0;
             }
         else 
-#endif
-            if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
+#endif INCLUDE_CONTROLLER
+            if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI
+#ifdef INCLUDE_GAUGE
+                || state == STATE_GAUGE
+#endif INCLUDE_GAUGE            
+                )
                 {
                 newItem = NEW_ITEM;
                 itemType = _itemType;
@@ -69,19 +324,18 @@ void handleClockCommand(uint8_t (*clockFunction)(uint8_t), midi::MidiType clockM
 
     TOGGLE_IN_LED();
     
-// Here's the logic.
-// If we're NOT doing DIVISION:
-//              IGNORE: sendClock()             -- we just pass it through, unless bypass is on [sendClock checks for bypass already so we don't do it here]
-//              GENERATE or BLOCK:              -- ignore
-//              CONSUME or USE:                 -- call the function to deal with it
-//
-// If we're doing DIVISION:
-//              IGNORE:                                 -- handle division specially, unless bypass is on [again, sendClock and sendDividedClock check for bypass already]
-//              GENERATE or BLOCK:              -- ignore
-//              CONSUME or USE:                 -- call the function to deal with it
+    // Here's the logic.
+    // If we're NOT doing DIVISION:
+    //              IGNORE: sendClock()             -- we just pass it through, unless bypass is on [sendClock checks for bypass already so we don't do it here]
+    //              GENERATE or BLOCK:              -- ignore
+    //              CONSUME or USE:                 -- call the function to deal with it
+    //
+    // If we're doing DIVISION:
+    //              IGNORE:                                 -- handle division specially, unless bypass is on [again, sendClock and sendDividedClock check for bypass already]
+    //              GENERATE or BLOCK:              -- ignore
+    //              CONSUME or USE:                 -- call the function to deal with it
 
     if (options.clock == IGNORE_MIDI_CLOCK)
-
         {
         if (bypass)
             {
@@ -116,15 +370,29 @@ void handleStart()
     newItem = NEW_ITEM;
     itemType = MIDI_START;
     
-    handleClockCommand(startClock, MIDIStart);
-    
 #ifdef INCLUDE_MEASURE
     if (application == STATE_MEASURE)
         {
         local.measure.running = true;
         resetMeasure();
         }
-#endif
+#endif INCLUDE_MEASURE
+
+#ifdef INCLUDE_STEP_SEQUENCER
+    if (application == STATE_STEP_SEQUENCER)
+        {
+        resetStepSequencer();
+        }
+#endif INCLUDE_STEP_SEQUENCER
+
+#ifdef INCLUDE_ARPEGGIATOR
+    if (application == STATE_ARPEGGIATOR)
+        {
+        resetArpeggiator();
+        }
+#endif INCLUDE_ARPEGGIATOR
+
+    handleClockCommand(startClock, MIDIStart);
     }
 
 void handleStop()
@@ -204,50 +472,79 @@ void handleNoteOff(byte channel, byte note, byte velocity)
         // is data coming in the default channel?
         if (updateMIDI(channel, MIDI_NOTE_OFF, note, velocity))
             {
-#ifdef INCLUDE_ARPEGGIATOR
-            if (application == STATE_ARPEGGIATOR && local.arp.playing && !bypass)
+#if defined(__MEGA__)
+            if (state == STATE_ROOT && options.routeMIDI)
                 {
-                if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
-                    {
-                    uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
-                    if (channelOut == 0)
-                        channelOut = options.channelOut;
-                    sendNoteOff(note, velocity, channelOut);
-                    }
-                else if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel == ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
-                    {
-                    // do nothing
-                    }
-                else
-                    arpeggiatorRemoveNote(note);
+                sendNoteOff(note, velocity, options.routeMIDI);
+                TOGGLE_OUT_LED();
                 }
             else
+#endif defined(__MEGA__)
+
+#ifdef INCLUDE_GAUGE
+                if (application == STATE_ARPEGGIATOR && local.arp.playing && !bypass)
+                    {
+                    if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                        {
+                        uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+                        if (channelOut == 0)
+                            channelOut = options.channelOut;
+                        sendNoteOff(note, velocity, channelOut);
+                        }
+                    else if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel == ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                        {
+                        // do nothing
+                        }
+                    else
+                        arpeggiatorRemoveNote(note);
+                    }
+                else
+#endif INCLUDE_GAUGE
+
+#ifdef INCLUDE_ARPEGGIATOR
+                    if (application == STATE_ARPEGGIATOR && local.arp.playing && !bypass)
+                        {
+                        if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                            {
+                            uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+                            if (channelOut == 0)
+                                channelOut = options.channelOut;
+                            sendNoteOff(note, velocity, channelOut);
+                            }
+                        else if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel == ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                            {
+                            // do nothing
+                            }
+                        else
+                            arpeggiatorRemoveNote(note);
+                        }
+                    else
 #endif
 
 #ifdef INCLUDE_SPLIT
-                if ((application == STATE_SPLIT) && local.split.playing && !bypass)
-                    {
-                    if (options.splitControls == SPLIT_MIX)
-                        {
-                        sendNoteOff(note, velocity, options.channelOut);
-                        sendNoteOff(note, velocity, options.splitChannel);
-                        TOGGLE_OUT_LED();
-                        }
-                    else
-                        {
-                        uint8_t sent = 0;
-                        if (note >= options.splitNote)
-                            { sendNoteOff(note, velocity, options.channelOut); sent = 1; }
-                        if (((options.splitLayerNote != NO_NOTE) && (note <= options.splitLayerNote)) ||
-                            note < options.splitNote)
-                            { sendNoteOff(note, velocity, options.splitChannel); sent = 1; }
-                        if (sent == 2)
-                            TOGGLE_OUT_LED();
-                        }
-                    }
-                else
+                        if ((application == STATE_SPLIT) && local.split.playing && !bypass)
+                            {
+                            if (options.splitControls == SPLIT_MIX)
+                                {
+                                sendNoteOff(note, velocity, options.channelOut);
+                                sendNoteOff(note, velocity, options.splitChannel);
+                                TOGGLE_OUT_LED();
+                                }
+                            else
+                                {
+                                uint8_t sent = 0;
+                                if (note >= options.splitNote)
+                                    { sendNoteOff(note, velocity, options.channelOut); sent = 1; }
+                                if (((options.splitLayerNote != NO_NOTE) && (note <= options.splitLayerNote)) ||
+                                    note < options.splitNote)
+                                    { sendNoteOff(note, velocity, options.splitChannel); sent = 1; }
+                                if (sent == 2)
+                                    TOGGLE_OUT_LED();
+                                }
+                            }
+                        else
 #endif
-                    { }
+                            { }
             }
         else
 #ifdef INCLUDE_THRU
@@ -342,66 +639,75 @@ void handleNoteOn(byte channel, byte note, byte velocity)
         // is data coming in the default channel?
         if (updateMIDI(channel, MIDI_NOTE_ON, note, velocity))
             {
-#ifdef INCLUDE_ARPEGGIATOR
-            if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing 
-                    && state != STATE_ARPEGGIATOR_PLAY_TRANSPOSE))
+#if defined(__MEGA__)
+            if (state == STATE_ROOT && options.routeMIDI)
                 {
-                // the arpeggiation velocity shall be the velocity of the most recently added note
-                if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
-                    {
-                    uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
-                    if (channelOut == 0)
-                        channelOut = options.channelOut;
-                    sendNoteOn(note, velocity, channelOut);
-                    }
-                else if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel == ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
-                    {
-                    int16_t tr = note - (int16_t)(local.arp.transposeRoot);
-                    while (tr < -128) tr += 12;
-                    while (tr > 127) tr -= 12;
-                    local.arp.transpose = (int8_t) tr;
-                    }
-                else
-                    arpeggiatorAddNote(note, velocity);
+                sendNoteOn(note, velocity, options.routeMIDI);
+                TOGGLE_OUT_LED();
                 }
             else
+#endif defined(__MEGA__)
+
+#ifdef INCLUDE_ARPEGGIATOR
+                if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing 
+                        && state != STATE_ARPEGGIATOR_PLAY_TRANSPOSE))
+                    {
+                    // the arpeggiation velocity shall be the velocity of the most recently added note
+                    if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                        {
+                        uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+                        if (channelOut == 0)
+                            channelOut = options.channelOut;
+                        sendNoteOn(note, velocity, channelOut);
+                        }
+                    else if (local.arp.performanceMode && options.arpeggiatorPlayAlongChannel == ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                        {
+                        int16_t tr = note - (int16_t)(local.arp.transposeRoot);
+                        while (tr < -128) tr += 12;
+                        while (tr > 127) tr -= 12;
+                        local.arp.transpose = (int8_t) tr;
+                        }
+                    else
+                        arpeggiatorAddNote(note, velocity);
+                    }
+                else
 #endif
 
 #ifdef INCLUDE_SPLIT
-                // We don't have space for this on the Uno // 
-                if ((application == STATE_SPLIT) && local.split.playing && !bypass)
-                    {
-                    if (options.splitControls == SPLIT_MIX)
+                    // We don't have space for this on the Uno // 
+                    if ((application == STATE_SPLIT) && local.split.playing && !bypass)
                         {
-                        // This is our current velocity function
-                        uint8_t convertedVel =  (uint8_t)(((velocity) * (uint16_t)(velocity + 1))>> 7);
-                        sendNoteOn(note, velocity, options.channelOut);
-                        sendNoteOn(note, velocity - convertedVel, options.splitChannel);
-                        local.split.lastMixVelocity = velocity;
+                        if (options.splitControls == SPLIT_MIX)
+                            {
+                            // This is our current velocity function
+                            uint8_t convertedVel =  (uint8_t)(((velocity) * (uint16_t)(velocity + 1))>> 7);
+                            sendNoteOn(note, velocity, options.channelOut);
+                            sendNoteOn(note, velocity - convertedVel, options.splitChannel);
+                            local.split.lastMixVelocity = velocity;
                 
-                        TOGGLE_OUT_LED();
+                            TOGGLE_OUT_LED();
+                            }
+                        else
+                            {
+                            uint8_t sent = 0;
+                            if (note >= options.splitNote)
+                                { 
+                                sendNoteOn(note, velocity, options.channelOut); 
+                                sent++; 
+                                }
+                            if (((options.splitLayerNote != NO_NOTE) && (note <= options.splitLayerNote)) ||
+                                note < options.splitNote)
+                                { 
+                                sendNoteOn(note, velocity, options.splitChannel); 
+                                sent++; 
+                                }
+                            if (sent == 2)
+                                TOGGLE_OUT_LED();
+                            }
                         }
                     else
-                        {
-                        uint8_t sent = 0;
-                        if (note >= options.splitNote)
-                            { 
-                            sendNoteOn(note, velocity, options.channelOut); 
-                            sent++; 
-                            }
-                        if (((options.splitLayerNote != NO_NOTE) && (note <= options.splitLayerNote)) ||
-                            note < options.splitNote)
-                            { 
-                            sendNoteOn(note, velocity, options.splitChannel); 
-                            sent++; 
-                            }
-                        if (sent == 2)
-                            TOGGLE_OUT_LED();
-                        }
-                    }
-                else
 #endif
-                    { }
+                        { }
             }
         else
 #ifdef INCLUDE_THRU
@@ -443,6 +749,14 @@ void handleAfterTouchPoly(byte channel, byte note, byte pressure)
     // is data coming in the default channel?
     if (updateMIDI(channel, MIDI_AFTERTOUCH_POLY, note, pressure))
         {
+#if defined(__MEGA__)
+        if (state == STATE_ROOT && options.routeMIDI)
+            {
+            sendPolyPressure(note, pressure, options.routeMIDI);
+            TOGGLE_OUT_LED();
+            }
+#endif defined(__MEGA__)
+
 #ifdef INCLUDE_ARPEGGIATOR
         if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE))
             {
@@ -1215,78 +1529,89 @@ void handleGeneralControlChange(byte channel, byte number, byte value)
         {
         parse(&midiControlParser, channel, number, value);
         }
-                
-    else if (!bypass)
-        {
-        // Some applications have special handling of channel In.
-        if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
+    else
+#if defined(__MEGA__)
+        if (!bypass && state == STATE_ROOT && options.routeMIDI)
             {
+            MIDI.sendControlChange(number, value, options.routeMIDI);
+            TOGGLE_OUT_LED();
+            }
+        else            
+#endif defined(__MEGA__)
+
+            {
+            // we parse outside of the bypass so that Gauge can get it
             parse(&midiInParser, channel, number, value);
 
-#ifdef INCLUDE_SPLIT
-            // If we're doing keyboard splitting, we want to route control changes to the right place
-            if (application == STATE_SPLIT && local.split.playing)
+            if (!bypass)
                 {
-                if ((options.splitControls == SPLIT_CONTROLS_RIGHT) || (options.splitControls == SPLIT_MIX))
-                    MIDI.sendControlChange(number, value, options.channelOut);
-                else
+                // Some applications have special handling of channel In.
+                if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
                     {
-                    MIDI.sendControlChange(number, value, options.splitChannel);
-                    }
-                TOGGLE_OUT_LED();
-                }
-            else
+#ifdef INCLUDE_SPLIT
+                    // If we're doing keyboard splitting, we want to route control changes to the right place
+                    if (application == STATE_SPLIT && local.split.playing)
+                        {
+                        if ((options.splitControls == SPLIT_CONTROLS_RIGHT) || (options.splitControls == SPLIT_MIX))
+                            MIDI.sendControlChange(number, value, options.channelOut);
+                        else
+                            {
+                            MIDI.sendControlChange(number, value, options.splitChannel);
+                            }
+                        TOGGLE_OUT_LED();
+                        }
+                    else
 #endif
 #ifdef INCLUDE_ARPEGGIATOR
-                if (application == STATE_ARPEGGIATOR)
-                    {
-                    // Are we playing along?  Route to the play along channel
-                    if (local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
-                        {
-                        uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
-                        if (channelOut == 0)
-                            channelOut = options.channelOut;
-                        MIDI.sendControlChange(number, value, channelOut);  // generally pass through control changes
-                        TOGGLE_OUT_LED();
-                        }
-                    // If we're not playing along, route to Midi Out
-                    else
-                        {
-                        MIDI.sendControlChange(number, value, options.channelOut);  // generally pass through control changes
-                        TOGGLE_OUT_LED();
-                        }
-                    }
-                else
+                        if (application == STATE_ARPEGGIATOR)
+                            {
+                            // Are we playing along?  Route to the play along channel
+                            if (local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                                {
+                                uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+                                if (channelOut == 0)
+                                    channelOut = options.channelOut;
+                                MIDI.sendControlChange(number, value, channelOut);  // generally pass through control changes
+                                TOGGLE_OUT_LED();
+                                }
+                            // If we're not playing along, route to Midi Out
+                            else
+                                {
+                                MIDI.sendControlChange(number, value, options.channelOut);  // generally pass through control changes
+                                TOGGLE_OUT_LED();
+                                }
+                            }
+                        else
 #endif
-                    // block it off entirely.  Nobody wants it
-                    { }
-            }
-        else 
-#ifdef INCLUDE_THRU
-            // Thru should route through everything that's NOT coming in the default channel and is NOT being blocked
-            if (state == STATE_THRU_PLAY)
-                {
-                if (!options.thruBlockOtherChannels)
-                    {
-                    // Note this does NOT include the merge channel
-                    MIDI.sendControlChange(number, value, channel);  // generally pass through control changes
-                    TOGGLE_OUT_LED();
+                            // block it off entirely.  Nobody wants it
+                            { }
                     }
+                else 
+#ifdef INCLUDE_THRU
+                    // Thru should route through everything that's NOT coming in the default channel and is NOT being blocked
+                    if (state == STATE_THRU_PLAY)
+                        {
+                        if (!options.thruBlockOtherChannels)
+                            {
+                            // Note this does NOT include the merge channel
+                            MIDI.sendControlChange(number, value, channel);  // generally pass through control changes
+                            TOGGLE_OUT_LED();
+                            }
+                        }
+                    else
+#endif
+                        // In general we pass through everything else
+                        {
+                        MIDI.sendControlChange(number, value, channel);
+                        TOGGLE_OUT_LED();
+                        }
                 }
             else
-#endif
-                // In general we pass through everything else
                 {
-                MIDI.sendControlChange(number, value, channel);
                 TOGGLE_OUT_LED();
                 }
-        }
-    else
-        {
-        TOGGLE_OUT_LED();
-        }
+            }
     }
-
 
 
 
@@ -1304,70 +1629,79 @@ void handleProgramChange(byte channel, byte number)
     uint8_t isChannelIn = updateMIDI(channel, MIDI_PROGRAM_CHANGE, number, 1);
     if (!bypass) 
         {
-#ifdef INCLUDE_ARPEGGIATOR
-        if (application == STATE_ARPEGGIATOR)
+#if defined(__MEGA__)
+        if (state == STATE_ROOT && options.routeMIDI)
             {
-            // Are we playing along?  Route to the play along channel
-            if (local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
-                {
-                uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
-                if (channelOut == 0)
-                    channelOut = options.channelOut;
-                MIDI.sendProgramChange(number, channelOut);
-                TOGGLE_OUT_LED();
-                }
-            // If we're not playing along, route to Midi Out
-            else
-                {
-                MIDI.sendProgramChange(number, options.channelOut);
-                TOGGLE_OUT_LED();
-                }
+            MIDI.sendProgramChange(number, options.routeMIDI);
+            TOGGLE_OUT_LED();
             }
-        else
+        else               
+#endif defined(__MEGA__)
+
+#ifdef INCLUDE_ARPEGGIATOR
+            if (application == STATE_ARPEGGIATOR)
+                {
+                // Are we playing along?  Route to the play along channel
+                if (local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                    {
+                    uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+                    if (channelOut == 0)
+                        channelOut = options.channelOut;
+                    MIDI.sendProgramChange(number, channelOut);
+                    TOGGLE_OUT_LED();
+                    }
+                // If we're not playing along, route to Midi Out
+                else
+                    {
+                    MIDI.sendProgramChange(number, options.channelOut);
+                    TOGGLE_OUT_LED();
+                    }
+                }
+            else
 #endif
 #ifdef INCLUDE_SPLIT
-            // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
-            if (application == STATE_SPLIT && local.split.playing && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
-                {
-                if ((options.splitControls == SPLIT_CONTROLS_RIGHT) || (options.splitControls == SPLIT_MIX))
-                    MIDI.sendProgramChange(number, options.channelOut);
-                else
-                    MIDI.sendProgramChange(number, options.splitChannel);
-                TOGGLE_OUT_LED();
-                }
-            else
-#endif
-#ifdef INCLUDE_THRU
-                if (state == STATE_THRU_PLAY)
+                // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
+                if (application == STATE_SPLIT && local.split.playing && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
                     {
-                    // only pass through if the data's NOT coming in the default channel
-                    if ((channel != options.channelIn) && (options.channelIn != CHANNEL_OMNI)
-                        && channel != options.thruMergeChannelIn)
-                        {
-                        MIDI.sendProgramChange(number, channel);
-                        TOGGLE_OUT_LED();
-                        }
-                    else if (channel == options.thruMergeChannelIn)  //  merge hasn't been sent to newitem yet
-                        {
-                        newItem = NEW_ITEM;
-                        itemType = MIDI_PROGRAM_CHANGE;
-                        itemNumber = number;
-                        itemValue = 1;
-                        itemChannel = channel;
-                        }
+                    if ((options.splitControls == SPLIT_CONTROLS_RIGHT) || (options.splitControls == SPLIT_MIX))
+                        MIDI.sendProgramChange(number, options.channelOut);
+                    else
+                        MIDI.sendProgramChange(number, options.splitChannel);
+                    TOGGLE_OUT_LED();
                     }
                 else
 #endif
-                    if (!isChannelIn)
-                        {
 #ifdef INCLUDE_THRU
-                        if (state != STATE_THRU_PLAY || !options.thruBlockOtherChannels)
-#endif
+                    if (state == STATE_THRU_PLAY)
+                        {
+                        // only pass through if the data's NOT coming in the default channel
+                        if ((channel != options.channelIn) && (options.channelIn != CHANNEL_OMNI)
+                            && channel != options.thruMergeChannelIn)
                             {
                             MIDI.sendProgramChange(number, channel);
                             TOGGLE_OUT_LED();
                             }
+                        else if (channel == options.thruMergeChannelIn)  //  merge hasn't been sent to newitem yet
+                            {
+                            newItem = NEW_ITEM;
+                            itemType = MIDI_PROGRAM_CHANGE;
+                            itemNumber = number;
+                            itemValue = 1;
+                            itemChannel = channel;
+                            }
                         }
+                    else
+#endif
+                        if (!isChannelIn)
+                            {
+#ifdef INCLUDE_THRU
+                            if (state != STATE_THRU_PLAY || !options.thruBlockOtherChannels)
+#endif
+                                {
+                                MIDI.sendProgramChange(number, channel);
+                                TOGGLE_OUT_LED();
+                                }
+                            }
         }
     else
         TOGGLE_OUT_LED();
@@ -1378,60 +1712,69 @@ void handleAfterTouchChannel(byte channel, byte pressure)
     uint8_t isChannelIn = updateMIDI(channel, MIDI_AFTERTOUCH, 1, pressure);
     if (!bypass) 
         {
-#ifdef INCLUDE_ARPEGGIATOR
-        if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE))
+#if defined(__MEGA__)
+        if (state == STATE_ROOT && options.routeMIDI)
             {
-            uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
-            if (channelOut == 0)
-                channelOut = options.channelOut;
-            MIDI.sendAfterTouch(pressure, channelOut);
+            MIDI.sendAfterTouch(pressure, options.routeMIDI);
+            TOGGLE_OUT_LED();
             }
-        else
-#endif
+        else               
+#endif defined(__MEGA__)
 
-#ifdef INCLUDE_SPLIT
-            // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
-            if (application == STATE_SPLIT && local.split.playing && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
+#ifdef INCLUDE_ARPEGGIATOR
+            if (!bypass && (application == STATE_ARPEGGIATOR && local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE))
                 {
-                if ((options.splitControls == SPLIT_CONTROLS_RIGHT) || (options.splitControls == SPLIT_MIX))
-                    MIDI.sendAfterTouch(pressure, options.channelOut);
-                else
-                    MIDI.sendAfterTouch(pressure, options.splitChannel);
-                TOGGLE_OUT_LED();
+                uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+                if (channelOut == 0)
+                    channelOut = options.channelOut;
+                MIDI.sendAfterTouch(pressure, channelOut);
                 }
             else
 #endif
-#ifdef INCLUDE_THRU
-                if (state == STATE_THRU_PLAY)
+
+#ifdef INCLUDE_SPLIT
+                // One exception: if we're doing keyboard splitting, we want to route control changes to the right place
+                if (application == STATE_SPLIT && local.split.playing && (channel == options.channelIn || options.channelIn == CHANNEL_OMNI))
                     {
-                    // only pass through if the data's NOT coming in the default channel
-                    if ((channel != options.channelIn) && (options.channelIn != CHANNEL_OMNI)
-                        && channel != options.thruMergeChannelIn)
-                        {
-                        MIDI.sendAfterTouch(pressure, channel);
-                        TOGGLE_OUT_LED();
-                        }
-                    else if (channel == options.thruMergeChannelIn)  //  merge hasn't been sent to newitem yet
-                        {
-                        newItem = NEW_ITEM;
-                        itemType = MIDI_AFTERTOUCH;
-                        itemNumber = 1;
-                        itemValue = pressure;
-                        itemChannel = channel;
-                        }
+                    if ((options.splitControls == SPLIT_CONTROLS_RIGHT) || (options.splitControls == SPLIT_MIX))
+                        MIDI.sendAfterTouch(pressure, options.channelOut);
+                    else
+                        MIDI.sendAfterTouch(pressure, options.splitChannel);
+                    TOGGLE_OUT_LED();
                     }
                 else
 #endif
-                    if (!isChannelIn)
-                        { 
 #ifdef INCLUDE_THRU
-                        if (state != STATE_THRU_PLAY || !options.thruBlockOtherChannels)
-#endif
+                    if (state == STATE_THRU_PLAY)
+                        {
+                        // only pass through if the data's NOT coming in the default channel
+                        if ((channel != options.channelIn) && (options.channelIn != CHANNEL_OMNI)
+                            && channel != options.thruMergeChannelIn)
                             {
                             MIDI.sendAfterTouch(pressure, channel);
                             TOGGLE_OUT_LED();
                             }
+                        else if (channel == options.thruMergeChannelIn)  //  merge hasn't been sent to newitem yet
+                            {
+                            newItem = NEW_ITEM;
+                            itemType = MIDI_AFTERTOUCH;
+                            itemNumber = 1;
+                            itemValue = pressure;
+                            itemChannel = channel;
+                            }
                         }
+                    else
+#endif
+                        if (!isChannelIn)
+                            { 
+#ifdef INCLUDE_THRU
+                            if (state != STATE_THRU_PLAY || !options.thruBlockOtherChannels)
+#endif
+                                {
+                                MIDI.sendAfterTouch(pressure, channel);
+                                TOGGLE_OUT_LED();
+                                }
+                            }
         }
     else
         TOGGLE_OUT_LED();
@@ -1445,20 +1788,29 @@ void handlePitchBend(byte channel, int bend)
 #ifdef INCLUDE_ARPEGGIATOR
         if (application == STATE_ARPEGGIATOR)
             {
-            // are we playing along?  Route to the play along channel
-            if (local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+#if defined(__MEGA__)
+            if (state == STATE_ROOT && options.routeMIDI)
                 {
-                uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
-                if (channelOut == 0)
-                    channelOut = options.channelOut;
-                MIDI.sendPitchBend(bend, channelOut);
+                MIDI.sendPitchBend(bend, options.routeMIDI);
                 TOGGLE_OUT_LED();
                 }
-            else if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
-                {
-                MIDI.sendPitchBend(bend, options.channelOut);
-                TOGGLE_OUT_LED();
-                }
+            else               
+#endif defined(__MEGA__)
+
+                // are we playing along?  Route to the play along channel
+                if (local.arp.playing && local.arp.performanceMode && options.arpeggiatorPlayAlongChannel != ARPEGGIATOR_PERFORMANCE_MODE_TRANSPOSE)
+                    {
+                    uint8_t channelOut = options.arpeggiatorPlayAlongChannel;
+                    if (channelOut == 0)
+                        channelOut = options.channelOut;
+                    MIDI.sendPitchBend(bend, channelOut);
+                    TOGGLE_OUT_LED();
+                    }
+                else if (channel == options.channelIn || options.channelIn == CHANNEL_OMNI)
+                    {
+                    MIDI.sendPitchBend(bend, options.channelOut);
+                    TOGGLE_OUT_LED();
+                    }
             }
         else
 #endif
@@ -1588,254 +1940,5 @@ void handleSystemReset()
 
 
 
-/// MIDI OUT SUPPORT
-///
-/// The following functions foo(...) are called instead of the MIDI.foo(...)
-/// equivalents in many cases because they filter or modify the commands before
-/// they are sent out: either blocking them because we're in bypass mode,
-/// or changing the volume, or transposing, or toggling the MIDI out LED.
-
-
-/// Sends out pressure, transposing as appropriate
-void sendPolyPressure(uint8_t note, uint8_t pressure, uint8_t channel)
-    {
-    if (bypassOut) return;
-
-    int16_t n = note + (uint16_t)options.transpose;
-    n = bound(n, 0, 127);
-    MIDI.sendPolyPressure((uint8_t) n, pressure, channel);
-    TOGGLE_OUT_LED();
-    }
-            
-
-/// Sends a note on, transposing as appropriate, and adjusting
-/// the velocity as appropriate.  Also sends out CV.
-void sendNoteOn(uint8_t note, uint8_t velocity, uint8_t channel)
-    {
-    if (bypassOut) return;
-  
-    int16_t n = note + (uint16_t)options.transpose;
-    n = bound(n, 0, 127);
-    uint16_t v = velocity;
-    if (options.volume < 3)
-        v = v >> (3 - options.volume);
-    else if (options.volume > 3)
-        v = v << (options.volume - 3);
-    if (v > 127) v = 127;
-    MIDI.sendNoteOn((uint8_t) n, (uint8_t) v, channel);
-
-    TOGGLE_OUT_LED();
-    }
-
-/// Sends a note off, transposing as appropriate
-void sendNoteOff(uint8_t note, uint8_t velocity, uint8_t channel)
-    {
-    if (bypassOut) return;
-
-    int16_t n = note + (uint16_t)options.transpose;
-    n = bound(n, 0, 127);
-    MIDI.sendNoteOff((uint8_t) n, velocity, channel);
-    // dont' toggle the LED because if we're going really fast it toggles
-    // the LED ON and OFF for a noteoff/noteon pair and you can't see the LED
-    }
-
-
-         
-/// Sends an all notes off on ALL channels, regardless of whether bypass is turned on or not.
-void sendAllSoundsOffDisregardBypass(uint8_t channel)
-    {
-    if (channel == CHANNEL_OMNI)
-        {
-        for(uint8_t i = LOWEST_MIDI_CHANNEL; i <= HIGHEST_MIDI_CHANNEL; i++)
-            {
-#ifdef USE_ALL_NOTES_OFF
-            MIDI.sendControlChange(123, 0, i);          // All Notes Off
-#endif
-#ifdef USE_ALL_SOUNDS_OFF
-            MIDI.sendControlChange(120, 0, i);              // All Sound Off
-#endif
-            }
-        }
-    else
-        {
-#ifdef USE_ALL_NOTES_OFF
-        MIDI.sendControlChange(123, 0, channel);        // All Notes Off
-#endif
-#ifdef USE_ALL_SOUNDS_OFF
-        MIDI.sendControlChange(120, 0, channel);        // All Sound Off
-#endif
-        }
-    }
-        
-
-/// Sends an all notes off on ALL channels, but only if bypass is off.
-void sendAllSoundsOff(uint8_t channel)
-    {
-    if (!bypassOut) 
-        sendAllSoundsOffDisregardBypass(channel);
-    }
-
-
-
-
-#define DONT_SEND_14_BIT_CC
-
-// SEND CONTROLLER COMMAND
-// Sends a controller command, one of:
-// CC, NRPN, RPN, PC
-//
-// These are defined by the CONTROL_TYPE_* constants defined elsewhere
-//
-// Some commands (CC, NRPN, RPN) have COMMAND NUMBERS.  The others ignore the provided number.
-//
-// Each command is associated with a VALUE.  All values are 14 bits and take the form
-// of an MSB (the high 7 bits) and an LSB (the low 7 bits).  Some data expects lower
-// resolution numbers than that -- in this case you must shift your data so it's zero-
-// padded on the right.  For example, if you want to pass in a 7-bit
-// number (for PC, some CC values, or AFTERTOUCH) you should do so as (myval << 7).
-// If you want to pass in a signed PITCH BEND value (an int16_t from -8192...8191), you
-// should do so as (uint16_t myval + MIDI_PITCHBEND_MIN).
-//
-// It's good practice to send a NULL RPN after sending an RPN or NRPN, but it's 50% more data
-// in an already slow command.  So Gizmo doesn't do it by default.  You can make Gizmo do it
-// with #define INCLUDE_SEND_NULL_RPN   [I'd set that somewhere in All.h]
-//
-// Here are the valid numbers and values for different commands:
-//
-// COMMAND      NUMBERS         VALUES          NOTES
-// OFF          [everything is ignored, this is just a NOP]
-// CC           0-31            0-16383         1. If you send 7-bit data (zero-padded, shifted << 7) then the LSB will not be sent.
-//                                                 Also LSB not sent if DONT_SEND_14_BIT_CC is defined (which is the default).  So this normally doesn't occur.
-// CC           32-127          0-127           1. Zero-pad your 7-bit data (shift it << 7).
-//                                                                      2. Some numbers are meant for special functions.  Unless you know what you're doing,
-//                                                                         it'd be wise not to send on numbers 6, 32--63, 96--101, or 120--127
-// NRPN/RPN     0-16383         0-16383         1. If you send 7-bit data (zero-padded) then the LSB will not be sent.
-//                                                                      2. The NULL RPN terminator will only be sent if #define INCLUDE_SEND_NULL_RPN is on.
-//                                                                         By default it's off.  See the end of http://www.philrees.co.uk/nrpnq.htm
-//                                                                      3. You can also send in an RPN/NRPN DATA INCREMENT or DECREMENT.  To do this, pass in the
-//                                                                         value CONTROL_VALUE_INCREMENT [or DECREMENT] * 128 + DELTA.  A DELTA of 0 is the 
-//                                                                         same as 1 and is the most common usage.
-// PC           [ignored]       0-127           1. Zero-pad your 7-bit data (shift it << 7)
-// BEND         [ignored]       0-16383         1. BEND is normally signed (-8192...8191).  If you have the value as a signed int16_t,
-//                                                                         pass it in as (uint16_t) (myval + MIDI_PITCHBEND_MIN)
-// AFTERTOUCH [ignored] 0-127           1. Zero-pad your 7-bit data (shift it << 7)
-
-
-void sendControllerCommand(uint8_t commandType, uint16_t commandNumber, uint16_t fullValue, uint8_t channel)
-    {
-    uint8_t msb = fullValue >> 7;
-    uint8_t lsb = fullValue & 127;
-    
-    if (bypassOut)
-        return;
-        
-    // amazingly, putting this here reduces the code by 4 bytes.  Though it could
-    // easily be removed as the switch below handles it!
-    if (commandType == CONTROL_TYPE_OFF)
-        return;
-    
-    if (channel == 0)                // we do not output
-        return;
-    
-    switch(commandType)
-        {
-        case CONTROL_TYPE_OFF:
-            {
-            // do nothing
-            }
-        break;
-        case CONTROL_TYPE_CC:
-            {
-            // There are two kinds of CC messages: ones with an MSB only,
-            // and ones with an MSB + [optional] LSB.  The second kind are messages whose
-            // command number is 0...31.  The first kind are messages > 31.
-            
-            MIDI.sendControlChange(commandNumber, msb, channel);
-#ifdef DONT_SEND_14_BIT_CC
-// do nothing
-#else
-            if (commandNumber < 32 && lsb != 0)             // send optional lsb if appropriate
-                {
-                MIDI.sendControlChange(commandNumber + 32, lsb, channel);
-                }
-#endif
-            TOGGLE_OUT_LED(); 
-            }
-        break;
-        case CONTROL_TYPE_NRPN:
-            {
-            // Send 99 for NRPN, or 101 for RPN
-            MIDI.sendControlChange(99, commandNumber >> 7, channel);
-            MIDI.sendControlChange(98, commandNumber & 127, channel);  // LSB
-            if (msb == CONTROL_VALUE_INCREMENT)
-                {
-                MIDI.sendControlChange(96, lsb, channel);
-                }
-            else if (msb == CONTROL_VALUE_DECREMENT)
-                {
-                MIDI.sendControlChange(97, lsb, channel);
-                }
-            else
-                {
-                MIDI.sendControlChange(6, msb, channel);  // MSB
-                if (lsb != 0)
-                    MIDI.sendControlChange(38, lsb, channel);  // LSB
-                }
-#ifdef INCLUDE_SEND_NULL_RPN
-            MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
-            MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command
-#endif
-            TOGGLE_OUT_LED(); 
-            }
-        break;
-        // note merging these actually loses bytes.  I tried.
-        case CONTROL_TYPE_RPN:
-            {
-            MIDI.sendControlChange(101, commandNumber >> 7, channel);
-            MIDI.sendControlChange(100, commandNumber & 127, channel);  // LSB
-            if (msb == CONTROL_VALUE_INCREMENT)
-                {
-                MIDI.sendControlChange(96, lsb, channel);
-                }
-            else if (msb == CONTROL_VALUE_DECREMENT)
-                {
-                MIDI.sendControlChange(97, lsb, channel);
-                }
-            else
-                {
-                MIDI.sendControlChange(6, msb, channel);  // MSB
-                if (lsb != 0)
-                    MIDI.sendControlChange(38, lsb, channel);  // LSB
-                }
-#ifdef INCLUDE_SEND_NULL_RPN
-            MIDI.sendControlChange(101, 127, channel);  // MSB of NULL command
-            MIDI.sendControlChange(100, 127, channel);  // LSB of NULL command
-#endif
-            TOGGLE_OUT_LED(); 
-            }
-        break;
-        case CONTROL_TYPE_PC:
-            {
-            if (msb <= MAXIMUM_PC_VALUE)
-                MIDI.sendProgramChange(msb, channel);
-            TOGGLE_OUT_LED(); 
-            }
-        break;
-        case CONTROL_TYPE_PITCH_BEND:
-            {
-            // move from 0...16k to -8k...8k
-            MIDI.sendPitchBend(((int)fullValue) - MIDI_PITCHBEND_MIN, channel);
-            }
-        break;
-        case CONTROL_TYPE_AFTERTOUCH:
-            {
-            MIDI.sendAfterTouch(msb, channel);
-            }
-        break;
-        }
-    }
-        
-        
-        
 
 

@@ -15,7 +15,7 @@ uint32_t div100(uint32_t n)
     q = q + (q >> 20);
     q = q >> 6;
     r = n - q * 100;
-// return q + ((r + 28) >> 7);          // this is another alternative
+    // return q + ((r + 28) >> 7);          // this is another alternative
     return q + (r > 99);
     }
 

@@ -11,16 +11,18 @@
 // stateControllerPlay() and stateController() have been inlined into the state machine to save space
 
 // SET CONTROLLER TYPE
-// Lets the user set a controller type.   This is stored in &type.  When the user is finished
-// this function will go to the provided nextState (typically to set the controller number).
-void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
+// Lets the user set a controller type.   This is stored in &type.  If the user has selected
+// CC, NRPN, or RPN, and thus must specify a parameter number, then we switch to nextState.
+// If the user has seleted BEND or AFTERTOUCH and is fromButon, then we switch to nextState.
+// Otherwise, we switch to returnState (including OFF and cancelling).
+void setControllerType(uint8_t &type, uint8_t nextState, uint8_t returnState, uint8_t fromButton)
     {
     int8_t result;
     if (entry) 
         {
         backupOptions = options; 
         }
-    const char* menuItems[7] = {  PSTR("OFF"), PSTR("CC"), PSTR("NRPN"), PSTR("RPN"), PSTR("PC"), PSTR("BEND"), PSTR("AFTERTOUCH")};
+    const char* menuItems[7] = {  PSTR("OFF"), PSTR("CC"), PSTR("NRPN"), PSTR("RPN"), PSTR("BEND"), PSTR("AFTERTOUCH")};
     result = doMenuDisplay(menuItems, 7, STATE_NONE,  STATE_NONE, 1);
     switch (result)
         {
@@ -34,28 +36,18 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
             if (type == CONTROL_TYPE_OFF)
                 {
                 saveOptions();
-                if (nextState == STATE_CONTROLLER_SET_WAVE_ENVELOPE_NUMBER)
-                    goUpState(STATE_CONTROLLER_WAVE_ENVELOPE);  // it's the wave envelope
-                else if (nextState == STATE_CONTROLLER_SET_RANDOM_NUMBER)
-                    goUpState(STATE_CONTROLLER_RANDOM);  // it's the random generator
-                else
-                    goUpState(STATE_CONTROLLER);
+                goUpState(returnState);
                 }
-            else if ((type == CONTROL_TYPE_PC || type == CONTROL_TYPE_PITCH_BEND || type == CONTROL_TYPE_AFTERTOUCH))
+            else if ((type == CONTROL_TYPE_PITCH_BEND || type == CONTROL_TYPE_AFTERTOUCH))
                 {
-                if (buttonOnState != STATE_NONE)                // it's a button, we need to get button values
+                if (fromButton)                // it's a button, we need to get button values
                     {
-                    goDownState(buttonOnState);
+                    goDownState(nextState);
                     }
                 else
                     {
                     saveOptions();
-                    if (nextState == STATE_CONTROLLER_SET_WAVE_ENVELOPE_NUMBER)
-                        goUpState(STATE_CONTROLLER_WAVE_ENVELOPE);  // it's the wave envelope
-                    else if (nextState == STATE_CONTROLLER_SET_RANDOM_NUMBER)
-                        goUpState(STATE_CONTROLLER_RANDOM);  // it's the random generator
-                    else
-                        goUpState(STATE_CONTROLLER);
+                    goUpState(returnState);
                     }
                 }
             else // CC, NRPN, or RPN, we need to get a number and maybe button values
@@ -66,12 +58,7 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
         break; 
         case MENU_CANCELLED:
             {
-            if (nextState == STATE_CONTROLLER_SET_WAVE_ENVELOPE_NUMBER)
-                goUpStateWithBackup(STATE_CONTROLLER_WAVE_ENVELOPE);  // it's the wave envelope
-            else if (nextState == STATE_CONTROLLER_SET_RANDOM_NUMBER)
-                goUpStateWithBackup(STATE_CONTROLLER_RANDOM);  // it's the random generator
-            else
-                goUpStateWithBackup(STATE_CONTROLLER);
+            goUpState(returnState);
             }
         break;
         }
@@ -79,10 +66,10 @@ void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState)
 
 
 // SET CONTROLLER NUMBER
-// Lets the user set a controller number for the given controller type.   
-// This is stored in &number.  The user can cancel everything and the type and
-// number will be reset.
-void setControllerNumber(uint8_t type, uint16_t &number, uint8_t backupType, uint16_t backupNumber, uint8_t nextState)
+// Lets the user set a controller number for the given controller type, given a button (or not).  This is stored in &number.
+// The original type, determined by setControllerType, ise in 'type'.  Backups are provided.
+// If the user selects an item, we go to nextState.  If the user cancels, we go to returnState.
+void setControllerNumber(uint8_t type, uint16_t &number, uint8_t backupType, uint16_t backupNumber, uint8_t nextState, uint8_t returnState, uint8_t fromButton)
     {
     uint16_t max = (type == CONTROL_TYPE_CC ? 127 : 16383);
     uint8_t result = doNumericalDisplay(0, max, number, 0, GLYPH_NONE);
@@ -95,24 +82,20 @@ void setControllerNumber(uint8_t type, uint16_t &number, uint8_t backupType, uin
         break;
         case MENU_SELECTED:
             {
-            if (nextState == STATE_CONTROLLER 
-                || nextState == STATE_CONTROLLER_WAVE_ENVELOPE
-                || nextState == STATE_CONTROLLER_RANDOM
-                )  // we're not doing buttons
-                saveOptions();
-            else                                                                // we're doing buttons and either NRPN or RPN
+            if (fromButton)
+                {
                 local.control.doIncrement = (type == CONTROL_TYPE_NRPN || type == CONTROL_TYPE_RPN);
+                }
+            else
+                {
+                saveOptions();
+                }
             goDownState(nextState);
             }
         break;
         case MENU_CANCELLED:
             {
-            if (nextState == STATE_CONTROLLER_WAVE_ENVELOPE)
-                goDownStateWithBackup(STATE_CONTROLLER_WAVE_ENVELOPE);  // it's the wave envelope
-            else if (nextState == STATE_CONTROLLER_RANDOM)
-                goDownStateWithBackup(STATE_CONTROLLER_RANDOM);  // it's random lfo
-            else
-                goDownStateWithBackup(STATE_CONTROLLER);
+            goUpState(returnState);
             }
         break;
         }
@@ -925,120 +908,90 @@ void stateControllerPlay()
         
         if (potUpdated[LEFT_POT] && (options.leftKnobControlType != CONTROL_TYPE_OFF))
             {
-            local.control.displayValue = pot[LEFT_POT];
-            // at this point local.control.displayValue is 0...1023
-            
-            // Now move to MSB+LSB
-            local.control.displayValue = local.control.displayValue << 4;
-                    
-            if (local.control.potUpdateValue[LEFT_POT] != local.control.displayValue)
+            if (local.control.potUpdateValue[LEFT_POT] != pot[LEFT_POT] << 4)
                 {
-                local.control.potUpdateValue[LEFT_POT] = local.control.displayValue;
+                local.control.potUpdateValue[LEFT_POT] = pot[LEFT_POT] << 4;
                 local.control.potWaiting[LEFT_POT] = 1;
                 }
             }
           
         if (potUpdated[RIGHT_POT] && (options.rightKnobControlType != CONTROL_TYPE_OFF))
             {
-            local.control.displayValue = pot[RIGHT_POT];            
-            // at this point local.control.displayValue is 0...1023
-
-            // Now move to MSB+LSB
-            local.control.displayValue = local.control.displayValue << 4;
-                    
-            if (local.control.potUpdateValue[RIGHT_POT] != local.control.displayValue)
+            if (local.control.potUpdateValue[RIGHT_POT] != pot[RIGHT_POT] << 4)
                 {
-                local.control.potUpdateValue[RIGHT_POT] = local.control.displayValue;
+                local.control.potUpdateValue[RIGHT_POT] = pot[RIGHT_POT] << 4;
                 local.control.potWaiting[RIGHT_POT] = 1;
                 }
             }
         
         if (potUpdated[A2_POT] && (options.a2ControlType != CONTROL_TYPE_OFF))
             {
-            local.control.displayValue = pot[A2_POT];            
-            // at this point local.control.displayValue is 0...1023
-
-            // Now move to MSB+LSB
-            local.control.displayValue = local.control.displayValue << 4;
-                    
-            if (local.control.potUpdateValue[A2_POT] != local.control.displayValue)
+            if (local.control.potUpdateValue[A2_POT] != pot[A2_POT] << 4)
                 {
-                local.control.potUpdateValue[A2_POT] = local.control.displayValue;
+                local.control.potUpdateValue[A2_POT] = pot[A2_POT] << 4;
                 local.control.potWaiting[A2_POT] = 1;
                 }
             }
 
         if (potUpdated[A3_POT] && (options.a3ControlType != CONTROL_TYPE_OFF))
             {
-            local.control.displayValue = pot[A3_POT];            
-            // at this point local.control.displayValue is 0...1023
-
-            // Now move to MSB+LSB
-            local.control.displayValue = local.control.displayValue << 4;
-
-            if (local.control.potUpdateValue[A3_POT] != local.control.displayValue)
+            if (local.control.potUpdateValue[A3_POT] != pot[A3_POT] << 4)
                 {
-                local.control.potUpdateValue[A3_POT] = local.control.displayValue;
+                local.control.potUpdateValue[A3_POT] = pot[A3_POT] << 4;
                 local.control.potWaiting[A3_POT] = 1;
                 }
             }
 
-        // figure out who has been waiting the longest, if any.  The goal here is to only allow one out at a time and yet prevent starvation
+        // figure out who has been waiting the longest, if any.  The goal here is to only allow one out at a time and yet prevent starvation.
+        // Yes, this will mess up right at the maximum time value, but that is very rare and it's only a starvation issue if any at all, and only for a bit.
 
         int8_t winner = -1;
-        uint32_t winnerTime = 0;
-        //if (local.control.potWaiting[LEFT_POT] && (currentTime - local.control.potUpdateTime[LEFT_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
-        if (local.control.potWaiting[LEFT_POT] && (TIME_GREATER_THAN_OR_EQUAL(currentTime - local.control.potUpdateTime[LEFT_POT], MINIMUM_CONTROLLER_POT_DELAY)))
-            {
-            // if (local.control.potUpdateTime[LEFT_POT] - currentTime > winnerTime) { winner = LEFT_POT; winnerTime = currentTime - local.control.potUpdateTime[LEFT_POT]; }
-            if (TIME_GREATER_THAN(local.control.potUpdateTime[LEFT_POT] - currentTime, winnerTime)) { winner = LEFT_POT; winnerTime = currentTime - local.control.potUpdateTime[LEFT_POT]; }
+        uint32_t winnerTime = MAX_32;
+        if (local.control.potWaiting[LEFT_POT] && local.control.potUpdateTime[LEFT_POT] < winnerTime) 
+            { 
+            winner = LEFT_POT; winnerTime = local.control.potUpdateTime[LEFT_POT];
             }
-
-        //if (local.control.potWaiting[RIGHT_POT] && (currentTime - local.control.potUpdateTime[RIGHT_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
-        if (local.control.potWaiting[RIGHT_POT] && (TIME_GREATER_THAN_OR_EQUAL(currentTime - local.control.potUpdateTime[RIGHT_POT], MINIMUM_CONTROLLER_POT_DELAY)))
-            {
-            //if (local.control.potUpdateTime[RIGHT_POT] - currentTime > winnerTime) { winner = RIGHT_POT; winnerTime = currentTime - local.control.potUpdateTime[RIGHT_POT]; }
-            if (TIME_GREATER_THAN(local.control.potUpdateTime[RIGHT_POT] - currentTime, winnerTime)) { winner = RIGHT_POT; winnerTime = currentTime - local.control.potUpdateTime[RIGHT_POT]; }
+        if (local.control.potWaiting[RIGHT_POT] && local.control.potUpdateTime[RIGHT_POT] < winnerTime) 
+            { 
+            winner = RIGHT_POT; winnerTime = local.control.potUpdateTime[RIGHT_POT];
             }
-
-        //if (local.control.potWaiting[A2_POT] && (currentTime - local.control.potUpdateTime[A2_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
-        if (local.control.potWaiting[A2_POT] && (TIME_GREATER_THAN_OR_EQUAL(currentTime - local.control.potUpdateTime[A2_POT], MINIMUM_CONTROLLER_POT_DELAY)))
-            {
-            //if (local.control.potUpdateTime[A2_POT] - currentTime > winnerTime) { winner = A2_POT; winnerTime = currentTime - local.control.potUpdateTime[A2_POT]; }
-            if (TIME_GREATER_THAN(local.control.potUpdateTime[A2_POT] - currentTime, winnerTime)) { winner = A2_POT; winnerTime = currentTime - local.control.potUpdateTime[A2_POT]; }
+        if (local.control.potWaiting[A2_POT] && local.control.potUpdateTime[A2_POT] < winnerTime) 
+            { 
+            winner = A2_POT; winnerTime = local.control.potUpdateTime[A2_POT];
             }
-
-        //if (local.control.potWaiting[A3_POT] && (currentTime - local.control.potUpdateTime[A3_POT] >= MINIMUM_CONTROLLER_POT_DELAY))
-        if (local.control.potWaiting[A3_POT] && (TIME_GREATER_THAN_OR_EQUAL(currentTime - local.control.potUpdateTime[A3_POT], MINIMUM_CONTROLLER_POT_DELAY)))
-            {
-            //if (local.control.potUpdateTime[A3_POT] - currentTime > winnerTime) { winner = A3_POT; winnerTime = currentTime - local.control.potUpdateTime[A3_POT]; }
-            if (TIME_GREATER_THAN(local.control.potUpdateTime[A3_POT] - currentTime, winnerTime)) { winner = A3_POT; winnerTime = currentTime - local.control.potUpdateTime[A3_POT]; }
+        if (local.control.potWaiting[A3_POT] && local.control.potUpdateTime[A3_POT] < winnerTime) 
+            { 
+            winner = A3_POT; winnerTime = local.control.potUpdateTime[A3_POT];
             }
-                                        
-        // here we go
+            
+        // Do we have a winner?
         if (winner == LEFT_POT)
             {
             sendControllerCommand( local.control.displayType = options.leftKnobControlType, options.leftKnobControlNumber, local.control.potUpdateValue[LEFT_POT], options.channelOut);
             local.control.potUpdateTime[LEFT_POT] = currentTime;
             local.control.potWaiting[LEFT_POT] = 0;
+            local.control.displayValue = local.control.potUpdateValue[LEFT_POT] ;
             }
         else if (winner == RIGHT_POT)
             {
             sendControllerCommand( local.control.displayType = options.rightKnobControlType, options.rightKnobControlNumber, local.control.potUpdateValue[RIGHT_POT], options.channelOut);
             local.control.potUpdateTime[RIGHT_POT] = currentTime;
             local.control.potWaiting[RIGHT_POT] = 0;
+            local.control.displayValue = local.control.potUpdateValue[RIGHT_POT] ;
             }
         else if (winner == A2_POT)
             {
             sendControllerCommand( local.control.displayType = options.a2ControlType, options.a2ControlNumber, local.control.potUpdateValue[A2_POT], options.channelOut);
             local.control.potUpdateTime[A2_POT] = currentTime;
             local.control.potWaiting[A2_POT] = 0;
+            local.control.displayValue = local.control.potUpdateValue[A2_POT] ;
             }
         else if (winner == A3_POT)
             {
             sendControllerCommand( local.control.displayType = options.a3ControlType, options.a3ControlNumber, local.control.potUpdateValue[A3_POT], options.channelOut);
             local.control.potUpdateTime[A3_POT] = currentTime;
             local.control.potWaiting[A3_POT] = 0;
+            local.control.displayValue = local.control.potUpdateValue[A3_POT] ;
             }
         }
    

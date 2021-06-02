@@ -7,6 +7,11 @@
 
 #ifdef INCLUDE_ARPEGGIATOR
 
+void resetArpeggiator()
+    {
+    local.arp.currentPosition = ARP_POSITION_START;         
+    }
+
 // Starting at position pos, draws up to next SEVEN notes of the arpeggio.  
 // We leave a one-column space so as not to interfere with the right LED matrix
 //void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len = 7)
@@ -93,16 +98,16 @@ void playArpeggiatorNote(uint16_t note)
 
     int16_t n = note + (int16_t)local.arp.transpose;
     if (n >= 0 && n < 128)
-    	{
+        {
         sendNoteOn(local.arp.steadyNoteOff = local.arp.noteOff = (uint8_t) (n), vel, options.channelOut);
         if (local.arp.accompaniment != 0)
-        	{
-        	int16_t n2 = n + local.arp.accompaniment;
-        	if (n2 >= 0 && n2 < 128)
-        		{
-        		sendNoteOn((uint8_t) (n2), vel, options.channelOut);
-        		}
-        	}
+            {
+            int16_t n2 = n + local.arp.accompaniment;
+            if (n2 >= 0 && n2 < 128)
+                {
+                sendNoteOn((uint8_t) (n2), vel, options.channelOut);
+                }
+            }
         }
     updateNoteOffTime();     
     }
@@ -140,7 +145,7 @@ void playArpeggio()
     //
     // The last condition is because if the note length is 100% we want to NEVER turn off unless there's
     // a note pulse, even if the off time is exceeded, because we're doing fully legato.
-//    if (!bypassOut && local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || (currentTime >= local.arp.offTime && options.noteLength < 100)) &&
+    //    if (!bypassOut && local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || (currentTime >= local.arp.offTime && options.noteLength < 100)) &&
     if (!bypassOut && local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || (TIME_GREATER_THAN_OR_EQUAL(currentTime, local.arp.offTime) && options.noteLength < 100)) &&
         // we don't want to turn off the note if the next note is a tie
         !((local.arp.number > ARPEGGIATOR_NUMBER_CHORD_REPEAT &&                                                                                                                  // we're doing a custom arpeggio AND
@@ -154,14 +159,14 @@ void playArpeggio()
         else
             {
             sendNoteOff(local.arp.noteOff, 127, options.channelOut);
-			if (local.arp.accompaniment != 0)
-				{
-				int16_t n2 = local.arp.noteOff + (int16_t)local.arp.accompaniment;
-				if (n2 >= 0 && n2 < 128)
-					{
-					sendNoteOff((uint8_t) (n2), 127, options.channelOut);
-					}
-				}
+            if (local.arp.accompaniment != 0)
+                {
+                int16_t n2 = local.arp.noteOff + (int16_t)local.arp.accompaniment;
+                if (n2 >= 0 && n2 < 128)
+                    {
+                    sendNoteOff((uint8_t) (n2), 127, options.channelOut);
+                    }
+                }
             }
         local.arp.noteOff = NO_NOTE;
         }
@@ -309,7 +314,7 @@ void playArpeggio()
             }
         else 
             {
-            local.arp.currentPosition = ARP_POSITION_START;
+            resetArpeggiator();
             }
         }
     }
@@ -338,7 +343,7 @@ void arpeggiatorRemoveNote(uint8_t note)
         }
     if (local.arp.numChordNotes == 0)
         {
-        local.arp.currentPosition = ARP_POSITION_START;         // we just removed notes so we need to reset or playArpeggio() may miss it
+        resetArpeggiator();         // we just removed notes so we need to reset or playArpeggio() may miss it
         }
     }
         
@@ -357,7 +362,7 @@ void arpeggiatorAddNote(uint8_t note, uint8_t velocity)
     if (marked == local.arp.numChordNotes)  // they're all marked, time to reset
         {
         local.arp.numChordNotes = 0;
-        local.arp.currentPosition = ARP_POSITION_START;         // we just removed notes so we need to reset or playArpeggio() will miss it
+        resetArpeggiator();         // we just removed notes so we need to reset or playArpeggio() will miss it
         }
 
     if (local.arp.numChordNotes == MAX_ARP_CHORD_NOTES)  // at this stage, of we're still full, someone's holding down a lot of notes!
@@ -420,10 +425,10 @@ void arpeggiatorClearLatch()
     }
 
 void toggleAccompaniment()
-	{
-	if (local.arp.accompaniment == 0) local.arp.accompaniment = 12;
-	else local.arp.accompaniment = 0;
-	}
+    {
+    if (local.arp.accompaniment == 0) local.arp.accompaniment = 12;
+    else local.arp.accompaniment = 0;
+    }
 
 void arpeggiatorStartStopClock()
     {
@@ -433,7 +438,7 @@ void arpeggiatorStartStopClock()
         }
     else
         {
-        local.arp.currentPosition = ARP_POSITION_START;
+        resetArpeggiator();
         startClock(true);
         }
     }
@@ -472,7 +477,7 @@ void stateArpeggiator()
         local.arp.performanceMode = 0;
         local.arp.transpose = 0;
         sendAllSoundsOff();
-//        allowAutoReturn(false);
+        //        allowAutoReturn(false);
         }
     const char* menuItems[18] = { PSTR(STR_UP), PSTR(STR_DOWN), PSTR(STR_UP_DOWN), PSTR("+" STR_UP_DOWN), PSTR("RANDOM"), PSTR("ASSIGN"), PSTR("CHORD"), PSTR("0"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), PSTR("9"), PSTR("CREATE")};
     result = doMenuDisplay(menuItems, 18, STATE_NONE,  STATE_ROOT, 1);
@@ -572,17 +577,23 @@ void stateArpeggiatorPlay()
             else
                 setPoint(led, 6, 1);
             }
-            
+        
+        // For the time being we have no place to draw the velocity because 
+        // our only available space is taken up by the note pitch.  We can't draw
+        // on the other side of the screen because that's used by custom arpeggios.  Gotta think about this...
+        
+        /*
         // draw velocity            
-		const uint8_t divisions[] = { 0, 15, 25, 35, 45, 55, 65, 75, 85, 95, 105, 115 };
-		for(uint8_t i = 11; i >= 0; i--)
-			{
-			if (local.arp.velocity >= divisions[i])  // found it
-				{
-				drawRange(led, 0, 1, 12, i);
-				break;
-				}
-			}
+        const uint8_t divisions[] = { 0, 15, 25, 35, 45, 55, 65, 75, 85, 95, 105, 115 };
+        for(uint8_t i = 11; i >= 0; i--)
+        {
+        if (local.arp.velocity >= divisions[i])  // found it
+        {
+        drawRange(led, 0, 1, 12, i);
+        break;
+        }
+        }
+        */
         }
 
     if (isUpdated(BACK_BUTTON, RELEASED))
@@ -613,7 +624,7 @@ void stateArpeggiatorPlay()
             arpeggiatorEnterPerformanceMode();
             }
         else
-        	{
+            {
             goDownState(STATE_ARPEGGIATOR_MENU);
             }
         }
@@ -660,11 +671,13 @@ void stateArpeggiatorPlay()
                 arpeggiatorToggleLatch();
                 break;
                 }
-            case CC_EXTRA_PARAMETER_Z:
-                {
-                arpeggiatorStartStopClock();
-                break;
-                }
+            /*
+              case CC_EXTRA_PARAMETER_Z:
+              {
+              arpeggiatorStartStopClock();
+              break;
+              }
+            */
             case CC_EXTRA_PARAMETER_1:
                 {
                 arpeggiatorClearLatch();
@@ -796,8 +809,8 @@ void stateArpeggiatorMenu()
                 break;
                 case ARPEGGIATOR_PLAY_CLOCK:
                     {
-					arpeggiatorStartStopClock();
-					goUpState(STATE_ARPEGGIATOR_PLAY);
+                    arpeggiatorStartStopClock();
+                    goUpState(STATE_ARPEGGIATOR_PLAY);
                     }
                 break;
                 case ARPEGGIATOR_PLAY_VELOCITY:
@@ -861,22 +874,6 @@ void garbageCollectNotes()
     }
 
 
-/*
-///// MOVED TO TOP LEVEL TO SAVE SPACE
-// Handle the screen for creating an arpeggio.  This first chooses the root.
-void stateArpeggiatorCreate()
-{
-uint8_t note = stateEnterNote(STATE_ARPEGGIATOR);
-if (note != NO_NOTE)  // it's a real note
-{
-data.arp.root = note;
-state = STATE_ARPEGGIATOR_CREATE_EDIT;
-entry = true;
-}
-}
-*/
-
-
 void arpeggiatorEnterRest()
     {
     local.arp.currentRightPot = (uint8_t) ((pot[RIGHT_POT] * ((uint16_t) data.arp.length + 1)) >> 10);  //  / 1024);
@@ -929,13 +926,13 @@ void stateArpeggiatorCreateEdit()
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
         sendAllSoundsOff();
-        state = STATE_ARPEGGIATOR_CREATE_EXIT;
+        goUpState(STATE_ARPEGGIATOR_CREATE_EXIT);
         }
     else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
         {
         // save!
         sendAllSoundsOff();
-        state = STATE_ARPEGGIATOR_CREATE_SAVE;
+        goDownState(STATE_ARPEGGIATOR_CREATE_SAVE);
         entry = true;
         }
     else if (isUpdated(SELECT_BUTTON, RELEASED))
@@ -1150,7 +1147,6 @@ void stateArpeggiatorCreateSave()
         break;
         case MENU_CANCELLED:
             {
-            //goDownState(STATE_ARPEGGIATOR_CREATE_EDIT);
             state = STATE_ARPEGGIATOR_CREATE_EDIT;              // we don't do goDownState because that sets entry=true, which erases the arpeggio
             }
         break;
@@ -1163,8 +1159,7 @@ void stateArpeggiatorCreate()
     if (note != NO_NOTE)  // it's a real note
         {
         data.arp.root = note;
-        state = STATE_ARPEGGIATOR_CREATE_EDIT;
-        entry = true;
+        goDownState(STATE_ARPEGGIATOR_CREATE_EDIT);
         }
     }
         

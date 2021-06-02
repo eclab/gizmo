@@ -117,8 +117,12 @@ void setup()
     delay(2000);
 
     // Reset the menu delay
+#if defined(__MEGA__)
     setMenuDelay(options.menuDelay);
-    
+#else
+    setMenuDelay(DEFAULT_MENU_DELAY);
+#endif defined(__MEGA__)
+
     /// Set up MIDI
     MIDI.setHandleClock(handleClock);
     MIDI.setHandleStart(handleStart);
@@ -161,6 +165,17 @@ void setup()
     // start NOW
     targetNextPulseTime = m;
     targetNextTickTime = m;
+
+    // warm up the pots
+    for(uint8_t i = 0; i < 32; i++)
+      {
+      updateTicksAndWait();
+      update();
+      }
+
+    // initialize the state
+    state = STATE_ROOT;
+    entry = true;
     }
 
 

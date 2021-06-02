@@ -212,6 +212,7 @@ struct _arp
 
 
 
+void resetArpeggiator();
 
 // Starting at position pos, draws up to next SEVEN notes of the arpeggio.
 // We leave a one-column space so as not to interfere with the right LED matrix.

@@ -61,7 +61,7 @@ extern int16_t potDivisor;
 #define MENU_SELECTED 101
 #define MENU_CANCELLED 102
 
-#define MAX_MENU_ITEMS 18
+#define MAX_MENU_ITEMS 25
 #define MAX_MENU_ITEM_LENGTH 30
 
 uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, uint8_t backState, uint8_t scrollMenu, uint8_t extra = 0);

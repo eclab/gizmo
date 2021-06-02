@@ -12,10 +12,10 @@ void stateSynthKawaiK4()
     if (entry)
         {
 
-// even though the data is going to be 7-bit raw (because I've set it so below),
-// do a stupidity on my part, when handleControlChange() calls updateMIDI(..),
-// it will do so with MIDI_CC_14_BIT.  And so I need to turn off THAT passthrough.
-// This needs to be cleaned up.
+        // even though the data is going to be 7-bit raw (because I've set it so below),
+        // do a stupidity on my part, when handleControlChange() calls updateMIDI(..),
+        // it will do so with MIDI_CC_14_BIT.  And so I need to turn off THAT passthrough.
+        // This needs to be cleaned up.
 
         local.synth.passMIDIData[MIDI_CC_14_BIT] = false;
         setParseRawCC(true);

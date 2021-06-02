@@ -60,6 +60,10 @@ uint8_t slotTypeForApplication(uint8_t application)
         case STATE_DRUM_SEQUENCER:
             return SLOT_TYPE_DRUM_SEQUENCER;
 #endif
+#ifdef INCLUDE_CONTROLLER
+        case STATE_CONTROLLER:
+            return SLOT_TYPE_CONTROLLER;
+#endif
         default:
             return SLOT_TYPE_EMPTY;
         }

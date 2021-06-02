@@ -16,6 +16,15 @@
 \usepackage{array}
 \usepackage{color}
 \usepackage{multicol}
+\usepackage[svgnames]{xcolor}
+\usepackage[hyperfootnotes=false,linktocpage=true,linkbordercolor={0.5 0 0}]{hyperref}
+\hypersetup{
+    colorlinks,
+    linkcolor={red!50!black},
+    citecolor={blue!50!black},
+    urlcolor={blue!80!black}
+}%%% Note that to avoid a link being created from \pageref, just use \pageref*
+%%% End hyperref stuff
 
 \newcommand\ignore[1]{}
 \newcommand\bump{\vspace{11in}}
@@ -26,14 +35,20 @@
 \begin{document}
 
 \noindent {\Huge\bf Gizmo}\\[0.5em]
-{\large \bf An Arduino MIDI Tool, Version 7\\
+{\large \bf An Arduino MIDI Tool, Version 8\\
 By Sean Luke\quad sean@cs.gmu.edu} 
 \hspace{\fill}{\it \textbf{For Aric}}\\
 
+\vspace{-1em}
+\setcounter{tocdepth}{2}
+\tableofcontents
+\clearpage
 
-\noindent Gizmo is a small MIDI device intended to be inserted between the MIDI OUT of one device and the MIDI IN of one or more other devices.  There are a number of tools like this, such as the MIDIPal\footnote{Though they share nothing in common, MIDIPal is quite similar to Gizmo in functionality and goals.  But I wasn't even aware of the existence of MIDIPal when I started building Gizmo.  And besides, re-inventing the wheel is fun!  I've since ripped off a few of MIDIPal's features.  MIDIPal's page is http:/\!/mutable-instruments.net/midipal\ \ This device has been discontinued, but its open source software lives on in other hardware clones, such as the MIDIGal (https:/\!/midisizer.com/midigal/) or MIDIBro (http:/\!/www.audiothingies.com/product/midibro/)} or a variety of tools from MIDISolutions.\footnote{http:/\!/www.midisolutions.com/}
+\section{About Gizmo}
 
-Gizmo is the unholy union of an Arduino Uno or Arduino Mega 2560,\footnote{http:/\!/arduino.cc} an Adafruit 16x8 I2C LED matrix,\footnote{https:/\!/www.adafruit.com/categories/326\quad I use the 1.2-inch 16x8 matrix with red round LEDs, which works well.    I find that the green LED options tend to make noise.  This particular model can be found at https:/\!/www.adafruit.com/products/2037} and a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898} to perform a variety of helpful MIDI tasks.  Gizmo has several built-in applications, and assuming there's space you can develop additional applications for it.
+\noindent Gizmo is a small MIDI device intended to be inserted between the MIDI OUT of one device and the MIDI IN of one or more other devices.  There are a number of tools like this, such as the MIDIPal\footnote{Though they share nothing in common, MIDIPal is similar to Gizmo in functionality and goals.  But I wasn't even aware of the existence of MIDIPal when I started building Gizmo.  And besides, re-inventing the wheel is fun!  I've since ripped off a few of MIDIPal's features.  MIDIPal's page is http:/\!/mutable-instruments.net/midipal\ \ This device has been discontinued, but its open source software lives on in other hardware clones, such as the MIDIGal (https:/\!/midisizer.com/midigal/) or MIDIBro (http:/\!/www.audiothingies.com/product/midibro/)} or a variety of tools from MIDISolutions.\footnote{http:/\!/www.midisolutions.com/}
+
+Gizmo is the unholy union of an Arduino Uno or (much better) an Arduino Mega 2560,\footnote{http:/\!/arduino.cc} an Adafruit 16x8 I2C LED matrix,\footnote{https:/\!/www.adafruit.com/categories/326\quad I use the 1.2-inch 16x8 matrix with red round LEDs, which works well.    I find that the green LED options tend to make noise.  This particular model can be found at https:/\!/www.adafruit.com/products/2037} and a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898} to perform a variety of helpful MIDI tasks.  Gizmo has several built-in applications, and assuming there's space you can develop additional applications for it.
 
 This is a software project: the hardware is just three off-the-shelf boards and four wires.  There's no enclosure, no custom board.  If you'd like to make an enclosure, I'd love to see it.
 
@@ -52,7 +67,7 @@ Gizmo comes built-in with a number of applications and other capabilities.  All 
 
 \item {\bf MIDI Gauge.}\quad The gauge will display all incoming MIDI information on one or all channels.  Note on, note off, and polyphonic aftertouch are shown with pitch and velocity (or pressure).  Channel aftertouch is shown with the appropriate pitch.  Program changes indicate the number.  Pitch bends indicate the value in full 14-bit.  Control Change, Channel Mode, NRPN, and RPN messages display the number, value, and whether the value is being set, incremented, or decremented.  Sysex, song position, song select, tune request, start, continue, stop, and system reset are simply noted.  Rapid-fire MIDI signals such as MIDI clock, active sensing, and time code just turn on individual LEDs. You can also read raw Control Change messages (that is, not parsed into NRPN etc.), and provides more useful information on Channel Mode messages.
 
-\item {\bf MIDI Control Surface.}\quad Gizmo has two potentiometers and two buttons.  Each can be configured to send a unique Program Change, Control Change, NRPN, or RPN commands.  The potentiometers can send up to 10 bits of data (MSB + partial LSB).   You can send pitch bend, and aftertouch.  The control surface also contains an {\bf 8-stage loopable envelope} reminiscent of the wave envelope in the Microwave synthesizers, and a {\bf random LFO}, both of which can manipulate any of these commands as well.
+\item {\bf MIDI Control Surface.}\quad Gizmo has two potentiometers and two buttons.  Each can be configured to send a unique Program Change, Control Change, NRPN, or RPN commands.  The potentiometers can send up to 10 bits of data (MSB + partial LSB).   You can send pitch bend, and aftertouch.  The control surface also contains an {\bf 8-stage loopable envelope} reminiscent of the wave envelope in the Waldorf Microwave and Casio CZ synthesizers, and a {\bf random LFO}, both of which can manipulate any of these commands as well.  Finally, you can {\bf bulk-send program and bank changes} to several channels up to 12 different times.
 
 \item {\bf  Keyboard Splitter.}\quad You can split incoming MIDI notes by pitch and route them to different MIDI out channels.  You can also fade notes between two channels depending on note velocity.
 
@@ -100,7 +115,7 @@ Gizmo applications can also be set with a {\it note value} (or {\it note speed})
 
 \item {\bf Assemble the Hardware}\quad Gizmo consists of an Arduino Uno or Arduino Mega, a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898}, and an Adafruit 16x8 LED Matrix\footnote{This matrix comes in various colors LED shapes (round, square), and matrix sizes (0.8 inch, 1.2 inch).  I personally use a 1.2 inch round red matrix.  The URL for my model is https:/\!/www.adafruit.com/products/2037\quad I also have a round green matrix: it looks cool but it's significantly louder and has more electrical noise.  I prefer the red.} attached via four wires (I2C).  The SparkFun MIDI Shield does not come with headers to plug into the Arduino, and you'll need to get those too: it's assumed you'll either use plain headers, or use stackable headers.  I use stackable headers as it makes it easy for me to plug my four I2C wires into it.  See Section \ref{debouncing} for a warning about the low-quality buttons supplied with the MIDI Shield and what to do about it.
 
-Attach the four wires for SDA, SCL, 5V (VCC), and GND between the MIDI Shield and the LED Matrix.  
+Attach the four wires for SDA, SCL, 5V (VCC), and GND between the MIDI Shield and the LED Matrix.  On the Mega, these four connections are particularly easy to make: SDA has a dedicated port (20), as does SCL (21), and there are exposed 5V and GND ports in the corners: none of these covered by the SparkFun MIDI Shield and are easily accessed.
 
 \paragraph{Using the FeatherWing Backpack} Some people have lately been using Adafruit's ``8x16 FeatherWing Backpack'' for their LED Display.  This device rotates the LED matrices, so you'll need to account for that so Gizmo can rotate them back.  In the Gizmo file \texttt{LEDDisplay.h}, change the lines:
 
@@ -135,7 +150,7 @@ to
 
 \paragraph{Add Nonblocking I2C Writes}  This will dramatically speed up I2C for our purposes.
 \begin{enumerate}
-\item Locate your \texttt{Wire.cpp} and \texttt{Wire.h} files.  On the Mac they're located in\\\texttt{Arduino.app/Contents/Java/hardware/arduino/avr/libraries/Wire/src/}
+\item Locate your \texttt{Wire.cpp} and \texttt{Wire.h} files.  On the Mac they're located in\\\texttt{Arduino.app/Contents/Java/hardware/arduino/avr/libraries/Wire/src/}\\(and probably one other location).
 
 \item Add the following line inside the ``public'' method region in \texttt{Wire.h:}
 
@@ -154,13 +169,13 @@ to
 \end{verbatim}
 \end{enumerate}
 
-Be warned that certain recent versions of the Arduino software may have these files located in {\it multiple} places.  You'll need to change all of them.
+Be warned that certain recent versions of the Arduino software may have these files located in {\it multiple} places.  On the Mac, for example, there are often two copies of each of these files.  You'll need to change all of them.
 
-\paragraph{Reduce the I2C Buffer Size from 32 to 20} This gives us some extra static RAM space.
+\paragraph{Reduce the I2C Buffer Size from 32 to 20} This gives us some extra static RAM space, and is probably only useful on the Arduino Uno.  You can probably skip this if you're on a Mega.
 
 \begin{enumerate}
 \item Locate your \texttt{Wire.h} file.  Again, on the Mac it's located in\\
-\texttt{Arduino.app/Contents/Java/hardware/arduino/avr/libraries/Wire/src/}
+\texttt{Arduino.app/Contents/Java/hardware/arduino/avr/libraries/Wire/src/}\\(and probably one other location).
 
 \item Change the \texttt{BUFFER\_LENGTH} constant in the \texttt{Wire.h} file as follows:
 
@@ -169,7 +184,7 @@ Be warned that certain recent versions of the Arduino software may have these fi
 \end{verbatim}
 
 \item Identify your \texttt{twi.h} file.  On the Mac it's located in\\
-\texttt{Arduino.app/Contents/Java/hardware/arduino/avr/libraries/Wire/src/utility/}
+\texttt{Arduino.app/Contents/Java/hardware/arduino/avr/libraries/Wire/src/utility/}\\(and probably one other location).
 
 \item Change the \texttt{TWIBUFFER\_LENGTH} constant in the \texttt{twi.h} file as follows:
 
@@ -178,7 +193,7 @@ Be warned that certain recent versions of the Arduino software may have these fi
 \end{verbatim}
 \end{enumerate}
 
-Again, be warned that certain recent versions of the Arduino software may have these files located in {\it multiple} places.  You'll need to change all of them.
+Again, be warned that certain recent versions of the Arduino software may have these files located in {\it multiple} places.  On the Mac, for example, there are often two copies of each of these files. You'll need to change all of them.
 
 
 \item {\bf Download the Gizmo Software}\quad You can grab it with git or svn at\\
@@ -195,15 +210,15 @@ Again, be warned that certain recent versions of the Arduino software may have t
 
 \item {\bf Switch the MIDI Shield to ``Run''}\quad  You can plug in MIDI cables now.
 
-\item {\bf Do a Full Reset of Gizmo}\quad Power up the Arduino.  Then hold down all three pushbuttons on the MIDI Shield.  While doing so, press and release the reset button on the MIDI Shield.  Continue to hold down the three push buttons until the two LEDs on the MIDI Shield light up.\footnote{Sometimes you have to do this a couple of times on the Mega to get the lights to light up.}  Let go of the pushbuttons.  
+\item {\bf Do a Full Reset of Gizmo}\quad Power up the Arduino.  Then hold down all three pushbuttons on the MIDI Shield.  While doing so, press and release the reset button on the MIDI Shield.  Continue to hold down the three push buttons until the two LEDs on the MIDI Shield light up.\footnote{Sometimes you have to do this a couple of times on the Mega to get the lights to light up.}  Let go of the pushbuttons.  This procedure initializes the memory, options, and files in the device.  See Section~\ref{initializinggizmo} for more details about the full reset and other reset options.  
 
-This procedure initializes the memory, options, and files in the device.  Now you're ready to go!
+\item {\bf Now you're ready to go!}
 
 \end{enumerate}
 
-\subsection{Customizing Your Arduino}
+\subsection{Customizing Gizmo}
 
-Gizmo is fairly modular: you can choose which applications you want to have on your device, as well as various features.  This allows us to (for example) have more applications and features on the Mega than on the Uno.  If you want to port to a device with a somewhat tighter memory footprint (such as the Arduino Mini), or want to make room on the Uno for your own application, you just need to change which options are installed.  See the line {\tt \#if defined(\_\_UNO\_\_)} in the file \texttt{All.h}).
+Gizmo is modular: you can choose which application or applications you want to have on your device, as well as various features.  See the file \texttt{All.h} for customization options.  It's als0 where you can pick which application you want on your Uno.
 
 \subsection{Buttons, Shield Quality, and Debouncing}
 \label{debouncing}
@@ -216,7 +231,7 @@ After about four months of extremely heavy use, my select and back buttons began
 
 \subsection{A Bootloader Bug on the Arduino Mega}
 
-Many versions of the Arduino Mega have an error in their bootloader which may cause the Arduino to hang if you've got a MIDI device cables plugged into MIDI IN when you power Gizmo up.  Similarly, if you press the reset button, it'll look like it's not booting up, but just frozen.  The issue is simple: if on bootup the Mega hears data coming in on MIDI IN (which is its serial port), the bootloader assumes that you're downloading a new program and immediately goes into program-load mode.    But in fact it's probably just MIDI Clock or Active Sensing commands from a chatty synthesizer.  You have four options:
+Many versions of the Arduino Mega have an error in their bootloader which may cause the Arduino to hang if you've got MIDI device cables plugged into MIDI IN when you power Gizmo up.  Similarly, if you press the reset button, it'll look like it's not booting up, but just frozen.  The issue is simple: if on bootup the Mega hears data coming in on MIDI IN (which is its serial port), the bootloader assumes that you're downloading a new program and immediately goes into program-load mode.    But in fact it's probably just MIDI Clock or Active Sensing commands from a chatty synthesizer.  You have four options:
 
 \begin{itemize}
 \item Turn on or Reboot Gizmo without anything plugged into MIDI IN, then plug the cable in.
@@ -235,6 +250,7 @@ If you're on an Uno and want to have a large complement of applications, you mig
 
 \clearpage
 \section{Initializing Gizmo}
+\label{initializinggizmo}
 
 Gizmo must be initialized before it can be used.  You can do a factory reset on Gizmo with this procedure:
 
@@ -247,7 +263,7 @@ Gizmo must be initialized before it can be used.  You can do a factory reset on 
 
 Gizmo will reset all of its flash RAM and reboot.  This means that all options will be set to their default state, and all file storage (including arpeggios) will be emptied.
 
-\paragraph{Doing a ``Partial Reset''} Whenever you load new Gizmo software, you should reinitialize Gizmo or strange things will happen.  However a full factory reset also erases your saved files (sequences, arpeggios, recordings).  If you want to preserve these but just reset the options, just hold down the left and right buttons instead of all three (don't hold down the middle button).
+\paragraph{Doing a ``Partial Reset''} Whenever you load new Gizmo software, you should reinitialize Gizmo or strange things will happen because the order and makeup of options in RAM often changes.  However a full factory reset also erases your saved files (sequences, arpeggios, recordings).  If you want to preserve these but just reset the options, hold down the left and right buttons instead of all three (don't hold down the middle button).
 
 \subsection{Starting Gizmo}
 
@@ -310,22 +326,23 @@ I make no guarantees that this will work: but it might.
 
 \clearpage
 
-\section{User Interface}
+\section{Using Gizmo}
 
 \begin{wrapfigure}{r}{3in}
 \vspace{-1.5em}\includegraphics[width=3in]{OverallLayout.pdf}
-\vspace{-2em}\caption{\small High-Level Gizmo Layout}
+\vspace{-2.5em}\caption{\small High-Level Gizmo Layout}
 \label{HighLevelGizmoLayout}
+\vspace{-1em}
 \end{wrapfigure}
 
-Gizmo has a modest interface: a 16x8 LED display, two additional on-board LEDs (red and green), three buttons, and two potentiometers (dials): but it strives hard to make good use of these.  
+Gizmo lets you select and use one or more applications such as arpeggiators, step sequencers, MIDI gauges, and so on.  To run these applications, Gizmo has a modest interface: a 16x8 LED display, two on-board LEDs (red and green), three buttons, and two potentiometers (dials): but it strives hard to make good use of these.  
 
-Gizmo's top-level interface layout is a menu hierarchy.  You select menu items, which may take you deeper into the hierarchy, or you can go back up towards the top of the hierarchy.  The top level menu chooses between different {\bf applications}.  Once you have entered an application, its {\bf application number} is displayed in the {\bf current application region} (see Figure~\ref{HighLevelGizmoLayout}).
+Gizmo's primary interface layout is a menu hierarchy.  You select menu items, which take you deeper into the hierarchy, or you head go back up the hierarchy.  
 
-The current application LEDs light up right-to-left in a certain pattern with increasing application numbers, as shown in Figure~\ref{applicationvalues}.  Gizmo's interface can presently support up to eleven top-level applications.  
+When Gizmo starts, you're in the {\bf Top Level Menu}.  Here you may choose among different {\bf applications}.  Once you have entered an application, its {\bf application number} is displayed in the {\bf current application region} (see Figure~\ref{HighLevelGizmoLayout}). The current application LEDs light up right-to-left in a certain pattern with increasing application numbers, as shown in Figure~\ref{applicationvalues}.   
 
 \begin{wrapfigure}{r}{1.6in}
-\vspace{-3em}\includegraphics[width=1.6in]{Application.pdf}
+\vspace{-1em}\includegraphics[width=1.6in]{Application.pdf}
 \vspace{-2em}\caption{\small Application Values}
 \vspace{-1em}
 \label{applicationvalues}
@@ -354,9 +371,9 @@ Buttons do different things.  Here are certain common items:
 \begin{itemize}
 \item {\bf Pressing the Back Button}\quad This is the ``escape'' or ``cancel'' button: it {\bf always goes back up the menu hierarchy.}  Thus you can't ever get lost\,---\,just keep pressing the Back button and you'll eventually find yourself at the root menu.  Sometimes when you press the Back button, you'll be presented with an ``Exit?'' sign as shown in Figure~\ref{exit}, to double-check if you really want to back out this far (like leaving an application). If you do, just press the Back button again.  If not, press the Select button to undo.
 
-\item {\bf Long-Pressing the Back Button}\quad This toggles {\bf bypass mode}, where Gizmo tries hard to act as if it's just a MIDI THRU coupler between its input and output MIDI wires: it passes through all the MIDI it receives,\footnote{Except Sysex, which is too much for the Arduino's tiny memory.} and with two exceptions (the Controller, see Section \ref{controller}, and the ``Merge'' MIDI clock option, see Section~\ref{options}) it doesn't output any new data.  In bypass mode, the {\bf Beat/Bypass} light (Figure~\ref{HighLevelGizmoLayout}) will stop beating and instead will flash rapidly.  Bypass mode also sends an ``all sounds off'' command to all outgoing MIDI channels, so if you need to shut up a misbehaving synth, you can enter bypass mode and then leave it again.\footnote{By default Gizmo starts up with Bypass turned on in a special way: when you select your very first application, Gizmo will automatically turn Bypass off (without sending an ``all sounds off''), enter that application, and thereafter treat Bypass normally.  This only happens on selecting your first application, and that's it.  Also if you toggle Bypass manually, Gizmo will automatically start treating Bypass normally.  The point of this is to allow Gizmo to be in Bypass mode unintrusively as soon as it's powered up so you can have it attached to your keyboard all the time even if you don't use it that often.  If you would prefer that Gizmo start up with Bypass turned {\it off}, in \texttt{All.h} change the line \texttt{\#define TOPLEVEL{\textunderscore}BYPASS}\quad to\quad\texttt{// \#define TOPLEVEL{\textunderscore}BYPASS}\quad and rebuild Gizmo.}
+\item {\bf Long-Pressing the Back Button}\quad This toggles {\bf bypass mode}, where Gizmo tries hard to act as if it's just a MIDI THRU coupler between its input and output MIDI wires: it passes through all the MIDI it receives,\footnote{Except Sysex, which is too much for the Arduino's tiny memory.} and with two exceptions (the Controller, see Section \ref{controller}, and the ``Merge'' MIDI clock option, see Section~\ref{options}) it doesn't output any new data.  In bypass mode, the {\bf Beat/Bypass} light (Figure~\ref{HighLevelGizmoLayout}) will stop beating and instead will flash rapidly.  Bypass mode also sends an ``all sounds off'' command to all outgoing MIDI channels, so if you need to shut up a misbehaving synth, you can enter bypass mode and then leave it again.
 
-\item {\bf Pressing the Select Button}\quad If you're being presented with a menu of options, or a number to choose, or a glyph to choose, the Select button will select the currently-displayed option.  In some applications (such as the Step Sequencer, Drum Sequencer, Arpeggiator, and Recorder) the Select Button is assigned other tasks.
+\item {\bf Pressing the Select Button}\quad If you're being presented with a menu of options, or a number to choose, or a glyph to choose, the Select button will select the currently-displayed option.  In some applications, the Select Button is assigned other tasks.
 
 \item {\bf Pressing the Middle Button}\quad Likewise if you're being presented with a menu of options, or a number to choose, or a glyph to choose, the Middle button will increment the current display (but not select it).   The Middle button does lots of other things as needed.
 \end{itemize}
@@ -370,22 +387,37 @@ Gizmo's potentiometers (or {\bf pots}) do a number of tasks, including scrolling
 
 There are two LEDs on-board the SparkFun MIDI Shield.  The {\bf red LED} is toggled on and off to reflect incoming MIDI data.  The {\bf green LED} is toggled on and off to reflect outgoing MIDI data.  
 
-\clearpage
-\section{How Gizmo Handles MIDI}
+\subsection{How Gizmo Handles MIDI}
 
 Gizmo listens for certain kinds of incoming MIDI data, then hands it to an {\bf application}, which may in turn send MIDI data out.  Applications can send data out any way they wish, but in many cases they restrict themselves to sending data out only to Gizmo's {\bf default MIDI Out Channel.}  Note data (Note on, Note Off) sent out may also be subject to further user-specified transformation in the form of transposition or volume control.  
 
-\vspace{-0.5em}\paragraph{Channel Data} If the incoming data is {\it channel data} (Note on/off, Aftertouch, Pitch Bend, Program Change, Control Change / NRPN / RPN), most applications will listen to it only if it is from the {\bf default MIDI In Channel}, which can be 1--16, or OMNI (all channels), or OFF (no channels).  Some applications may listen to channel data from certain additional channels: for example the MIDI Thru Facility also listens to data on an additional ``Merge channel''.  {\bf Data from all remaining channels is simply passed through to MIDI Out. }  
+\vspace{-0.5em}\paragraph{Channel Data} If the incoming data is {\it channel data} (Note on/off, Aftertouch, Pitch Bend, Program Change, Control Change / NRPN / RPN), most applications will listen to it only if it is from the {\bf default MIDI In Channel}, which can be 1--16, or OMNI (all channels), or OFF (no channels).  Some applications may listen to channel data from certain additional channels: for example the MIDI Thru Facility also listens to data on an additional ``Merge channel''.  {\bf Data from all remaining channels is simply passed through to MIDI Out. }   And when you are in the Top Level Menu, there is one other option which lets you route from MIDI In to a special ``MIDI Routing Channel''.  See Section~\ref{secretsofthetoplevelmenu} for more information on that.
 
 \vspace{-0.5em}\paragraph{Clock Data} Gizmo can follow clock data or ignore it and generate its own clock.  Furthermore Gizmo can pass incoming clock data through to MIDI Out, or block it.  Gizmo can also emit its own clock data.
 
-\vspace{-0.5em}\paragraph{Sysex Data} Sysex is generally not passed through: it requires too large a buffer in the underlying MIDI library.
+\vspace{-0.5em}\paragraph{Sysex Data} Sysex is not passed through: it requires too large a buffer in the underlying MIDI library.
 
 \vspace{-0.5em}\paragraph{Other Data} Most other data is simply passed through from MIDI In to MIDI Out.
 
 \vspace{-0.5em}\paragraph{Bypass Mode} When bypass mode is engaged, all data received is simply passed to MIDI Out.  Applications may still listen to the data.  One application (the Controller) may send data during bypass mode.
 
 \vspace{-0.5em}\paragraph{Controlling Gizmo} One incoming channel can be defined as the {\bf default MIDI Control Channel}.  Data on this channel is used only to manipulate Gizmo (via NRPN or CC), for example, changing a Gizmo parameter.
+
+
+\subsection{Secrets of the Top Level Menu}
+\label{secretsofthetoplevelmenu}
+
+When you start up Gizmo, you begin at the {\bf Top Level Menu}, where you can choose from various applications. You scroll through the applications\footnote{If you're using an Uno, your only applications will be the application you compiled, and Options.  If you're using the Mega, you'll have a number of applications.} by turning the {\bf left knob} and you select an application by pressing the {\bf select button} (the right button).  If you leave an application by repeatedly pressing the {\bf back button} (the left button), you will eventually find yourself back up at the Top Level Menu.
+
+The Top Level Menu has three secret tricks up its sleeve that you should know about.  
+
+\begin{itemize}
+\item By default Gizmo starts up at the Top Level Menu with {\bf Bypass turned on} in a special way: when you select your very first application, Gizmo will automatically turn Bypass off (without sending an ``all sounds off''), enter that application, and thereafter treat Bypass normally.  This only happens on selecting your first application, and that's it.  Also if you toggle Bypass manually, Gizmo will automatically start treating Bypass normally.  The point of this is to allow Gizmo to be in Bypass mode unintrusively as soon as it's powered up so you can have it attached to your keyboard all the time even if you don't use it that often.\footnote{If you would prefer that Gizmo start up with Bypass turned {\it off}, in \texttt{All.h} comment out the line\quad\texttt{\#define TOPLEVEL{\textunderscore}BYPASS}\quad by changing it to\quad\texttt{// \#define TOPLEVEL{\textunderscore}BYPASS}\quad and rebuild Gizmo.}
+
+\item If you turn the {\bf right knob} a large distance from its current position,\footnote{It's a large distance to make it less likely to happen by accident.}  this will trigger Gizmo to let you select the {\bf  MIDI Routing Channel}, either 0 (meaning no routing) or a channel from 1--16.  If you have chosen a channel, and you have turned off Bypass, then while in the Top Level Menu (and {\it only} while in the Top Level Menu), if you play MIDI into the Default MIDI In Channel, it will get sent out the MIDI Routing Channel.  This feature is because I usually have Gizmo attached to a MIDI controller keyboard (a StudioLogic SL 990) which can only output on Channel 1.  This gives me an easy way to quickly reroute it on other channels.    This feature is only available on the Mega, not the Uno.
+
+\item If you {\bf long-press the Middle Button}, you can toggle starting or stopping the MIDI clock; and if you {\bf long-press the Select Button} (the right button), you can toggle {\it continuing} or stopping the MIDI clock.  This also occurs in the Options menu.  How or whether this all works depends on Gizmo's clock settings: see Section~\ref{startingclock} for more details.
+\end{itemize}
 
 
 \clearpage
@@ -399,7 +431,7 @@ Gizmo listens for certain kinds of incoming MIDI data, then hands it to an {\bf 
 
 The arpeggiator allows you to play different kinds of arpeggios, and also to create and save up to ten of them.  The arpeggiator's main menu lets you choose to play five different kinds of pre-set arpeggios, or to select an arpeggio from user-created arpeggio slots 1--10, or finally to create an arpeggio.
 
-An arpeggio is a pattern for repeatedly playing the notes in a chord.  When you hold down a chord on the keyboard, the arpeggiator uses this pattern to play the notes, typically one at a time, according to the pattern selected.  Patterns do not specify exact notes, but rather note orderings.  For example, an arpeggio might be defined as 1, 2, 2, 3, 4, 2, 3: if 1 is set to be the root (lowest) note of your chord, then if you play a C7 chord (C E G B$\flat$), then the arpeggiator will assign 1 = C, 2 = E, 3=G, 4=B$\flat$, and so repeat the sequence C E E G B$\flat$ E G.   
+An arpeggio is a pattern for repeatedly playing the notes in a chord.  When you hold down a chord on the keyboard, the arpeggiator uses this pattern to play the notes, typically one at a time, according to the pattern selected.  Patterns do not specify exact notes, but rather note orderings.  For example, an arpeggio might be defined as 1, 2, 2, 3, 4, 2, 3, where if 1 is the root (lowest) note of a chord, 2 is the second lowest note, and so on.  If, say, you played a C7 chord (C E G B$\flat$) with this arpeggiator pattern, then the arpeggiator would assign 1 = C, 2 = E, 3=G, 4=B$\flat$, and so repeat the sequence \hbox{C E E G B$\flat$ E G.}
 
 \paragraph{Playing an Arpeggio}
 
@@ -414,7 +446,7 @@ The arpeggiator also has a {\bf performance mode} which you toggle by Long-Press
 	\end{itemize}
 You can chose which of these items occurs when you enter performance mode choosing the menu option {\bf Performance}.
 
-If you Long-Press the Middle button, you can toggle {\bf accompaniment} when you release.  When accompanying, every time Gizmo plays a note it will also play the same note one octave above.  That's all.
+If you Long-Press the Middle button, you will toggle {\bf octave accompaniment} when you release.  As a result, every time Gizmo plays a note it will also play the same note one octave above.  That's all.
 
 In some situations, you may need to manually {\bf start or stop} the clock during arpeggiation.  You can do this with an option in the menu (long-press the Select button).
 
@@ -449,11 +481,21 @@ As you play a preset arpeggio, the notes played by the arpeggio will appear at r
 
 While playing a preset arpeggio, you can select the number of octaves by calling up the play menu (Long-Pressing the Select button), then choosing {\bf Octaves}.  If you have an octaves value \(\geq 0\), then when the arpeggiator exhausts its notes, it will repeat them again one octave higher, then another octave higher, and so on, up to the number of octaves chosen. You an select any value from 0--6 octaves.\footnote{Note that this means that if your chord is larger than one octave, you may not get what you expected.  For example, if you are playing UP with C5 E5 G5 D6, and with octaves\(=\)1, then the arpeggiator will play C5 E5 G5 D6 C6 E6 G6 D7.  Note that C6 is played after D6 is played.  That's the current behavior right now anyway.}
 
-By default the key velocity\footnote{By velocity we mean in the MIDI sense: how fast the key is struck; this basically translates to loudness.} that {\it all} notes in the track will use (as a value 0...127) is determined by the {\bf first note} you press when you hold down a chord.  This strategy usually works well, but if you can instead fix the velocity to a specific value by (once again) calling up the menu by Long-Pressing the Select button, then choosing {\bf Velocity}.  At the far highest end of the velocity options is \texttt{FREE}, which means that the velocity is determined by your fingers again (this is the default).
+\begin{wrapfigure}{r}{1.45in}
+\begin{center}
+\vspace{-2em}
+\includegraphics[width=1.45in]{arpvelocity}\\
+\caption{Displayed arpeggio note velcocity.}
+\end{center}
+\vspace{-2em}
+\label{arpvelocity}
+\end{wrapfigure}
+
+By default the note velocity\footnote{By velocity we mean in the MIDI sense: how fast the key is struck; this basically translates to loudness.} that {\it all} notes in the track will use (as a value 0...127) is determined by the {\bf first note} you press when you hold down a chord.  This strategy usually works well, but if you can instead fix the velocity to a specific value by (once again) calling up the menu by Long-Pressing the Select button, then choosing {\bf Velocity}.  At the far highest end of the velocity options is \texttt{FREE}, which means that the velocity is determined by your fingers again (this is the default). The current note velocity used by the arpeggiator is roughly displayed below the note pitch, using the range as shown in Figure~\ref{arpvelocity} at right.
 
 \begin{wrapfigure}{r}{1.6in}
 \begin{center}
-\vspace{-2em}
+\vspace{-1em}
 \includegraphics[width=1in]{arpeggioexample.pdf}\\
 Example Arpeggio\\[2em]
 %\vspace{-1.5em}\includegraphics[width=1in]{arpeggioup.pdf}\\
@@ -490,7 +532,7 @@ If you don't like the latest portion of your arpeggio, you can scroll the cursor
 
 An {\bf important note regarding the scrolling.}  The cursor is always located at the position where new notes will be entered.  But as you scroll back and forth, you'll hear the notes of your arpeggio.  When you scroll and hear a note, that note is the note {\it immediately before} the cursor position.  It's the last note in the arpeggio before you start adding new notes. It is {\it not} the note that you'll replace when you start entering notes. 
 
-Anyway, when you are satisfied with your arpeggio, Long-Press the Select button to save.\footnote{How do you load an arpeggio to be re-edited, you ask?  The answer is, unfortunately, that you can't at present.  When saved, arpeggios are compressed into consecutive numbers, stripping out the original notes you used to edit them.}  You'll be asked for a slot to save in, and after that, you'll be back in the main Arpeggiator menu.
+Anyway, when you are satisfied with your arpeggio, Long-Press the Select button to save.\footnote{How do you load an arpeggio to be re-edited, you ask?  The answer is, unfortunately, that you can't.  Once saved, arpeggios are compressed into consecutive numbers, stripping out the original notes you used to edit them.}  You'll be asked for a slot to save in, and after that, you'll be back in the main Arpeggiator menu.
 
 \paragraph{Playing a User-Created Arpeggio}
 
@@ -501,13 +543,13 @@ The preset arpeggio patterns (such as Up-Down) vary with the number of notes in 
 
 What happens if your arpeggio is designed for three notes but you hold down  five notes in your chord?  Only three of your five notes will be played.
 
-What happens if your arpeggio is designed for five notes but you hold down only three notes in your chord?  Then notes from the bottom (or top, as appropriate) of your chord will be transposed up/down one octave to make up the remaining notes.
+\bump
+
+On the other hand, what happens if your arpeggio is designed for five notes but you hold down only three notes in your chord?  Then notes from the bottom (or top, as appropriate) of your chord will be transposed up/down one octave to make up the remaining notes.
 
 Also, because they are fixed in size, user-created arpeggios do not respond to the octaves option.
 
 If you're playing a user-created arpeggio, and you press the Select button, Gizmo will schedule an {\bf advance to the next non-empty user-created arpeggio} after the current arpeggio has finished.\footnote{Which brings up the question: how do you delete a user-created arpeggio?  Maybe you have some junk you don't want to advance to.  The answer is: go to CREATE an arpeggio, then while it's still empty, save it to the slot you want to delete.}
-
-\bump
 
 \paragraph{More Arpeggiator Options}
 
@@ -540,7 +582,7 @@ Back Button				& Exit				& Exit\\
 						& {\it or} Leave Performance Mode\\
 Back Button (Long)			& Toggle Bypass  & Toggle Bypass\\
 Middle Button				& Toggle Latch				& Tie \\
-Middle Button (Long)			& Toggle Accompaniment\\
+Middle Button (Long)			& Toggle Octave Accompaniment\\
 Select Button				& Advance to Next User Arpeggio & Rest \\
 						& {\it (only if currently in a user arpeggio)}\\
 Select Button (Long)			& Menu & Save Arpeggio\\
@@ -555,6 +597,7 @@ Keystrokes, CC, etc.			& Enter Arpeggio Chord & Enter Arpeggio Notes\\
 \end{tabular}
 }
 \end{center}
+~		% Give me a bit more space at the end of the page
 
 \paragraph{Remote Control over CC}  If you have a remote control surface, you can directly access a number of the Arpeggiator's play or arpeggio creation capabilities by sending CC messages over Gizmo's Control MIDI Channel.    These operations are on top of the CC Control Midi operations (Section \ref{options}, see ``Control MIDI''), and in fact replicate a few of them.
 
@@ -564,7 +607,7 @@ Keystrokes, CC, etc.			& Enter Arpeggio Chord & Enter Arpeggio Notes\\
 \it CC Number & \it CC Value & \it Creating a User Arpeggio	& \it Playing an Arpeggio \\
 \hline\\[-0.5em]
 88	&	Any	 & Enter Rest	& Toggle Latch\\
-89	&	Any	 & Enter Tie 	& Toggle Start/Stop Clock\\
+89	&	Any	 & Enter Tie       & \\%  Toggle Start/Stop Clock\\
 90	&	Any	 & 	 	& Clear Latch\\
 118	&	Any	&	& Set Latch and Enter Performance Mode\\
 91	&	Any	&	& Advance to Next User Arpeggio\\
@@ -584,26 +627,27 @@ Keystrokes, CC, etc.			& Enter Arpeggio Chord & Enter Arpeggio Notes\\
 \clearpage
 
 
-\begin{wrapfigure}{r}{3in}
-\vspace{-1.5em}\includegraphics[width=3in]{stepsequencer}
-\vspace{-2em}\caption{\small Step Sequencer Display}\vspace{-1em}
-\label{stepsequencer}
-\end{wrapfigure}
-
-
-
 \section {The Step Sequencer}
 \label{stepsequencersec}
 
-The Step Sequencer makes it easy to create multitrack loops common on devices like drum machines.  You can have twelve 16-note tracks, eight 24-note tracks, six 32-note tracks, or three 64-note tracks.  You can later reduce the length of these tracks to arbitrary values.
+\noindent {\bf Note: }{\it The Step Sequencer runs on the Arduino Uno only in\\limited form.}\vspace{1em}
+
+\begin{wrapfigure}{r}{3in}
+\vspace{-4.75em}\includegraphics[width=3in]{stepsequencer}
+\vspace{-2em}\caption{\small Step Sequencer Display}
+\vspace{-1em}
+\label{stepsequencer}
+\end{wrapfigure}
+
+The Step Sequencer makes it easy to create multitrack loops common on devices like drum machines.  You can have twelve 16-note tracks, eight 24-note tracks, six 32-note tracks, four 48-note tracks, three 64-note tracks, or two 96-note tracks.  You can later reduce the length of these tracks to arbitrary values.
 
 \begin{wrapfigure}{r}{1in}
 \vspace{-1em}\includegraphics[width=1in]{none.pdf}
-\vspace{-2em}\caption{\small None}\vspace{-1em}
+\vspace{-2em}\caption{\small None}\vspace{-2em}
 \label{none}
 \end{wrapfigure}
 
-When you choose the Step Sequencer from the root menu, you will be asked to load a sequence from a slot.  You can do this, or you can create a new empty sequence by choosing \texttt{-~-~-~-} (meaning {\it none}).  Slots are displayed by number, plus an \texttt{L} (for Load) and an optional \texttt{R} (for Recorder), \texttt{S} (for Step Sequencer), or \texttt{D} (for Drum Sequencer) if the slot already has a file from one of these applications.  This letter {\bf blinks} if the file isn't the type of your current application to warn you that you might eventually overwrite a slot when you save.
+\paragraph{Initialization} When you choose the Step Sequencer from the root menu, you will be asked to load a sequence from a slot.  You can do this, or you can create a new empty sequence by choosing \texttt{-~-~-~-} (meaning {\it none}).  Slots are displayed by number, plus an \texttt{L} (for Load) and an optional \texttt{R} (for Recorder), \texttt{S} (for Step Sequencer), or \texttt{D} (for Drum Sequencer) if the slot already has a file from one of these applications.  This letter {\bf blinks} if the file isn't the type of your current application to warn you that you might eventually overwrite a slot when you save.
 
 If you have chosen {\it none}, or have chosen an empty slot or one presently filled by another application, you'll be asked to initialize the sequence first, choosing from 16, 24, 32, or 64 notes per track. Then you are taken to the main Step Sequencer display.  
 
@@ -630,7 +674,7 @@ Each track takes up one or two rows in the Tracks area: 16-note tracks take a si
 \label{bars}
 \end{wrapfigure}
 
-The number of notes of the step sequencer (16, 24, 32, etc. notes) is its {\it bar} or {\bf measure length}.  At the beginning of a new bar the step sequencer decides on which tracks to play.  You can set each track to play with a certain probability; or have the step sequencer choose from among certain tracks; or have tracks turn on and off according to a four-bar {\bf pattern}.  The current bar being played in the pattern is given as shown in Figure \ref{bars}.  Tracks can also be {\bf muted} or {\bf soloed}.
+The number of notes of the step sequencer (16, 24, 32, 48, 64, 96) is its {\it bar} or {\bf measure length}.  At the beginning of a new bar the step sequencer decides on which tracks to play.  You can set each track to play with a certain probability; or have the step sequencer choose from among certain tracks; or have tracks turn on and off according to a four-bar {\bf pattern}.  The current bar being played in the pattern is given as shown in Figure \ref{bars}.  Tracks can also be {\bf muted} or {\bf soloed}.
 
 \paragraph{Modes} The Step Sequencer can be in one of three modes: the {\bf Edit Mode}, the {\bf Play Position Mode}, and the {\bf Performance Mode}.  In the Edit mode you can enter notes, rests, or ties one by one directly in positions of your choosing.  In Play Position Mode, when you play notes, they are entered right where the play position cursor is located.  This is good for doing on-the-fly recording.\footnote{I myself spend most of my time in Play Position Mode}  Finally in Performance Mode, when you play notes, they're not entered into the Step Sequencer: instead, they're routed to MIDI Out so you can play along with your recorded sequence; or they're interpreted as transposing the sequence as it plays.  Performance Mode also allows you to chain sequences and do other nifty things.
 
@@ -639,14 +683,14 @@ Typically you'll start in Edit Mode.  Somewhere on the screen there will be a si
 
 You enter notes by moving the edit cursor to the desired location, then playing keys.  You can also press the Middle Button to enter a rest, or Long Press the Middle Button to enter a {\it tie}.  A tie just means ``keep playing the previous note'': it essentially lengthens the previous note.  You can enter multiple ties in series to make a note as long as you like.
 
-\paragraph{The Advanced Step Sequencer: Sequencing Data}.  The Advanced version of the step sequencer only fits on a Mega (there's not enough room on the Uno), and allows you to store other kinds of data besides Note-On and Note-Off.  Specifically, you can set a given track to store and replay any one of (raw) CC, 14 Bit CC, NRPN, RPN, Pitch Bend, Channel Aftertouch, or Program Change commands by choosing {\bf Type} from the menu (see {\bf Menu Options} below).  If you select (raw) CC, 14 Bit CC, NRPN, or RPN, you will be further prompted to specify which parameter number you'd like to sequence (for example, CC\# 42 or NRPN\# 12312).
+\paragraph{The Advanced Step Sequencer: Sequencing Data}  The Advanced version of the step sequencer only fits on a Mega (there's not enough room on the Uno), and allows you to store other kinds of data besides Note-On and Note-Off.  Specifically, you can set a given track to store and replay any one of (raw) CC, 14 Bit CC, NRPN, RPN, Pitch Bend, Channel Aftertouch, or Program Change commands by choosing {\bf Type} from the menu (see {\bf Menu Options} below).  If you select (raw) CC, 14 Bit CC, NRPN, or RPN, you will be further prompted to specify which parameter number you'd like to sequence (for example, CC\# 42 or NRPN\# 12312).
 
 Non-note data is entered differently than note data.  To enter non-note events, send an event to the MIDI In Channel, then press the {\bf middle button}: the most recent sent event will then be recorded at the current position.  You can erase data at the current position (essentially send a rest) by long-pressing the middle button.\footnote{This may be confusing as rests are entered by simply {\it pressing} the middle button for note data, but I figured entering data was more important than entering rests in the non-note case.  Sorry.}
 
 \begin{wrapfigure}{r}{1.25in}
-\vspace{-1em}\hspace{\fill}\includegraphics[width=0.7in]{playpositionmode}\hspace{\fill}%
+\vspace{-1.5em}\hspace{\fill}\includegraphics[width=0.7in]{playpositionmode}\hspace{\fill}%
 \vspace{-1em}
-\caption{\small The Play Position Mode Cursor.  The current track is marked by the two dots.}
+\caption{\small The Play Position Mode Cursor.  The two dots mark the current track.}
 \vspace{-1em}
 \label{playpositionmode}
 \end{wrapfigure}
@@ -655,7 +699,7 @@ Some notes.  First, if you sent a Polyphonic Aftertouch event (on any key) it wi
 
 \paragraph{Play Position Mode}
 
-If you turn the right knob fully to the left, you will find that the cursor scrolls right off the left side of the screen.  At this point you are in {\bf play position mode}.  Here, if you press a key, it is entered at the play position cursor.
+If you turn the right knob fully to the left, you will find that the cursor scrolls right off the left side of the screen.  At this point you are in {\bf play position mode}.  Here, if you press a key, it is entered at the play position cursor.  As long as you hold down the note, and don't press another, the sequencer will continue to add ties to stretch out the note.
 
 In play position mode, the function of the Middle Button changes.  Now if you press the Middle Button, it will toggle muting the current track.  You can tell a track is muted because the LEDs at each end of the track are blinking.  Additionally, if you Long Press the Middle Button, it will erase all the notes on the current track (but not change its settings).
 
@@ -684,6 +728,8 @@ If you press solo, you won't {\it toggle} the solo.  Instead, you {\it schedule}
 \item If you are currently soloed: {\bf Schedule Un-solo} \(\rightarrow\) {\bf Undo}
 \end{itemize}
 
+\bump 
+
 Similarly, if you press mute, you {\it schedule} the track to be muted (or not), at the next bar, for exactly one bar, and then to return to its present state.  If you press mute a second time, you schedule the track to be muted (or not) permanently at the next bar.  If you press mute a third time, you undo all this.  This is known as {\bf advancing mute}:
 
 \begin{itemize}
@@ -705,7 +751,10 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 \item {\bf Velocity (Track)}\quad This lets you specify a key velocity\footnote{By velocity we mean in the MIDI sense: how fast the key is struck; this basically translates to loudness.} that {\it all} notes in the track will use (as a value 1...127).  If you would instead prefer that each note in the track use its own independent key velocity as you had entered them, you can choose {\it none}.
 \item {\bf Fader (Track)}\quad This lets you specify a volume modifier which is multiplied against the velocities of the notes in the track.  Possible values are 0...31, where 0 completely hushes the notes, 16 lets them play at their specified velocities, and 31 is roughly twice their velocity.  8 is one half-velocity, 4 is one quarter velocity, and so on.  In general, values larger than or smaller than 16 will make the notes louder or quieter respectively.
 \item {\bf Type (Track)} {\it (Advanced Step Sequencer Only)}\quad Lets you specify the type of data stored in this track.  See discussion of {\bf Edit Mode} above.
-\item {\bf Pattern (Track)} \quad Lets you specify the four-bar pattern for this track.  An {\tt O} indicates that the track will be played, and a {\tt -} indicates that it will be hushed.  Your options are: \texttt{OOOO, O-O-, -O-O, OOO-, ---O, O--O, -OO-, OO--, --OO, OO-O, --O-, R1/8, R1/4, R1/2, R3/4,} or\ \ {\tt EXCL}.  The four which start with {\tt R} hush at random: the fraction indicates the probability that the track will be played.  {\tt EXCL} is {\it exclusive random:} if multiple tracks are designated as {\tt EXCL} then at any time exactly one of them will be played (and the others will be hushed).  If only one track is {\tt EXCL}, it's always played.  Note that many of the non-random patterns are in pairs so you can swap the track being played.
+\item {\bf Pattern}\quad Lets you specify the four-bar pattern for this track in this group.  Your options are: \texttt{OOOO, O-O-, -O-O, OOO-, ---O, O--O, -OO-, OO--, --OO, OO-O, --O-, R1/8, R1/4, R1/2, ---X,} or\ \ {\tt XXXX}.  An {\tt O} indicates that the track will be played, and a {\tt -} indicates that it will be hushed.  The {\tt O} patterns are in pairs so you can swap the track being played with some other track.  The three patterns which start with {\tt R} hush at random each bar: the fraction indicates the probability that the track will be played.  An {\tt X} indicates {\it exclusive random:} if multiple tracks are designated as {\tt X} for a given bar, then exactly one of them will be played then (the others will be hushed).   {\tt ---X} is exclusive random for the fourth bar only and hushed otherwise; this makes possible random fills, and would be useful with {\tt OOO-}.   If only one track is {\tt X}, it's always played.  If two tracks are {\tt X}, they alternate.  Otherwise Gizmo tries to select a different track each time.
+
+\bump 
+
 \item {\bf Edit}\quad A submenu for some simple cut/copy/paste-like operations:
 \begin{itemize}
 \item {\bf Mark}\quad Records the current track and edit position as the {\it mark position}.
@@ -718,7 +767,7 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 %\item {\bf Clock Control} (or {\bf No Clock Control}) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note that regardless of the setting of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.
 \item {\bf No Echo} (or {\bf Echo}) \quad This toggles {\it no-echo mode}.  Normally when you enter a note, it's automatically played so you get some feedback.  But in some circumstances this isn't desirable: for example, if you're entering {\it and} playing notes from the same keyboard, then this default behavior will cause two notes to be played whenever you enter a note.  {\bf No Echo} will turn this off.\footnote{Another closely related feature: if you're in play position mode and you have entered a note slightly before its time, Gizmo won't play it (the first time) when its time comes up, because you just played it yourself.  This isn't the case on the Uno: you'll hear a double-played note the first time.  There's not enough space on the Uno to add this feature, sorry.}
 
-\item {\bf Length}\quad  Lets you set the length of the sequence to a custom value, or to \texttt{- - - -}, meaning to use the default initialized sequence length (16, 24, 32, or 64).  If the initialized length is 16, 24, or 32, then you can customize the length to anything less than it.  If the initialized length is 64, then you can customize the length to to anything from 33 to 63.
+\item {\bf Length}\quad  Lets you set the length of the sequence to a custom value, or to \texttt{- - - -}, meaning to use the default initialized sequence length (16, 24, 32, 48, 64, or 96).  If the initialized length is 16, 24, or 32, then you can customize the length to anything less than it.  If the initialized length is 48, 64, or 96, then you can reduce the length to no less than 31 fewer notes.
 
 \item {\bf Performance}\quad  This brings up the Performance Mode sub-menu.  You can select these menu items from any mode (not just Performance Mode), but the impact of your changes will only be felt in Performance Mode:
 
@@ -853,7 +902,7 @@ Note that this doesn't change the Advance Mute in Performance Mode behavior, jus
 \label{drumsequencer}
 \end{wrapfigure}
 
-The Drum Sequencer is very similar to the Step Sequencer, but it has features and tradeoffs more oriented towards drum machine style sequencing:
+The Drum Sequencer is similar in some respects to the Step Sequencer, but it has features and tradeoffs more oriented towards drum machine style sequencing:
 
 \begin{itemize}
 \item The Step Sequencer only plays one repeating multitrack sequence at a time.   But the Drum Sequencer can store up to 15 of them (known as {\bf groups}) in a single sequence to make a drum rhythm for a whole song.  These groups can vary in length and speed.  The term {\bf sequence} is reserved for all the groups together as a whole.
@@ -869,10 +918,10 @@ The Drum Sequencer is very similar to the Step Sequencer, but it has features an
 \paragraph{Basic Organization} A drum sequence is organized as follows:
 
 \begin{itemize} 
-\item The sequence is divided into \(\leq 15\) {\bf groups.}\footnote{In terminology of other drum sequencer, notably Roland-style drum machines, these are commonly called {\bf patterns}.  Why aren't we using this terminology?  Because Gizmo uses {\it pattern} to mean something else.} Each group is a repeating ``sequence'' in and of itself in the Step Sequencer sense of the term.  Each group has a maximum length (number of steps) which you specify up front when you choose the drum sequence format\,---\,8, 16, 32, or 64\,---\,but you can shorten individual group lengths to less than this.  Each group also has a {\it speed} which may be a multiple or fraction of the standard tempo.
-\item Each group has \(\leq 20\) rows of steps.  A thread of rows through all the groups\,---\,row \#5 running through groups 0...15, say\,---\, is called a {\bf track}.  Each track is associated with a {\bf drum note}.  A drum note is a MIDI note pitch, note velocity, and MIDI channel.  When a step on that track is played, Gizmo will send a Note On message with that pitch and velocity to that channel.\footnote{This means that the Drum Sequencer does not support accents.  How do you do an accent then?  Just use a new track and change its volume.  There's a convenience menu option called {\bf Accent} to help you.} Tracks can also be muted and soloed.
+\item The sequence is divided into \(\leq 15\) {\bf groups,} depending on the initialization format.\footnote{In terminology of other drum sequencers, notably Roland-style drum machines, these are commonly called {\bf patterns}.  Why aren't we using this terminology?  Because Gizmo already uses {\it pattern} to mean something else.} Each group is a repeating ``sequence'' in and of itself in the Step Sequencer sense of the term.  Each group has a maximum length (number of steps) which you specify up front when you choose the drum sequence format\,---\,8, 16, 32, or 64\,---\,but you can shorten individual group lengths to less than this.  Each group also has a {\it speed} which may be a multiple or fraction of the standard tempo.
+\item Each group has \(\leq 20\) rows of steps, again depending on the initialization format.  A thread of rows through all the groups\,---\,row \#5 running through groups 0...15, say\,---\, is called a {\bf track}.  Each track is associated with a {\bf drum note}, which is a MIDI note pitch, note velocity, and MIDI channel.  When a step on that track is played, Gizmo will send a Note On message with that pitch and velocity to that channel.  A global accent track is available, and you can make per-drum-note accent tracks. Tracks can also be muted and soloed.
 \item Each row in each group can have its own four-bar {\it pattern} in the Step Sequencer sense of the term.
-\item Just like the Step Sequencer, the Drum Sequencer has a {\bf Performance Mode}.  In performance mode, the sequencer will (among other things) play groups in a certain order according to a {\bf chain} of up to 20 {\bf transitions}.\footnote{Again, traditionally, the term for this is probably a {\it chain} of {\it patterns}.}  Each transition specifies a group to play, plus how many times to play it before transitioning to the next one.  Transitions can also be set up to play random groups and to do small loops.  In performance mode you can trigger a premature transition manually if you like.
+\item Just like the Step Sequencer, the Drum Sequencer has a {\bf Performance Mode}.  In performance mode, the sequencer will (among other things) play groups in a certain order according to a {\bf chain} of up to 20 {\bf transitions}.\footnote{Again, traditionally, the term for this is probably a {\it chain} of {\it patterns}.}  Each transition specifies a group to play, plus how many times to play it before transitioning to the next one.  Transitions can also be set up to play random groups and to do small loops.  In performance mode you can trigger a premature transition manually, as well as a fill.
 \end{itemize}
 
 \begin{wrapfigure}{r}{1in}
@@ -882,7 +931,7 @@ The Drum Sequencer is very similar to the Step Sequencer, but it has features an
 
 \paragraph{Initialization} When you choose the Drum Sequencer from the root menu, you will be asked to load a sequence from a slot.  You can do this, or you can create a new empty sequence by choosing \texttt{-~-~-~-} (meaning {\it none}).  Slots are displayed by number, plus an \texttt{L} (for Load) and an optional \texttt{R} (for Recorder), \texttt{S} (for Step Sequencer), or \texttt{D} (for Drum Sequencer) if the slot already has a file from one of these applications.  This letter {\bf blinks} if the file isn't a Drum Sequencer file to warn you that you might eventually overwrite a slot when you save.
 
-If you have chosen {\it none}, or have chosen an empty slot or one presently filled by another application, you'll be asked to initialize the sequence first by specifying its {\it format}.  Your 16 options\footnote{Why only multiples of 8 for group length?  You're choosing the {\it maximum} group length, and this data has to be packed into (8-bit) bytes.  However you can reduce the length of any or all groups to a value less than maximum.  See the \textbf{menu}.} are:
+If you have chosen {\it none}, or have chosen an empty slot or one presently filled by another application, you'll be asked to initialize the sequence first by specifying its {\it format}.  Your 16 options\footnote{Why only multiples of 8 for group length?  You're choosing the {\it maximum} group length, and this data has to be packed into (8-bit) bytes.  However you can later reduce the length of any of the groups to any value less than maximum.  See the \textbf{Menu}.} are:
 
 \vspace{0.5em}\begin{center}{\small\noindent\begin{tabular}{@{}rrrr@{}}
 &\it Group Length&\it Number of&\it Number of\\
@@ -926,22 +975,24 @@ If you have chosen {\it none}, or have chosen an empty slot or one presently fil
 
 Many of the remaining LEDs are similar to ones in the Step Sequencer.  The {\it Sequence Iteration} LED tells you which bar in a four-bar repeating pattern the is being played (see Figure~\ref{bars2}).  The {\it Performance Mode} LED tells you if you're in performance mode.  The {\it Next-Transition Trigger} LED lights up if, when in performance mode, you have manually triggered the sequence to transition at the end of playing this group.  The {\it Track is Playing} LED tells you if the current track is now playing according to its pattern.  The {\it Region} LED tells you steps will be toggled, set, or cleared, when you play certain notes (we'll get back to that). And finally, the {\it Stopped} LED is lit when the drum sequencer is not running.
 
-\paragraph{The Four Modes} The original Step Sequencer had three modes: the Drum Sequencer has four. Three modes are determined by the horizontal position of the cursor on the screen, which you can change using the right knob.  Turn the knob to the extreme left and the cursor is replaced with a special bar cursor as you enter {\bf Play Position Mode}.  Turn the knob to the extreme right and the cursor is replaced with a different bar cursor as you enter {\bf Group Mode} (this is the new one).  Turn the knob somewhere in the middle and you'll find yourself in {\bf Edit Mode}.  Finally, pressing a special button sequence enters {\bf Performance Mode}.  In each of these modes the function of the buttons and (sometimes) the knobs works differently. 
+\paragraph{The Four Modes} The original Step Sequencer had three modes: the Drum Sequencer has four. Three modes are determined by the horizontal position of the cursor on the screen, which you can change by turning the right knob.  Turn the knob to the extreme left and the cursor is replaced with a special bar cursor as you enter {\bf Play Position Mode}.  Turn the knob to the extreme right and the cursor is replaced with a different bar cursor as you enter {\bf Group Mode} (this is the new one).  Turn the knob somewhere in the middle and you'll find yourself in {\bf Edit Mode}.  Finally, pressing a special button sequence enters {\bf Performance Mode}.  In each of these modes the function of the buttons and (sometimes) the knobs works differently. 
 
 \paragraph{Edit Mode, and Setting Up a Track} Move the right knob somewhere in the middle to enter edit mode.  This mode works much like it did in the Step Sequencer: you can enter notes right at the single blinking cursor (but there are now other options too).  Moving the right knob to the right or left changes the step position of the cursor in the group (note that if you have more than 16 steps, they'll wrap around).  Moving the left knob up to the right or left changes the track you're editing in the group.  You'll see the cursor move up and down, and you'll also see the track number indicator change to tell you what track you're on.
 
-Before we continue in Edit Mode, let's set up the first track.  Make sure that you have selected track 1 by moving the left knob to the far left.  Long-press the Select button, you'll enter the {\bf Menu}.  From here, choose {\bf Track}.  From there, select {\bf Out MIDI} to pick the MIDI channel that this track will send notes to.  You can choose a value 1...16, or \texttt{----} ({\it none}), or \texttt{DFLT}, which tells the Step Sequencer to use the default MIDI Out Channel specified in the Options menu (see Section \ref{options}).  The Track menu also sports the {\bf Velocity} option, where you can choose the {\it note velocity} (or volume) from 1...8.  The default value is 6, which corresponds to a MIDI velocity of 95.\footnote{The MIDI values are:  1: 15, 2: 31, 3: 47, 4: 63, 5: 79, 6: 95, 7: 111, 8: 127.}  If you like, you can then {\it distribute} this information to all the the other tracks by choosing the {\bf Distribute} option.  You can manually change track information on other tracks by moving the left knob in Edit mode (or in Play Position Mode) to change the track you'd like to work on, then selecting the appropriate menu option.
+Before we continue in Edit Mode, let's set up the first track.  Make sure that you have selected track 1 by moving the left knob to the far left.  Long-press the Select button, you'll enter the {\bf Menu}.  From here, choose {\bf Track}.  From there, select {\bf Out MIDI} to pick the MIDI channel that this track will send notes to.  You can choose a value 1...16, or \texttt{----} ({\it none}), or \texttt{DFLT}, which tells the Step Sequencer to use the default MIDI Out Channel specified in the Options menu (see Section \ref{options}).  The Track menu also sports the {\bf Velocity} option, where you can choose the {\it note velocity} from 1...8.  The default value is 6.  See {\bf Velocities} later for information on how to interpret the 1...8 values as MIDI velocities.  
+
+If you like, you can then {\it distribute} this information to all other tracks by choosing the {\bf Distribute} option.  You can manually change track information on other tracks by moving the left knob in Edit mode (or in Play Position Mode) to change the track you'd like to work on, then selecting the appropriate menu option.
 
 Exit the menu, and we're back in Edit mode.  But let's first make one more change before we enter data: let's select the drum note to be played when a step is triggered.  To do this, long-press the Middle button.  You will be asked to play a {\tt NOTE}, and that note will become the {\bf new drum note} for that track.  
 
+\enlargethispage{0.5em}
 Let's say you don't know what note to choose.  What to do?  When you see {\tt NOTE}, press the Back button.   You will enter a screen which shows you the current note the track is using.\footnote{Gizmo displays the {\it note}, and {\it octave}, like C\#4.  Octaves start at 0 in MIDI (A0 is the first note); but manufacturers differ in how they display octaves: for example, Yamaha adds 2, so a Yamaha C\#0 is a MIDI/Gizmo C\#2; and a MIDI/Gizmo C0 is a Yamaha C -2.}   While the note is being displayed, you can try out other notes by pressing any key you like, and it'll get played directly on your drum synthesizer.  When you're ready, you can go back to {\tt NOTE} by pressing the Select button, and from there, you can enter the note of your choice.  Or you can press the Back button to escape all of this.
 
 \begin{wrapfigure}{r}{4in}
 \vspace{-0.5em}
 \hspace{\fill}\includegraphics[width=4in]{EditModeKeys}
 \vspace{-1em}
-\caption{\small Edit Mode key input, starting at Middle C (MIDI 60).  White keys toggle one of 16 steps each.  C\# sets these keys to correspond to steps 1...16 (region ``A'').  D\# sets them to correspond to steps 17...32 (region~``B'').  F\#~sets them to correspond to steps 33...48 (region ``C'').  G\# sets them to correspond to steps 39...64 (region ``D'').  The default is region ``A''.  A\#~toggles the current step ({\it ``here''}) at the edit cursor.  Any note less than middle C just plays the current drum note rather than entering it.
- }
+\caption{\small Edit Mode key input, starting at Middle C (MIDI 60).  White keys toggle one of 16 steps each.  C\# sets these keys to correspond to steps 1...16 (region ``A'').  D\# sets them to correspond to steps 17...32 (region~``B'').  F\#~sets them to correspond to steps 33...48 (region ``C'').  G\# sets them to correspond to steps 39...64 (region ``D'').  The default is region ``A''.  A\#~toggles the current step ({\it ``here''}) at the edit cursor.  Holding down a high key as shown while playing a key will enter it in the next track instead.  This is useful if you have set up the next track as an accent track (see {\bf Accents}).  Playing a key below middle C will just play the current drum sound.}
 %\vspace{-1em}
 \label{editmodekeys}
 \end{wrapfigure}
@@ -953,12 +1004,11 @@ Now we've set our track's MIDI channel, velocity, and drum note, and we're back 
 \vspace{-1em}
 \caption{\small Drum Region and Operation Patterns.}
 \label{drumregionpatterns}
+\vspace{-1em}
 \end{wrapfigure}
 
 
-This all works fine if you have an 8- or 16-step bar, but if you specified a longer group (32 or 64 steps), you have to jump through an extra hoop.  To toggle steps 17...32, for example, press the D\# key, which shifts the {\bf drum key region} from 1...16 to 17...32.  Now pressing a white key will toggle steps from 17...32.  Similarly to toggle steps 33...48, press the F\# key.  And to toggle steps 49...64, press the G\# key.  To go back to steps 1...16, press the C\# key.  The current drum region is specified by the Drum Region LEDs, as shown in Figure~\ref{drumregionpatterns} (ignore the Operation column).  Finally, any note less than middle C just plays the current drum note rather than entering it.
-
-
+This all works fine if you have an 8- or 16-step bar, but if you specified a longer group (32 or 64 steps), you have to jump through an extra hoop.  To toggle steps 17...32, for example, press the D\# key, which shifts the {\bf drum key region} from 1...16 to 17...32.  Now pressing a white key will toggle steps from 17...32.  Similarly to toggle steps 33...48, press the F\# key.  And to toggle steps 49...64, press the G\# key.  To go back to steps 1...16, press the C\# key.  The current drum region is specified by the Drum Region LEDs, as shown in Figure~\ref{drumregionpatterns} (ignore the Operation column).  Holding down a high key as shown while playing a key will enter it in the next track instead.  This is useful if you have set up the next track as an accent track (see {\bf Accents}).  Finally, any note less than middle C just plays the current drum note rather than entering it.
 
 In Edit mode you can also {\bf start the sequencer playing} or {\bf stop} it by pressing the Select button.  This works much like the Step Sequencer in that only the current group is played (and repeatedly).  When you start playing the Drum Sequencer, it waits for the clock to reach a measure boundary before beginning.  Note that if you start playing the Drum Sequencer, but the clock isn't running, it won't play at all.  You'll need a clock (internal or external) to drive it.
 
@@ -968,13 +1018,13 @@ If you long-press the Select button, you enter the {\bf menu}, whose options we'
 \vspace{-1em}
 \hspace{\fill}\includegraphics[width=0.7in]{playpositionmode}\hspace{\fill}
 \caption{\small The Play Position Mode Cursor.  The current track is marked by the two dots.}
-\vspace{-2em}
+\vspace{-4em}
 \label{playpositionmode2}
 \end{wrapfigure}
 
 
 
-\paragraph{Play Position Mode}  This mode is entered from Edit mode by twisting the right knob to the far right.  The edit cursor will go off-screen and will be replaced with the {\it play position mode cursor}, a bar with two dots as shown in Figure~\ref{playpositionmode2}.  Play Position Mode works kind of like the same mode in the Step Sequencer, but once again note entry is very different.   Once again, instead of entering notes, keys you play will correspond to doing operations on the currently-playing steps on different tracks. The three operations are:
+\paragraph{Play Position Mode}  This mode is entered from Edit mode by twisting the right knob to the far left.  The edit cursor will go off-screen and will be replaced with the {\it play position mode cursor}, a bar with two dots as shown in Figure~\ref{playpositionmode2}.  Play Position Mode works similarly to the Step Sequencer,  but note entry is very different.   Once again, instead of entering notes, keys you play will correspond to doing operations on the currently-playing steps on different tracks. The three operations are:
 
 \enlargethispage{1em}
 
@@ -988,47 +1038,62 @@ If you long-press the Select button, you enter the {\bf menu}, whose options we'
 \vspace{-1em}
 \hspace{\fill}\includegraphics[width=4in]{PlayPositionModeKeys}
 \vspace{-1em}
-\caption{\small Play Position Mode key input, starting at Middle C (MIDI 60).  White keys toggle, set, or clear the currently-played step on one of 20 tracks.  C\# sets these keys to {\it toggle} their steps.  D\# sets them to {\it set} (turn on) their steps.  F\#~sets them to {\it clear} (turn off) their steps.  The default is operation is toggle.  A\#~toggles/steps/clears the currently played step ({\it ``here''}) at the currently selected track.  Any note less than middle C just plays the current drum note rather than entering it. }
+\caption{\small Play Position Mode key input, starting at Middle C (MIDI 60).  White keys toggle, set, or clear the currently-played step on one of 20 tracks.  C\# sets these keys to {\it toggle} their steps.  D\# sets them to {\it set} (turn on) their steps.  F\#~sets them to {\it clear} (turn off) their steps.  The default is operation is toggle.  A\#~toggles/steps/clears the currently played step ({\it ``here''}) at the currently selected track.  Playing a key below middle C will just play the current drum sound. }
 \label{playpositionmodekeys}
 \end{wrapfigure}
 
 The current operation is chosen by  pressing a black key.  If you press C\#, the operation is set to {\it Toggle} (the default).  If you press a D\#, the operation is set to {\it Set}.  If you press a F\#, the operation is set to {\it Clear}.  The Drum Region LEDs will light up to indicate the current operation, as shown earlier in Figure~\ref{drumregionpatterns}.  Pressing white keys will then perform the current operation on the currently-played step of one of twenty tracks, as shown in Figure~\ref{playpositionmodekeys}.  If you press A\#, then the operation is performed on the currently-played step of the currently-selected track.  (Unlike in Edit mode, pressing the Middle button doesn't do the same thing as pressing A\#).  ally, any note less than middle C just plays the current drum note rather than entering it.
 
-For obvious reasons, and given its name, Play Position Mode really only works properly when you are playing the sequence.  Just like in Edit mode, you start playing (or stop playing) by pressing the Select button.  Again, this works much like the Step Sequencer in that only the current group is played (and repeatedly); see the Edit Mode for information about how this interacts with the MIDI clock.   Also like Edit mode, if you long-press the Select button, you'll be taken to the {\bf menu}.    Just as in the Step Sequencer, pressing the Middle button mutes or unmutes the current track.    And likewise, long-pressing the Middle button clears the track (within the current group only).  Finally, long-pressing the Select and Middle buttons together enters {\bf Performance Mode}.
+For obvious reasons, and given its name, Play Position Mode really only works properly when you are playing the sequence.  Just like in Edit mode, you start playing (or stop playing) by pressing the Select button.  Again, this works much like the Step Sequencer in that only the current group is played (and repeatedly); see the Edit Mode for information about how this interacts with the MIDI clock.   Also like Edit mode, if you long-press the Select button, you'll be taken to the {\bf menu}.    Just as in the Step Sequencer, pressing the Middle button mutes or unmutes the current track.    And likewise, long-pressing the Middle button clears the track (within the current group only), but with a twist: if the track is {\it already} clear, there is a menu option to optionally randomize notes in the track when clearing a second time.  Finally, long-pressing the Select and Middle buttons together enters {\bf Performance Mode}.
+
+\paragraph{Velocity Curves}  The Drum Sequencer's velocities are simply the numbers 1...8.  How do these translate to MIDI velocities 0...127?  There are two options.  We can either interpret 1...8 as {\it linear} or {\it exponentially increasing} values: which you prefer would depend on what fits better with the velocity curve of your drum synthesizer.  The default is a linear curve, but you may prefer an exponential curve if it makes accents more consistent. 
+
+{\small
+\begin{center}\begin{tabular}{r|rrrrrrrr}
+\it Drum Sequencer Velocity& 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8\\
+\it MIDI Velocity (Linear) & 16 & 32 & 48 & 64 & 80 & 96 & 112 & 127\\
+\it MIDI Velocity (Exponential) & 25 & 32 & 40 & 50 & 64 & 80 & 100 & 127\\
+\end{tabular}\end{center}
+}
+
+Notice that with the exponential curve, increasing (accenting) by +1 changes the MIDI velocity, and perhaps the underlying volume by +25\%; increasing by +2 changes by +60\%; increasing by +3 changes by +100\%; increasing by +4 changes by +150\%; and so on.  That's convenient.  But your drum machine might {\it already} have an exponential curve built in, and so then you'd want the linear velocity curve.  You can switch between curves with a menu option.
+
+
+\paragraph{Accents}  The Drum Sequencer can only have one note velocity per track.  To play accents (louder beats than normal), you need to set up another track to do the accent notes for a given track, or you can have a 808-style {\bf global accent track}.  The former is more flexible, but the latter is easier and doesn't eat up tracks.
+
+Let's start with the first choice.  To add accents to a given track, you just set up a second track\,---\,normally the very next track\,---\,with the same drum note and MIDI channel, but a different velocity, and play accented beats into that.  There's a helpful menu option called {\bf Accent Track}, on page~\pageref*{accenttrack}, which does exactly this, with an accent velocity of +2.  There's a little trick to make entering accents more convenient: if you hold down a low key or high key, as shown in Figure~\ref{editmodekeys}, while playing another note, then that note will instead be entered in the next track (notionally your accent track), not the current track. 
 
 \begin{wrapfigure}{r}{1.25in}
-\hspace{\fill}\includegraphics[width=0.7in]{Patterns}\hspace{\fill}
-
-\caption{\small Four Bar Pattern LEDs.}\vspace{-2em}
+\vspace{-1em}\hspace{\fill}\includegraphics[width=0.7in]{Patterns}\hspace{\fill}
+\caption{\small Four Bar Pattern LEDs.}
+\vspace{-2em}
 \label{bars2}
 \end{wrapfigure}
+
+Now to the global accent track.  The very last track in your sequence can be specially set up not to play beats, nor accents per se, but to {\it define which notes are accents for all other tracks.}  Thus if there is a beat in this track, then when we come to that beat, {\it all other track beats} will automatically be accented by a certain amount.  To do this, just set the final track channel to one of the ``accent channels'' {\tt A +1} through {\tt A +6}.  Now when a drum note is turned on in this track no note is played: but other track notes are accented, having their velocities increased by +1 to +6 respectively.  The global accent track's track velocity, mute, and solo do nothing; and you can't copy, swap, or distribute track info to or from a global accent track.
+
+
+
+\begin{wrapfigure}{r}{1.25in}
+\vspace{-1em}
+\hspace{\fill}\includegraphics[width=0.7in]{rightmode}\hspace{\fill}
+\caption{\small The Group Mode Cursor.  The current track is marked by the two dots.  Compare to the Play Position Mode cursor.}
+\vspace{-2em}
+\label{groupmode}
+\end{wrapfigure}
+
+
 
 \paragraph{Patterns}
 
 In the Step Sequencer, each track can be set up to follow some four-bar {\bf pattern} as specified by a {\bf menu} option.  In the Drum Sequence it's the same, except that each track {\it in each group} can have its own separate pattern.   The pattern LEDs indicate which of the four bars is currently being played, as indicated in Figure~\ref{bars2}.
 
-
 \paragraph{Group Mode}  The Drum Sequencer has up to 15 {\it groups}, each its own sequence.  You can string together a list of 20 groups with other information to form a full song.  But first you need to edit the groups, and to do that you need to get around from group to group.  That's what Group Mode is for.
 
-\begin{wrapfigure}{r}{1.25in}
-\hspace{\fill}\includegraphics[width=0.7in]{rightmode}\hspace{\fill}
-
-\caption{\small The Group Mode Cursor.  The current track is marked by the two dots.  Notice the difference between this and the Play Position Mode cursor.}
-
-\label{groupmode}
-\end{wrapfigure}
-
-Group Mode is entered by twisting the right knob to the far right, thus moving the edit cursor to the far end of the current track.  At this point the cursor is replaced with a bar cursor similar to the one in Play Position Mode, but slightly different.  It's shown in Figure~\ref{groupmode}.
+Group Mode is entered by twisting the right knob to the far right, which moves the edit cursor to the end of the track.  The cursor is replaced with a bar cursor similar to the one in Play Position Mode, but slightly different.  It's shown in Figure~\ref{groupmode}.
 
 In Group Mode the buttons {\it and} the left knob work differently than in the other modes.  Let's start with the left knob.  If you turn this knob, it will scroll through the {\bf groups} rather than through the {\it tracks}.  Doing so will also reset the sequencer play position to the beginning.  %Press the Select button to confirm your choice, or the Back button the cancel.  
 
-
-As usual, pressing the Select button starts/stops the group as in other modes, long-pressing the Select button enters the {\bf menu} as usual, and similarly long-pressing the Select and Middle buttons together will enter {\bf Performance Mode}.  However, pressing the middle button will {\bf increment} the group (go to the next group), wrapping to the first group when you have gone beyond the last group.  Additionally, long-pressing the Middle button will {\bf clear the group}, much as long-pressing the Middle button in Play Position mode will clear the track.  Because clearing an entire group is quite destructive, Gizmo will first ask you {\tt SURE?}
-
-%The buttons are largely used to move to different Groups as well.  Pressing the Select button doesn't start/stop like in the other modes; instead, it will increment the group, that is, it will switch to editing the next group. Incrementing wraps around to the first group when you go beyond the last group.   Pressing the Middle button will decrement the group: and it wraps around to the last group when you go below the first group.  
-%Long-pressing the Middle button will {\bf clear the group}, much as long-pressing the Middle button in Play Position mode will clear the track.  Because clearing an entire group is quite destructive, Gizmo will first ask you {\tt SURE?}  Pressing the Select button will confirm your action; pressing the Back button will go back.  Long-pressing the Select button enters the {\bf menu} as usual, and similarly long-pressing the Select and Middle buttons together will enter {\bf Performance Mode}.
-
-When you play keys in Group Mode, it works like Play Position mode.
 
 \begin{wrapfigure}{r}{1in}
 \vspace{-1em}
@@ -1038,26 +1103,33 @@ When you play keys in Group Mode, it works like Play Position mode.
 \vspace{-1em}
 \end{wrapfigure}
 
+As usual, pressing the Select button starts/stops the group as in other modes, long-pressing the Select button enters the {\bf menu} as usual, and similarly long-pressing the Select and Middle buttons together will enter {\bf Performance Mode}.  However, pressing the middle button will {\bf increment} the group (go to the next group), wrapping to the first group when you have gone beyond the last group.  Additionally, long-pressing the Middle button will {\bf clear the group}, much as long-pressing the Middle button in Play Position mode will clear the track.  Because clearing an entire group is quite destructive, Gizmo will first ask you {\tt SURE?}
+
+%The buttons are largely used to move to different Groups as well.  Pressing the Select button doesn't start/stop like in the other modes; instead, it will increment the group, that is, it will switch to editing the next group. Incrementing wraps around to the first group when you go beyond the last group.   Pressing the Middle button will decrement the group: and it wraps around to the last group when you go below the first group.  
+%Long-pressing the Middle button will {\bf clear the group}, much as long-pressing the Middle button in Play Position mode will clear the track.  Because clearing an entire group is quite destructive, Gizmo will first ask you {\tt SURE?}  Pressing the Select button will confirm your action; pressing the Back button will go back.  Long-pressing the Select button enters the {\bf menu} as usual, and similarly long-pressing the Select and Middle buttons together will enter {\bf Performance Mode}.
+
+When you play keys in Group Mode, it works like Play Position mode.
+
 \paragraph{Editing the Transition Chain}
 
-Once you have finished editing your groups, you can string them together into a {\bf chain of transitions} from group to group.  You can then play them in the order specified in the chain.   A group can appear more than once in a chain, that is, you can play the same group more than once in different parts in your song.  A chain can be up to 20 transitions long.
+Once you have finished editing your groups, you can use the {\bf Chain} menu option to string them together into a {\bf chain of transitions} from group to group.  You can then play them in the order specified in the chain.   A group can appear more than once in a chain, that is, you can play the same group more than once in different parts in your song.  A chain can be up to 20 transitions long.
 
 A {\bf standard transition} holds three things:
 
 \begin{itemize}
 \item The transition number (1...20)
-\item Which {\it group} is playing (1... {\it Maximum groups}, up to 15, the exact amount depends on your initialization format)
-\item How many times the group's playing should repeat (\texttt{LOOP}, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 64, or \texttt{BIG~LOOP}, which is discussed later)
+\item Which {\it group} is playing (1... {\it Max groups}, up to 15, the amount depends on your initialization format)
+\item How many times the group's playing repeats (\texttt{LOOP}, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 64, or \texttt{BIG~LOOP})
 \end{itemize}
 
-{\tt LOOP} indicates that the group should play repeatedly forever, never transitioning from then on, unless you manually schedule a transition for it (you can do this in Performance Mode).  We'll get to {\tt BIG LOOP} in a moment.
+We'll get to {\tt BIG LOOP} in a moment.  Plain old {\tt LOOP} indicates that the group should play repeatedly forever, never transitioning from then on, unless you manually schedule a transition for it (you can do this in Performance Mode).  
 
-There are also {\bf special transitions}.  These are chosen by selecting {\tt - - - -} for your group number.  These include:
+There are also {\bf special transitions}, chosen by selecting {\tt - - - -} for your group number.  These include:
 
 \begin{itemize}
-\item Play 1, 2, 3, or 4 times, or repeat forever (\texttt{LOOP}).  Each time, randomly select from among groups 1--2 which group to play.
-\item Play 1, 2, 3, or 4 times, or repeat forever (\texttt{LOOP}).  Each time, randomly select from among groups 1--3 which group to play.  
-\item Play 1, 2, 3, or 4 times, or repeat forever (\texttt{LOOP}).  Each time, randomly select from among groups 1--4 which group to play.
+\item Play 1, 2, 3, or 4 times, or repeat forever (\texttt{LOOP}).  Each time, randomly select from among groups 1--2 which group to play.  These are denoted by {\tt R2-1} ... {\tt R2-4} or {\tt R2-L}.
+\item Play 1, 2, 3, or 4 times, or repeat forever (\texttt{LOOP}).  Each time, randomly select from among groups 1--3 which group to play (or 1--2 if there are only 2 groups).  These are denoted by {\tt R3-1} ... {\tt R3-4}  or {\tt R3-L}.
+\item Play 1, 2, 3, or 4 times, or repeat forever (\texttt{LOOP}).  Each time, randomly select from among groups 1--4 which group to play (or 1--3 if there are only 3 groups; or 1--2 if only 2).  These are denoted by {\tt R4-1} ... {\tt R4-4} or {\tt R4-L}.
 \item Mark this transition as the {\texttt{END}}.  When at the end of the transitions, the Drum Sequencer will stop, repeat the whole chain, or continue to the next sequence depending on what you specify in the {\bf Performance Menu} options.  If none of your transitions is {\bf end}, then the end will be the end of the chain.   The very first transition in a chain is not permitted to be {\bf end}.
 \end{itemize}
 
@@ -1072,12 +1144,14 @@ And now to {\tt BIG LOOP}.  When in performance mode (discussed below) you can m
 
 This is all fine and good, but another common need would be to loop though several groups in a row forever until manually forced to transition out of them.  For example, imagine you wanted to loop forever through groups 1, 7, and 3 as a sequence, then loop forever through group 2, then loop forever through groups 3, 4, and 6 as a sequence.  This is where {\tt BIG LOOP} comes in.  When a transition is set to {\tt BIG LOOP}, then after playing its group {\it once}, it will hunt back though previous transitions until it finds the first transition {\it after} some other infinite loop (a BIG LOOP, a LOOP, or a random LOOP).  If it finds none, it will use the very first transition.  It then loops back to this transition.  As shown in Figure~\ref{bigloop}, this can be used to chain together multi-transition groups separated by manual transitions.\footnote{BIG LOOP is infinite.  You can't chain together groups with finite ``big loops'': instead, you should use multiple sequences.}
 
-One weakness of BIG LOOP is that the final transition in the loop will be played exactly 1 time.  That's the way it is.  Other transitions in the loop may be repeated multiple (non-infinite) times, as shown in Figure~\ref{bigloop}, though most commonly they'd be 1 time each as well.
+One weakness of BIG LOOP is that the final transition in the loop will be played exactly 1 time.  That's the way it is: Gizmo doesn't have the storage to do otherwise. If you need its group played \(n\) times, set up the previous transition to be that same group played \(n-1\) times.  Other transitions in the loop may be repeated multiple (non-infinite) times, as shown in Figure~\ref{bigloop}, though most commonly they'd be 1 time each as well.
 
 
 \paragraph{Performance Mode}  The function of Performance Mode is to make it easy to perform a chain of transitions; it works much like Performance Mode does in the Step Sequencer. No, we've not discussed how to edit transitions yet\,---\,we'll get to that when we discuss the menus.  Performance Mode is entered by long-pressing the Select and Middle buttons together while in any of the other three modes.  In Performance Mode, the cursor will look the same as the Play Position cursor.
 
-Pressing the Select button does a start/stop, but not in the same way it does in the other modes.  Instead of starting playing the given group, this button will {\it start the transition chain}, and so begin playing the group associated with the first transition.  When the transition is finished, Performance Mode will then continue on to the next transition, and so on.   Pressing the Select button while playing will stop and reset to the beginning of the chain when the latest iteration of is complete.  If you press the Select button a second time before stopping has occurred, then it will stop and reset immediately.  There is also a menu option to pause performance without resetting.  In Performance Mode, the left knob changes the current track as usual, but the right knob changes the {\bf tempo}.  After changing the tempo, pressing Select will choose the tempo while pressing Back button will cancel.  
+Pressing the Select button does a start/stop, but not in the same way it does in the other modes.  Instead of starting playing the given group, this button will {\it start the transition chain}, and so begin playing the group associated with the first transition.  When the transition is finished, Performance Mode will then continue on to the next transition, and so on.   Pressing the Select button while playing will stop and reset to the beginning of the chain when the latest iteration of is complete.  There is a performance menu option to specify whether stopping will occur at the last note of the current iteration, or the first note of the {\it next} iteration.  If you press the Select button a second time before stopping has occurred, then it will stop and reset immediately.  There is also a menu option to pause performance without resetting.  
+
+In Performance Mode, the left knob changes the current track, but the right knob changes the {\bf tempo}.  After changing the tempo, pressing Select will choose the tempo while pressing Back button will cancel.  
 
 \begin{wrapfigure}{r}{4in}
 \vspace{-0.5em}
@@ -1092,64 +1166,81 @@ Performance mode handles the keyboard in much the same way as the Step Sequencer
 
 In Performance mode you can chain together not only groups but entire sequences.  You can specify that a given sequence will {\bf repeat} for some number of iterations (through all its transitions), and then will either stop or will move on to {\it another sequence}.  This is also handled as a menu option.
 
-Again, just as in the Step Sequencer, in Performance mode, you can schedule various things to occur at the next iteration of the group.  If you press the Middle button, you can {\bf schedule a mute} (or unmute) to affect the current track.  If you long-press the Middle button, you can {\bf schedule a solo} (or unsolo) on this track.  If you long-press the Select and Middle buttons together, you can {\bf schedule a transition} to happen immediately after the current iteration has finished.
+Again, just as in the Step Sequencer, in Performance mode, you can schedule various things to occur at the next iteration of the group.  If you press the Middle button, you can {\bf schedule a mute} (or unmute) to affect the current track.  If you long-press the Middle button, you can {\bf schedule a solo} (or unsolo) on this track.  If you long-press the Select and Middle buttons together, you can {\bf schedule a transition} or {\bf schedule playing the next sequence} (the sequence you had selected to transition to at the end of the transitions) to happen immediately after the current iteration has finished.  Which of these happens depends on a setting in the Performance mode menu.\footnote{If you would like to do either independently, you can do so via MIDI CC}
 
 Muting and solo schedule in the same way as the Step Sequencer, but it's worth repeating it here. If you press solo, you won't {\it toggle} the solo.  Instead, you {\it schedule} the solo to be toggled at the beginning of the next bar.  If you press a second time, you undo your previous action.  So in short, pressing buttons go through this loop, which is known as {\bf advancing solo}:
 
+\vspace{-0.25em}
 \begin{itemize}
 \item If you are currently {\it not} soloed: {\bf Schedule Solo} \(\rightarrow\) {\bf Undo}
 \item If you are currently soloed: {\bf Schedule Un-solo} \(\rightarrow\) {\bf Undo}
 \end{itemize}
 
-Similarly, if you press mute, you {\it schedule} the track to be muted (or not), at the next bar, for exactly one bar, and then to return to its present state.  If you press mute a second time, you schedule the track to be muted (or not) permanently at the next bar.  If you press mute a third time, you undo all this.  This is known as {\bf advancing mute}:
+\vspace{-0.25em}
+If you press the Middle button during Performance mode, one of two things happens (depending on a setting in the Performance mode menu): either you schedule a {\bf fill}, or you schedule a {\bf track to be muted}.\footnote{If you would like to do both fills and mutes, you can do so via MIDI CC.}
 
+If you have scheduled a fill, then starting at the bar, Gizmo will not play the current group, but rather will play the {\bf fill group} once.  You specify the fill group as a Performance mode menu option.  The current group's speed, pattern, and length still take precedence: but the fill group's drum steps will be used instead.  Once the current group's bar length has been finished, play will revert to the current group.  Note that even while the fill group is playing, the current group will still be displayed. You can cancel the fill prior to it starting by pressing the Middle button again.  
+
+Similarly, you can schedule the track to be muted (or not), at the next bar, for exactly one bar, and then to return to its present state.  If you press mute a second time, you schedule the track to be muted (or not) permanently at the next bar.  If you press mute a third time, you undo all this.  This is called {\bf advancing mute}:
+
+\vspace{-0.25em}
 \begin{itemize}
 \item If current track is {\it not} muted: {\bf Schedule Mute For One Bar} \(\rightarrow\)  {\bf Schedule Mute} \(\rightarrow\) {\bf Undo}
 \item If current track is muted: {\bf Schedule Un-mute For One Bar} \(\rightarrow\)  {\bf Schedule Un-mute} \(\rightarrow\) {\bf Undo}
 \end{itemize}
 
+\vspace{-0.25em}
 If you include a CC control surface (see {\it Remote Control over CC} below) you have the further option of advancing mute on any track individually.  This is useful to perform with Gizmo as a groove surface, where you trigger various tracks to play once or turn them on or off during the performance.
+
+\enlargethispage{1em}
 
 
 \paragraph{Menu Options}
 
-If you Long Press the Select button at any time, you'll call up the Drum Sequencer's menu.  The Drum Sequencer has many menu options:
+If you Long Press the Select button at any time, you'll call up the Drum Sequencer's menu:%  The Drum Sequencer has many menu options:
 
 \begin{itemize}
-\item {\bf Solo} (or {\bf No Solo}) {\it All modes except Performance Mode}\quad This plays only the current track, muting the others.
+\item {\bf Solo} (or {\bf No Solo}) {\it All modes but Performance Mode}\quad This plays only the current track, muting the others.
 \item {\bf Pause} {\it Performance Mode only}\quad This pauses the Drum Sequencer rather than stopping it.  Starting again will start from the current position rather than from the beginning of the transition chain.
-\item {\bf Mark}\quad This sets the {\bf mark} to the current group, track, and step.  The mark is a location in the sequence, and it's used for a number of copy and swap operations discussed below.
+\item {\bf Mark}\quad This sets the {\bf mark} to the current group and current track.  The mark is a location in the sequence, and it's used for a number of copy and swap operations discussed below.
 
-\item {\bf Local} {\it Submenu for dealing with a given track in a given group} \quad 
+\item {\bf Local}\quad{\it Submenu for dealing with a given track in a given group}
 \begin{itemize}
-\item {\bf Pattern}\quad Lets you specify the four-bar pattern for this track in this group.  An {\tt O} indicates that the track will be played, and a {\tt -} indicates that it will be hushed.  Your options are: \texttt{OOOO, O-O-, -O-O, OOO-, ---O, O--O, -OO-, OO--, --OO, OO-O, --O-, R1/8, R1/4, R1/2, R3/4,} or\ \ {\tt EXCL}.  The four which start with {\tt R} hush at random: the fraction indicates the probability that the track will be played.  {\tt EXCL} is {\it exclusive random:} if multiple tracks are designated as {\tt EXCL} then at any time exactly one of them will be played (and the others will be hushed).  If only one track is {\tt EXCL}, it's always played.  Note that many of the non-random patterns are in pairs so you can swap the track being played.
-\item {\bf Copy Track}\quad Copies the track specified by the {\it mark} onto the current track,  just within this group.
-\item {\bf Swap Tracks}\quad Swaps the track specified by the {\it mark} with the current track, just within this group.
+\item {\bf Pattern}\quad Lets you specify the four-bar pattern for this track in this group.  Your options are: \texttt{OOOO, O-O-, -O-O, OOO-, ---O, O--O, -OO-, OO--, --OO, OO-O, --O-, R1/8, R1/4, R1/2, ---X,} or\ \ {\tt XXXX}.  An {\tt O} indicates that the track will be played, and a {\tt -} indicates that it will be hushed.  The {\tt O} patterns are in pairs so you can swap the track being played with some other track.  The three patterns which start with {\tt R} hush at random each bar: the fraction indicates the probability that the track will be played.  An {\tt X} indicates {\it exclusive random:} if multiple tracks are designated as {\tt X} for a given bar, then exactly one of them will be played then (the others will be hushed).   {\tt ---X} is exclusive random for the fourth bar only and hushed otherwise; this makes possible random fills, and would be useful with {\tt OOO-}.  If only one track is {\tt X}, it's always played.  If two tracks are {\tt X}, they alternate.  Otherwise Gizmo tries to select a different track each time. 
+\item {\bf Randomize}\quad Specifies the probability (1--100) that when you clear an already empty track, each step will instead be randomly turned on.  If \texttt{- - - -}  then the track is just left empty (the default).
+\item {\bf Copy Track}\quad Copies the track specified by the {\it mark} onto the current track,  just within this group.  The mark is then cleared.
+\item {\bf Swap Tracks}\quad Swaps the track specified by the {\it mark} with the current track, just within this group.  The mark is then cleared.
 \end{itemize}
 
-\item {\bf Track} {\it Submenu for dealing with entire sequence-wide tracks} \quad 
+\item {\bf Track}\quad{\it Submenu for dealing with entire sequence-wide tracks.  Note: to change the Drum Note, Long-Press the Middle button in Edit Mode.}
 \begin{itemize}
-\item {\bf Velocity}\footnote{If you're looking to change the Drum Note, Long-Press the Middle button in Edit Mode.}\quad This lets you specify the velocity (volume) of the MIDI note, hence drum, that this track sends messages to.  This is a value 1...8.  The default value is 4, which corresponds to a MIDI velocity of 63. The minimum value, 1, is not silent: it corresponds to to a MIDI velocity of 15.  The maximum value corresponds to a MIDI velocity of 127.  Beware that some drum synthesizers may be configured to play the same velocity no matter what is sent to them.
-\item {\bf Out MIDI}\quad This specifies the MIDI Out Channel for steps in the track,    You can choose a value 1...16, or \texttt{----} ({\it none}), or \texttt{DFLT}, which tells the Drum Sequencer to use the default MIDI Out Channel specified in the Options menu (see Section \ref{options}).
-\item {\bf Copy Whole Track}\quad This copies the entire track (all groups) specified by the {\it mark} onto the current track, including the track note, velocity, and channel.
-\item {\bf Swap Whole Tracks}\quad This swaps the entire track (all groups) specified by the {\it mark} with the current track, including the track note, velocity, and channel.
+\item {\bf Velocity}\quad This lets you specify the velocity (volume) of the MIDI note, hence drum, that this track sends messages to.  This is a value 1...8.   The default value is 6.  Beware that some drum synthesizers may be configured to play the same velocity no matter what is sent to them.   If this track is the {\bf global accent track} then the velocity value is ignored (see Out MIDI below).
+\item {\bf Out MIDI}\quad This specifies the MIDI Out Channel for steps in the track,    You can choose a value 1...16, or \texttt{- - - -} ({\it none}), or \texttt{DFLT}, which tells the Drum Sequencer to use the default MIDI Out Channel specified in the Options menu (see Section \ref{options}).  
+
+The final track can also be set to be the {\bf global accent track}.  To do this, set its {\bf Out MIDI} not to a MIDI value, but to the degree to which each track's velocity increases to perform an accent. These are marked with an {\tt A} followed by the increase in value.  If any track's velocity value is pushed beyond 8, it is clamped to 8.  I regard {\tt A +2} as a good accent choice.
+
+\item {\bf Copy Whole Track}\quad This copies the entire track (all groups) specified by the {\it mark} onto the current track, including the track note, velocity, and channel.  The mark is then cleared.
+\item {\bf Swap Whole Tracks}\quad This swaps the entire track (all groups) specified by the {\it mark} with the current track, including the track note, velocity, and channel.  The mark is then cleared.
 \item {\bf Distribute Track Info}\quad Copies the MIDI channel, and velocity (but not MIDI note) from the current track to all other tracks.  
-\item {\bf Accent Track}\quad A convenience method for making accent tracks.  This copies the MIDI note, velocity, and channel from the {\it mark} track to the current track.  It then changes the current track's velocity to the nearest velocity that is approximately 50\% louder.
-\item {\bf Default Velocity}\quad Sets the default velocity for new sequences.
+\item {\bf Accent Track}\quad \label{accenttrack}A convenience method for making per-drum accent tracks.  This copies the MIDI note, velocity, and channel from the current track to the very next track (if there is a next track).  It then changes the next track's velocity to the nearest velocity that is approximately 60\% louder (increasing the velocity by 2)  Not to be confused with the {\bf global accent track} discussed earlier.
+\item {\bf Default Velocity}\quad Sets the default initial velocity for all tracks in new sequences.
+\item {\bf Linear} {\it or} {\bf Exponential Curve}\quad Sets the global velocity curve used for all tracks in sequences.
 \end{itemize}
 
+\enlargethispage{1em}
 
-\item {\bf Group} {\it Submenu for dealing with entire groups} 
+
+\item {\bf Group}\quad{\it Submenu for dealing with entire groups} 
 
 \begin{itemize}
-\item {\bf Length}\quad Lets you set the length of this group.  The group can only be made smaller than the standard group length specified when you formatted the sequence initially; it cannot be lengthened beyond the standard group length. 
+\item {\bf Length}\quad Sets the length of this group.  This can be made shorter but not longer than the standard group length specified when you first formatted the sequence. 
 \item {\bf Speed Multiplier}\quad Changes the speed of the group relative to the tempo.   The speed can be set to \(1\times\) (default), \(2\times\), \(4\times\), or \(1/2\times\) the current  {\bf note speed} (see the {\bf Options}).  
 
-Unfortunately some of these speeds may be {\bf invalid} depending on the current note speed type due to limitations of the MIDI clock.  If a speed multiplier is invalid, you can still select it but the {\bf stopped} light will blink when playing (and it'll sound wrong). Critically, note that a 16th note can be doubled in speed but not quadrupled, which is a shame.\footnote{The technical reason for this: Gizmo's pulses are based on MIDI clock.  A 16th note is 6 MIDI clock beats.  You can't divide 6 by 4. }  You might try changing to an eighth note and doubling the tempo to permit \(4\times\). Here's a table of valid note speed changes for a given note speed.
+Unfortunately some of these speeds may be {\bf invalid} depending on the current note speed type due to limitations of the MIDI clock.  If a multiplier is invalid, you can still select it but the {\bf stopped} light will blink when playing (and it'll sound wrong). Critically, note that a 16th note can be doubled in speed but not quadrupled, which is a shame.\footnote{The technical reason for this: Gizmo's pulses are based on MIDI clock.  A 16th note is 6 MIDI clock beats.  You can't divide 6 by 4. }  You might try changing to an eighth note and doubling the tempo to permit \(4\times\). Here's a table of valid note speed multipliers:
 
+\vspace{0.25em}
 \newcommand\cm{\checkmark}
-
-\vspace{0.5em}{\small
+{\small
 \begin{tabular}{@{}rrr@{\ }r@{}}
 &\multicolumn{3}{@{}c@{}}{\it Speed Multiplier}\\
 {\it Current Note Speed}&\(2\times\)&\(4\times\)&\(1/2\times\)\\
@@ -1180,7 +1271,7 @@ Dotted Whole Note&	\cm	&\cm	&	\\
 Double Whole Note&\cm		&\cm	&	\\
 \end{tabular}
 }
-\vspace{0.5em}
+\vspace{0.25em}
 
 %	Eighth Triplet (Triplet 64th Note)	&1\\
 %	Quarter Triplet (Triplet 32nd Note)	&2\\
@@ -1203,34 +1294,58 @@ Double Whole Note&\cm		&\cm	&	\\
 
 
 
-\item {\bf Stamp Group}\quad This copies the current group to the next one, and then switches to that next group.  If there is no next group (if we're presently at the last group), then nothing is done and \texttt{CANT} is displayed.
-\item {\bf Copy Group}\quad This copies the entire group specified by the {\it mark} onto the current group.
-\item {\bf Swap Groups}\quad This swaps the entire group specified by the {\it mark} with the current group.
+\item {\bf Stamp Group}\quad Copies the current group to the next one, then switches to that next group.    The mark is then cleared.  If there is no next group (if we're at the last group), then nothing is done and \texttt{CANT} is displayed.
+\item {\bf Copy Group}\quad Copies the  {\it mark} group to the current group.  The mark is then cleared.
+\item {\bf Swap Groups}\quad Swaps the {\it mark} group with the current group.  The mark is then cleared.
 \end{itemize}
 
-\item {\bf Chain} {\it Submenu for editing and manipulating the chain of transitions}
+\item {\bf Chain}\quad{\it Submenu for editing the chain of transitions}
 \end{itemize}
+
+% this hack, including the weird stuff in the wrapfigure, is meant to indent the entire paragraph.
+
+\setlength{\leftskip}{2.5em}
 
 \begin{wrapfigure}{r}{3in}
-\vspace{-1em}\includegraphics[width=3in]{SelectTransition}
-\vspace{-2em}\caption{\small Selecting a Transition.}
+\vspace{-3.5em}
+\hspace{-2.5em}\includegraphics[width=3in]{SelectTransition}
+\hspace{-2.5em}\caption{\small Selecting a Transition.~~~~~~~~~~~~~~~~~~~~}
+\vspace{3em}
 \label{selecttransition}
 \end{wrapfigure}
 
-This submenu works differently from the others.  When you select {\bf Chain}, you're first asked to select a {\bf transition} in the chain.  
+\noindent This submenu works differently from the others.  
 
-Transitions are displayed as shown in Figure~\ref{selecttransition}: as you scroll through the transitions (left knob) the current transition is displayed at bottom.  Additionally, the transition's group is displayed both as a number at left and as a range, and the transition's repeats is shown at right (\(\infty\) for \texttt{LOOP}, and {\tt BL} for \texttt{BIG LOOP}).  Random group transitions are shown as {\tt R}{\it num}~{\it repeats}, where {\it num}, the number of groups involved, is 2, 3, or 4, and {\it repeats} is 1, 2, 3, 4, or \(\infty\). If the group is an end group, the screen will show {\tt END}. 
+When you select {\bf Chain}, you're first asked to select a {\bf transition} in the chain.  
+Transitions are by default displayed as shown in Figure~\ref{selecttransition}: as you scroll through the transitions (left knob) the current transition is displayed at bottom.  Additionally, the transition's group is displayed both as a number at left and as a range, and the transition's repeats is shown at right (\(\infty\) for \texttt{LOOP}, and {\tt BL} for \texttt{BIG LOOP}), and as a range.  Random group transitions are shown as {\tt R}{\it num}~{\it repeats}, where {\it num}, the number of groups involved, is 2, 3, or 4, and {\it repeats} is 1, 2, 3, 4, or \(\infty\). If the group is an end group, the screen will show {\tt END}.   
 
-You can use the transition chain display to just look through the transitions, and then press the Back button to go back; or you can {\bf select} a transition and perform an {\bf operation} on it.  Operations include:
 
-\begin{itemize}
+\begin{wrapfigure}{r}{2.2in}
+\vspace{-4em}
+\hspace{-2.5em}\includegraphics[width=2.2in]{GroupRepeats.pdf}
+\hspace{-2.5em}\caption{\small Groups and Repeats~~~~~~~~~~~~~~~~~~~~}
+\label{grouprepeats}
+\end{wrapfigure}
+
+
+
+Don't remember which group is which?  Long-pressing the Middle Button will toggle toggle viewing the current screenshot of the group in the transition.    The group number and repeats will still appear as ranges, as shown in Figure~\ref{grouprepeats}.
+
+You can use the transition chain display to just look through the transitions, then press the Back button to go back; or you can {\bf select} a transition to perform an {\bf operation} on it, one of:
+
+ \begin{itemize}
 \item[]~\vspace{-2em}
 \begin{itemize}
-	\item {\bf Edit}\quad Edits the selected transition.  You will be first asked to indicate a group for the transition (you'll see a \texttt{G}), or \texttt{DFLT} to select the current group.  You can also select \texttt{- - - -} to indicate extra options.  If you selected a group or \texttt{DFLT}, you will then be asked to specify the number of repeated iterations for the group (you'll see an \texttt{R}).  Your choices are \texttt{LOOP}, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 64, or \texttt{BIG LOOP}.  If instead you selected \texttt{- - - -}, you'll be then asked to select among extra options.  These options are: \texttt{END}, R2-1, R2-2, R2-3, R2-4, R2-L, R3-1, R3-2, R3-3, R3-4, R3-L, R4-1, R4-2, R4-3, R4-4, and R4-L.  The various {\it R-} options indicate loops with random group selection. They are:
+	\item {\bf Edit}\quad Edits the selected transition.  You will be first asked to pick a group for the transition (you'll see a \texttt{G}), or \texttt{DFLT} to select the current group.  You can also select \texttt{- - - -} to indicate extra options.  If you selected a group or \texttt{DFLT}, you will then be asked to specify the number of repeated iterations for the group (you'll see an \texttt{R}).  Your choices are \texttt{LOOP}, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 64, or \texttt{BIG LOOP}.  If you instead selected \texttt{- - - -}, you'll be then asked to select among extra options.  These options are: \texttt{END}, R2-1, R2-2, R2-3, R2-4, R2-L, R3-1, R3-2, R3-3, R3-4, R3-L, R4-1, R4-2, R4-3, R4-4, and R4-L.  The various {\it R-} options indicate loops with random group selection. They are:
 
-\vspace{-1em}
-\begin{center}
-\begin{tabular}{r@{~~~}r|rrrrr}
+\end{itemize}
+
+
+\setlength{\leftskip}{2.3em}
+\setlength{\rightskip}{-16.9em}
+
+%\begin{center}
+\hspace{6.5em}\begin{tabular}{r@{~~~}r|rrrrr}
 		&&\multicolumn{5}{c}{\it Number of Repeats}\\
 				&&1&2&3&4&LOOP\\
 				\hline
@@ -1238,21 +1353,27 @@ You can use the transition chain display to just look through the transitions, a
 		 \it from among &1, 2, 3&R3-1&R3-2&R3-3&R3-4&R3-L\\
 		\it these groups&1, 2, 3, 4&R4-1&R4-2&R4-3&R4-4&R4-L\\
 \end{tabular}
-\end{center}
+\vspace{1em}
+%\end{center}
 
-You can cancel at any time, and nothing will be changed.
+You can cancel at any time, and nothing will be changed.  Note that if your initialized format has fewer groups than permitted by the random group selection you have chosen, then (of course) random group selection will select from among just your available groups.
 	  
-	\item {\bf Mark}\quad Sets a transition as the {\bf mark transition} (similar to but not to be confused with the {\it mark} discussed earlier), to be used in the copy and move commands below.
-	\item {\bf Put}\quad Inserts a new transition just before the selected transition, and then edits the transition (just like {\bf Edit}.      The highest transition (\#20) will be eliminated to make room.  You can cancel at any time, and nothing will be changed (including the insertion).
-	\item {\bf Delete}\quad Deletes the selected transition, shifting all higher transitions down one slot to fill its spot.  The empty space now at the topmost transition (\#20) is replaced with \texttt{END}.
-	\item {\bf Copy}\quad Copies the {\it mark transition}, inserting it before the selected transition, and shifting all higher transitions up one slot to make room.  The topmost transition is removed.  If the mark has not been sent, you'll be told {\tt CANT}.
-	\item {\bf Move}\quad Moves the {\it mark transition} from its current location to just before the current transition.   If the mark has not been sent, you'll be told {\tt CANT}.
+Again: don't remember which group is which?  If you long-press the Middle Button, instead of being displayed group numbers, you can toggle viewing the current screenshot of the group (except for \texttt{DFLT} and \texttt{- - - -}).  The group number will appear as a range.  See Figure~\ref{grouprepeats}.
+
+\begin{itemize}
+	\item {\bf Mark}\quad Sets the selected transition to be the {\bf mark transition} (similar to but not to be confused with the mark discussed earlier), to be used in the copy, swap, and move commands below.
+	\item {\bf Add}\quad Inserts a new transition just before the selected transition, then edits the new transition as with {\bf Edit}.  The highest transition (\#20) is eliminated to make room.    The mark transition is then cleared. You can back out at any time, and nothing will be changed, including the insertion.
+	\item {\bf Delete}\quad Deletes the selected transition, shifting all higher transitions down one slot.  The empty slot now at the topmost transition (\#20) is set to \texttt{END}.  The mark transition is then cleared.
+	\item {\bf Copy}\quad Copies the mark transition, inserting it before the selected transition, and shifting all higher transitions up one slot to make room.  The topmost transition  (\#20) is eliminated to make room.  The mark transition is then cleared.  If the mark had not yet been set, you'll be told {\tt CANT}.
+	\item {\bf Swap}\quad Swaps the mark transition with the selected transition.  The mark transition is then cleared.   If the mark had not yet been set, you'll be told {\tt CANT}.
+	\item {\bf Move}\quad Moves the mark transition from its current location to just before the current transition.\footnote{To move the mark transition to after the final transition (\#20), you could move it to just before the final transition, then swap it.} The mark transition is then cleared. If the mark had not yet been set, you'll be told {\tt CANT}.
 	\item {\bf Go}\quad Jumps to the group associated with the selected transition.
 	\end{itemize}
 
 %\item {\bf Clock Control} (or {\bf No Clock Control}) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note that regardless of the setting of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.
 
-\item {\bf Performance} {\it Submenu for options that affect Performance Mode beyond the Chain options} 
+\setlength{\leftskip}{0em}
+\item {\bf Performance}\quad{\it Submenu for options that affect Performance Mode beyond the Chain options} 
 \begin{itemize}
 \item {\bf Keyboard}\quad  This menu option lets you specify what happens when you press keys or send other MIDI information during Performance Mode.  Your options are:
 
@@ -1261,12 +1382,18 @@ You can cancel at any time, and nothing will be changed.
 	\item {\texttt{-~-~-~-}}\quad Played notes are entered as if in Play Position Mode.
 	\item {0} \quad Play along with the sequencer: MIDI data is routed out the default MIDI Out channel.
 	\item {1--16} \quad Play along with the sequencer: MIDI data is routed out the channel specified.
-	\item {\texttt{PICK}}\quad Pressing various notes on the keyboard, starting at Middle C, will cause Gizmo to schedule a jump to that transition at the end of the bar.  See Figure~\ref{transitionkeys}.
+	\item {\texttt{PICK}}\quad Pressing various notes on the keyboard, starting at Middle C, will cause Gizmo to schedule a jump to that transition at the end of the bar.  See Figure~\ref{transitionkeys} on page~\pageref*{transitionkeys}.
 \end{itemize}
 
-\item {\bf Repeat Sequence}\quad This menu option specifies how many times the sequence as a whole should play before it stops.  The default is {\tt LOOP} (forever), but you also have 1, 2, 3, 4, 5, 6, 7, 8,9, 10, 12, 16, 24, 32, or 64 repeats as options.
-\item {\bf Next Sequence}\quad This menu option specifies {\it which} sequence the sequencer should switch to when it has completed the given sequence including all its repeats.  Your options are {\tt - - - -} (stop), or 0...9.
+\item {\bf Repeat Sequence}\quad This menu option specifies how many times the sequence as a whole should play before it stops.  The default is {\tt LOOP} (forever), but you also have 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 16, 24, 32, or 64 repeats as options.
+\item {\bf Next Sequence}\quad This menu option specifies {\it which} sequence the sequencer should switch to after completing the given sequence including all its repeats.  Your options are {\tt - - - -} (stop), or 0...9.
+\item {\bf Stop}\quad This toggles how the Drum Sequencer stops in performance mode.  If you press the Select button to stop the Drum Sequencer, it will either stop at the end of the current iteration ({\bf \(\bm \uparrow\) Stop At End}) or it will stop on the first note of the {\it next} iteration ({\bf \(\bm \downarrow\) Stop At Beginning}).
+\item {\bf Do Fill} or {\bf Do Mute}\quad This toggles whether the Drum Sequencer will schedule a fill or a mute when the Middle Button is pressed during Performance mode.  The default is Do Fill.  This is a Drum Sequencer wide option, rather than being stored with your sequence.
+\item {\bf Fill Group}\quad This specifies which group will be used for fills.  The default is 1, but you probably will want to change that.
+\item {\bf Do Sequence} or {\bf Do Transition}\quad This toggles whether the Drum Sequencer will schedule the next sequence or the next transition when the Middle\(+\)Select buttons are long-pressed during Performance mode.  The default is Next Transition.  This is a Drum Sequencer wide option, rather than being stored with your sequence.
 \end{itemize} 
+
+\setlength{\leftskip}{0em}
 
 \item {\bf Save} \quad This saves the sequence. You then choose the slot to save in.  Slots are displayed by number, plus an \texttt{S} (for Save), plus optionally an \texttt{R} or \texttt{S} or \texttt{D} (for Recorder or Step Sequencer or Drum Sequencer) if the slot is already used by that application.  This letter {\bf blinks} if the file isn't the type of your current application to warn you that you will be overwriting the other application's slot.
 
@@ -1274,38 +1401,37 @@ You can cancel at any time, and nothing will be changed.
 \end{itemize}
 
 
+\setlength{\leftskip}{0em}
 
 \paragraph{More Drum Sequencer Options}
 
 Beyond the settings above, the step sequencer responds to a number of options in the Options Menu.  See Section \ref{options} for detailed information on each of the options.  The Drum Sequencer responds to the following options:
 
 
-\vspace{1em}
+\begin{center}
 \begin{tabular}{lllllllllll}
 Tempo& Note Speed& Swing & Click&
 In MIDI& Out MIDI&Control MIDI&MIDI Clock&Volume\\
 \end{tabular}
+\end{center}
 
-\vspace{1em}
-Of particular use are Tempo, Note Speed, Swing, and especially Click.
-
-The Drum Sequencer also responds to the {\it Transpose} option (because all applications do) but this is a nuisance as it changes the drum notes.  I strongly suggest you set Transpose to 0 in Options when using the Drum Sequencer.
+Of particular use are Tempo, Note Speed, Swing, and especially Click.  The Drum Sequencer also responds to the {\it Transpose} option (because all applications do) but this is a nuisance as it changes the drum notes.  I strongly suggest you set Transpose to 0 in Options when using the Drum Sequencer.
 
 
 \paragraph{Controls Summary}  The Drum Sequencer's controls can be a bit complex.  Here's what they do in each mode.  Note that once you're changing the tempo, you can also tap the middle button to adjust the tempo in addition to moving the knob.
 
-\vspace{1em}\hspace{-4.5em}
+\vspace{1em}\hspace{-6em}
 \noindent {\small
-\begin{tabular}{@{}rllll@{}}
+\hspace{-2em}\begin{tabular}{@{}rllll@{}}
 \it Control					& \it Edit Mode	& \it Play Position Mode	& \it Group Mode & \it Performance Mode\\
 \hline\\[-0.5em]
 Back Button				& Exit  & Exit & Exit &Leave Performance Mode\\
 Back Button (Long)			& Toggle Bypass & Toggle Bypass &Toggle Bypass & Toggle Bypass\\
-Middle Button				& Toggle Step & Toggle Mute Track & Next Group &Schedule Mute Track\\
-Middle Button (Long)			& Set Drum Note & Clear Track in Group & Clear Group &Schedule Solo\\
+Middle Button				& Toggle Step & Toggle Mute Track & Next Group &Schedule Fill or Mute\\
+Middle Button (Long)			& Set Drum Note & Clear/Randomize Group Track & Clear Group &Schedule Solo\\
 Select Button				& Start/Stop Group & Start/Stop Group & Start/Stop Group &Start/Schedule Stop/Stop\\
 Select Button (Long)			& Menu & Menu & Menu &Menu\\
-Select + Middle Button (Long) 	& Performance Mode &  Performance Mode &  Performance Mode &Schedule Transition\\
+Select + Middle Button (Long) 	& Performance Mode &  Performance Mode &  Performance Mode &Schedule Transition or Sequence\\
 Left Knob					& Change Track & Change Track & Change Group &Change Track\\
 						&  &  & {\it (Back/Select when Done)} &\\
 Right Knob				& Change Step {\it or} &  Edit Mode &  Edit Mode&Change Tempo\\
@@ -1313,35 +1439,35 @@ Right Knob				& Change Step {\it or} &  Edit Mode &  Edit Mode&Change Tempo\\
 						& {\it or} Group Mode && &\\
 \end{tabular}
 }
+\vspace{-1em}
 
 \paragraph{Remote Control over CC}  Like the Step Sequencer, the Drum Sequencer responds to a variety of CC messages over Gizmo's Control MIDI Channel.  These operations are on top of the CC Control MIDI operations (Section \ref{options}, see ``Control MIDI''), namely start/stop/continue, back button, middle button, select button, bypass, and left/right knob.
 
 Note that the Set... CCs transfer to the relevant menu, then act as proxies for the left knob.  This means that once you've transferred to a menu, {\it any} of them can be used to set the menu, along with the left knob CC.  This can be confusing.
 
-A few of these options are only available over CC: you can't do them directly with buttons or knobs on the Arduino.  These are:
+One option is only available over CC: you can't do it directly with buttons or knobs on the Arduino:
 
 \begin{itemize}
 \item {\bf Previous Group}\quad This is just like Next Group, except that it moves backwards through the groups rather than forwards.
-\item {\bf Schedule Next Sequence}\quad This works like the Step Sequencer's version: at the end of the current iteration, Gizmo will transition to the next sequence, or if there is no next sequence it will stop.  If the next sequence has been scheduled, then the Next Transition Trigger LED blinks rapidly. You can unschedule by pressing the button again. 
 \end{itemize}
 
-Also note that {\bf Save} (CC 25) is in an unusual position.
+Also note that {\bf Save} (CC 25) and {\bf Schedule Fill} (CC 22) are in unusual positions.
 
 
 \vspace{1em}
 \noindent {\small
-\begin{tabular}{@{}rll@{}l@{}}
+\hspace{-3em}\begin{tabular}{@{}rll@{}l@{}}
 \it CC Number & \it CC Value	& \it Operation\\
 \hline\\[-0.5em]
 64 ... 83	&	Any	& Go to Track \(\text{\it CC} - 63\), that is, track 1 ... 20\\
 84	&	Any		& Set Drum Note\\
 85	&	Any		& Previous Group&{\it Only available via CC}\\
 86	&	Any		& Next Group\\
-87	&	Any		& Toggle (or Schedule) Mute\\
+87	&	Any		& Toggle (or Schedule) Mute&{\it Only separate from Fill (22) via CC}\\
 88	&	Any		& Toggle (or Schedule) Solo\\
 89	&	Any		& Clear Group\\
 90	&	Any		& Clear Track in Group\\
-91	&	Any		& Schedule Transition\\
+91	&	Any		& Schedule Transition&{\it Only separate from Next Sequence (120) via CC}\\
 92	&	Any		& Toggle Click Track\\
 93	&	Any		& Set Mark\\
 94	&	Any		& Copy Track (Local)\\
@@ -1354,22 +1480,22 @@ Also note that {\bf Save} (CC 25) is in an unusual position.
 117	&	Any		& Accent Track\\
 118	&	Any		& Distribute Track Info\\
 119	&	Any		& Pause\\
-120	&	Any		& Schedule Next Sequence&{\it Only available via CC}\\
+120	&	Any		& Schedule Next Sequence&{\it Only separate from Next Transition (91) via CC}\\
 16	&	0--127		& Set Group Speed Multiplier (Select to set, Back to cancel)\\
 17	&	0--127		& Set Track MIDI Out (Select to set, Back to cancel)\\
 18	&	0--127		& Set Track Velocity (Select to set, Back to cancel)\\
 19	&	0--127		& Set Group Length (Select to set, Back to cancel)\\
 20	&	0--127		& Set Track Pattern (Select to set, Back to cancel)\\
 21	&	0--127		& Set Gizmo's Tempo (Select to set, Back to cancel)\\
-22	&	0--127		& Set Gizmo's Transpose (Select to set, Back to cancel)&\it Not useful for Drum Sequencer\\
+22	&	Any		& Schedule Fill&{\it Only separate from Mute (87) via CC}\\
 23	&	0--127		& Set Gizmo's Volume (Select to set, Back to cancel)\\
 24	&	0--127		& Set Gizmo's Note Speed (Select to set, Back to cancel)\\
-25	&	0--127		& Save (Select to set, Back to cancel)\\
+25	&	Any		& Save (Select to set, Back to cancel)\\
 26	&	0--127		& Set Gizmo's Swing (Select to set, Back to cancel)\\
 27	&	0--127		& Set Performance Keyboard Mode (Select to set, Back to cancel)\\
 28	&	0--127		& Set Performance Repeat (Select to set, Back to cancel)\\
 29	&	0--127		& Set Performance Next Sequence (Select to set, Back to cancel)\\
-30	&	0--127		& Select Transition (Select to set, Back to cancel)\\
+30	&	0--127		& Schedule Transition (Select to set, Back to cancel)\\
 31	&	0--127		& Change Group (Select to set, Back to cancel)\\
 \end{tabular}
 }
@@ -1384,7 +1510,7 @@ Also note that {\bf Save} (CC 25) is in an unusual position.
 \label{recorder}
 \end{wrapfigure}
 
-The Note Recorder lets you record and play back approximately 64 notes\footnote{Why {\it approximately} 64? Because the recorder is recording MIDI NOTE ON and NOTE OFF messages.  If you provide 64 pairs of these messages, it'll take up exactly all the available memory.  But you could plausibly send a few more NOTE ON than NOTE OFF messages, in which case at the end of the recording all the remaining outstanding notes will be terminated.  This would allow you to squeeze in a few (perhaps 16) more notes in rare circumstances.  But I'd not rely on it.  BTW, if you looked carefully you would have noted that the Note Display in Figure~\ref{recorder} has space for 16 more notes too.} spread over 21 measures.\footnote{Why 21?  Because notes are stored with a timestamp of eleven bits, resulting in \(2^{11} = 2048\) timesteps.  A single timestep is 1/24 of a quarter note, and a quarter note is 1/4 of a measure, so we have \(2048 / 24 / 4 = 21 \frac{1}{3}\) measures.  We round that down to 21.}  You can save up to two recordings on an Arduino Uno and nine recordings on a Mega.
+The Note Recorder lets you record and play back approximately 64 notes\footnote{Why {\it approximately} 64? Because the recorder is recording MIDI NOTE ON and NOTE OFF messages.  If you provided 64 pairs of these messages, it'd take up exactly all the available memory.  But you could plausibly send a few more NOTE ON than NOTE OFF messages, in which case at the end of the recording all the remaining outstanding notes will be terminated.  This would allow you to squeeze in a few (perhaps 16) more notes in rare circumstances.  But I'd not rely on it regularly.  BTW, if you looked carefully you would have noted that the Note Display in Figure~\ref{recorder} has space for 16 more notes too.} spread over 21 measures.\footnote{Why 21?  Because notes are stored with a timestamp of eleven bits, resulting in \(2^{11} = 2048\) timesteps.  A single timestep is 1/24 of a quarter note, and a quarter note is 1/4 of a measure, so we have \(2048 / 4 / 24 = 21 \frac{1}{3}\) measures.  We round that down to 21.}  You can save up to two recordings on an Arduino Uno and nine recordings on a Mega.
 
 The Note Recorder screen has two major parts.  The {\it Note Display} section indicates the current note number being played (and hints at the remaining notes available).  The {\it Measure Display} section indicates the current measure being played (and again hints at the remaining measures available).  When recording a song, each of these sections will contain a single lit LED indicating the current note or measure position.  When playing a song, the Note Display and Measure Display will each also contain an additional lit LED indicating the position of the end of the song.
 
@@ -1559,11 +1685,13 @@ The Controller interacts with Bypass mode differently than other applications.  
 	
 	Several protocols (NRPN, RPN, some CC) can accept 14-bit numbers, that is, values in the range 0...16383.  However Gizmo's potentiometers have a maximum resolution of 10 bits, that is, 0...1023.   The potentiometers in fact send 10 bits of data: their top 7 bits are the MSB, and their bottom 3 bits become the upper 3 bits of the LSB (the bottom 4 bits are padded with zeros).   While only the MSB is displayed on-screen, this partial LSB is being sent as well to give you a bit more control.  %For control voltage, all ten bits will be mapped to 0--5V.\footnote{The DACs are actually 12-bit, but what can you do: the pots are only 10 bit.}  \ For Pitch Bend, the ten bits will be mapped to \(-8192...8191\).
 
+	{\bf \textit{Important Note}\quad} If you have set the Left Knob to send out PC, it works differently than other protocols: changing the knob does not send the PC value.  Rather, to send the PC value currently set by the knob, you press the Middle Button.  Similarly, if you have set the Right Knob to send out PC, then the PC value will be sent when you press the Select Button.  This is because few if any synthesizers can survive a stream of constant PC values.
+	
 	\item{\bf Left Knob} and {\bf Right Knob}\quad (\texttt{L KNOB} and \texttt{R KNOB})
 	
 	These submenus let you select your control type and parameter number for the left and right potentiometers.
 	
-	In each, you are first given the option of what kind of {\bf control type} (OFF, CC, NRPN, RPN, PC, Pitch Bend, or Aftertouch)% A Voltage, or B Voltage) 
+	In each, you are first given the option of what kind of {\bf control type} (OFF, CC, NRPN, RPN, PC, Pitch Bend, or Aftertouch) % A Voltage, or B Voltage) 
 you would like to manipulate with the left knob.  If OFF, then turning the knob will not do anything.
 
 	After you have selected a control type, if you have selected CC, NRPN, or RPN, you will be then asked to select a {\bf controller parameter number}.  (Otherwise, for PC and OFF, you will go back to the top-level Controller Menu).  CC parameter numbers may range 0 ... 119.  NRPN and RPN parameter numbers may range 0 ... 16383. When you have completed this, you will be sent back to the top-level Controller menu.
@@ -1572,7 +1700,7 @@ you would like to manipulate with the left knob.  If OFF, then turning the knob 
 	
 	Thees submenus let you select your control type, parameter number, and on/off values for the middle and select buttons.
 	
-	In each, you are first given the option of what kind of {\bf control type} (OFF, CC, NRPN, RPN, PC, Pitch Bend, or Aftertouch)%A Voltage, or B Voltage) 
+	In each, you are first given the option of what kind of {\bf control type} (OFF, CC, NRPN, RPN, PC, Pitch Bend, or Aftertouch) %A Voltage, or B Voltage) 
 you would like to manipulate with the middle button.  If OFF, then pressing the button will not do anything.
 
 	After you have selected a control type, if you have selected CC, NRPN, or RPN, you will be then asked to select a {\bf controller parameter number}.  (Otherwise ,for PC and OFF, you will go back to the top-level Controller Menu).  CC parameter numbers may range 0 ... 119.  NRPN and RPN parameter numbers may range 0 ... 16383.
@@ -1581,6 +1709,8 @@ you would like to manipulate with the middle button.  If OFF, then pressing the 
 	
 	Alternatively, instead of choosing a value 0...127 for the controller value number, you can choose to have the button {\bf increment} or {\bf decrement} its parameter when pressed.  This {\bf only makes sense if your parameter type is RPN or NRPN}, which have this facility.  Pressing the middle button decrements its parameter; pressing the select button increments its parameter.   
 	
+	{\bf \textit{Important Note}\quad} If you have selected PC for your Left Knob, then the M BUTTON will not operate as you have specified here: instead it will serve only to send the PC value (see {\bf Go} above).  Similarly, if you have selected PC for your Right Knob, then the R BUTTON will not operate as specified here.
+	
 	\item{\bf Wave}
 	
 	This submenu controls the 8-stage Wave Envelope (see Section \ref{waveenvelope} next).
@@ -1588,6 +1718,10 @@ you would like to manipulate with the middle button.  If OFF, then pressing the 
 	\item{\bf Random}
 	
 	This submenu controls the Random LFO (see Section \ref{randomlfo}).
+	
+	\item{\bf PC}
+	
+	This submenu allows you to load, save, and send out out bulk PC and Bank changes to many synthesizers at once (see Section \ref{bulkpc}).
 
 	\item{\bf Analog Port 2} and {\bf Analog Port 3}\quad (\texttt{A2} and \texttt{A3})
 	
@@ -1752,6 +1886,25 @@ Just like the wave envelope, the LFO updates its interpolated values at no more 
 
 Last: if you're wondering why you can't select 0 as a length, this is because you're only turning the left knob.  Turn the right knob to get finer-grained choices.
 
+\subsection{Bulk PC and Bank Changes}
+\label{bulkpc}
+
+If you're performing, it'd be nice to change patches on several synthesizers at once, and to do so multiple times during a performance.  Gizmo can send different bulk Bank (CC \#0) and Program Changes up to twelve times in a performance.  Each time is called a {\it stage}, and a single change can send different Bank and Program changes to all 16 of your MIDI channels.  You can save this bulk change plan to any of Gizmo's slots and load it later.
+
+\begin{wrapfigure}{r}{1in}
+\vspace{-1em}
+\includegraphics[width=1in]{exit.pdf}
+\caption{Exit?}
+\vspace{-1em}
+\end{wrapfigure}
+
+When you enter the Bulk PC/Bank change facility, the first thing you'll be asked to do is load a plan from a slot or initialize a new one with \texttt{-~-~-~-}.  After that, you're given the option to {\it perform} with the stages in the existing plan (via \texttt{GO}), to {\it edit} a stage (by choosing its number), or finally to {\it save} the edited plan.  If you try to exit, you'll be asked if you really want to quit before saving with {\texttt{EXIT?}}.
+
+\paragraph{Editing a Stage}
+If you have chosen a stage to edit, you'll be then presented with 16 MIDI channels. Each channel can be given a different PC and Bank change.  Select a channel, and you'll next be asked which Bank Change to do (0--127, or no Bank Change with \texttt{-~-~-~-}).  After setting this up, you'll next be asked which Program Change to do (0--127).   Then you'll be returned to the Bulk PC/Bank Change main menu.
+
+\paragraph{Performing}
+If you have chosen to perform the plan, you'll be then presented with 12 stages. Select a stage and Gizmo will first send the Bank Changes (or not) to all 16 channels as you specified, then wait for 1 second (while it displays \texttt{DONE}), then send the Program Changes to all 16 channels as you specified, then return to the Performance menu so you can pick another stage.
 
 \clearpage
 
@@ -1910,6 +2063,34 @@ I might add more unusual transformers later.  Anyway, here are your options:
 
 
 \clearpage
+
+\section {The Measure Counter}
+\label{measure}
+
+\begin{wrapfigure}{r}{3in}
+\vspace{-1.5em}\includegraphics[width=3in]{measure}
+\vspace{-2em}\caption{\small Measure Counter Layout}
+\vspace{-1em}\label{measurecounter}
+\end{wrapfigure}
+
+	The measure counter\footnote{The Measure Counter was added to Gizmo at the request of \texttt{Inkog}, a member of http:/\!/gearslutz.com and early adopter of Gizmo.} is basically a stopwatch which counts elapsed beats, measures (bars), and phrases (up to 127 phrases).  Alternatively it can count eighths of a second,\footnote{\label{footnotetenths}Why not tenths of a second?  Because \(10 \times 60 \times 128\) is larger than \(2^{16}\), so it won't fit in a 16-bit integer.} seconds, and minutes (up to 127 minutes) via the internal clock or external MIDI clock.  If the minutes or phrases exceed 127, then \texttt{HI} is displayed instead.
+	
+	To change what a measure (bar) or phrase means, long-press the Select button to bring up the Menu.  Here you can choose the {\bf Beats Per Bar} (a value from 1...16)\footnote{Why not 32, like Bars Per Phrase uses?  Because \(32 \times 32 \times 128 > 2^{16}\).  So basically for the same reason as Footnote \ref{footnotetenths}.} and the {\bf Bars per Phrase} (1...32), and as usual, call up the {\bf Options Menu} to change the {\bf Tempo}, etc.
+	
+\begin{wrapfigure}{r}{2in}
+\includegraphics[width=2in]{measurebeats}
+\vspace{-2em}\caption{\small Beats or 1/8 Second Ticks}\vspace{-3em}
+\label{midichannelvalues}
+\end{wrapfigure}
+
+
+	Pressing the Middle Button starts and and restarts the stopwatch.  Long-pressing the Middle Button pauses the stopwatch (pressing the Middle Button afterwards will continue).  Additionally, external MIDI Start, Stop, and Continue commands will affect the stopwatch: Stop will pause it, Continue will continue from last pause, and Start will reset the stopwatch and start it fresh.
+
+	Normally the measure counter shows beats, measures, and phrases.  But if you press the Select button, Measure will instead start displaying elapsed time, so it's basically a stopwatch.  More specifically, rather than counting beats, measures (bars), and phrases, Measure will count eighths of a second, seconds, and minutes.  The response to buttons is the same, as is the response to MIDI clock directives.
+
+	You can also control the Measure Counter via MIDI: if you send a MIDI Play, it will reset the Measure Counter.  Note that if you send a MIDI Stop, and Gizmo is listening to external MIDI clock, then the Measure Counter will be halted (and MIDI Continue will continue the Counter).  However sending a MIDI Stop will not presently halt the stopwatch.
+
+\clearpage
 \section {Synthesizer MIDI Helpers}
 \label{synthesizer}
 
@@ -1968,33 +2149,6 @@ Because the TX81Z has more than 128 patches, Program Change Table lets you (weir
 \paragraph{Caveats}  The TX81Z doesn't respond well to fast parameter changes.    Significantly increasing the value of \texttt{YAMAHA\_TX81Z\_COUNTDOWN} may help this but at the cost of lag and discretization.  It's probably better to just turn your encoder dial more slowly.
 
 
-\clearpage
-
-\section {The Measure Counter}
-\label{measure}
-
-\begin{wrapfigure}{r}{3in}
-\vspace{-1.5em}\includegraphics[width=3in]{measure}
-\vspace{-2em}\caption{\small Measure Counter Layout}
-\vspace{-1em}\label{measurecounter}
-\end{wrapfigure}
-
-	The measure counter\footnote{The Measure Counter was added to Gizmo at the request of \texttt{Inkog}, a member of http:/\!/gearslutz.com and early adopter of Gizmo.} is basically a stopwatch which counts elapsed beats, measures (bars), and phrases (up to 127 phrases).  Alternatively it can count eighths of a second,\footnote{\label{footnotetenths}Why not tenths of a second?  Because \(10 \times 60 \times 128\) is larger than \(2^{16}\), so it won't fit in a 16-bit integer.} seconds, and minutes (up to 127 minutes) via the internal clock or external MIDI clock.  If the minutes or phrases exceed 127, then \texttt{HI} is displayed instead.
-	
-	To change what a measure (bar) or phrase means, long-press the Select button to bring up the Menu.  Here you can choose the {\bf Beats Per Bar} (a value from 1...16)\footnote{Why not 32, like Bars Per Phrase uses?  Because \(32 \times 32 \times 128 > 2^{16}\).  So basically for the same reason as Footnote \ref{footnotetenths}.} and the {\bf Bars per Phrase} (1...32), and as usual, call up the {\bf Options Menu} to change the {\bf Tempo}, etc.
-	
-\begin{wrapfigure}{r}{2in}
-\includegraphics[width=2in]{measurebeats}
-\vspace{-2em}\caption{\small Beats or 1/8 Second Ticks}\vspace{-3em}
-\label{midichannelvalues}
-\end{wrapfigure}
-
-
-	Pressing the Middle Button starts and and restarts the stopwatch.  Long-pressing the Middle Button pauses the stopwatch (pressing the Middle Button afterwards will continue).  Additionally, external MIDI Start, Stop, and Continue commands will affect the stopwatch: Stop will pause it, Continue will continue from last pause, and Start will reset the stopwatch and start it fresh.
-
-	Normally the measure counter shows beats, measures, and phrases.  But if you press the Select button, Measure will instead start displaying elapsed time, so it's basically a stopwatch.  More specifically, rather than counting beats, measures (bars), and phrases, Measure will count eighths of a second, seconds, and minutes.  The response to buttons is the same, as is the response to MIDI clock directives.
-
-	You can also control the Measure Counter via MIDI: if you send a MIDI Play, it will reset the Measure Counter.  Note that if you send a MIDI Stop, and Gizmo is listening to external MIDI clock, then the Measure Counter will be halted (and MIDI Continue will continue the Counter).  However sending a MIDI Stop will not presently halt the stopwatch.
 
 \clearpage
 
@@ -2211,7 +2365,7 @@ Why is this useful?  Here's an example scenario.  You have a sequencer on Device
 		\end{description}
 		
 		
-	\item{\bf  Menu Delay}\\
+	\item{\bf  Menu Delay} (Mega Only)\\
 		Gizmo often will display text (such as \texttt{SWING}) by filling the screen with the first few letters (in this case, \texttt{SWI}), then {\it delaying} for a certain interval, then scrolling through the whole word horizontally. You can specify how long that delay is.
 	
 		
@@ -2232,7 +2386,7 @@ Why is this useful?  Here's an example scenario.  You have a sequencer on Device
 			\end{tabbing}
 		\end{description}
 
-	\item{\bf  Auto Return}\\
+	\item{\bf  Auto Return} (Mega Only)\\
 		In some applications, such as the Arpeggiator and Step Sequencer, you can immediately enter and change various parameters just by twisting a real or MIDI CC knob.  Normally you have to press Select or Back to exit.  But if you set Auto Return to some value (in seconds) other than None, you will automatically be exited after that number of seconds.
 
 			\begin{description}
@@ -2265,6 +2419,32 @@ Why is this useful?  Here's an example scenario.  You have a sequencer on Device
 		
 		Manually stopping and starting the clock can produce results which look like bugs, but aren't, so you have think about the effects.  For example, if you're in {\bf Generate Clock} mode and you've manually stopped the clock, and you go into the Step Sequencer and start playing, nothing will happen. More than once this has confused me enough to look through the code thinking I'd written an error.
 		
+
+\section{Chaining Multiple Gizmos}
+
+I have three Gizmos which I chain together when playing. One might run a Drum Sequencer, another might run a Sequencer, and another might run an Arpeggiator.  How is this done?
+
+\paragraph{Wiring} The Gizmos are connected in series just like you imagine: the output of each plugs into the input of the next.  In my particular arrangement, I have a controller keyboard (a StudioLogic SL 990) attached to a Novation Zero MKII (which provides CC knobs and buttons).  The Zero goes into Gizmo A, which goes into Gizmo B, which goes into Gizmo C, which goes into a MIDI router, which is attached to my synthesizers.  
+
+\paragraph{Setting up MIDI} If your controller can be set to output on different MIDI channels, then the easy way to do all this is to set the MIDI In of each Gizmo to a different value, and also set the MIDI Out of their downstream synthesizers to different values.  For example:
+
+\begin{itemize}
+\item Gizmo A, running the Drum Sequencer, could be set to MIDI In channel 1, with default MIDI out of channel 1 (going to a drum machine) and also sending to channel 2 for certain drum tracks (going to a different drum machine).  
+\item Gizmo B, running the Step Sequencer, could be set to MIDI In channel 3, with default MIDI out of channel 3 (going to a synthesizer).
+\item Gizmo C, running the Arpeggiator, could be set to MIDI In channel 4, with default MIDI out of channel 4 (going to a second synthesizer).
+\item A final synthesizer, which I control from the Controller when all three Gizmos are doing their thing, could be set to MIDI Channel 5.
+\end{itemize}
+
+\paragraph{Sending Note Data} By default Gizmo pass through MIDI data on all channels other than its MIDI In.  Thus if each of your Gizmos have a different MIDI In, you can send data to each one just by changing your controller's MIDI channel, assuming they're all currently running applications.
+
+If a Gizmo is in the top menu or is running something which doesn't pass through non-MIDI-In data, you can always turn on Bypass.  Remember that Bypass is on by default when you power your Gizmo up.  I've not found MIDI note latency to be bad at all even in my very strung out setup (SL\(\leftarrow\)Zero\(\leftarrow\)Gizmo\(\leftarrow\)Gizmo\(\leftarrow\)Gizmo\(\leftarrow\)Router\(\leftarrow\)Synths)
+
+\paragraph{Controlling a Gizmo} By default Gizmo pass through MIDI data on channels other than its MIDI In.  If you just want to control a given Gizmo, simply set the upstream and downstream Gizmos to bypass.  
+
+
+If you just want to control a given Gizmo, simply set the upstream and downstream Gizmos to bypass.  
+
+
 
 \section{Development Hints}
 

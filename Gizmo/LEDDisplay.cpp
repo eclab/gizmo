@@ -807,93 +807,93 @@ const char PROGMEM font_8x5[
             0b10110101,
             },
         
-//            { // GIZMO VERSION 8 pt 2
-//            0b11010101,
-//            0b10010111,
-//            0b00000000,
-//            0b00000000,
-//            0b01111100,
-//            0b01010100,
-//            0b01111100,
-//            0b00000000,
-//            },
-
-            { // GIZMO VERSION 7 pt 2
+            { // GIZMO VERSION 8 pt 2
             0b11010101,
             0b10010111,
             0b00000000,
             0b00000000,
-            0b01001100,
-            0b01010000,
-            0b01100000,
+            0b01111100,
+            0b01010100,
+            0b01111100,
             0b00000000,
             },
 
-//            { // GIZMO VERSION 6 pt 2
-//            0b11010101,
-//            0b10010111,
-//            0b00000000,
-//            0b00000000,
-//            0b01111100,
-//            0b01010100,
-//            0b01011100,
-//            0b00000000,
-//            },
+        //            { // GIZMO VERSION 7 pt 2
+        //            0b11010101,
+        //            0b10010111,
+        //            0b00000000,
+        //            0b00000000,
+        //            0b01001100,
+        //            0b01010000,
+        //            0b01100000,
+        //            0b00000000,
+        //            },
 
-//            { // GIZMO VERSION 5 pt 2
-//            0b11010101,
-//            0b10010111,
-//            0b00000000,
-//            0b00000000,
-//            0b01110100,
-//            0b01010100,
-//            0b01001000,
-//            0b00000000,
-//            },
+        //            { // GIZMO VERSION 6 pt 2
+        //            0b11010101,
+        //            0b10010111,
+        //            0b00000000,
+        //            0b00000000,
+        //            0b01111100,
+        //            0b01010100,
+        //            0b01011100,
+        //            0b00000000,
+        //            },
 
-//            { // GIZMO VERSION 4 pt 2
-//            0b11010101,
-//            0b10010111,
-//            0b00000000,
-//            0b00000000,
-//            0b01110000,
-//            0b00010000,
-//            0b01111100,
-//            0b00000000,
-//            },
+        //            { // GIZMO VERSION 5 pt 2
+        //            0b11010101,
+        //            0b10010111,
+        //            0b00000000,
+        //            0b00000000,
+        //            0b01110100,
+        //            0b01010100,
+        //            0b01001000,
+        //            0b00000000,
+        //            },
 
-//        { // GIZMO VERSION 3 pt 2
-//        0b11010101,
-//        0b10010111,
-//        0b00000000,
-//        0b00000000,
-//        0b01000100,
-//        0b01010100,
-//        0b01111100,
-//        0b00000000,
-//        },
+        //            { // GIZMO VERSION 4 pt 2
+        //            0b11010101,
+        //            0b10010111,
+        //            0b00000000,
+        //            0b00000000,
+        //            0b01110000,
+        //            0b00010000,
+        //            0b01111100,
+        //            0b00000000,
+        //            },
 
-//        { // GIZMO VERSION 2 pt 2
-//        0b11010101,
-//        0b10010111,
-//        0b00000000,
-//        0b00000000,
-//        0b01001100,
-//        0b01010100,
-//        0b00100100,
-//        0b00000000,
-//        },
+        //        { // GIZMO VERSION 3 pt 2
+        //        0b11010101,
+        //        0b10010111,
+        //        0b00000000,
+        //        0b00000000,
+        //        0b01000100,
+        //        0b01010100,
+        //        0b01111100,
+        //        0b00000000,
+        //        },
 
-//        { // GIZMO VERSION 1 pt 2
-//        0b11010101,
-//        0b10010111,
-//        0b00000000,
-//        0b00000000,
-//        0b00100000,
-//        0b01111100,
-//        0b00000000,
-//        0b00000000,
-//        },
+        //        { // GIZMO VERSION 2 pt 2
+        //        0b11010101,
+        //        0b10010111,
+        //        0b00000000,
+        //        0b00000000,
+        //        0b01001100,
+        //        0b01010100,
+        //        0b00100100,
+        //        0b00000000,
+        //        },
+
+        //        { // GIZMO VERSION 1 pt 2
+        //        0b11010101,
+        //        0b10010111,
+        //        0b00000000,
+        //        0b00000000,
+        //        0b00100000,
+        //        0b01111100,
+        //        0b00000000,
+        //        0b00000000,
+        //        },
 
 #ifdef INCLUDE_EXTENDED_FONT        
             {
@@ -1177,10 +1177,10 @@ void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
     uint8_t mat2[8];
 
 #ifdef ROTATE_WHOLE_SCREEN
-	// swap the two matrices. We'll rotate each one 180 later. This results in a full rotation of the combined screen
-	unsigned char* temp = matrix;
-	matrix = matrix2;
-	matrix2 = temp;
+    // swap the two matrices. We'll rotate each one 180 later. This results in a full rotation of the combined screen
+    unsigned char* temp = matrix;
+    matrix = matrix2;
+    matrix2 = temp;
 #endif ROTATE_WHOLE_SCREEN
 
     // the display of the matrices is rotated 90 degrees, so we need to tweak here
@@ -1229,9 +1229,9 @@ void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
 #endif
 
 #ifdef ROTATE_WHOLE_SCREEN
-	// rotate the two matrices. We swapped them earlier. This results in a full rotation of the combined screen
-	rotateMatrix(matrix, DIR_180);
-	rotateMatrix(matrix2, DIR_180);
+    // rotate the two matrices. We swapped them earlier. This results in a full rotation of the combined screen
+    rotateMatrix(matrix, DIR_180);
+    rotateMatrix(matrix2, DIR_180);
 #endif ROTATE_WHOLE_SCREEN
 
 
@@ -1300,7 +1300,7 @@ void initLED()
     led_DIN_mask = digitalPinToBitMask(PIN_LED_DIN);
 
 
-// PORTS
+    // PORTS
     led_CLK = portOutputRegister(digitalPinToPort(PIN_LED_CLK));
     led_CS = portOutputRegister(digitalPinToPort(PIN_LED_CS));
     led_DIN = portOutputRegister(digitalPinToPort(PIN_LED_DIN));
@@ -1422,10 +1422,10 @@ void setVerticalLine(unsigned char* mat, uint8_t x, unsigned char line)
 void blinkPoint(unsigned char* mat, uint8_t x, uint8_t y)
     {
     setOrClearPoint(mat, x, y, blinkToggle > blinkOn);
-//    if (blinkToggle > blinkOn)
-//        mat[x] |= (0x01 << y);
-//    else
-//        mat[x] &= ~(0x01 << y);
+    //    if (blinkToggle > blinkOn)
+    //        mat[x] |= (0x01 << y);
+    //    else
+    //        mat[x] &= ~(0x01 << y);
     }
 
 // Blinks a vertical line

@@ -14,8 +14,13 @@
 /// IMMEDIATE RETURN FACILITY
 
 #define NO_AUTO_RETURN (0)
+#if defined(__MEGA__)
 GLOBAL uint32_t autoReturnTime;
 GLOBAL uint8_t autoReturn;
+#else
+GLOBAL uint32_t autoReturnTime;
+GLOBAL uint8_t autoReturn = NO_AUTO_RETURN_TIME_SET;
+#endif defined(__MEGA__)
 GLOBAL uint8_t immediateReturn;
 GLOBAL uint8_t immediateReturnState;
 
@@ -27,20 +32,25 @@ void allowImmediateReturn(uint8_t state)
     
 void allowAutoReturn(uint8_t state)
     {
+#if defined(__MEGA__)
     allowImmediateReturn(state);
     autoReturn = true;
+#endif defined(__MEGA__)
     }
     
 void removeAutoReturnTime()
     {
+#if defined(__MEGA__)
     autoReturnTime = NO_AUTO_RETURN_TIME_SET;
     autoReturn = false;
+#endif defined(__MEGA__)
     }
     
 void setAutoReturnTime()
     {
-//    if (entry)
-//        {
+#if defined(__MEGA__)
+    //    if (entry)
+    //        {
     if (autoReturn && (options.autoReturnInterval != NO_AUTO_RETURN))
         {
         autoReturnTime = tickCount + ((uint32_t)3125) * (uint32_t)(options.autoReturnInterval);
@@ -49,8 +59,9 @@ void setAutoReturnTime()
         {
         removeAutoReturnTime();
         }
-//        }
+    //        }
     //autoReturn = false;
+#endif defined(__MEGA__)
     }
 
 
@@ -97,7 +108,7 @@ GLOBAL int16_t potDivisor;
 
 
 GLOBAL static const char* menu[MAX_MENU_ITEMS];                        // This is an array of pointers into PROGMEM
-GLOBAL int16_t currentDisplay;                                                             // currently displayed menu item
+GLOBAL int16_t currentDisplay;                                         // currently displayed menu item
 
 // NOTE: This creates a temporary char buffer of length MAX_MENU_ITEM_LENGTH.
 // It's better than storing a buffer 8xMAX_MENU_ITEM_LENGTH though.
@@ -186,7 +197,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
             application = FIRST_APPLICATION + currentDisplay;
         }
     
-    uint8_t sel;		// see heisenbug below
+    uint8_t sel;                // see heisenbug below
     
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
@@ -518,11 +529,11 @@ GLOBAL uint8_t glyphs[MAX_GLYPHS];
 void drawGlyphForGlyphDisplay(uint8_t* mat, const uint8_t glyph)
     {
     if (glyph == NO_GLYPH)
-    	{
-    	// do nothing
-    	return;
-    	}
-    	
+        {
+        // do nothing
+        return;
+        }
+        
     switch(glyph >> 6)
         {
         case 0:         // FONT_3x5
@@ -540,7 +551,7 @@ void drawGlyphForGlyphDisplay(uint8_t* mat, const uint8_t glyph)
             write8x5Glyph(mat, glyph & 63);
             }
         break;
-        case 3:			// FONT_4_3x5
+        case 3:                 // FONT_4_3x5
             {
             write3x5Glyphs(glyph & 63);
             }
@@ -644,22 +655,22 @@ uint16_t medianOfFive(uint16_t array[])
     uint16_t c;
     memcpy(a, array, 5 * sizeof(uint16_t));
 
-// From http://stackoverflow.com/questions/11350471/finding-median-of-5-elements        
-// 1) use 3 comparisons to arrange elements in array such that a[1]<a[2] , a[4]<a[5] and a[1]<a[4]
-// a) compare a[1] and a[2] and swap if necessary
+    // From http://stackoverflow.com/questions/11350471/finding-median-of-5-elements        
+    // 1) use 3 comparisons to arrange elements in array such that a[1]<a[2] , a[4]<a[5] and a[1]<a[4]
+    // a) compare a[1] and a[2] and swap if necessary
         
     if (a[0] > a[1]) { c = a[0]; a[0] = a[1]; a[1] = c; }
         
-// b) compare a[4] and a[5] and swap if necessary 
+    // b) compare a[4] and a[5] and swap if necessary 
 
     if (a[3] > a[4]) { c = a[3]; a[3] = a[4]; a[4] = c; }
         
-// c) compare a[1] and a[4].if a[4] is smaller than a[1] , then swap a[1] wid a[4] and a[2] wid a[5]
+    // c) compare a[1] and a[4].if a[4] is smaller than a[1] , then swap a[1] wid a[4] and a[2] wid a[5]
 
     if (a[0] > a[3]) { c = a[0]; a[0] = a[3]; a[3] = c; 
         c = a[1]; a[1] = a[4]; a[4] = c; }
 
-// 2)if a[3]>a[2].if a[2]<a[4] median value = min(a[3],a[4]) else median value=min(a[2],a[5]) 
+    // 2)if a[3]>a[2].if a[2]<a[4] median value = min(a[3],a[4]) else median value=min(a[2],a[5]) 
 
     if (a[2] > a[1])
         {
@@ -673,7 +684,7 @@ uint16_t medianOfFive(uint16_t array[])
             }
         }
 
-// 3)if a[3]<a[2].if a[3]>a[4] median value = min(a[3],a[5]) else median value=min(a[2],a[4])
+    // 3)if a[3]<a[2].if a[3]>a[4] median value = min(a[3],a[5]) else median value=min(a[2],a[4])
         
     else
         {
@@ -850,6 +861,13 @@ void stateSave(uint8_t backState)
             data.slot.type = slotTypeForApplication(application);
             switch(application)
                 {
+#ifdef INCLUDE_CONTROLLER
+                case STATE_CONTROLLER:
+                    {
+                    saveSlot(currentDisplay);
+                    }
+                break;
+#endif INCLUDE_CONTROLLER
 #ifdef INCLUDE_STEP_SEQUENCER
                 case STATE_STEP_SEQUENCER:
                     {
@@ -957,79 +975,86 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                 else
                     {
                     state = selectedState;
-#ifdef INCLUDE_DRUM_SEQUENCER
-                    if (application == STATE_DRUM_SEQUENCER)
+#ifdef INCLUDE_CONTROLLER
+                    if (application == STATE_CONTROLLER)
                         {
-                        //// FIXME:  Need to set the note pulse rate first before the following....? (which was stolen from StepSequencer code in Utility.cpp)
-                        //// FIXME:  Need to stop the sequencer?  Etc.
-
-                        unpackDrumSequenceData();
-                        local.drumSequencer.playState = PLAY_STATE_STOPPED;
-                        local.drumSequencer.performanceMode = false;
-
-                        // FIXME: did I fix the issue of synchronizing the beats with the sequencer notes?
-                        local.drumSequencer.currentPlayPosition = div12((24 - beatCountdown) * notePulseRate) >> 1;   // get in sync with beats
+                        // don't do anything, we're good
                         }
                     else
-#endif INCLUDE_DRUM_SEQUENCER
-#ifdef INCLUDE_STEP_SEQUENCER
-                        if (application == STATE_STEP_SEQUENCER)
+#endif INCLUDE_CONTROLLER
+#ifdef INCLUDE_DRUM_SEQUENCER
+                        if (application == STATE_DRUM_SEQUENCER)
                             {
+                            //// FIXME:  Need to set the note pulse rate first before the following....? (which was stolen from StepSequencer code in Utility.cpp)
+                            //// FIXME:  Need to stop the sequencer?  Etc.
+
+                            unpackDrumSequenceData();
+                            local.drumSequencer.playState = PLAY_STATE_STOPPED;
+                            local.drumSequencer.performanceMode = false;
+
                             // FIXME: did I fix the issue of synchronizing the beats with the sequencer notes?
-                            local.stepSequencer.currentPlayPosition = div12((24 - beatCountdown) * notePulseRate) >> 1;   // get in sync with beats
-
-                            uint8_t len = GET_TRACK_FULL_LENGTH();
-                            uint8_t num = GET_NUM_TRACKS();
-                                
-                            // unpack the high-bit info
-                            for(uint8_t i = 0; i < num; i++)
-                                {
-                                uint16_t pos = i * len * 2;
-
-                                //// 1 bit type of data
-                                if (gatherByte(pos) >> 7 == 0)  // It's a note
-                                    {
-                                    //// 1 bit mute
-                                    //// 5 bits MIDI out channel (including "use default")
-                                    //// 7 bits length
-                                    //// 8 bits velocity (including "use per-note velocity")
-                                    //// 4 bits fader
-                                    local.stepSequencer.data[i] = STEP_SEQUENCER_DATA_NOTE;
-                                
-                                    local.stepSequencer.muted[i] = (gatherByte(pos + 1) >> 7); // first bit
-                                    local.stepSequencer.outMIDI[i] = (gatherByte(pos + 2) >> 3);  // top 5 bits moved down 3
-                                    local.stepSequencer.noteLength[i] = (gatherByte(pos + 7) >> 1); // top 7 bits moved down 1
-                                    local.stepSequencer.velocity[i] = (gatherByte(pos + 14) >> 1); // top 7 bits moved down 1
-                                    local.stepSequencer.transposable[i] = (gatherByte(pos + 21) >> 7); // top 1 bits moved down 7
-                                    local.stepSequencer.fader[i] = (gatherByte(pos + 22) >> 3);  // top 5 bits moved down 3
-                                    local.stepSequencer.pattern[i] = (gatherByte(pos + 27) >> 4);  // top 4 bits moved down 4
-                                    }
-                                else                        // It's a control sequence
-                                    {                               
-                                    ////     3 bits: CC, NRPN, RPN, PC, BEND, AFTERTOUCH
-                                    ////     7 bits MSB of Parameter 
-                                    ////     7 bits LSB of Parameter
-                                    ////     5 bits MIDI out channel
-                                    ////     4 bits pattern
-
-                                    uint8_t controlDataType = (gatherByte(pos + 1) >> 4);
-                                    local.stepSequencer.data[i] = controlDataType + 1;
-                                    local.stepSequencer.noteLength[i] = (gatherByte(pos + 4) >> 1);         // MSB
-                                    local.stepSequencer.velocity[i] = (gatherByte(pos + 11) >> 1);          // LSB
-                                    local.stepSequencer.outMIDI[i] = (gatherByte(pos + 18) >> 3);
-                                    local.stepSequencer.pattern[i] = (gatherByte(pos + 23) >> 4);
-                                    }
-                                }
-                            
-                            stripHighBits();
-                        
-                            local.stepSequencer.markTrack = 0;
-                            local.stepSequencer.markPosition = 0;
-                            resetStepSequencerCountdown();
+                            local.drumSequencer.currentPlayPosition = div12((24 - beatCountdown) * notePulseRate) >> 1;   // get in sync with beats
                             }
                         else
+#endif INCLUDE_DRUM_SEQUENCER
+#ifdef INCLUDE_STEP_SEQUENCER
+                            if (application == STATE_STEP_SEQUENCER)
+                                {
+                                // FIXME: did I fix the issue of synchronizing the beats with the sequencer notes?
+                                local.stepSequencer.currentPlayPosition = div12((24 - beatCountdown) * notePulseRate) >> 1;   // get in sync with beats
+
+                                uint8_t len = GET_TRACK_FULL_LENGTH();
+                                uint8_t num = GET_NUM_TRACKS();
+                                
+                                // unpack the high-bit info
+                                for(uint8_t i = 0; i < num; i++)
+                                    {
+                                    uint16_t pos = i * len * 2;
+
+                                    //// 1 bit type of data
+                                    if (gatherByte(pos) >> 7 == 0)  // It's a note
+                                        {
+                                        //// 1 bit mute
+                                        //// 5 bits MIDI out channel (including "use default")
+                                        //// 7 bits length
+                                        //// 8 bits velocity (including "use per-note velocity")
+                                        //// 4 bits fader
+                                        local.stepSequencer.data[i] = STEP_SEQUENCER_DATA_NOTE;
+                                
+                                        local.stepSequencer.muted[i] = (gatherByte(pos + 1) >> 7); // first bit
+                                        local.stepSequencer.outMIDI[i] = (gatherByte(pos + 2) >> 3);  // top 5 bits moved down 3
+                                        local.stepSequencer.noteLength[i] = (gatherByte(pos + 7) >> 1); // top 7 bits moved down 1
+                                        local.stepSequencer.velocity[i] = (gatherByte(pos + 14) >> 1); // top 7 bits moved down 1
+                                        local.stepSequencer.transposable[i] = (gatherByte(pos + 21) >> 7); // top 1 bits moved down 7
+                                        local.stepSequencer.fader[i] = (gatherByte(pos + 22) >> 3);  // top 5 bits moved down 3
+                                        local.stepSequencer.pattern[i] = (gatherByte(pos + 27) >> 4);  // top 4 bits moved down 4
+                                        }
+                                    else                        // It's a control sequence
+                                        {                               
+                                        ////     3 bits: CC, NRPN, RPN, PC, BEND, AFTERTOUCH
+                                        ////     7 bits MSB of Parameter 
+                                        ////     7 bits LSB of Parameter
+                                        ////     5 bits MIDI out channel
+                                        ////     4 bits pattern
+
+                                        uint8_t controlDataType = (gatherByte(pos + 1) >> 4);
+                                        local.stepSequencer.data[i] = controlDataType + 1;
+                                        local.stepSequencer.noteLength[i] = (gatherByte(pos + 4) >> 1);         // MSB
+                                        local.stepSequencer.velocity[i] = (gatherByte(pos + 11) >> 1);          // LSB
+                                        local.stepSequencer.outMIDI[i] = (gatherByte(pos + 18) >> 3);
+                                        local.stepSequencer.pattern[i] = (gatherByte(pos + 23) >> 4);
+                                        }
+                                    }
+                            
+                                stripHighBits();
+                        
+                                local.stepSequencer.markTrack = 0;
+                                local.stepSequencer.markPosition = 0;
+                                resetStepSequencerCountdown();
+                                }
+                            else
 #endif INCLUDE_STEP_SEQUENCER
-                            {}
+                                {}
                     }
                 }
 
@@ -1062,6 +1087,7 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
 
 void stateSure(uint8_t cancelState, uint8_t sureState)
     {
+    entry = false;
     if (updateDisplay)
         {
         clearScreen();
@@ -1082,6 +1108,7 @@ void stateSure(uint8_t cancelState, uint8_t sureState)
 
 void stateExit(uint8_t cancelState, uint8_t exitState)
     {
+    entry = false;
     if (updateDisplay)
         {
         clearScreen();
@@ -1106,6 +1133,7 @@ void stateExit(uint8_t cancelState, uint8_t exitState)
 
 void stateCant(uint8_t nextState)
     {
+    entry = false;
     if (updateDisplay)
         {
         clearScreen();
@@ -1317,7 +1345,7 @@ void clearScreen()
 GLOBAL static uint8_t glyphTable[24][4] = 
     {
     // These first: ----, ALLC, DFLT, DECR, and INCR, must be the FIRST ones
-    // because the correspond with the five glyph types in doNumericalDisplay
+    // because they correspond to the five glyph types in doNumericalDisplay
     {GLYPH_3x5_MINUS, GLYPH_3x5_MINUS, GLYPH_3x5_MINUS, GLYPH_3x5_MINUS},   // ----
     {GLYPH_3x5_A, GLYPH_3x5_L, GLYPH_3x5_L, GLYPH_3x5_C},   // ALLC
     {GLYPH_3x5_D, GLYPH_3x5_F, GLYPH_3x5_L, GLYPH_3x5_T},   // DFLT
@@ -1415,7 +1443,7 @@ GLOBAL static uint8_t menuDelays[11] = { NO_MENU_DELAY, QUARTER_MENU_DELAY, THIR
 
 // SET MENU DELAY
 // Changes the menu delay to a desired value (between 0: no menu delay, and 9: infinite menu delay to 10: slow delay).  
-// The default is 5
+// The default is 4
 void setMenuDelay(uint8_t index)
     {
     uint16_t del = DEFAULT_SHORT_DELAY;

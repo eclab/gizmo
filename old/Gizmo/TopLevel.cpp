@@ -2535,15 +2535,15 @@ void go()
             }
         break;
 
-/*
-  case STATE_THRU_CC_NRPN:
-  {
-  options.thruCCToNRPN = !options.thruCCToNRPN;
-  saveOptions();
-  goUpState(STATE_THRU);
-  }
-  break;
-*/
+        /*
+          case STATE_THRU_CC_NRPN:
+          {
+          options.thruCCToNRPN = !options.thruCCToNRPN;
+          saveOptions();
+          goUpState(STATE_THRU);
+          }
+          break;
+        */
         case STATE_THRU_BLOCK_OTHER_CHANNELS:
             {
             options.thruBlockOtherChannels = !options.thruBlockOtherChannels;
@@ -2575,7 +2575,7 @@ void go()
         break;
 #endif
 
-//// SYNTHS
+        //// SYNTHS
 
 #ifdef INCLUDE_SYNTH
         case STATE_SYNTH_WALDORF_BLOFELD:

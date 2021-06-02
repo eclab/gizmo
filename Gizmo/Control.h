@@ -137,7 +137,7 @@ struct _controlLocal
     uint16_t currentWaveControl;
     float fadeWaveControl;		// current wave control so we can set it to start if we're doing FADED
     float fadeStartControl;		// the very last wave control done prior to resetting the index to 0 for FADED 
-    uint32_t waveStartTicks;
+    uint32_t waveStartTicks;		// also repurposed in stateControllerPCPlayWorking()
     uint32_t waveEndTicks;
     uint8_t waveCountDown;
     int8_t lastWavePosition;
@@ -147,8 +147,19 @@ struct _controlLocal
 	uint16_t potUpdateValue[4];
 	uint32_t potUpdateTime[4];
 	uint8_t potWaiting[4];
+	uint8_t pcState;
+	uint8_t pcMenu;		// 1 ... 12
+	uint8_t pcChannel;	// 1 ... 16
+	int8_t pcMSB;		// -1 ... 127
+	int8_t pcLSB;		// -1 ... 127
+	uint8_t pcStage;
     };
 
+#define PC_STATE_NONE 0
+#define PC_STATE_LEFT 1
+#define PC_STATE_RIGHT 2
+#define PC_STATE_A2 3
+#define PC_STATE_A3 4
 
 #define ENVELOPE_MODE_GATED 0
 #define ENVELOPE_MODE_FADED 1
@@ -173,21 +184,41 @@ struct _controlLocal
 #define RANDOM_MODE_SH_NOT_RESET 6
 #define RANDOM_MODE_SH_FREE 7
 
+#define MAX_32 (4294967296 - 1)
+
+#define NUM_PC_CHANGES (8)
+#define NUM_PC_CHANNELS (16)
+#define PC_UNSET (-1)
+// This is obviously just for the bulk PC changes
+struct _controller
+    {
+    int8_t msb[NUM_PC_CHANGES][NUM_PC_CHANNELS];		// -1 means no bank change
+    int8_t lsb[NUM_PC_CHANGES][NUM_PC_CHANNELS];		// -1 means no bank change
+    uint8_t pc[NUM_PC_CHANGES][NUM_PC_CHANNELS];
+    uint8_t unused[3];
+    };
+
+
 
 // SET CONTROLLER TYPE
-// Lets the user set a controller type.   This is stored in &type.  When the user is finished
-// this function will go to the provided nextState (typically to set the controller number).
-void setControllerType(uint8_t &type, uint8_t nextState, uint8_t buttonOnState);
+// Lets the user set a controller type.   This is stored in &type.  If the user has selected
+// CC, NRPN, or RPN, and thus must specify a parameter number, then we switch to nextState.
+// If the user has seleted BEND or AFTERTOUCH and is fromButon, then we switch to nextState.
+// Otherwise, we switch to returnState (including OFF and cancelling).
+void setControllerType(uint8_t &type, uint8_t nextState, uint8_t returnState, uint8_t fromButton);
 
 // SET CONTROLLER NUMBER
-// Lets the user set a controller number for the given conroller type.   
-// This is stored in &number.  The user can cancel everything and the type and
-// number will be reset.
-void setControllerNumber(uint8_t type, uint16_t &number, uint8_t backupType, uint16_t backupNumber, uint8_t nextState);
+// Lets the user set a controller number for the given controller type, given a button (or not).  This is stored in &number.
+// The original type, determined by setControllerType, ise in 'type'.  Backups are provided.
+// If the user selects an item, we go to nextState.  If the user cancels, we go to returnState.
+void setControllerNumber(uint8_t type, uint16_t &number, uint8_t backupType, uint16_t backupNumber, uint8_t nextState, uint8_t returnState, uint8_t fromButton);
 
 
-// SET CONTROLLER BUTTON ON OFF
-// Lets the user specify a control value to be sent when the button is pressed on (or off).  This
+// SET CONTROLLER TYPE
+// Lets the user set a controller type.   This is stored in &type.  If the user has selected
+// CC, NRPN, or RPN, and thus must specify a parameter number, then we switch to nextState.
+// If the user has seleted BEND or AFTERTOUCH and is fromButon, then we switch to nextState.
+// Otherwise, we switch to returnState (including OFF and cancelling).
 // value is stored in onOff and will be restored if the user cancels everything.
 void setControllerButtonOnOff(uint16_t &onOff, int8_t nextState);
 
@@ -202,5 +233,17 @@ void stateControllerResetWaveEnvelopeValuesGo();
 void stateControllerPlayRandom();
 void stateControllerRandomSetMode();
 void stateControllerPlay();
+
+
+void stateControllerPCPlayLoad();
+void stateControllerPCPlay();
+void stateControllerPCPlayWorking();
+void stateControllerPCEditLoad();
+void stateControllerPCEdit();
+void stateControllerPCEditBankMSB();
+void stateControllerPCEditBankLSB();
+void stateControllerPCEditPC();
+void stateControllerPCEditSave();
+
 #endif
 

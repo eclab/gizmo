@@ -18,12 +18,16 @@
 
 ////// SLOT MEMORY STORAGE COMPUTATION
 
+//// An Arduino Uno has 1K of EEPROM flash
+//// An Arduino Mega has 4K of EEPROM flash
+
 //// Slots are of SLOT_SIZE (388).  The Uno can hold two of them and the Mega nine.
 //// Slots consist of a one-byte SLOT TYPE, followed by 387 bytes of SLOT DATA.
 //// Slots come first in the flash memory, so SLOT_OFFSET is zero.  Next comes
 //// the arpeggios.  There are ten of them, each of size 18, starting at ARPEGGIATOR_OFFSET.
 //// Finally comes the options struct.  This starts at OPTIONS_OFFSET.
-//// The Mega has space for a 424-byte options struct.  The Uno has space for 68 bytes.
+//// The Mega has space for a 4096 - (9 * 388 + 10 * 18) = 424-byte options struct.
+//// The Uno has space for 1024 - (2 * 388 + 10 * 18) = 68 bytes.
 
 #if defined(__MEGA__)
 #define NUM_SLOTS 9
@@ -50,6 +54,7 @@
 #define SLOT_TYPE_STEP_SEQUENCER (GLYPH_3x5_S)
 #define SLOT_TYPE_RECORDER (GLYPH_3x5_R)
 #define SLOT_TYPE_DRUM_SEQUENCER (GLYPH_3x5_D)
+#define SLOT_TYPE_CONTROLLER (GLYPH_3x5_C)
 
 
 // Given an application state (presently STATE_STEP_SEQUENCER, STATE_DRUM_SEQUENCER or STATE_RECORDER),
@@ -66,6 +71,7 @@ struct _slot
         struct _recorder recorder;
         struct _stepSequencer stepSequencer;
         struct _drumSequencer drumSequencer;
+        struct _controller controller;
         // This is a union so we can restructure it any way we like
         char buffer[SLOT_DATA_SIZE];             
         } data;
