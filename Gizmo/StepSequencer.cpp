@@ -850,7 +850,8 @@ void tieNote(uint8_t pos)
     if (local.stepSequencer.lastNotePos != NO_SEQUENCER_POS && 
         local.stepSequencer.lastNotePos != pos)
         {
-        uint8_t p = local.stepSequencer.lastNotePos + 1;
+        uint8_t p = local.stepSequencer.lastNotePos;
+        p = incrementAndWrap(p, trackLen); 
         while(p != pos)
             {
             loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + p, 1, 0);
@@ -1303,8 +1304,7 @@ void stateStepSequencerPlay()
             local.stepSequencer.lastNote = note;
             local.stepSequencer.lastNotePos = pos;
 
-            if (local.stepSequencer.currentEditPosition >= 0
-                && !(local.stepSequencer.performanceMode))
+            if (local.stepSequencer.currentEditPosition >= 0 && !(local.stepSequencer.performanceMode))
                 {
                 local.stepSequencer.currentEditPosition = incrementAndWrap(local.stepSequencer.currentEditPosition, trackLen);
                 }
@@ -1328,9 +1328,7 @@ void stateStepSequencerPlay()
             {
             // here we're trying to provide some slop so the user can press the note early.
             // we basically are rounding up or down to the nearest note
-            uint8_t pos = (local.stepSequencer.currentEditPosition < 0 
-                || (local.stepSequencer.performanceMode)
-                ) ? 
+            uint8_t pos = (local.stepSequencer.currentEditPosition < 0 || (local.stepSequencer.performanceMode)) ? 
                 local.stepSequencer.currentPlayPosition + (notePulseCountdown <= (notePulseRate >> 1) ? 1 : 0) :
                 local.stepSequencer.currentEditPosition;
             if (pos >= trackLen) pos = 0;
