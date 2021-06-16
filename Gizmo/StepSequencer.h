@@ -232,6 +232,8 @@
 #define STEP_SEQUENCER_SOLO_ON_SCHEDULED (2)
 #define STEP_SEQUENCER_SOLO_OFF_SCHEDULED (3)
 
+#define STEP_SEQUENCER_REST_NOTE (255)
+
 
 #define NO_TRACK (255)
 #define NO_SEQUENCER_NOTE (255)
@@ -317,14 +319,17 @@ extern uint8_t _numTracks[6];
 
 
 /// TRACK FORMAT MACROS
+/// (These are here rather than in StepSequencer.cpp so Utility.cpp can access them)
 /// The track format is stored in data.slot.data.stepSequencer.format
 /// and it consists of 5 high bytes defining the "custom length", namely values 0...31,
-/// plus 3 low bytes defining the basic step sequencer format, namely values 0...7.
+/// plus 3 low bytes defining the basic step sequencer format, namely values 0...7,
+/// which signify 16, 24, 32, 48, 64, 96, UNUSED, UNUSED.
 /// The maximum length is at present 96.  The length of a track is defined as either
 /// the basic format length (if the custom length is 0) or the basic format length 
 /// minus 32 plus the custom length.  For example, a basic format of 64 can either be
 /// the full 64 (if the custom length is 0) or it can be 33 ... 63 (if the custom length
-/// is 1 ... 31).
+/// is 1 ... 31).  Similarly a basic format of 96 can either be the full 96 (custom length 0)
+/// or 65 ... 95 (custom length 1 ... 31).
 
 // The largest track size
 #define MAXIMUM_TRACK_LENGTH (96)
@@ -379,6 +384,7 @@ void playStepSequencer();
 void stateStepSequencerMenu();
 
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+void stateStepSequencerMenuRest();
 void stateStepSequencerMenuType();
 void stateStepSequencerMenuTypeParameter();
 #endif

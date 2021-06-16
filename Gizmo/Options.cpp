@@ -64,7 +64,7 @@ void resetOptions()
 
 #ifdef INCLUDE_ARPEGGIATOR
     options.arpeggiatorPlayVelocity = 128;  // FREE
-#endif
+#endif INCLUDE_ARPEGGIATOR
 
     options.clockDivisor = 1;
     options.transpose = 0;
@@ -75,26 +75,30 @@ void resetOptions()
 
 #ifdef INCLUDE_RECORDER
     options.recorderRepeat = true;
-#endif
+#endif INCLUDE_RECORDER
 
 #ifdef INCLUDE_SPLIT
     options.splitChannel = 1;
     options.splitNote = 60;  // Middle C
     options.splitLayerNote = NO_NOTE;
-#endif
+#endif INCLUDE_SPLIT
+
+#ifdef INCLUDE_STEP_SEQUENCER
+    options.stepSequencerRestNote = STEP_SEQUENCER_REST_NOTE;			// no rest note
+#endif INCLUDE_STEP_SEQUENCER
 
 #ifdef INCLUDE_DRUM_SEQUENCER
     options.drumSequencerDefaultVelocity = 5;
-#endif
+#endif INCLUDE_DRUM_SEQUENCER
 
 #ifdef INCLUDE_MEASURE
     options.measureBeatsPerBar = 4;
     options.measureBarsPerPhrase = 4;
-#endif
+#endif INCLUDE_MEASURE
 
 #if defined(HEADLESS_RESET)
     options.channelControl = 16;
-#endif 
+#endif defined(HEADLESS_RESET)
 
 #ifdef INCLUDE_CONTROLLER
     // Length values for waves 2 through 8 are OFF by default.
@@ -105,7 +109,7 @@ void resetOptions()
         }
     options.randomInitialValue = 64;
     options.randomRange = 127;
-#endif
+#endif INCLUDE_CONTROLLER
     }
 
 

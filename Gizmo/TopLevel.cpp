@@ -939,6 +939,11 @@ void go()
             stateStepSequencerMenuTypeParameter();
             }
         break;
+        case STATE_STEP_SEQUENCER_MENU_REST:
+            {
+            stateStepSequencerMenuRest();
+            }
+        break;
 #endif INCLUDE_ADVANCED_STEP_SEQUENCER
         case STATE_STEP_SEQUENCER_MENU_PATTERN:
             {

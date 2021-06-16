@@ -38,7 +38,7 @@ struct _options
     uint16_t randomControlNumber;
 	uint16_t a2ControlNumber;
 	uint16_t a3ControlNumber;
-#endif
+#endif INCLUDE_CONTROLLER
 
     // then 8-bit stuff.  There are 16 here
     uint8_t screenBrightness;
@@ -78,7 +78,7 @@ struct _options
     uint8_t randomControlType;
 	uint8_t a2ControlType;
 	uint8_t a3ControlType;
-#endif
+#endif INCLUDE_CONTROLLER
 
 	// There are 4 here
 #ifdef INCLUDE_ARPEGGIATOR
@@ -86,11 +86,11 @@ struct _options
     uint8_t arpeggiatorPlayVelocity;
     uint8_t arpeggiatorLatch;  
     uint8_t arpeggiatorPlayAlongChannel;
-#endif
+#endif INCLUDE_ARPEGGIATOR
 
 #ifdef INCLUDE_RECORDER
     //uint8_t recorderRepeat;
-#endif
+#endif INCLUDE_RECORDER
 
 #ifdef INCLUDE_SPLIT
 	// There are 4 here
@@ -98,7 +98,7 @@ struct _options
     uint8_t splitChannel;
     uint8_t splitNote;
     uint8_t splitLayerNote;
-#endif
+#endif INCLUDE_SPLIT
 
 #ifdef INCLUDE_THRU
 	// There are 14 here 
@@ -110,13 +110,13 @@ struct _options
 //    uint8_t thruCCToNRPN;
     uint8_t thruMergeChannelIn;
     uint8_t thruBlockOtherChannels;
-#endif
+#endif INCLUDE_THRU
 
 #ifdef INCLUDE_MEASURE
 	// there are 2 here
     uint8_t measureBeatsPerBar;
     uint8_t measureBarsPerPhrase;
-#endif
+#endif INCLUDE_MEASURE
 
 #ifdef INCLUDE_STEP_SEQUENCER
 	// there are 4 here
@@ -124,7 +124,10 @@ struct _options
     uint8_t stepSequencerSendClock;
 	int8_t stepSequencerPlayAlongChannel;
 	uint8_t stepSequencerStop;
-#endif
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+	uint8_t stepSequencerRestNote;
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_STEP_SEQUENCER
 
 #ifdef INCLUDE_DRUM_SEQUENCER
 	// there are 8 here
@@ -138,17 +141,17 @@ struct _options
 	uint8_t drumSequencerRandomize;
 	uint8_t drumSequencerLinearCurve;
 	uint8_t drumSequencerDisplayGroup;
-#endif
+#endif INCLUDE_DRUM_SEQUENCER
 
 #ifdef INCLUDE_RECORDER
 	// there is 1 here
 	uint8_t recorderRepeat;
-#endif
+#endif INCLUDE_RECORDER
 
 #ifdef INCLUDE_GAUGE
 	// there is 1 here
 	uint8_t gaugeMidiInProvideRawCC;
-#endif
+#endif INCLUDE_GAUGE
     };
 
 // The options struct which is saved and loaded and used

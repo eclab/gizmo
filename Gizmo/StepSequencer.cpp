@@ -7,11 +7,11 @@
 
 
 // Used by GET_TRACK_LENGTH to return the length of tracks in the current format
+//GLOBAL uint8_t _trackLength[5] = { 16, 24, 32, 48, 64 };
 GLOBAL uint8_t _trackLength[6] = { 16, 24, 32, 48, 64, 96 };
-// GLOBAL uint8_t _trackLength[4] = { 16, 24, 32, 64 };
 // Used by GET_NUM_TRACKS to return the number of tracks in the current format
+//GLOBAL uint8_t _numTracks[5] = { 12, 8, 6, 4, 3 };
 GLOBAL uint8_t _numTracks[6] = { 12, 8, 6, 4, 3, 2 };
-//GLOBAL uint8_t _numTracks[4] = { 12, 8, 6, 3 };
 
 
 
@@ -582,20 +582,25 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
 
     clearScreen();
     
-    // revise LASTTRACK to be just beyond the last track we'll draw
-    //      (where TRACK is the first track we'll draw)     
-        
-    // this code is designed to allow the user to move down to about the middle of the screen,
-    // at which point the cursor stays there and the screen scrolls instead.
     uint8_t firstTrack = local.stepSequencer.currentTrack;
-    uint8_t fourskip =  4 / skip;
-    if (firstTrack < fourskip)  
-        firstTrack = 0;
-    else firstTrack = firstTrack - fourskip + 1;
-    
     uint8_t lastTrack = numTracks;          // lastTrack is 1+ the final track we'll be drawing
-    uint8_t sixskip = 6 / skip;
-    lastTrack = bound(lastTrack, 0, firstTrack + sixskip);
+    
+    if (fullLen == 96)
+    	{
+    	// handle 96 specially since it takes up the whole screen
+    	lastTrack = firstTrack + 1;
+    	}
+    else
+    	{
+    	// this code is designed to allow the user to move down to about the middle of the screen,
+    	// at which point the cursor stays there and the screen scrolls instead.
+		uint8_t fourskip =  4 / skip;
+		if (firstTrack < fourskip)  
+			firstTrack = 0;
+		else firstTrack = firstTrack - fourskip + 1;   
+		uint8_t sixskip = 6 / skip;
+		lastTrack = bound(lastTrack, 0, firstTrack + sixskip);
+		}
 
     // Now we start drawing each of the tracks.  We will make blinky lights for beats or for the cursor
     // and will have solid lights or nothing for the notes or their absence.
@@ -606,7 +611,15 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
         // data is stored per-track as
         // NOTE VEL
         // We need to strip off the high bit because it's used for other packing
-                
+        
+/*
+        debug(100);
+        debug(local.stepSequencer.currentTrack);
+        debug(firstTrack);
+        debug(lastTrack);
+        debug(local.stepSequencer.currentEditPosition);
+*/
+        
         // for each note in the track
         for (uint8_t d = 0; d < trackLen; d++)
             {
@@ -643,6 +656,12 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
 
             if (vel || blink)
                 {       
+				uint8_t pointx = d - ((d >> 3) * 8); 		//  d - (d / 8) * 8
+				uint8_t pointy = y - (d >> 4);				// (y - (d / 16)
+				uint8_t isled2 = (((d >> 3) & 0x1) == 0x0);		// (d / 8) is even
+				blinkOrSetPoint(isled2 ? led2 : led, pointx, pointy, blink);
+
+/*
                 // <8 <16 <24 <32 <40 <48 <56 <64
                 if (d < 32)                             // for reasons only known to ATMEL, if I don't have this line on the UNO it's much bigger.  But it's irrelevant!
                     {
@@ -694,6 +713,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
                             }
                         }
                     }
+                */
                 }
             }
         y -= skip;
@@ -739,11 +759,12 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
 
 
 
+
 // Reformats the sequence as requested by the user
 void stateStepSequencerFormat()
     {
     uint8_t result;
-    const char* menuItems[6] = {  PSTR("16 NOTES"), PSTR("24 NOTES"), PSTR("32 NOTES"), PSTR("48 NOTES"), PSTR("64 NOTES"), PSTR("96 NOTES") };
+    const char* menuItems[6] = { PSTR("16 NOTES"), PSTR("24 NOTES"), PSTR("32 NOTES"), PSTR("48 NOTES"), PSTR("64 NOTES"), PSTR("96 NOTES") };
     result = doMenuDisplay(menuItems, 6, STATE_NONE, 0, 1);
     switch (result)
         {
@@ -771,7 +792,6 @@ void stateStepSequencerFormat()
             local.stepSequencer.performanceMode = 0;
             local.stepSequencer.goNextSequence = 0;
             local.stepSequencer.scheduleStop = 0;
-            //           local.stepSequencer.clearTrack = CLEAR_TRACK;
             local.stepSequencer.solo = 0;
             local.stepSequencer.currentTrack = 0;
             local.stepSequencer.currentEditPosition = 0;
@@ -1132,7 +1152,6 @@ void stateStepSequencerPlay()
         local.stepSequencer.currentTrack = ((pot[LEFT_POT] * numTracks) >> 10);         //  / 1024;
         local.stepSequencer.currentTrack = bound(local.stepSequencer.currentTrack, 0, numTracks);
         setParseRawCC(local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_CC);
-        //        local.stepSequencer.clearTrack = CLEAR_TRACK;
         }
     else if (potUpdated[RIGHT_POT])
         {
@@ -1272,7 +1291,8 @@ void stateStepSequencerPlay()
 
 
     else if (newItem && (itemType == MIDI_NOTE_ON)  //// there is a note played
-        && local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_NOTE)
+        && local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_NOTE && 
+        ( local.stepSequencer.currentEditPosition >= 0 || local.stepSequencer.playState == PLAY_STATE_PLAYING)) // either we're in edit mode or actually playing so we can enter data in play position mode
         {
         TOGGLE_IN_LED();
         uint8_t note = itemNumber;
@@ -1299,6 +1319,11 @@ void stateStepSequencerPlay()
             tieNote(pos);
             
             // add the note
+            if (note == options.stepSequencerRestNote)	// aha!  Add a rest
+            	{
+            	note = 0;
+            	velocity = 0;
+            	}
             loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + pos, note, velocity);
             removeSuccessiveTies(pos, trackLen);
             local.stepSequencer.lastNote = note;
@@ -1311,7 +1336,7 @@ void stateStepSequencerPlay()
             else 
                 {
                 local.stepSequencer.dontPlay[local.stepSequencer.currentTrack] = 1;
-                if (!options.stepSequencerNoEcho)          // only play if we're echoing
+                if (!options.stepSequencerNoEcho && options.stepSequencerRestNote != STEP_SEQUENCER_REST_NOTE)          // only play if we're echoing
                     {
                     sendTrackNote(note, velocity, local.stepSequencer.currentTrack);
                     }
@@ -1710,10 +1735,11 @@ void stateStepSequencerPlay()
 #define STEP_SEQUENCER_MENU_EDIT 9
 //#define STEP_SEQUENCER_MENU_SEND_CLOCK 10
 #define STEP_SEQUENCER_MENU_NO_ECHO 10
-#define STEP_SEQUENCER_MENU_LENGTH 11
-#define STEP_SEQUENCER_MENU_PERFORMANCE 12
-#define STEP_SEQUENCER_MENU_SAVE 13
-#define STEP_SEQUENCER_MENU_OPTIONS 14
+#define STEP_SEQUENCER_MENU_REST 11
+#define STEP_SEQUENCER_MENU_LENGTH 12
+#define STEP_SEQUENCER_MENU_PERFORMANCE 13
+#define STEP_SEQUENCER_MENU_SAVE 14
+#define STEP_SEQUENCER_MENU_OPTIONS 15
 
 #else
 
@@ -1736,7 +1762,7 @@ void stateStepSequencerMenu()
     uint8_t result;
 
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
-    const char* menuItems[15] = {    
+    const char* menuItems[16] = {    
         (local.stepSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),
         PSTR("RESET TRACK"),
         PSTR("NOTE LENGTH (TRACK)"),
@@ -1748,12 +1774,13 @@ void stateStepSequencerMenu()
         local.stepSequencer.transposable[local.stepSequencer.currentTrack] ? PSTR("NO TRANSPOSE (TRACK)") : PSTR("TRANSPOSE (TRACK)"),
         PSTR("EDIT"),
         options.stepSequencerNoEcho ? PSTR("ECHO") : PSTR("NO ECHO"), 
+        options.stepSequencerRestNote != STEP_SEQUENCER_REST_NOTE ? PSTR("NO REST NOTE") : PSTR("REST NOTE"), 
         PSTR("LENGTH"),
         PSTR("PERFORMANCE"),
         PSTR("SAVE"), 
         options_p 
         };
-    result = doMenuDisplay(menuItems, 15, STATE_NONE, STATE_NONE, 1);
+    result = doMenuDisplay(menuItems, 16, STATE_NONE, STATE_NONE, 1);
 #else
     const char* menuItems[14] = {    
         (local.stepSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),
@@ -1847,6 +1874,13 @@ void stateStepSequencerMenu()
                     saveOptions();
                     }
                 break;
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+                case STEP_SEQUENCER_MENU_REST:
+                    {
+                    goDownState(STATE_STEP_SEQUENCER_MENU_REST);
+                    }
+                break;
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
                 case STEP_SEQUENCER_MENU_LENGTH:
                     {
                     immediateReturnState = STATE_STEP_SEQUENCER_PLAY;
@@ -2219,6 +2253,27 @@ void playStepSequencer()
     // click track
     doClick();
     }
+    
+    
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+void stateStepSequencerMenuRest()
+    {
+    // if a note has been set, reset it
+    if (options.stepSequencerRestNote != STEP_SEQUENCER_REST_NOTE)
+    	{
+		options.stepSequencerRestNote = STEP_SEQUENCER_REST_NOTE;
+        goUpState(STATE_STEP_SEQUENCER_MENU);
+    	}
+    	
+    uint8_t note = stateEnterNote(STATE_STEP_SEQUENCER_MENU);
+    if (note != NO_NOTE)
+        {
+		options.stepSequencerRestNote = note;
+		saveOptions();
+        goDownState(STATE_STEP_SEQUENCER_MENU);
+        }
+    }
+#endif
     
 
 #endif INCLUDE_STEP_SEQUENCER
