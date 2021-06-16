@@ -289,9 +289,9 @@ const char PROGMEM font_3x5[47][3] = {
         A01111A,
         },
         { //W               // Unreadable
-        A01111A,
-        A11100A,
-        A01111A
+        A11111A,
+        A01000A,
+        A11111A
         },
         { //X
         A11011A,
