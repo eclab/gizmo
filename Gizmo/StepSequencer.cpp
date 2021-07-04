@@ -1336,7 +1336,7 @@ void stateStepSequencerPlay()
             else 
                 {
                 local.stepSequencer.dontPlay[local.stepSequencer.currentTrack] = 1;
-                if (!options.stepSequencerNoEcho && options.stepSequencerRestNote != STEP_SEQUENCER_REST_NOTE)          // only play if we're echoing
+                if (!options.stepSequencerNoEcho && note != options.stepSequencerRestNote)          // only play if we're echoing
                     {
                     sendTrackNote(note, velocity, local.stepSequencer.currentTrack);
                     }
