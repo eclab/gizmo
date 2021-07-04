@@ -458,20 +458,30 @@ void initDrumSequencer(uint8_t format)
     
     // The initial transition pattern is:
     // 1 LOOP
-    // 2 LOOP
-    // 3 LOOP
+    // 2 1
+    // 3 1
     // ....
-    // 15 LOOP
+    // 15 BIG LOOP
     // END
     // ...
     // END
     // ...
     for(uint8_t i = 0; i < DRUM_SEQUENCER_NUM_TRANSITIONS; i++)
         {
-        if (i < local.drumSequencer.numGroups)
-            {
+        if (i == 0)
+        	{
             local.drumSequencer.transitionGroup[i] = (i);
             local.drumSequencer.transitionRepeat[i] = DRUM_SEQUENCER_SEQUENCE_REPEAT_LOOP;
+        	}
+        else if (i == local.drumSequencer.numGroups - 1)
+            {
+            local.drumSequencer.transitionGroup[i] = (i);
+            local.drumSequencer.transitionRepeat[i] = DRUM_SEQUENCER_TRANSITION_REPEAT_BIG_LOOP;
+            }
+        else if (i < local.drumSequencer.numGroups)
+            {
+            local.drumSequencer.transitionGroup[i] = (i);
+            local.drumSequencer.transitionRepeat[i] = 1;
             }
         else
             {
