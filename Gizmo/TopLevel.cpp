@@ -882,15 +882,7 @@ void go()
         break;
         case STATE_STEP_SEQUENCER_MIDI_CHANNEL_OUT:
             {
-            if (entry)
-                clearNotesOnTracks(true);
-                
-            // 17 represents DEFAULT channel
-            uint8_t val = stateNumerical(0, 17, local.stepSequencer.outMIDI[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, true, GLYPH_DEFAULT, 
-                immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);
-            if (val != NO_STATE_NUMERICAL_CHANGE)
-                sendAllSoundsOff();
-            playStepSequencer();
+            stateStepSequencerMidiChannelOut();
             }
         break;
         case STATE_STEP_SEQUENCER_VELOCITY:
@@ -942,6 +934,11 @@ void go()
         case STATE_STEP_SEQUENCER_MENU_REST:
             {
             stateStepSequencerMenuRest();
+            }
+        break;
+        case STATE_STEP_SEQUENCER_MENU_TIE:
+            {
+            stateStepSequencerMenuTie();
             }
         break;
 #endif INCLUDE_ADVANCED_STEP_SEQUENCER
@@ -1019,11 +1016,14 @@ void go()
             stateStepSequencerMenuPerformanceStop();
             }
         break;
-        case STATE_STEP_SEQUENCER_MENU_NO:
+        case STATE_STEP_SEQUENCER_MENU_CANT:
             {
-            const char* menuItems[1] = { PSTR("NO") };
-            doMenuDisplay(menuItems, 1, immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU, immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU, 1);
-            playStepSequencer();
+            stateCant(immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);
+            /*
+              const char* menuItems[1] = { PSTR("CANT") };
+              doMenuDisplay(menuItems, 1, immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU, immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU, 1);
+              playStepSequencer();
+            */
             }
         break;
 #endif
@@ -1071,7 +1071,7 @@ void go()
         break;
         case STATE_DRUM_SEQUENCER_GROUP:
             {
-            const char* menuItems[5] = { PSTR("LENGTH"), PSTR("SPEED MULTPLIER"), PSTR("STAMP"), PSTR("COPY"), PSTR("SWAP") };
+            const char* menuItems[6] = { PSTR("LENGTH"), PSTR("SPEED MULTPLIER"), PSTR("STAMP"), PSTR("COPY"), PSTR("SWAP"), PSTR("UNROLL") };
             doMenuDisplay(menuItems, 5, STATE_DRUM_SEQUENCER_GROUP_LENGTH, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
             playDrumSequencer();
             }
@@ -1089,6 +1089,11 @@ void go()
                                          (options.drumSequencerNextSequence ? PSTR("DO SEQUENCE") : PSTR("DO TRANSITION"))  };
             doMenuDisplay(menuItems, 7, STATE_DRUM_SEQUENCER_MENU_PERFORMANCE_KEYBOARD, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
             playDrumSequencer();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_LOCAL_UNROLL:
+            {
+            jointStateDrumSequencerMenuUnroll(false);
             }
         break;
         case STATE_DRUM_SEQUENCER_LOCAL_PATTERN:
@@ -1165,6 +1170,11 @@ void go()
         case STATE_DRUM_SEQUENCER_TRACK_PITCH_BACK:
             {
             stateDrumSequencerPitchBack();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_GROUP_UNROLL:
+            {
+            jointStateDrumSequencerMenuUnroll(true);
             }
         break;
         case STATE_DRUM_SEQUENCER_GROUP_LENGTH:
@@ -1314,6 +1324,12 @@ void go()
             stateDrumSequencerMenuPerformanceNextSequence();
             }
         break;
+        case STATE_DRUM_SEQUENCER_CENTER:
+            {
+            stateDrumSequencerMenuCenter();
+            playDrumSequencer();
+            }
+        break;
         case STATE_DRUM_SEQUENCER_SAVE:
             {
             stateSave(STATE_DRUM_SEQUENCER_PLAY);
@@ -1356,12 +1372,24 @@ void go()
             stateExit(STATE_RECORDER_PLAY, STATE_RECORDER);
             }
         break;
-#endif
-
-#ifdef INCLUDE_RECORDER
         case STATE_RECORDER_MENU:
             {
             stateRecorderMenu();
+            }
+        break;
+        case STATE_RECORDER_MENU_PERFORMANCE_KEYBOARD:
+            {
+            stateRecorderMenuPerformanceKeyboard();
+            }
+        break;
+        case STATE_RECORDER_MENU_PERFORMANCE_REPEAT:
+            {
+            stateRecorderMenuPerformanceRepeat();
+            }
+        break;
+        case STATE_RECORDER_MENU_PERFORMANCE_NEXT:
+            {
+            stateRecorderMenuPerformanceNext();
             }
         break;
 #endif

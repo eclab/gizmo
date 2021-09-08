@@ -121,6 +121,12 @@ struct _recorderLocal
     
     // Number of notes recorded so far
     uint8_t numNotes;
+
+    // Number of iterations played so far
+    uint8_t iterations;
+
+    // Are we scheduled to play?
+    uint8_t playScheduled;
     };
 
 
@@ -164,6 +170,10 @@ void resetRecorder();
 void playRecorder();
 
 void stateRecorderMenu();
+
+void stateRecorderMenuPerformanceKeyboard();
+void stateRecorderMenuPerformanceRepeat();  
+void stateRecorderMenuPerformanceNext();
 
 #endif
 

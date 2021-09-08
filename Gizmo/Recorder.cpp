@@ -13,7 +13,6 @@
 
 #define NOT_ENDED 0                             // Song playing/recording isn't over yet
 #define ENDED 1                                 // Playing/recording is over
-#define ENDED_REPEATING 2               // Playing is now over but we're going to repeat the song
 
 
 
@@ -24,6 +23,7 @@ void resetRecorder()
     local.recorder.tick = -1;
     local.recorder.currentPos = 0;
     local.recorder.bufferPos = 0;
+    local.recorder.iterations = 0;
     }
         
 
@@ -85,7 +85,11 @@ void recorderDrawPoint(uint8_t item, uint8_t yoffset)
 
 
 
-
+uint8_t atMeasureBoundary(int16_t tick)
+    {
+    // mod 96
+    return div3(tick >> 5) * 96 == tick;            // tick >> 5 is dividing by 32, so div3 gets us to 96
+    }
 
 
 // Plays OR Records the song
@@ -129,6 +133,7 @@ void stateRecorderPlay()
             {
             local.recorder.status = RECORDER_PLAYING;
             }
+        local.recorder.playScheduled = false;
         }
     
     // The long middle button starts a record
@@ -142,13 +147,6 @@ void stateRecorderPlay()
         sendAllSoundsOff();
         }
     
-    // the select button stops everything and calls save
-    else if (isUpdated(SELECT_BUTTON, RELEASED))
-        {
-        ended = ENDED;
-        goDownState(STATE_RECORDER_SAVE);
-        }
-        
     // the long select button pops up the options  
     else if (isUpdated(SELECT_BUTTON, RELEASED_LONG))
         {
@@ -158,60 +156,172 @@ void stateRecorderPlay()
         ended = ENDED;
         }
 
+    // the select button stops everything and calls save
+    else if (isUpdated(SELECT_BUTTON, RELEASED))
+        {
+        if (local.recorder.tick == -1) 
+            {
+            resetRecorder();
+            sendAllSoundsOff();
+            local.recorder.status = RECORDER_PLAYING;
+            }
+        else
+            {
+            local.recorder.playScheduled = !local.recorder.playScheduled;
+            }
+        }
+        
+    // Notice no else, so the select button can start playing immediately if appropriate.
+
     // Formats:
     //  NOTE ON:   [0], id (4 bits) time (11 bits), pitch (7 bits + 1 extra) velocity (7 bits + 1 extra)
     //  NOTE OFF:  [1], id (4 bits) time (11 bits)
     //  Note that  the largest legal time value is 2015 (the end of 21 4-beat measures)
                                                         
-    else if (pulse && (local.recorder.status == RECORDER_PLAYING))
+    if (pulse && (local.recorder.status == RECORDER_PLAYING))
         {
         local.recorder.tick++;
-                
-        if ((local.recorder.bufferPos >= data.slot.data.recorder.length && local.recorder.tick % 96 == 0) ||  // out of notes and at a measure boundary, ugh, divide by 96
-            (local.recorder.tick > MAXIMUM_RECORDER_TICK))  // out of time
+              
+        if (data.slot.data.recorder.length != 0)        // don't want an fast unnecessary loop here
             {
-            ended = options.recorderRepeat + 1;  // if recorderRepeat is false, this is ENDED.  Else it is ENDED_REPEAT
-            }
-        else
-            {
-            // we could have a number of items stored for this tick
-            while ((local.recorder.bufferPos < data.slot.data.recorder.length) &&
-                    (local.recorder.tick >=  // just in case we're below the tick but not equal to it.
-                    // time is stored in the low three bits of the first byte, plus the
-                    // next entire byte
-                        ((((uint16_t)((data.slot.data.recorder.buffer[local.recorder.bufferPos]) & (4 + 2 + 1))) << 8) | 
-                        data.slot.data.recorder.buffer[local.recorder.bufferPos + 1])))  /// ... the next note time
+            if (local.recorder.playScheduled && atMeasureBoundary(local.recorder.tick))
                 {
-                // id is in bytes 3, 4, 5, 6 of the first byte
-                uint8_t id = (data.slot.data.recorder.buffer[local.recorder.bufferPos] & (64 + 32 + 16 + 8)) >> 3;
-                        
-                // NOTE OFF is indicated by a 1 in the high bit of the first byte
-                if (data.slot.data.recorder.buffer[local.recorder.bufferPos] & LOAD_NOTE_OFF)
+                resetRecorder();
+                sendAllSoundsOff();
+                local.recorder.status = RECORDER_PLAYING;
+                local.recorder.playScheduled = false;
+                }
+            else if ((local.recorder.bufferPos >= data.slot.data.recorder.length && atMeasureBoundary(local.recorder.tick)) ||  // out of notes and at a measure boundary, ugh, divide by 96
+                (local.recorder.tick > MAXIMUM_RECORDER_TICK))  // out of time
+                {
+                local.recorder.iterations++;
+                uint8_t maxiter = data.slot.data.recorder.repeat & 0x0F;
+                if (maxiter != 0)       // Loop forever
                     {
-                    // NOTE OFF
-                    sendNoteOff(local.recorder.notes[id], 127, options.channelOut);
-                    local.recorder.bufferPos += 2;
-                    local.recorder.notes[id] = NO_NOTE;
+                    const uint8_t maxIterations[16] = { 255, 1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 24, 32, 64, 128 };
+                    if (maxIterations[maxiter] == local.recorder.iterations)        // we reached our loop
+                        {
+                        uint8_t where = (data.slot.data.recorder.repeat >> 4);
+                        if (where == 0 || getSlotType(where - 1) != slotTypeForApplication(STATE_RECORDER))     // OFF or incorrect slot
+                            {
+                            // stop
+                            ended = ENDED;
+                            }
+                        else
+                            {
+                            sendAllSoundsOff();
+                            loadSlot(where - 1);
+                            resetRecorder();
+                            local.recorder.status = RECORDER_PLAYING;
+                            }
+                        }
+                    else
+                        {
+                        sendAllSoundsOff();
+                        local.recorder.currentPos = 0;
+                        local.recorder.bufferPos = 0;
+                        local.recorder.tick = 0;
+                        }
                     }
                 else
                     {
-                    // NOTE ON
-
-                    if (local.recorder.notes[id] != NO_NOTE)
+                    sendAllSoundsOff();
+                    local.recorder.currentPos = 0;
+                    local.recorder.bufferPos = 0;
+                    local.recorder.tick = 0;
+                    }
+                }
+                        
+            if (!ended)
+                {
+                // we could have a number of items stored for this tick
+                while ((local.recorder.bufferPos < data.slot.data.recorder.length) &&
+                        (local.recorder.tick >=  // just in case we're below the tick but not equal to it.
+                        // time is stored in the low three bits of the first byte, plus the
+                        // next entire byte
+                            ((((uint16_t)((data.slot.data.recorder.buffer[local.recorder.bufferPos]) & (4 + 2 + 1))) << 8) | 
+                            data.slot.data.recorder.buffer[local.recorder.bufferPos + 1])))  /// ... the next note time
+                    {
+                    // id is in bytes 3, 4, 5, 6 of the first byte
+                    uint8_t id = (data.slot.data.recorder.buffer[local.recorder.bufferPos] & (64 + 32 + 16 + 8)) >> 3;
+                                                
+                    // NOTE OFF is indicated by a 1 in the high bit of the first byte
+                    if (data.slot.data.recorder.buffer[local.recorder.bufferPos] & LOAD_NOTE_OFF)
                         {
-                        // not sure what happened here, this should have been off
+                        // NOTE OFF
                         sendNoteOff(local.recorder.notes[id], 127, options.channelOut);
+                        local.recorder.bufferPos += 2;
+                        local.recorder.notes[id] = NO_NOTE;
                         }
-                                                        
-                    // pitch is the third byte.  We assume it's already 0...127
-                    uint8_t pitch = data.slot.data.recorder.buffer[local.recorder.bufferPos + 2];
-                    // velocity is the fourth byte.  We assume it's already 0...127
-                    uint8_t velocity = data.slot.data.recorder.buffer[local.recorder.bufferPos + 3];
-                    sendNoteOn(pitch, velocity, options.channelOut);
-                    local.recorder.notes[id] = pitch;
-                    //tempID = id;
-                    local.recorder.currentPos++;
-                    local.recorder.bufferPos += 4;
+                    else
+                        {
+                        // NOTE ON
+
+                        if (local.recorder.notes[id] != NO_NOTE)
+                            {
+                            // not sure what happened here, this should have been off
+                            sendNoteOff(local.recorder.notes[id], 127, options.channelOut);
+                            }
+                                                                                                                
+                        // pitch is the third byte.  We assume it's already 0...127
+                        uint8_t pitch = data.slot.data.recorder.buffer[local.recorder.bufferPos + 2];
+                        // velocity is the fourth byte.  We assume it's already 0...127
+                        uint8_t velocity = data.slot.data.recorder.buffer[local.recorder.bufferPos + 3];
+                        sendNoteOn(pitch, velocity, options.channelOut);
+                        local.recorder.notes[id] = pitch;
+                        //tempID = id;
+                        local.recorder.currentPos++;
+                        local.recorder.bufferPos += 4;
+                        }
+                    }
+                }
+            }
+
+        // rerouting to new channel
+        if (newItem && 
+            itemType != MIDI_CUSTOM_CONTROLLER && 
+            local.recorder.status == RECORDER_PLAYING)
+            {
+            TOGGLE_IN_LED();
+            // figure out what the channel should be
+            uint8_t channelOut = options.recorderPlayAlongChannel;
+            if (channelOut == CHANNEL_DEFAULT_MIDI_OUT)
+                channelOut = options.channelOut;
+                                
+            // send the appropriate command
+            if (channelOut != NO_MIDI_OUT)
+                {
+                if (itemType == MIDI_NOTE_ON)
+                    {
+                    sendNoteOn(itemNumber, itemValue, channelOut);
+                    }
+                else if (itemType == MIDI_NOTE_OFF)
+                    {
+                    sendNoteOff(itemNumber, itemValue, channelOut);
+                    }
+                else if (itemType == MIDI_AFTERTOUCH_POLY)
+                    {
+                    sendPolyPressure(itemNumber, itemValue, channelOut);
+                    }
+                else if (itemType == MIDI_AFTERTOUCH)
+                    {
+                    sendControllerCommand(CONTROL_TYPE_AFTERTOUCH, 0, itemValue, channelOut);
+                    }
+                else if (itemType == MIDI_CC_7_BIT)  // we're always raw
+                    {
+                    sendControllerCommand(CONTROL_TYPE_CC, itemNumber, itemValue << 7, channelOut);
+                    }
+                else if (itemType == MIDI_PROGRAM_CHANGE)
+                    {
+                    sendControllerCommand(CONTROL_TYPE_PC, 0, itemValue, channelOut);
+                    }
+                else if (itemType == MIDI_PITCH_BEND)
+                    {
+                    sendControllerCommand(CONTROL_TYPE_PITCH_BEND, 0, itemValue, channelOut);
+                    }
+                else
+                    {
+                    // do nothing
                     }
                 }
             }
@@ -224,6 +334,10 @@ void stateRecorderPlay()
         if  (local.recorder.tickoff != 4) // don't click when in tickoff, you're already clicking!
             doClick();
                 
+        if (local.recorder.playScheduled && atMeasureBoundary(local.recorder.tick))
+            {
+            ended = ENDED;
+            }
         if ((local.recorder.tick > MAXIMUM_RECORDER_TICK) || (local.recorder.bufferPos > (RECORDER_BUFFER_SIZE - RECORDER_SIZE_OF_NOTE_OFF)))
             {
             ended = ENDED;
@@ -330,10 +444,19 @@ void stateRecorderPlay()
         {
         resetRecorder();
         sendAllSoundsOff();
-        if (ended == ENDED)
-            local.recorder.status = RECORDER_STOPPED;
-        else 
+        if (local.recorder.playScheduled)
+            {
             local.recorder.status = RECORDER_PLAYING;
+            local.recorder.playScheduled = false;
+            }
+        else if (ended == ENDED)
+            {
+            local.recorder.status = RECORDER_STOPPED;
+            }
+        else 
+            {
+            local.recorder.status = RECORDER_PLAYING;
+            }
         }
 
     if (updateDisplay)
@@ -344,7 +467,7 @@ void stateRecorderPlay()
         // this is the slow way to do it.  Too slow?
         recorderDrawPoint(local.recorder.numNotes, 0);
         recorderDrawPoint(local.recorder.currentPos, 0);
-        recorderDrawPoint(local.recorder.tick / 96, 5);                 // 96 = 24 pulses per quarter note * 4 quarter notes per measure
+        recorderDrawPoint(div3(local.recorder.tick >> 5), 5);                 // 96 = 24 pulses per quarter note * 4 quarter notes per measure
         setPoint(led2, 6, 1);  // boundary
           
         if (local.recorder.status == RECORDER_TICKING_OFF)
@@ -358,16 +481,107 @@ void stateRecorderPlay()
             // Positions 0..3 indicate status values
             setPoint(led2, local.recorder.status, 0);
             }
-            
-        if (options.recorderRepeat)
-            setPoint(led2, 6, 0);
         }
     }
        
+
+void stateRecorderMenuPerformanceRepeat()  
+    {
+    // This is forever, 1 time, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 24, 32, 64, 128 times 
+    const char* menuItems[16] = {  PSTR("LOOP"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("8"), PSTR("9"), PSTR("12"), PSTR("16"), PSTR("18"), PSTR("24"), PSTR("32"), PSTR("64"), PSTR("128") };
+    if (entry) 
+        {
+        defaultMenuValue = data.slot.data.recorder.repeat & 0x0F;
+        }
+    uint8_t result = doMenuDisplay(menuItems, 16, STATE_NONE, 0, 1);
+                
+    playRecorder();
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            {
+            // do nothing
+            }
+        break;
+        case MENU_SELECTED:
+            {
+            data.slot.data.recorder.repeat = ((data.slot.data.recorder.repeat & 0xF0) | (currentDisplay & 0x0F));
+            resetRecorder();
+            goUpState(immediateReturnState);
+            }
+        break;
+        case MENU_CANCELLED:
+            {
+            goUpState(immediateReturnState);
+            }
+        break;
+        }
+    }
+
+#define CHANNEL_DEFAULT_MIDI_OUT (0)
+
+void stateRecorderMenuPerformanceKeyboard()
+    {
+    uint8_t result = doNumericalDisplay(CHANNEL_DEFAULT_MIDI_OUT, 16, options.recorderPlayAlongChannel, true, GLYPH_NONE);
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            {
+            // do nothing
+            }
+        break;
+        case MENU_SELECTED:
+            {
+            options.recorderPlayAlongChannel = currentDisplay;
+            saveOptions();
+            sendAllSoundsOff();
+            isUpdated(SELECT_BUTTON, RELEASED);
+            goUpState(immediateReturnState);
+            }
+        break;
+        case MENU_CANCELLED:
+            {
+            // get rid of any residual select button calls, so we don't stop when exiting here
+            isUpdated(SELECT_BUTTON, RELEASED);
+            goUpState(immediateReturnState);
+            }
+        break;
+        }
+    }
+
+void stateRecorderMenuPerformanceNext()
+    {
+    // The values are OFF, 0, 1, ..., 8
+    // These correspond with stored values (in the high 4 bits of repeat) of 0...9
+    uint8_t result = doNumericalDisplay(-1, 8, ((int16_t)(data.slot.data.recorder.repeat >> 4)) - 1, true, GLYPH_NONE);
+    playRecorder();
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            {
+            // do nothing
+            }
+        break;
+        case MENU_SELECTED:
+            {
+            data.slot.data.recorder.repeat = ((data.slot.data.recorder.repeat & 0x0F) | ((currentDisplay + 1) << 4));
+            goUpState(immediateReturnState);
+            }
+        break;
+        case MENU_CANCELLED:
+            {
+            goUpState(immediateReturnState);
+            }
+        break;
+        }
+    }
  
 
-#define RECORDER_MENU_REPEAT 0
-#define RECORDER_MENU_OPTIONS 1
+#define RECORDER_MENU_PERFORMANCE_KEYBOARD 0
+#define RECORDER_MENU_PERFORMANCE_REPEAT 1
+#define RECORDER_MENU_PERFORMANCE_NEXT 2
+#define RECORDER_MENU_SAVE 3
+#define RECORDER_MENU_OPTIONS 4
 
 // Gives other options
 void stateRecorderMenu()
@@ -380,8 +594,8 @@ void stateRecorderMenu()
         local.recorder.status = RECORDER_STOPPED;
         }
                 
-    const char* menuItems[2] = { (options.recorderRepeat ? PSTR("NO REPEAT") : PSTR("REPEAT")), options_p };
-    result = doMenuDisplay(menuItems, 2, STATE_NONE, STATE_NONE, 1);
+    const char* menuItems[5] = { PSTR("KEYBOARD"), PSTR("REPEAT RECORDING"), PSTR("NEXT RECORDING"), PSTR("SAVE"), options_p };
+    result = doMenuDisplay(menuItems, 5, STATE_NONE, STATE_NONE, 1);
 
     switch (result)
         {
@@ -394,11 +608,28 @@ void stateRecorderMenu()
             {
             switch(currentDisplay)
                 {
-                case RECORDER_MENU_REPEAT:
+                case RECORDER_MENU_PERFORMANCE_KEYBOARD:
                     {
-                    options.recorderRepeat = !options.recorderRepeat;
-                    saveOptions();
-                    goDownState(STATE_RECORDER_PLAY);
+                    immediateReturnState = STATE_RECORDER_MENU;
+                    goDownState(STATE_RECORDER_MENU_PERFORMANCE_KEYBOARD);
+                    }
+                break;
+                case RECORDER_MENU_PERFORMANCE_REPEAT:
+                    {
+                    immediateReturnState = STATE_RECORDER_MENU;
+                    goDownState(STATE_RECORDER_MENU_PERFORMANCE_REPEAT);
+                    }
+                break;
+                case RECORDER_MENU_PERFORMANCE_NEXT:
+                    {
+                    immediateReturnState = STATE_RECORDER_MENU;
+                    goDownState(STATE_RECORDER_MENU_PERFORMANCE_NEXT);
+                    }
+                break;
+                case RECORDER_MENU_SAVE:
+                    {
+                    immediateReturnState = STATE_RECORDER_MENU;
+                    goDownState(STATE_RECORDER_SAVE);
                     }
                 break;
                 case RECORDER_MENU_OPTIONS:

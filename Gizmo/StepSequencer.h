@@ -73,6 +73,19 @@
 ////	 4 bits pattern
 ////     5 bits unused
 
+//// In MONO MODE:
+////	Pattern is replaced with REPEATS
+//// 		The REPEATS are END, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 64, 128
+////	The only MIDI channel used is for track 1
+
+/*
+//// In DUO MODE:
+////	Exactly the same as mono mode except that the even track's pattern and MIDI Channel are completely ignored
+
+//// In TRIO MODE:
+////	Exactly the same as mono mode except that the second and third (of three) track's pattern and MIDI Channel are completely ignored
+*/
+
 //
 // This extra data is packed and unpacked in Utilities.stateSave and Utilities.stateLoad, using the private functions
 // distributeByte and gatherByte (and stripHighBits).
@@ -148,6 +161,34 @@
 
 
 
+// ABOUT MONO MODE
+//
+// Mono mode is intended to provide some of the "group" facilities of the Drum Sequencer when
+// the Step Sequencer only needs to run a single track (for a monophonic synthesizer for example).
+// It's a simple hack: only one track is played at a time.  If you are in play position or edit
+// mode, the track being played is simply the one that you have selected.  All other tracks do not
+// play at all.  Mute and solo should have no effect.  There are no patterns any more, and there
+// is only one MIDI channel (track 0) which all the tracks use.
+//
+// In performance mode is where it gets interesting.  Instead of patterns, each track can be set 
+// to have some number of REPEATS or to be an END track (except for track 0).  When playing in
+// performance mode, a given track plays REPEATS times, and then automatically switches control
+// to the next track.  When we reach END or all tracks are exhausted, then the whole thing repeats
+// again using countdown as normal.  This allows us to have much longer songs.
+//
+// Mono mode makes the following changes to variables:
+//		data.slot.data.stepSequencer.unused		Repurposed to data.slot.data.stepSequencer.mono
+//		                                  		which is 0 for "standard" and 1 for "mono"
+// 		local.stepSequencer.outMIDI[track]		Only track 0 matters, the others are ignored
+// 		local.stepSequencer.pattern[track]		Repurposed to local.stepSequencer.REPEATS[track]
+//		                                  		which says how long the track repeats (or "END")
+//
+// New macros: IS_MONO() is true if mono mode, IS_STANDARD is true if not mono mode
+//
+// At some point in the future I might at DUO and TRIO modes for duophonic or triphonic synths
+// such as the Arp 2600.  
+
+
 
 // Sequences may have no more than 12 tracks, but can have fewer depending on format
 #define MAX_STEP_SEQUENCER_TRACKS 12
@@ -218,6 +259,8 @@
 #define P0111 (14)			// STEP_SEQUENCER_PATTERN_RANDOM_3_4
 #define P1111 (15)			// STEP_SEQUENCER_PATTERN_ALL
 
+#define STEP_SEQUENCER_MONO_REPEAT_1		(0)
+#define STEP_SEQUENCER_MONO_REPEAT_END		(15)
 
 
 #define STEP_SEQUENCER_NOT_MUTED (0)
@@ -232,12 +275,15 @@
 #define STEP_SEQUENCER_SOLO_ON_SCHEDULED (2)
 #define STEP_SEQUENCER_SOLO_OFF_SCHEDULED (3)
 
-#define STEP_SEQUENCER_REST_NOTE (255)
+#define STEP_SEQUENCER_MONO_REPEATS_LOOP 	(0)
+#define STEP_SEQUENCER_MONO_REPEATS_ONCE 	(1)			//  the default
+#define STEP_SEQUENCER_MONO_REPEATS_END		(15)
 
 
 #define NO_TRACK (255)
 #define NO_SEQUENCER_NOTE (255)
 #define NO_SEQUENCER_POS (255)
+
 
 struct _stepSequencerLocal
     {
@@ -249,7 +295,7 @@ struct _stepSequencerLocal
     // and then just have an array of structs, one per track.  But it adds 400 bytes to the total code size.  :-(
         
     uint8_t data[MAX_STEP_SEQUENCER_TRACKS];						// What kind of data is this track? STEP_SEQUENCER_DATA_NOTE, STEP_SEQUENCER_DATA_CC, etc.
-    uint8_t outMIDI[MAX_STEP_SEQUENCER_TRACKS];             		// Per-track MIDI out.  Can also be CHANNEL_DEFAULT
+    uint8_t outMIDI[MAX_STEP_SEQUENCER_TRACKS];             		// Per-track MIDI out.  Can also be CHANNEL_DEFAULT.  Repurposed to hold certain tags if in Mono Mode
     uint8_t noteLength[MAX_STEP_SEQUENCER_TRACKS];  				// Per-track note length, from 0...100, or PLAY_LENGTH_USE_DEFAULT
     uint8_t muted[MAX_STEP_SEQUENCER_TRACKS];               		// Per-track mute toggle
     uint8_t velocity[MAX_STEP_SEQUENCER_TRACKS];    				// Per track note velocity, or STEP_SEQUENCER_NO_OVERRIDE_VELOCITY
@@ -258,15 +304,18 @@ struct _stepSequencerLocal
     uint8_t noteOff[MAX_STEP_SEQUENCER_TRACKS];						// What note should be turned off?
     uint8_t shouldPlay[MAX_STEP_SEQUENCER_TRACKS];					// Should the track be played this time around (due to the pattern)?
     uint8_t transposable[MAX_STEP_SEQUENCER_TRACKS];				// Can this track be transposed in performance mode?
-    uint8_t pattern[MAX_STEP_SEQUENCER_TRACKS];						// Track pattern
+    uint8_t pattern[MAX_STEP_SEQUENCER_TRACKS];						// Track pattern.  Repurposed to hold repeats if in Mono Mode
+#define MONO_REPEATS pattern										// Mono-mode doesn't use pattern.  Instead, each track has REPEATS: Loop, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 64, 128
     uint8_t dontPlay[MAX_STEP_SEQUENCER_TRACKS];					// Don't play the note on this track this step because it was played manually while being entered
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
 	uint16_t controlParameter[MAX_STEP_SEQUENCER_TRACKS];			// If the data is a control data type, what is its parameter?
     uint16_t lastControlValue[MAX_STEP_SEQUENCER_TRACKS];			// If the data is a control data type, what was the last control value it held?
-#endif
+	uint8_t playTrack;												// In Mono mode, when in performance mode, what track is playing?
+	uint8_t lastCurrentTrack;										// Keeps track of the last place the left pot set the current track to.  This way we can avoid the pot resetting the current track if we've changed it using the middle button in MONO mode.
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
     uint8_t newData;				// A temporary variable.  comes in from STATE_STEP_SEQUENCER_MENU_TYPE, used in STATE_STEP_SEQUENCER_MENU_TYPE_PARAMETER
-	int8_t transpose;				// Current transposition due to performance mode
-    uint8_t performanceMode;		// We are in performane mode
+	int8_t transpose;				// Current transposition due to performance mode.  Note: signed.
+    uint8_t performanceMode;		// We are in performance mode
     uint8_t goNextSequence;			// We're manually scheduled to go to the next sequence at the end of this iteration 
     uint8_t scheduleStop;			// We're manually scheduled to stop at the end of this iteration 
     uint8_t countdown;				// Number of iterations left before we terminate or go to the next sequence automatically
@@ -277,10 +326,11 @@ struct _stepSequencerLocal
     uint8_t solo;					// Solo is on
     uint8_t currentTrack;           // which track are we editing?
     uint8_t backup;      			// used for backing up data to restore it                                                           // used to back up various values when the user cancels
-    int16_t currentRightPot;		// Current X position of cursor
+    int16_t currentRightPot;		// Current X position of cursor.  Note: signed.
     uint8_t lastNote;				// The most recent note value that was entered, or NO_SEQUENCER_NOTE
     uint8_t lastNotePos;			// The position at which the last note was entered, or NO_SEQUENCER_POS
 	uint8_t lastExclusiveTrack;     // The last track chosen for exclusive random
+#define NEXT_PLAY_TRACK lastExclusiveTrack
     };
 
 
@@ -288,27 +338,34 @@ struct _stepSequencerLocal
 
 /// DATA
 
-// There are four step sequencer formats available
-#define STEP_SEQUENCER_FORMAT_16x12_ 0
-#define STEP_SEQUENCER_FORMAT_24x8_ 1
-#define STEP_SEQUENCER_FORMAT_32x6_ 2
-#define STEP_SEQUENCER_FORMAT_48x4_ 3
-#define STEP_SEQUENCER_FORMAT_64x3_ 4
-#define STEP_SEQUENCER_FORMAT_96x2_ 5
+// There are six step sequencer formats available
+#define STEP_SEQUENCER_FORMAT_16x12 (0)
+#define STEP_SEQUENCER_FORMAT_24x8 (1)
+#define STEP_SEQUENCER_FORMAT_32x6 (2)
+#define STEP_SEQUENCER_FORMAT_48x4 (3)
+#define STEP_SEQUENCER_FORMAT_64x3 (4)
+#define STEP_SEQUENCER_FORMAT_96x2 (5)
 
 #define CHANNEL_ADD_TO_STEP_SEQUENCER (-1)		// The default: performance notes just get put into the step sequencer as normal
 #define CHANNEL_DEFAULT_MIDI_OUT (0)			// Performance notes are routed to MIDI_OUT
 												// Values 1...16: performance notes are routed to this channel number
 #define CHANNEL_TRANSPOSE (17)					// Use performance note to do transposition
 
-#define STEP_SEQUENCER_BUFFER_SIZE		(SLOT_DATA_SIZE - 3)
+#define STEP_SEQUENCER_BUFFER_SIZE		(SLOT_DATA_SIZE - 3)		// 384 bytes
 
 struct _stepSequencer
     {
-    uint8_t format;                                 // step sequencer format in question
-    uint8_t repeat;									// how much should we repeat and where should we continue?  This is forever, 1 time, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 24, 32, 64, 128 times (Low 4 bits) | STOP, 1, ..., 9 (High 4 bits)
+    uint8_t format;                                 // (Low 3 bits) step sequencer format in question
+    												// (High 5 bits) track custom length
+    uint8_t repeat;									// (Low 4 bits) how many iterations before we stop: forever, 1 time, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 24, 32, 64, 128 times 
+													// (High 4 bits) what to do when we're done: 
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+	uint8_t mono;									// (Low 2 bits): mono or standard formats, presently 0 = NOT MONO, 1 = MONO, 2 and 3 reserved for DUO, TRIO
+													// (High 6 bits): UNUSED
+#else
 	uint8_t unused;
-    uint8_t buffer[STEP_SEQUENCER_BUFFER_SIZE];
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+    uint8_t buffer[STEP_SEQUENCER_BUFFER_SIZE];		// 384 bytes
     };
 
 
@@ -319,42 +376,58 @@ extern uint8_t _numTracks[6];
 
 
 /// TRACK FORMAT MACROS
-/// (These are here rather than in StepSequencer.cpp so Utility.cpp can access them)
 /// The track format is stored in data.slot.data.stepSequencer.format
 /// and it consists of 5 high bytes defining the "custom length", namely values 0...31,
-/// plus 3 low bytes defining the basic step sequencer format, namely values 0...7,
-/// which signify 16, 24, 32, 48, 64, 96, UNUSED, UNUSED.
+/// plus 3 low bytes defining the basic step sequencer format, namely values 0...7.
 /// The maximum length is at present 96.  The length of a track is defined as either
 /// the basic format length (if the custom length is 0) or the basic format length 
 /// minus 32 plus the custom length.  For example, a basic format of 64 can either be
 /// the full 64 (if the custom length is 0) or it can be 33 ... 63 (if the custom length
-/// is 1 ... 31).  Similarly a basic format of 96 can either be the full 96 (custom length 0)
-/// or 65 ... 95 (custom length 1 ... 31).
+/// is 1 ... 31).
+///
+/// MONO MODE
+/// The sequencer can be set to either "standard" mode or "mono" mode.
+/// Space is reserved for (in the future) also having a "duo" or "trio" mode.
 
-// The largest track size
+// Returns the track format
+#define GET_TRACK_FORMAT() 	(data.slot.data.stepSequencer.format & 7)
+// 0 = standard 1 = mono 2 = duo 3 = trio
+#define GET_MONO_FORMAT() 	(data.slot.data.stepSequencer.mono & 3)
+// Is the format "standard"?
+#define IS_STANDARD() 	(GET_MONO_FORMAT() == 0)
+// Is the format a "non-standard" (mono, duo, or trio) format?
+//#define IS_NON_STANDARD() 	(data.slot.data.stepSequencer.mono >= 1)
+// Is the format a mono format?
+#define IS_MONO() 	(GET_MONO_FORMAT() == 1)
+// Is the format a duo format?
+#define IS_DUO() 	(GET_MONO_FORMAT() == 2)
+// Is the format a trio format?
+//#define IS_TRIO() 	(data.slot.data.stepSequencer.mono == 3)
+// For a given non-standard format track, which track defines its repeats?
+#define GET_PRIMARY_TRACK(track) (IS_DUO() ? ((track >> 1) << 1) : track)
+//	(GET_TRIO() ? div3(track) * 3 : \
+// Returns the number of tracks in the current format
+#define GET_NUM_TRACKS() (_numTracks[GET_TRACK_FORMAT()])
+// The largest possible track length
 #define MAXIMUM_TRACK_LENGTH (96)
 // The custom length value which indicates that the track has no custom length
 #define TRACK_LENGTH_FULL (0)
-// Returns the custom length, including TRACK_LENGTH_FULL
-#define GET_TRACK_CUSTOM_LENGTH() 	((data.slot.data.stepSequencer.format >> 3) & 31)
-// Returns the basic format
-#define GET_TRACK_FORMAT() 	(data.slot.data.stepSequencer.format & 7)
-// Returns the full track length irrespective of the custom length
+// Returns the full track length irrespective of any custom length
 #define GET_TRACK_FULL_LENGTH() 	(_trackLength[GET_TRACK_FORMAT()])
-// Returns the number of tracks in the current format
-#define GET_NUM_TRACKS() (_numTracks[GET_TRACK_FORMAT()])
+// Returns the custom length indicator, including TRACK_LENGTH_FULL.
+#define GET_TRACK_CUSTOM_LENGTH() 	((data.slot.data.stepSequencer.format >> 3) & 31)
 // Returns the minimum possible custom length
 #define GET_MINIMUM_CUSTOM_LENGTH() \
-	(GET_TRACK_FORMAT() == STEP_SEQUENCER_FORMAT_48x4_ ? 17 : \
-	(GET_TRACK_FORMAT() == STEP_SEQUENCER_FORMAT_64x3_ ? 33 : \
-	(GET_TRACK_FORMAT() == STEP_SEQUENCER_FORMAT_96x2_ ? 65 : \
+	(GET_TRACK_FORMAT() == STEP_SEQUENCER_FORMAT_48x4 ? 17 : \
+	(GET_TRACK_FORMAT() == STEP_SEQUENCER_FORMAT_64x3 ? 33 : \
+	(GET_TRACK_FORMAT() == STEP_SEQUENCER_FORMAT_96x2 ? 65 : \
 	1)))
-// Returns the actual track length in the current format
+// Returns the actual custom or full track length in the current format
 #define GET_TRACK_LENGTH() \
 	((GET_TRACK_CUSTOM_LENGTH() == TRACK_LENGTH_FULL) ? GET_TRACK_FULL_LENGTH() : \
-	(GET_TRACK_FORMAT() == STEP_SEQUENCER_FORMAT_48x4_ ? GET_TRACK_CUSTOM_LENGTH() + 16 : \
-	(GET_TRACK_FORMAT() == STEP_SEQUENCER_FORMAT_64x3_ ? GET_TRACK_CUSTOM_LENGTH() + 32 : \
-	(GET_TRACK_FORMAT() == STEP_SEQUENCER_FORMAT_96x2_ ? GET_TRACK_CUSTOM_LENGTH() + 64 : \
+	(GET_TRACK_FORMAT() == STEP_SEQUENCER_FORMAT_48x4 ? GET_TRACK_CUSTOM_LENGTH() + 16 : \
+	(GET_TRACK_FORMAT() == STEP_SEQUENCER_FORMAT_64x3 ? GET_TRACK_CUSTOM_LENGTH() + 32 : \
+	(GET_TRACK_FORMAT() == STEP_SEQUENCER_FORMAT_96x2 ? GET_TRACK_CUSTOM_LENGTH() + 64 : \
 	GET_TRACK_CUSTOM_LENGTH()))))
 
 
@@ -385,6 +458,7 @@ void stateStepSequencerMenu();
 
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
 void stateStepSequencerMenuRest();
+void stateStepSequencerMenuTie();
 void stateStepSequencerMenuType();
 void stateStepSequencerMenuTypeParameter();
 #endif
@@ -394,6 +468,7 @@ void stopStepSequencer();
 void resetStepSequencer();
 
 void stateStepSequencerMenuLength();
+void stateStepSequencerMidiChannelOut();
 
 // Performance Options
 void stateStepSequencerMenuPerformanceKeyboard();

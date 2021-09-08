@@ -88,10 +88,6 @@ struct _options
     uint8_t arpeggiatorPlayAlongChannel;
 #endif INCLUDE_ARPEGGIATOR
 
-#ifdef INCLUDE_RECORDER
-    //uint8_t recorderRepeat;
-#endif INCLUDE_RECORDER
-
 #ifdef INCLUDE_SPLIT
 	// There are 4 here
     uint8_t splitControls;                                          // = 0 by default, SPLIT_RIGHT
@@ -126,6 +122,7 @@ struct _options
 	uint8_t stepSequencerStop;
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
 	uint8_t stepSequencerRestNote;
+	uint8_t stepSequencerTieNote;
 #endif INCLUDE_ADVANCED_STEP_SEQUENCER
 #endif INCLUDE_STEP_SEQUENCER
 
@@ -141,11 +138,11 @@ struct _options
 	uint8_t drumSequencerRandomize;
 	uint8_t drumSequencerLinearCurve;
 	uint8_t drumSequencerDisplayGroup;
+	uint8_t drumSequencerControllerCenter;
 #endif INCLUDE_DRUM_SEQUENCER
 
 #ifdef INCLUDE_RECORDER
-	// there is 1 here
-	uint8_t recorderRepeat;
+    uint8_t recorderPlayAlongChannel;
 #endif INCLUDE_RECORDER
 
 #ifdef INCLUDE_GAUGE

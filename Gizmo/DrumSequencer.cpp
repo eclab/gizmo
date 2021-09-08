@@ -469,10 +469,10 @@ void initDrumSequencer(uint8_t format)
     for(uint8_t i = 0; i < DRUM_SEQUENCER_NUM_TRANSITIONS; i++)
         {
         if (i == 0)
-        	{
+            {
             local.drumSequencer.transitionGroup[i] = (i);
             local.drumSequencer.transitionRepeat[i] = DRUM_SEQUENCER_SEQUENCE_REPEAT_LOOP;
-        	}
+            }
         else if (i == local.drumSequencer.numGroups - 1)
             {
             local.drumSequencer.transitionGroup[i] = (i);
@@ -690,26 +690,6 @@ void loadDrumSequence(uint8_t slot)
     }
            
 
-
-
-
-///// THE POTS
-
-// I have forgotten why I have this code, but I believe it's because I allow pots to be modified
-// remotely by NRPN.
-
-static void setPots(uint16_t* potVals)
-    {
-    potVals[LEFT_POT] = pot[LEFT_POT];
-    potVals[RIGHT_POT] = pot[RIGHT_POT];
-    }
-        
-static uint8_t potChangedBy(uint16_t* potVals, uint8_t potNum, uint16_t amount)
-    {
-    int16_t val = potVals[potNum] - (int16_t)pot[potNum];
-    if (val < 0) val = -val;
-    return (val > amount);
-    }
 
 
 
@@ -1059,6 +1039,126 @@ void stateDrumSequencerMenuSwapGroup()
         clearMark();
         }
     playDrumSequencer();
+    }
+
+
+
+void drumSequencerUnroll(uint8_t group, uint8_t track, uint8_t amount, uint8_t from, uint8_t once)
+    {
+    if (once)
+        {
+        uint8_t to = from + amount;
+        if (to >= local.drumSequencer.numNotes) to = 0; 
+        // this would be more efficient with GET_NOTES but whatever
+        for(uint8_t i = 0; i < amount; i++)
+            {
+            setNote(group, track, to + i, getNote(group, track, from + i));
+            }
+        }
+    else
+        {
+        for(uint8_t to = 0; to < local.drumSequencer.numNotes; to += amount)
+            {
+            if (to == from) continue;
+            // this would be more efficient with GET_NOTES but whatever
+            for(uint8_t i = 0; i < amount; i++)
+                {
+                setNote(group, track, to + i, getNote(group, track, from + i));
+                }
+            }
+        }
+    }
+
+void jointStateDrumSequencerMenuUnroll(uint8_t wholeGroup)
+    {
+    const char* menuItems[6] = {  PSTR("8"), PSTR("8 All"), PSTR("16"), PSTR("16 All"), PSTR("32"), PSTR("32 All") };
+    if (entry) 
+        {
+        defaultMenuValue = 2;
+        }
+    uint8_t result = doMenuDisplay(menuItems, local.drumSequencer.numNotes == 16 ? 2 : (local.drumSequencer.numNotes == 32 ? 4 : 6), STATE_NONE, STATE_NONE, 1);
+                
+    playDrumSequencer();
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            {
+            // do nothing
+            }
+        break;
+        case MENU_SELECTED:
+            {
+            uint8_t amt = (currentDisplay < 2 ? 8 : (currentDisplay < 4 ? 16 : 32));
+            uint8_t once = (currentDisplay == 0 || currentDisplay == 2 || currentDisplay == 6);
+            
+            uint8_t from = (local.drumSequencer.currentEditPosition < 0 ? 0 : 
+                    (amt == 8 ? local.drumSequencer.currentEditPosition >> 3 :
+                    (amt == 16 ? local.drumSequencer.currentEditPosition >> 4 : local.drumSequencer.currentEditPosition >> 5)));
+
+            if (wholeGroup)
+                {
+                for(uint8_t t = 0; t < local.drumSequencer.numTracks; t++)
+                    {
+                    drumSequencerUnroll(local.drumSequencer.currentGroup, t, amt, from, once);
+                    }
+                }
+            else
+                {
+                drumSequencerUnroll(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, amt, from, once);
+                }
+                                
+            goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+            }
+        break;
+        case MENU_CANCELLED:
+            {
+            goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+            }
+        break;
+        }
+    }
+
+
+void stateDrumSequencerMenuUnrollGroup()
+    {
+    const char* menuItems[6] = {  PSTR("8"), PSTR("8 All"), PSTR("16"), PSTR("16 All"), PSTR("32"), PSTR("32 All") };
+    if (entry) 
+        {
+        defaultMenuValue = 2;
+        }
+    uint8_t result = doMenuDisplay(menuItems, local.drumSequencer.numNotes == 16 ? 2 : (local.drumSequencer.numNotes == 32 ? 4 : 6), STATE_NONE, STATE_NONE, 1);
+                
+    playDrumSequencer();
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            {
+            // do nothing
+            }
+        break;
+        case MENU_SELECTED:
+            {
+            uint8_t amt = (currentDisplay < 2 ? 8 : (currentDisplay < 4 ? 16 : 32));
+            uint8_t once = (currentDisplay == 0 || currentDisplay == 2 || currentDisplay == 6);
+            
+            uint8_t from = (local.drumSequencer.currentEditPosition < 0 ? 0 : 
+                    (amt == 8 ? local.drumSequencer.currentEditPosition >> 3 :
+                    (amt == 16 ? local.drumSequencer.currentEditPosition >> 4 : local.drumSequencer.currentEditPosition >> 5)));
+
+            for(uint8_t t = 0; t < local.drumSequencer.numTracks; t++)
+                {
+                drumSequencerUnroll(local.drumSequencer.currentGroup, t, amt, from, once);
+                }
+                                
+            goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+            }
+        break;
+        case MENU_CANCELLED:
+            {
+            goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+            }
+        break;
+        }
     }
 
 
@@ -1518,7 +1618,8 @@ void stateDrumSequencerTransition()
 //#define DRUM_SEQUENCER_MENU_SEND_CLOCK 6
 #define DRUM_SEQUENCER_MENU_PERFORMANCE 6
 #define DRUM_SEQUENCER_MENU_SAVE 7
-#define DRUM_SEQUENCER_MENU_OPTIONS 8
+#define DRUM_SEQUENCER_MENU_CENTER 8
+#define DRUM_SEQUENCER_MENU_OPTIONS 9
 
 
 // Gives other options
@@ -1526,7 +1627,7 @@ void stateDrumSequencerMenu()
     {
     uint8_t result;
     
-    const char* menuItems[9] = 
+    const char* menuItems[10] = 
         {    
         local.drumSequencer.performanceMode ? PSTR("PAUSE") : (local.drumSequencer.solo ? PSTR("NO SOLO") : PSTR("SOLO")),
         PSTR("MARK"),
@@ -1537,9 +1638,10 @@ void stateDrumSequencerMenu()
         //options.drumSequencerSendClock ? PSTR("NO CLOCK CONTROL") : PSTR("CLOCK CONTROL"),
         PSTR("PERFORMANCE"),
         PSTR("SAVE"), 
+        PSTR("CENTER"),
         options_p 
         };
-    result = doMenuDisplay(menuItems, 9, STATE_NONE, STATE_NONE, 1);
+    result = doMenuDisplay(menuItems, 10, STATE_NONE, STATE_NONE, 1);
 
     playDrumSequencer();
     switch (result)
@@ -1630,6 +1732,11 @@ void stateDrumSequencerMenu()
                     goDownState(STATE_DRUM_SEQUENCER_SAVE);
                     }
                 break;
+                case DRUM_SEQUENCER_MENU_CENTER:
+                    {
+                    goDownState(STATE_DRUM_SEQUENCER_CENTER);
+                    }
+                break;
                 case DRUM_SEQUENCER_MENU_OPTIONS:
                     {
                     immediateReturnState = STATE_DRUM_SEQUENCER_MENU;
@@ -1653,9 +1760,9 @@ void stateDrumSequencerMenu()
 void stateDrumSequencerMenuPattern()    
     {
     const char* menuItems[16] =     { PSTR("OOOO"), PSTR("OOO-"), PSTR("---O"), PSTR("OO-O"), PSTR("--O-"), PSTR("O---"), PSTR("-O--"), PSTR("OO--"), PSTR("--OO"), PSTR("O-O-"), PSTR("-O-O"), 
-                                      PSTR("R1/8"),                      PSTR("R1/4"),                      PSTR("R1/2"),                      PSTR("---X"),                      PSTR("XXXX") };
+                                      PSTR("H1/8"),                      PSTR("H1/4"),                      PSTR("H1/2"),                      PSTR("---X"),                      PSTR("XXXX") };
     const uint8_t menuIndices[16] = { P1111,        P1110,        P0001,        P1101,        P0010,        P1000,        P0100,        P1100,        P0011,        P1010,        P0101,                    
-                                      DRUM_SEQUENCER_PATTERN_RANDOM_1_8, DRUM_SEQUENCER_PATTERN_RANDOM_1_4, DRUM_SEQUENCER_PATTERN_RANDOM_1_2, DRUM_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE_FILL, DRUM_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE };
+                                      DRUM_SEQUENCER_PATTERN_DROP_1_8, DRUM_SEQUENCER_PATTERN_DROP_1_4, DRUM_SEQUENCER_PATTERN_DROP_1_2, DRUM_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE_FILL, DRUM_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE };
     if (entry)
         {
         // find the pattern
@@ -1968,6 +2075,26 @@ void stateDrumSequencerPitch()
         {
         setNotePitch(local.drumSequencer.currentTrack, note);
         goUpState(immediateReturnState);
+        }
+    playDrumSequencer();
+    }
+    
+void stateDrumSequencerMenuCenter()
+    {
+    uint8_t note = stateEnterNote(STATE_DRUM_SEQUENCER_PLAY);
+    if (note != NO_NOTE)
+        {
+        uint8_t newNote = div12(note) * 12;
+        if (newNote == note)
+            {
+            options.drumSequencerControllerCenter = note;
+            saveOptions();
+            goUpState(STATE_DRUM_SEQUENCER_PLAY);
+            }
+        else
+            {
+            goDownState(STATE_DRUM_SEQUENCER_CANT);
+            }
         }
     playDrumSequencer();
     }
@@ -2810,9 +2937,9 @@ void playDrumSequencer()
                                                 
         for(uint8_t track = 0; track < numTracks; track++)
             {
+            uint8_t pattern = getPattern(local.drumSequencer.currentGroup, track);
             if (local.drumSequencer.currentPlayPosition == 0)
                 {
-                uint8_t pattern = getPattern(local.drumSequencer.currentGroup, track);
                 // pick a random track                          
                 if (pattern == DRUM_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE)
                     {
@@ -2828,18 +2955,20 @@ void playDrumSequencer()
                   local.drumSequencer.shouldPlay[track] = (random() < (RANDOM_MAX / 4) * 3);
                   }
                 */
-                else if (pattern == DRUM_SEQUENCER_PATTERN_RANDOM_1_2)
-                    {
-                    local.drumSequencer.shouldPlay[track] = (random() < (RANDOM_MAX / 2));
-                    }
-                else if (pattern == DRUM_SEQUENCER_PATTERN_RANDOM_1_4)
-                    {
-                    local.drumSequencer.shouldPlay[track] = (random() < (RANDOM_MAX / 4));
-                    }
-                else if (pattern == DRUM_SEQUENCER_PATTERN_RANDOM_1_8)
-                    {
-                    local.drumSequencer.shouldPlay[track] = (random() < (RANDOM_MAX / 8));
-                    }
+                /*
+                  else if (pattern == DRUM_SEQUENCER_PATTERN_RANDOM_1_2)
+                  {
+                  local.drumSequencer.shouldPlay[track] = (random() < (RANDOM_MAX / 2));
+                  }
+                  else if (pattern == DRUM_SEQUENCER_PATTERN_RANDOM_1_4)
+                  {
+                  local.drumSequencer.shouldPlay[track] = (random() < (RANDOM_MAX / 4));
+                  }
+                  else if (pattern == DRUM_SEQUENCER_PATTERN_RANDOM_1_8)
+                  {
+                  local.drumSequencer.shouldPlay[track] = (random() < (RANDOM_MAX / 8));
+                  }
+                */
                 else
                     {
                     local.drumSequencer.shouldPlay[track] = ((pattern >> (local.drumSequencer.patternCountup & 3)) & 1);                        
@@ -2849,7 +2978,24 @@ void playDrumSequencer()
             if (getNote(playGroup, track, local.drumSequencer.currentPlayPosition) && 
                 local.drumSequencer.shouldPlay[track] && !drumSequencerShouldMuteTrack(track))
                 {
-                sendCurrentTrackNote(track);         
+                uint8_t play = 1;
+                if (pattern == DRUM_SEQUENCER_PATTERN_DROP_1_2)
+                    {
+                    play = (random() < (RANDOM_MAX / 2));
+                    }
+                else if (pattern == DRUM_SEQUENCER_PATTERN_DROP_1_4)
+                    {
+                    play = (random() < (RANDOM_MAX / 4));
+                    }
+                else if (pattern == DRUM_SEQUENCER_PATTERN_DROP_1_8)
+                    {
+                    play = (random() < (RANDOM_MAX / 8));
+                    }
+                
+                if (play)
+                    {
+                    sendCurrentTrackNote(track);  
+                    }       
                 }
             }
         }
@@ -2923,8 +3069,10 @@ void stateDrumSequencerPlay()
         {
         entry = false;
         local.drumSequencer.currentRightPot = DRUM_SEQUENCER_CURRENT_RIGHT_POT_UNDEFINED;
-        setPots(local.drumSequencer.pots);
+        local.stepSequencer.pots[LEFT_POT] = pot[LEFT_POT];
+        local.stepSequencer.pots[RIGHT_POT] = pot[RIGHT_POT];
         }
+        
     immediateReturn = false;
     // always do this
     leftPotParameterEquivalent = false;
@@ -3599,10 +3747,10 @@ void stateDrumSequencerPlay()
         local.drumSequencer.performanceMode && 
         options.drumSequencerPlayAlongChannel == CHANNEL_PICK)
         {
-        if (itemNumber >= MIDDLE_C && itemNumber < (MIDDLE_C + 34))
+        if (itemNumber >= options.drumSequencerControllerCenter && itemNumber < (options.drumSequencerControllerCenter + 34))
             {
             const int8_t keys[34] = { 0, -1, 1, -1, 2, 3, -1, 4, -1, 5, -1, 6, 7, -1, 8, -1, 9, 10, -1, 11, -1, 12, -1, 13, 14, -1, 15, -1, 16, 17, -1, 18, -1, 19 }; 
-            itemNumber -= MIDDLE_C;
+            itemNumber -= options.drumSequencerControllerCenter;
             if (keys[itemNumber] != -1)
                 {
                 local.drumSequencer.goNextTransition = keys[itemNumber] + 2;            // load a "specific" transition into goNextTransition, not just TRUE
@@ -3613,16 +3761,16 @@ void stateDrumSequencerPlay()
         {
         TOGGLE_IN_LED();
         uint8_t note = itemNumber;
+        uint8_t len = getGroupLength(local.drumSequencer.currentGroup);
 
         /// We have different ways of entering drum note information depending on the edit mode
                         
-        uint8_t len = getGroupLength(local.drumSequencer.currentGroup);
-        uint16_t octave = div12(note);
-                
+        uint16_t octave = div12(note + MIDDLE_C - options.drumSequencerControllerCenter);               // adjust using the keyboard center
+        
         if (octave >= 5)  // middle c and up
             {
-            int8_t key = drumSequencerGetKey(octave, note);
-
+            int8_t key = drumSequencerGetKey(octave, note + MIDDLE_C - options.drumSequencerControllerCenter);          // adjust using the keyboard center
+                        
             if (local.drumSequencer.currentEditPosition >= 0 && local.drumSequencer.currentEditPosition < len)
                 {
                 if (local.drumSequencer.drumRegion < 0)
@@ -3770,11 +3918,11 @@ void stateDrumSequencerPlay()
 
         /// We have different ways of entering drum note information depending on the edit mode
                         
-        uint16_t octave = div12(note);
+        uint16_t octave = div12(note + MIDDLE_C - options.drumSequencerControllerCenter);               // adjust using the keyboard center
                 
         if (octave >= 7 || octave < 5)
             {
-            int8_t key = drumSequencerGetKey(octave, note);
+            int8_t key = drumSequencerGetKey(octave, note + MIDDLE_C - options.drumSequencerControllerCenter);
                         
             if ((octave == 7 && key > 1) || octave > 7 || octave < 5)
                 {

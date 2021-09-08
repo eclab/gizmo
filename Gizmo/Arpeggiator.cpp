@@ -115,18 +115,18 @@ void playArpeggiatorNote(uint16_t note)
 void loadNextUserArpeggio()
     {
     // Load the arpeggiator data
-    if (local.arp.number > ARPEGGIATOR_NUMBER_CHORD_REPEAT)
+    if (local.arp.number > ARPEGGIATOR_NUMBER_CHORD_HOLD)
         {
         // search toroidally for a nonempty arpeggio and load it.  If we fail, we wind up
         // back where we are.
         for(int i = 0; i < NUM_ARPS; i++)
             {
             local.arp.number++;
-            if (local.arp.number > NUM_ARPS + ARPEGGIATOR_NUMBER_CHORD_REPEAT)
-                local.arp.number = ARPEGGIATOR_NUMBER_CHORD_REPEAT + 1;
-            if (ARPEGGIO_IS_NONEMPTY(local.arp.number - ARPEGGIATOR_NUMBER_CHORD_REPEAT - 1))
+            if (local.arp.number > NUM_ARPS + ARPEGGIATOR_NUMBER_CHORD_HOLD)
+                local.arp.number = ARPEGGIATOR_NUMBER_CHORD_HOLD + 1;
+            if (ARPEGGIO_IS_NONEMPTY(local.arp.number - ARPEGGIATOR_NUMBER_CHORD_HOLD - 1))
                 {
-                LOAD_ARPEGGIO(local.arp.number - ARPEGGIATOR_NUMBER_CHORD_REPEAT - 1);
+                LOAD_ARPEGGIO(local.arp.number - ARPEGGIATOR_NUMBER_CHORD_HOLD - 1);
                 local.arp.advance = false;
                 break;
                 }
@@ -148,13 +148,16 @@ void playArpeggio()
     //    if (!bypassOut && local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || (currentTime >= local.arp.offTime && options.noteLength < 100)) &&
     if (!bypassOut && local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || (TIME_GREATER_THAN_OR_EQUAL(currentTime, local.arp.offTime) && options.noteLength < 100)) &&
         // we don't want to turn off the note if the next note is a tie
-        !((local.arp.number > ARPEGGIATOR_NUMBER_CHORD_REPEAT &&                                                                                                                  // we're doing a custom arpeggio AND
+        !((local.arp.number > ARPEGGIATOR_NUMBER_CHORD_HOLD &&                                                                                                                  // we're doing a custom arpeggio AND
                 ARP_NOTEX(local.arp.currentPosition + 1 >= data.arp.length ? 0 : local.arp.currentPosition + 1) == ARP_TIE)))    // the next note is a TIE
         {
         if (local.arp.number == ARPEGGIATOR_NUMBER_CHORD_REPEAT)
             {
-            // we don't call sendAllSoundsOff here because it's too large for the Uno
             MIDI.sendControlChange(123, 0, options.channelOut);
+            }
+        else if (local.arp.number == ARPEGGIATOR_NUMBER_CHORD_HOLD)
+            {
+            // do nothing
             }
         else
             {
@@ -253,7 +256,17 @@ void playArpeggio()
                             while(newPosition == local.arp.currentPosition);
                             local.arp.currentPosition = newPosition;
                             }
-                        else local.arp.currentPosition = 0;
+                        else if (local.arp.numChordNotes > 1)
+                            {
+                            // we allow the same  note to be played twice
+                            uint8_t newPosition = random(max + 1);
+                            local.arp.currentPosition = newPosition;
+                            }
+                        else
+                            {
+                            // just play the note over and over
+                            local.arp.currentPosition = 0;
+                            }
                         }
                     break;
                     }
@@ -271,6 +284,10 @@ void playArpeggio()
                     {
                     playArpeggiatorNote((local.arp.chordNotes[i] & 127));
                     }
+                }
+            else if (local.arp.number == ARPEGGIATOR_NUMBER_CHORD_HOLD)
+                {
+                // do nothing
                 }
             else
                 {
@@ -345,6 +362,10 @@ void arpeggiatorRemoveNote(uint8_t note)
         {
         resetArpeggiator();         // we just removed notes so we need to reset or playArpeggio() may miss it
         }
+    if (local.arp.number == ARPEGGIATOR_NUMBER_CHORD_HOLD)
+        {
+        sendNoteOff(note, 64, options.channelOut);        
+        }
     }
         
 
@@ -408,6 +429,15 @@ void arpeggiatorAddNote(uint8_t note, uint8_t velocity)
                 break;
                 }
             }
+        }
+
+    if (local.arp.number == ARPEGGIATOR_NUMBER_CHORD_HOLD)
+        {
+        if (local.arp.numChordNotes == 0)
+            {
+            MIDI.sendControlChange(123, 0, options.channelOut);
+            }
+        sendNoteOn(note, velocity, options.channelOut);        
         }
     }
 
@@ -513,6 +543,7 @@ void stateArpeggiator()
 
 GLOBAL static uint8_t arpeggiatorGlyphs[7] = { GLYPH_3x5_UP, GLYPH_3x5_DOWN, GLYPH_3x5_UP_DOWN, GLYPH_3x5_UP_DOWN, GLYPH_3x5_R, GLYPH_3x5_A, GLYPH_3x5_C };
 
+
 // Handle the menu structure for playing an arpeggio
 void stateArpeggiatorPlay()
     {
@@ -521,13 +552,15 @@ void stateArpeggiatorPlay()
             
     if (entry)
         {
-        local.arp.oldLeftPot = pot[LEFT_POT];
-        local.arp.oldRightPot = pot[RIGHT_POT]; 
+//        local.arp.oldLeftPot = pot[LEFT_POT];
+//        local.arp.oldRightPot = pot[RIGHT_POT]; 
+        local.stepSequencer.pots[LEFT_POT] = pot[LEFT_POT];
+        local.stepSequencer.pots[RIGHT_POT] = pot[RIGHT_POT];
         local.arp.playing = 1;
         // Load the arpeggiator data
-        if (local.arp.number > ARPEGGIATOR_NUMBER_CHORD_REPEAT)
+        if (local.arp.number > ARPEGGIATOR_NUMBER_CHORD_HOLD)
             {
-            LOAD_ARPEGGIO(local.arp.number - ARPEGGIATOR_NUMBER_CHORD_REPEAT - 1);
+            LOAD_ARPEGGIO(local.arp.number - ARPEGGIATOR_NUMBER_CHORD_HOLD - 1);
             }
         entry = false;
         }
@@ -540,7 +573,7 @@ void stateArpeggiatorPlay()
     if (updateDisplay)
         {    
         clearScreen();
-        if (local.arp.number > ARPEGGIATOR_NUMBER_CHORD_REPEAT)
+        if (local.arp.number > ARPEGGIATOR_NUMBER_CHORD_HOLD)
             {
             uint8_t pos = 0;
             if (local.arp.currentPosition >= 7) 
@@ -648,19 +681,30 @@ void stateArpeggiatorPlay()
         {
         arpeggiatorToggleLatch();
         }
-    else if (potUpdated[LEFT_POT] && 
-            ((pot[LEFT_POT] > local.arp.oldLeftPot && pot[LEFT_POT] - local.arp.oldLeftPot > ARP_POT_SLOP) ||
-            (local.arp.oldLeftPot > pot[LEFT_POT] && local.arp.oldLeftPot - pot[LEFT_POT] > ARP_POT_SLOP)))
+        
+#define BIG_POT_UPDATE (32)
+
+    else if (potUpdated[LEFT_POT]) 
+        // && 
+        //      ((pot[LEFT_POT] > local.arp.oldLeftPot && pot[LEFT_POT] - local.arp.oldLeftPot > ARP_POT_SLOP) ||
+        //    (local.arp.oldLeftPot > pot[LEFT_POT] && local.arp.oldLeftPot - pot[LEFT_POT] > ARP_POT_SLOP)))
         {
-        AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
-        goDownState(STATE_OPTIONS_PLAY_LENGTH);
+        if (potChangedBy(local.stepSequencer.pots, LEFT_POT, BIG_POT_UPDATE))
+            {
+            AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
+            goDownState(STATE_OPTIONS_PLAY_LENGTH);
+            }
         }
-    else if (potUpdated[RIGHT_POT] &&
-            ((pot[RIGHT_POT] > local.arp.oldRightPot && pot[RIGHT_POT] - local.arp.oldRightPot > ARP_POT_SLOP) ||
-            (local.arp.oldRightPot > pot[RIGHT_POT] && local.arp.oldRightPot - pot[RIGHT_POT] > ARP_POT_SLOP)))
+    else if (potUpdated[RIGHT_POT])
+        // &&
+        //      ((pot[RIGHT_POT] > local.arp.oldRightPot && pot[RIGHT_POT] - local.arp.oldRightPot > ARP_POT_SLOP) ||
+        //    (local.arp.oldRightPot > pot[RIGHT_POT] && local.arp.oldRightPot - pot[RIGHT_POT] > ARP_POT_SLOP)))
         {
-        AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
-        goDownState(STATE_OPTIONS_TEMPO);
+        if (potChangedBy(local.stepSequencer.pots, RIGHT_POT, BIG_POT_UPDATE))
+            {
+            AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
+            goDownState(STATE_OPTIONS_TEMPO);
+            }
         }
     else if (newItem && (itemType == MIDI_CUSTOM_CONTROLLER))
         {

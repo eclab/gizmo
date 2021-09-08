@@ -137,7 +137,8 @@
 #define ARPEGGIATOR_NUMBER_RANDOM 4
 #define ARPEGGIATOR_NUMBER_ASSIGN 5
 #define ARPEGGIATOR_NUMBER_CHORD_REPEAT 6
-#define ARPEGGIATOR_NUMBER_CREATE 17
+#define ARPEGGIATOR_NUMBER_CHORD_HOLD 7
+#define ARPEGGIATOR_NUMBER_CREATE 18			// 8 ... 17 are the 10 custom arpeggios
 
 // Constants for including a blinky cursor when drawing the arpeggio.
 // EDIT_CURSOR_POS puts the cursor just beyond the current arpeggio edit position.
@@ -173,8 +174,9 @@ struct _arpLocal
 	int8_t transpose;
 	uint8_t advance;
 	uint8_t transposeRoot;
-	uint16_t oldLeftPot;
-	uint16_t oldRightPot;
+//	uint16_t oldLeftPot;
+//	uint16_t oldRightPot;
+    uint16_t pots[2];				// Pot values (left and right)
 	int8_t accompaniment;
     // We have to jump by at least 2 to start scrolling -- this is an anti-noise measure
     };
@@ -206,6 +208,7 @@ struct _arp
     uint8_t length;                                                                     // How long is the arpeggio?  (up to MAX_ARP_NOTES)
     uint8_t root;                                                                       // What note (0...14) in the arpeggio corresponds to the root of the played chord?
     uint8_t notes[MAX_ARP_NOTES >> 1];              // half of MAX_ARP_NOTES of course
+	// we have 7 bits of extra space here if we need it: length only needs 5 bits and root only needs 4 bits.
     };
 
 

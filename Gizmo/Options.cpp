@@ -73,22 +73,20 @@ void resetOptions()
     options.menuDelay = DEFAULT_MENU_DELAY;  // corresponds to DEFAULT_MENU_DELAY
 #endif defined(__MEGA__)
 
-#ifdef INCLUDE_RECORDER
-    options.recorderRepeat = true;
-#endif INCLUDE_RECORDER
-
 #ifdef INCLUDE_SPLIT
     options.splitChannel = 1;
     options.splitNote = 60;  // Middle C
     options.splitLayerNote = NO_NOTE;
 #endif INCLUDE_SPLIT
 
-#ifdef INCLUDE_STEP_SEQUENCER
-    options.stepSequencerRestNote = STEP_SEQUENCER_REST_NOTE;			// no rest note
-#endif INCLUDE_STEP_SEQUENCER
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+    options.stepSequencerRestNote = NO_SEQUENCER_NOTE;                   // no rest note
+    options.stepSequencerRestNote = NO_SEQUENCER_NOTE;                   // no tie note
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
 
 #ifdef INCLUDE_DRUM_SEQUENCER
     options.drumSequencerDefaultVelocity = 5;
+    options.drumSequencerControllerCenter = 60;
 #endif INCLUDE_DRUM_SEQUENCER
 
 #ifdef INCLUDE_MEASURE

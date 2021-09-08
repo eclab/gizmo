@@ -437,10 +437,13 @@ Menus
 
 #define DRUM_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE (0)
 #define DRUM_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE_FILL (14)
-#define DRUM_SEQUENCER_PATTERN_RANDOM_3_4 (14)
-#define DRUM_SEQUENCER_PATTERN_RANDOM_1_2 (13)
-#define DRUM_SEQUENCER_PATTERN_RANDOM_1_4 (6)
-#define DRUM_SEQUENCER_PATTERN_RANDOM_1_8 (9)
+//#define DRUM_SEQUENCER_PATTERN_RANDOM_3_4 (14)
+//#define DRUM_SEQUENCER_PATTERN_RANDOM_1_2 (13)
+//#define DRUM_SEQUENCER_PATTERN_RANDOM_1_4 (6)
+//#define DRUM_SEQUENCER_PATTERN_RANDOM_1_8 (9)
+#define DRUM_SEQUENCER_PATTERN_DROP_1_2 (13)
+#define DRUM_SEQUENCER_PATTERN_DROP_1_4 (6)
+#define DRUM_SEQUENCER_PATTERN_DROP_1_8 (9)
 #define DRUM_SEQUENCER_PATTERN_ALL (15)
 #define P0000 (0)			// DRUM_SEQUENCER_PATTERN_RANDOM_EXCLUSIVE
 #define P1000 (1)
@@ -653,6 +656,7 @@ void stateDrumSequencerGroupLength();
 void stateDrumSequencerGroupSpeed();
 void stateDrumSequencerMenuCopyGroup();
 void stateDrumSequencerMenuSwapGroup();
+void stateDrumSequencerMenuUnrollGroup();
 void stateDrumSequencerTransitionAdd();
 void stateDrumSequencerTransitionEdit();
 void stateDrumSequencerTransitionGoGroup();
@@ -664,6 +668,8 @@ void stateDrumSequencerTransitionEditGroup();
 void stateDrumSequencerTransitionEditRepeat();
 void stateDrumSequencerTransitionEditSpecial();
 void stateDrumSequencerTransitionMove();
+void jointStateDrumSequencerMenuUnroll(uint8_t wholeGroup);
+void stateDrumSequencerMenuCenter();
 
 
 #endif __DRUM_SEQUENCER_H__

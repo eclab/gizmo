@@ -11,6 +11,14 @@
 #include "All.h"
 
 
+uint8_t potChangedBy(uint16_t* potVals, uint8_t potNum, uint16_t amount)
+    {
+    int16_t val = potVals[potNum] - (int16_t)pot[potNum];
+    if (val < 0) val = -val;
+    return (val > amount);
+    }
+
+
 /// IMMEDIATE RETURN FACILITY
 
 #define NO_AUTO_RETURN (0)
@@ -1167,7 +1175,7 @@ uint8_t incrementAndWrap(uint8_t n, uint8_t max)
         
 GLOBAL uint8_t stateEnterNoteVelocity;
 
-uint8_t stateEnterNote(uint8_t backState)
+uint8_t stateEnterNote(uint8_t backState, uint8_t allowRemoval=false)
     {
     if (entry)
         {
@@ -1185,8 +1193,11 @@ uint8_t stateEnterNote(uint8_t backState)
     // process these but do nothing with them so if the user
     // accidentally presses these buttons BEFORE he chooses a note,
     // the button press isn't queued for later -- I do that a lot.
-    isUpdated(SELECT_BUTTON, RELEASED);
     isUpdated(MIDDLE_BUTTON, RELEASED);
+    if (isUpdated(SELECT_BUTTON, RELEASED) && allowRemoval)             // note isUpdated() is first so it gets called for sure
+        {
+        return NOTE_REMOVED;
+        }
         
     if (newItem == NEW_ITEM && itemType == MIDI_NOTE_ON)
         {

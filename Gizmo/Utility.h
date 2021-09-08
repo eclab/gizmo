@@ -23,6 +23,9 @@ extern int16_t currentDisplay;                     // currently displayed menu i
 // If negative, then MULTIPLY pot[LEFT_POT] by -potDivisor to determine what the state should be.
 extern int16_t potDivisor;
 
+// Returns true if potVals[potNum] differs from pot[potNum] by more than the given amount
+uint8_t potChangedBy(uint16_t* potVals, uint8_t potNum, uint16_t amount);
+
 ///// DOMENUDISPLAY()
 //
 // This function updates a display in the form of a menu of
@@ -186,6 +189,8 @@ uint8_t debug(int8_t val1, int8_t val2);
 
 /// Indicates no note (in various contexts)
 #define NO_NOTE 128
+/// Returned by stateEnterNote to indicate that the user wants to delete the stored note (as opposed to cancelled)
+#define NOTE_REMOVED 129
 
 // perform a click track
 void doClick();
@@ -314,11 +319,13 @@ void stateCant(uint8_t nextState);
 
 ///// Call this repeatedly from your notional "please enter a note" state to query the user about what note he'd like.
 ///// The value returned is either NO_NOTE, indicating that the user has not entered a note yet,
+///// or it is NOTE_REMOVED, indicating that the user wants **no note at all** (by pressing SELECT)
 ///// or it is a note pitch, which the user has chosen.  The velocity of the note is stored in
 ///// the global variable stateEnterNoteVelocity.  
-///// backState                 where we should go after the user has cancelled                         
+///// backState                 where we should go after the user has cancelled    
+///// allowRemoval				can the user optionally indicate that he wants no note at all?                     
 extern uint8_t stateEnterNoteVelocity;
-uint8_t stateEnterNote(uint8_t backState);
+uint8_t stateEnterNote(uint8_t backState, uint8_t allowRemoval=false);
 
 
 ///// Call this repeatedly from your notional "please enter a chord" state to query the user about what chord he'd like.
