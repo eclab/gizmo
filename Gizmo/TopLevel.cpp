@@ -287,9 +287,10 @@ uint8_t updatePot(uint16_t &pot, uint16_t* potCurrent, uint16_t &potCurrentFinal
 GLOBAL uint8_t updateDisplay = 0;
 GLOBAL unsigned char led[LED_WIDTH];
 GLOBAL unsigned char led2[LED_WIDTH];
-
-
-
+#ifdef TWO_SCREENS_VERTICAL
+GLOBAL unsigned char led3[LED_WIDTH];
+GLOBAL unsigned char led4[LED_WIDTH];
+#endif TWO_SCREENS_VERTICAL
 
 
 
@@ -319,6 +320,20 @@ uint8_t update()
         case 0:
             {
 #ifndef HEADLESS
+            if (!lockoutPots)
+                potUpdated[LEFT_POT] = updatePot(pot[LEFT_POT], potCurrent[LEFT_POT], potCurrentFinal[LEFT_POT], potLast[LEFT_POT], A0);
+#endif // HEADLESS
+#ifdef INCLUDE_MEGA_POTS
+            potUpdated[A2_POT] = updatePot(pot[A2_POT], potCurrent[A2_POT], potCurrentFinal[A2_POT], potLast[A2_POT], A14);
+#else
+            potUpdated[A2_POT] = updatePot(pot[A2_POT], potCurrent[A2_POT], potCurrentFinal[A2_POT], potLast[A2_POT], A2);
+#endif INCLUDE_MEGA_POTS
+            return 0;  // don't update the display
+            }
+        break;
+        case 1:
+            {
+#ifndef HEADLESS
             uint8_t buttonPressed[3];
             
             // Note that when we're pressed, the value is ZERO, so we do !pressed
@@ -337,20 +352,6 @@ uint8_t update()
                 updateButtons(buttonPressed);
                 }
 #endif // HEADLESS
-            return 0;  // don't update the display
-            }
-        break;
-        case 1:
-            {
-#ifndef HEADLESS
-            if (!lockoutPots)
-                potUpdated[LEFT_POT] = updatePot(pot[LEFT_POT], potCurrent[LEFT_POT], potCurrentFinal[LEFT_POT], potLast[LEFT_POT], A0);
-#endif // HEADLESS
-#ifdef INCLUDE_MEGA_POTS
-            potUpdated[A2_POT] = updatePot(pot[A2_POT], potCurrent[A2_POT], potCurrentFinal[A2_POT], potLast[A2_POT], A14);
-#else
-            potUpdated[A2_POT] = updatePot(pot[A2_POT], potCurrent[A2_POT], potCurrentFinal[A2_POT], potLast[A2_POT], A2);
-#endif INCLUDE_MEGA_POTS
             return 0;  // don't update the display
             }
         break;
@@ -375,10 +376,10 @@ uint8_t update()
             // to approximately display 999 beats per second. Perhaps we might
             // do other I2C stuff as well for the other times
             if ((tickCount & 31) == 31)
-                return 1;  // update the display
+                return 1;  // update the display, which will also call sendMatrix
             // off-sync with the screen update, we will update the screen brightness
             // if it's been requested.  This is because it's an I2C operation
-            // and can be costly if called many times in sequence. 
+            // and can be costly if called many times in sequence.  But it's a rare operation.
             // At present screen brightness change is NONblocking
             else if (scheduleScreenBrightnessUpdate && ((tickCount & 31) == 15))
                 {
@@ -462,7 +463,13 @@ void writeFooterAndSend()
             setPoint(led, 0, 0);
             }
         }
+        
     sendMatrix(led, led2);
+
+#ifdef TWO_SCREENS_VERTICAL
+    // This SHOULD be fast enough? Dunno
+    sendMatrix(led3, led4, I2C_ADDRESS_3, I2C_ADDRESS_4);
+#endif
     }
 
 

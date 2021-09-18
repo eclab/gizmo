@@ -702,12 +702,15 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
     // 64 -> 4    
     // 96 -> 6    
     uint8_t skip = ((fullLen + 15) >> 4);      // that is, trackLen / 16
-
+        
     clearScreen();
     
     uint8_t firstTrack = local.stepSequencer.currentTrack;
     uint8_t lastTrack = numTracks;          // lastTrack is 1+ the final track we'll be drawing
     
+#ifdef TWO_SCREENS_VERTICAL
+    firstTrack = 0;                         // there is always enough space to fit the entire sequence on screen
+#else
     if (fullLen == 96)
         {
         // handle 96 specially since it takes up the whole screen
@@ -723,12 +726,22 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
         else firstTrack = firstTrack - fourskip + 1;   
         uint8_t sixskip = 6 / skip;
         lastTrack = bound(lastTrack, 0, firstTrack + sixskip);
+        if (lastTrack == numTracks)
+            {
+            if (lastTrack >= sixskip) 
+                firstTrack = lastTrack - sixskip;
+            }
         }
+#endif TWO_SCREENS_VERTICAL
 
     // Now we start drawing each of the tracks.  We will make blinky lights for beats or for the cursor
     // and will have solid lights or nothing for the notes or their absence.
         
-    uint8_t y = 7;
+#ifdef TWO_SCREENS_VERTICAL
+    uint8_t y = 15;
+#else
+    uint8_t y = 7;              // we can go negative if we have two vertical screens
+#endif TWO_SCREENS_VERTICAL
     for(uint8_t t = firstTrack; t < lastTrack; t++)  // for each track from top to bottom
         {
         // data is stored per-track as
@@ -775,9 +788,20 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
             if (vel || blink)
                 {       
                 uint8_t pointx = d - ((d >> 3) * 8);            //  d - (d / 8) * 8
-                uint8_t pointy = y - (d >> 4);                          // (y - (d / 16)
                 uint8_t isled2 = (((d >> 3) & 0x1) == 0x0);             // (d / 8) is even
+                uint8_t pointy = y - (d >> 4);                    // (y - (d / 16)
+#ifdef TWO_SCREENS_VERTICAL
+                if (pointy > 7)
+                    {
+                    blinkOrSetPoint(isled2 ? led4 : led3, pointx, pointy - 8, blink);
+                    }
+                else
+                    {
+                    blinkOrSetPoint(isled2 ? led2 : led, pointx, pointy, blink);
+                    }
+#else
                 blinkOrSetPoint(isled2 ? led2 : led, pointx, pointy, blink);
+#endif TWO_SCREENS_VERTICAL
                 }
             }
         y -= skip;
@@ -1060,7 +1084,6 @@ void stopStepSequencer()
     sendAllSoundsOff();
     }
 
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
 void addTie(uint8_t trackLen)
     {
     // We only permit ties if (1) the note before was NOT a rest and
@@ -1097,7 +1120,6 @@ void addTie(uint8_t trackLen)
         local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
         }
     }
-#endif
 
 // Plays and records the sequence
 void stateStepSequencerPlay()
@@ -2008,11 +2030,11 @@ void stateStepSequencerPlay()
 #define STEP_SEQUENCER_MENU_PATTERN 6
 #define STEP_SEQUENCER_MENU_TRANSPOSABLE 7
 #define STEP_SEQUENCER_MENU_EDIT 8
-//#define STEP_SEQUENCER_MENU_NO_ECHO 9
-#define STEP_SEQUENCER_MENU_LENGTH 9
-#define STEP_SEQUENCER_MENU_PERFORMANCE 10
-#define STEP_SEQUENCER_MENU_SAVE 11
-#define STEP_SEQUENCER_MENU_OPTIONS 12
+#define STEP_SEQUENCER_MENU_NO_ECHO 9
+#define STEP_SEQUENCER_MENU_LENGTH 10
+#define STEP_SEQUENCER_MENU_PERFORMANCE 11
+#define STEP_SEQUENCER_MENU_SAVE 12
+#define STEP_SEQUENCER_MENU_OPTIONS 13
 
 #endif INCLUDE_ADVANCED_STEP_SEQUENCER
 
@@ -2138,14 +2160,12 @@ void stateStepSequencerMenu()
                     goDownState(STATE_STEP_SEQUENCER_MENU_EDIT);
                     }
                 break;
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
                 case STEP_SEQUENCER_MENU_NO_ECHO:
                     {
                     options.stepSequencerNoEcho = !options.stepSequencerNoEcho;
                     saveOptions();
                     }
                 break;
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
 
 // Advanced step sequencer has two more menu options: type (note, non-note) and rest notes
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER

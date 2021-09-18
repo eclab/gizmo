@@ -11,9 +11,7 @@
 
 #include "LEDDisplay.h"
 #include "Division.h"
-
-#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_8x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK)
-#include <Wire.h>
+#include "nbw/NonBlockingWire.h"
 
 //// MODIFING THE I2C BUFFERS
 //// Wire uses 217 bytes!!!
@@ -28,10 +26,7 @@
 
 // Changing this from 32 to 16 would save us 80 bytes!
 
-#define I2C_ADDRESS     ((uint8_t) 0x70)
 #define LED_BRIGHTNESS_I2C  ((uint8_t) 0xE0)
-
-#endif
 
 
 
@@ -1062,106 +1057,6 @@ void setBlinkOnOff(uint8_t on, uint8_t off)
 //////////////////  CONTROLLING THE LED
 
 
-#ifdef SCREEN_TYPE_SPARKFUN_8x8_KIT
-
-/// Masks for the Sparkfun 8x8 kit
-GLOBAL static uint8_t led_CLK_mask;
-GLOBAL static uint8_t led_CS_mask;
-GLOBAL static uint8_t led_DIN_mask;
-
-// PORTS for the Sparkfun 8x8 kit
-GLOBAL static volatile uint8_t *led_CLK;
-GLOBAL static volatile uint8_t *led_CS;
-GLOBAL static volatile uint8_t *led_DIN;
-
-/// Writes a byte to the LED Matrix
-static void sendByte(unsigned char address, unsigned char data)
-    {
-    *led_CS &= ~led_CS_mask;            // drop CS
-    for(uint8_t i = 0; i < 8; i ++)
-        {     
-        *led_CLK &= ~led_CLK_mask;      // drop CLK
-        if ((address & 0x80) == 0)
-            {
-            *led_DIN &= ~led_DIN_mask;  // drop DIN 
-            }
-        else
-            {
-            *led_DIN |= led_DIN_mask;   // raise DIN
-            }
-        address = address << 1;
-        *led_CLK |= led_CLK_mask;       // raise CLK
-        }
-                                     
-    *led_CLK &= ~led_CLK_mask;          // drop CLK
-    for(uint8_t i = 0; i < 8; i ++)
-        {  
-        *led_CLK &= ~led_CLK_mask;              // drop CLK
-        if ((data & 0x80) == 0)
-            {
-            *led_DIN &= ~led_DIN_mask;          // drop DIN
-            }
-        else
-            {
-            *led_DIN |= led_DIN_mask;           // raise DIN
-            }
-        data = data << 1;
-        *led_CLK |= led_CLK_mask;               // raise CLK
-        }                                 
-    *led_CS |= led_CS_mask;             // raise CS
-    }
-
-
-void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
-    {
-    // matrix 2 is entirely ignored
-    for(unsigned char j = 0; j < LED_WIDTH; j++)
-        {
-        *led_CS &= ~led_CS_mask;                        // drop CS
-        unsigned char address = j + 1;
-        for(uint8_t i = 0; i < 8; i ++)
-            {  
-            *led_CLK &= ~led_CLK_mask;          // drop CLK
-            if ((address & 0x80) == 0)
-                {
-                *led_DIN &= ~led_DIN_mask;      // drop DIN
-                }
-            else
-                {
-                *led_DIN |= led_DIN_mask;       // raise DIN
-                }
-            address = address << 1;
-            *led_CLK |= led_CLK_mask;           // raise CLK
-            }
-
-        // note that we're flipping the data horizontally (hence the 7-j)
-        unsigned char data = matrix[7-j];
-        for(uint8_t i = 0; i < 8; i ++)
-            {     
-            *led_CLK &= ~led_CLK_mask;          // drop CLK
-            if ((data & 0x80) == 0)
-                {
-                *led_DIN &= ~led_DIN_mask;      // drop DIN
-                }
-            else
-                {
-                *led_DIN |= led_DIN_mask;       // raise DIN
-                }
-            data = data << 1;
-            *led_CLK |= led_CLK_mask;           // raise CLK
-            }   
-        *led_CS |= led_CS_mask;                         // raise CS
-        }
-        
-    blinkToggle++; 
-    if (blinkToggle > blinkOff)
-        blinkToggle = 0;
-    }
-
-#endif
-
-
-
 
 /// Internal rotation when we send a matrix
 GLOBAL uint8_t rotation = DIR_NONE;
@@ -1179,11 +1074,11 @@ void setRotation(uint8_t dir)
 
 // Sends an the matrix to the LED  [that is, matrix must be 8 bytes]
 // matrix2 can be NULL only if we're using the 8x8 screens
-#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_8x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK)
-void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
+#ifdef SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK
+// i2cAddress2 is ignored
+void sendMatrix(unsigned char* matrix, unsigned char* matrix2, uint8_t i2cAddress = I2C_ADDRESS_1, uint8_t i2cAddress2 = I2C_ADDRESS_2)
     {
     // rotate as necessary
-#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK)
     uint8_t mat[8];
     uint8_t mat2[8];
 
@@ -1199,13 +1094,8 @@ void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
         {
         memcpy(mat, matrix, 8);
         memcpy(mat2, matrix2, 8);
-#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK)
         rotateMatrix(mat, DIR_COUNTERCLOCKWISE_90);
         rotateMatrix(mat2, DIR_COUNTERCLOCKWISE_90);
-#else // SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK
-        rotateMatrix(mat, DIR_NONE);
-        rotateMatrix(mat2, DIR_NONE);
-#endif
         matrix2 = mat;  // note we're flipping them
         matrix = mat2;
         }
@@ -1213,31 +1103,11 @@ void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
         {
         memcpy(mat, matrix, 8);
         memcpy(mat2, matrix2, 8);
-#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK)
         rotateMatrix(mat, DIR_CLOCKWISE_90);
         rotateMatrix(mat2, DIR_CLOCKWISE_90);
-#else // SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK
-        rotateMatrix(mat, DIR_180);
-        rotateMatrix(mat2, DIR_180);
-#endif
-
-#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK)    // note we're NOT flipping them
         matrix = mat;  
         matrix2 = mat2;
-#else                                                                   // here we ARE flipping them
-        matrix2 = mat;  
-        matrix = mat2;
-#endif
         }
-#else
-    uint8_t mat[8];
-    if (rotation != DIR_NONE)
-        {
-        memcpy(mat, matrix, 8);
-        rotateMatrix(mat, rotation);
-        matrix = mat;
-        }       
-#endif
 
 #ifdef ROTATE_WHOLE_SCREEN
     // rotate the two matrices. We swapped them earlier. This results in a full rotation of the combined screen
@@ -1245,17 +1115,109 @@ void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
     rotateMatrix(matrix2, DIR_180);
 #endif ROTATE_WHOLE_SCREEN
 
-
-    Wire.beginTransmission(I2C_ADDRESS);
+    Wire.beginTransmission(i2cAddress);
     Wire.write(0);
 
-#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK)
     for (uint8_t i=0; i<8; i++) 
         {
         Wire.write(matrix2[i]);    
         Wire.write(matrix[i]);    
         }
-#else
+    Wire.endTransmissionNonblocking();  
+    blinkToggle++;
+    if (blinkToggle > blinkOff)
+        blinkToggle = 0;
+    }
+#endif SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK
+
+
+// Sends an the matrix to the LED  [that is, matrix must be 8 bytes]
+// matrix2 can be NULL only if we're using the 8x8 screens
+#ifdef SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK
+// i2cAddress2 is ignored
+void sendMatrix(unsigned char* matrix, unsigned char* matrix2, uint8_t i2cAddress = I2C_ADDRESS_1, uint8_t i2cAddress2 = I2C_ADDRESS_2)
+    {
+    // rotate as necessary
+    uint8_t mat[8];
+    uint8_t mat2[8];
+
+#ifdef ROTATE_WHOLE_SCREEN
+    // swap the two matrices. We'll rotate each one 180 later. This results in a full rotation of the combined screen
+    unsigned char* temp = matrix;
+    matrix = matrix2;
+    matrix2 = temp;
+#endif ROTATE_WHOLE_SCREEN
+
+    // the display of the matrices is rotated 90 degrees, so we need to tweak here
+    if (rotation >= DIR_180)  // rotate to 180 if we're DIR_180 or DIR_COUNTERCLOCKWISE_90, nothing else
+        {
+        memcpy(mat, matrix, 8);
+        memcpy(mat2, matrix2, 8);
+        rotateMatrix(mat, DIR_NONE);
+        rotateMatrix(mat2, DIR_NONE);
+        matrix2 = mat;  // note we're flipping them
+        matrix = mat2;
+        }
+    else    // other rotations are considered DIR_NONE
+        {
+        memcpy(mat, matrix, 8);
+        memcpy(mat2, matrix2, 8);
+        rotateMatrix(mat, DIR_180);
+        rotateMatrix(mat2, DIR_180);
+        matrix2 = mat;  
+        matrix = mat2;
+        }
+
+#ifdef ROTATE_WHOLE_SCREEN
+    // rotate the two matrices. We swapped them earlier. This results in a full rotation of the combined screen
+    rotateMatrix(matrix, DIR_180);
+    rotateMatrix(matrix2, DIR_180);
+#endif ROTATE_WHOLE_SCREEN
+
+    Wire.beginTransmission(i2cAddress);
+    Wire.write(0);
+
+    for (uint8_t i=0; i<8; i++) 
+        {
+        Wire.write(matrix2[i]);    
+        Wire.write(matrix[i]);    
+        }
+    Wire.endTransmissionNonblocking();  
+    blinkToggle++;
+    if (blinkToggle > blinkOff)
+        blinkToggle = 0;
+    }
+#endif SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK
+
+
+
+// Sends an the matrix to the LED  [that is, matrix must be 8 bytes]
+// matrix2 can be NULL only if we're using the 8x8 screens
+#ifdef SCREEN_TYPE_TWO_ADAFRUIT_8x8_BACKPACKS
+// i2cAddress2 is used for second backpack
+void sendMatrix(unsigned char* matrix, unsigned char* matrix2, uint8_t i2cAddress = I2C_ADDRESS_1, uint8_t i2cAddress2 = I2C_ADDRESS_2)
+    {
+    uint8_t mat[8];
+    if (rotation != DIR_NONE)
+        {
+        memcpy(mat, matrix, 8);
+        rotateMatrix(mat, rotation);
+        matrix = mat;
+
+        memcpy(mat, matrix2, 8);
+        rotateMatrix(mat, rotation);
+        matrix2 = mat;
+        }       
+
+#ifdef ROTATE_WHOLE_SCREEN
+    // rotate the two matrices. We swapped them earlier. This results in a full rotation of the combined screen
+    rotateMatrix(matrix, DIR_180);
+    rotateMatrix(matrix2, DIR_180);
+#endif ROTATE_WHOLE_SCREEN
+
+    Wire.beginTransmission(i2cAddress);
+    Wire.write(0);
+
     for (uint8_t i=0; i<8; i++) 
         {
         // A misfeature in the 8x8 display requires that we do a full left shift
@@ -1266,62 +1228,75 @@ void sendMatrix(unsigned char* matrix, unsigned char* matrix2)
         Wire.write(0);   
         Wire.write(matrix[i]); 
         }        
-#endif  // defined(SCREEN_TYPE_ADAFRUIT_8x8_BACKPACK)
     Wire.endTransmissionNonblocking();  
+
+    Wire.beginTransmission(i2cAddress2);
+    Wire.write(0);
+
+    for (uint8_t i=0; i<8; i++) 
+        {
+        // A misfeature in the 8x8 display requires that we do a full left shift
+        // of one bit
+        uint8_t c = matrix2[i];
+        c = (c << 7) | (c >> 1);
+
+        Wire.write(0);   
+        Wire.write(matrix2[i]); 
+        }        
+    Wire.endTransmissionNonblocking();  
+
     blinkToggle++;
     if (blinkToggle > blinkOff)
         blinkToggle = 0;
     }
+#endif SCREEN_TYPE_TWO_ADAFRUIT_8x8_BACKPACKS
 
-#endif
+
 
 // At present the KIT is about 3127 in 10000 ms
 // The backpack at 100KHz is 3624 in 10000 ms :-(
 // The backpack at 400KHz is 2828 in 10000ms
  
 // Initializes the LED.  Call this in setup()
-void initLED()
+void _initLED(uint8_t i2cAddress)
     {
-#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_8x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK)
     Wire.begin();
     // Make I2C go faster (by default it's 100Hz).  The screens can handle it.
     Wire.setClock(400000L);
     //TWBR = 12; // 400 khz
 
     // It appears that all of the below is critical to get the screen up and running
-    Wire.beginTransmission(I2C_ADDRESS);
+    Wire.beginTransmission(i2cAddress);
     Wire.write(0x21);  // Turn on the oscillator
     Wire.endTransmission();
-    Wire.beginTransmission(I2C_ADDRESS);
+    Wire.beginTransmission(i2cAddress);
     Wire.write(0x81);  // Turn on the screen and turn OFF blinking
     Wire.endTransmission();
-        
+    }
+
+void initLED()
+    {
+#ifdef TWO_SCREENS_VERTICAL
+#ifdef SCREEN_TYPE_TWO_ADAFRUIT_8x8_BACKPACKS
+    _initLED(I2C_ADDRESS_1);
+    _initLED(I2C_ADDRESS_2);
+    _initLED(I2C_ADDRESS_3);
+    _initLED(I2C_ADDRESS_4);
+#else
+    _initLED(I2C_ADDRESS_1);
+    _initLED(I2C_ADDRESS_3);
+#endif SCREEN_TYPE_TWO_ADAFRUIT_8x8_BACKPACKS
+#else
+#ifdef SCREEN_TYPE_TWO_ADAFRUIT_8x8_BACKPACKS
+    _initLED(I2C_ADDRESS_1);
+    _initLED(I2C_ADDRESS_2);
+#else
+#endif SCREEN_TYPE_TWO_ADAFRUIT_8x8_BACKPACKS
+    _initLED(I2C_ADDRESS_1);
+#endif TWO_SCREENS_VERTICAL
+
     // Let's be dimmer
     setScreenBrightness(1);
-#endif
-
-#ifdef SCREEN_TYPE_SPARKFUN_8x8_KIT
-    delay(50);
-    pinMode(PIN_LED_CLK,OUTPUT);
-    pinMode(PIN_LED_CS,OUTPUT);
-    pinMode(PIN_LED_DIN,OUTPUT);
- 
-    led_CLK_mask = digitalPinToBitMask(PIN_LED_CLK);
-    led_CS_mask = digitalPinToBitMask(PIN_LED_CS);
-    led_DIN_mask = digitalPinToBitMask(PIN_LED_DIN);
-
-
-    // PORTS
-    led_CLK = portOutputRegister(digitalPinToPort(PIN_LED_CLK));
-    led_CS = portOutputRegister(digitalPinToPort(PIN_LED_CS));
-    led_DIN = portOutputRegister(digitalPinToPort(PIN_LED_DIN));
-
-    sendByte(0x09, 0x00);       //decoding ：BCD
-    sendByte(0x0a, 0x03);       //brightness 
-    sendByte(0x0b, 0x07);       //scanlimit；8 LEDs
-    sendByte(0x0c, 0x01);       //power-down mode：0，normal mode：1
-    sendByte(0x0f, 0x00);       //test display：1；EOT，display：0
-#endif
     }
 
 
@@ -2003,6 +1978,7 @@ uint8_t getBufferLength() { return bufferLength; }
 
 void writeToMatrix(unsigned char* mat, int8_t _bufferPos)
     {
+    if (mat == NULL) return;
     int8_t len;
     int8_t offset = 0;
     if (_bufferPos >= 0)
@@ -2032,13 +2008,20 @@ void writeToMatrix(unsigned char* mat, int8_t _bufferPos)
 // SCROLLED     if displayed and incremented afterwards
 // SCROLL_DONE  if displayed and incremented afterwards, and we have completed
 //               the scroll and will next start a new scroll.
-uint8_t scrollBuffer(unsigned char* mat, unsigned char* mat2)
+uint8_t scrollBuffer(unsigned char* mat, unsigned char* mat2, unsigned char* mat3 = NULL, unsigned char* mat4 = NULL)
     {
     // bufferPos refers to the location of the buffer with respect to column zero
     // in the LEFT LED (mat2)
     
+//#ifdef TWO_SCREENS_VERTICAL
+//    writeToMatrix(mat4, bufferPos);
+//    writeToMatrix(mat3, bufferPos + LED_WIDTH);
+//    writeToMatrix(mat2, bufferPos + LED_WIDTH * 2);
+//    writeToMatrix(mat, bufferPos + LED_WIDTH * 3);
+//#else
     writeToMatrix(mat2, bufferPos);
     writeToMatrix(mat, bufferPos + LED_WIDTH);
+//#endif TWO_SCREENS_VERTICAL
         
     // Do we shift next time?
     if (scrollDelay < NO_SCROLLING)              // Maybe scroll
@@ -2064,6 +2047,11 @@ uint8_t scrollBuffer(unsigned char* mat, unsigned char* mat2)
     return SCROLLED;
     }
 
+
+uint8_t scrollBuffer(unsigned char* mat, unsigned char* mat2)
+    {
+    return scrollBuffer(mat, mat2, NULL, NULL);
+    }
 
 
 
@@ -2285,28 +2273,36 @@ void addToBuffer(const char* val, uint8_t extra) //  = 0)
 
 ///// SCREEN BRIGHTNESS
 
+void _setScreenBrightness(uint8_t brightness, uint8_t i2cAddress)
+    {
+    Wire.beginTransmission(i2cAddress);
+    Wire.write(LED_BRIGHTNESS_I2C | brightness);
+    Wire.endTransmissionNonblocking();  
+    }
+
 // Sets the screen brightness to a value between 0 (minimum) and 15 (maximum)
 // inclusive.
 void setScreenBrightness(uint8_t brightness)
     {
     if (brightness > 15) return;
-        
-#if defined(SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_8x8_BACKPACK) || defined(SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK)
-    Wire.beginTransmission(I2C_ADDRESS);
-    Wire.write(LED_BRIGHTNESS_I2C | brightness);
-    Wire.endTransmissionNonblocking();  
-#endif
+    
+#ifdef TWO_SCREENS_VERTICAL
+#ifdef SCREEN_TYPE_TWO_ADAFRUIT_8x8_BACKPACKS
+    _setScreenBrightness(brightness, I2C_ADDRESS_1);
+    _setScreenBrightness(brightness, I2C_ADDRESS_2);
+    _setScreenBrightness(brightness, I2C_ADDRESS_3);
+    _setScreenBrightness(brightness, I2C_ADDRESS_4);
+#else
+    _setScreenBrightness(brightness, I2C_ADDRESS_1);
+    _setScreenBrightness(brightness, I2C_ADDRESS_3);
+#endif SCREEN_TYPE_TWO_ADAFRUIT_8x8_BACKPACKS
+#else
+#ifdef SCREEN_TYPE_TWO_ADAFRUIT_8x8_BACKPACKS
+    _setScreenBrightness(brightness, I2C_ADDRESS_1);
+    _setScreenBrightness(brightness, I2C_ADDRESS_2);
+#else
+#endif SCREEN_TYPE_TWO_ADAFRUIT_8x8_BACKPACKS
+    _setScreenBrightness(brightness, I2C_ADDRESS_1);
+#endif TWO_SCREENS_VERTICAL
 
-#ifdef SCREEN_TYPE_SPARKFUN_8x8_KIT
-    sendByte(0x0a, brightness);       //brightness 
-#endif
- 
     }
-
-
-
-
-
-
-
-

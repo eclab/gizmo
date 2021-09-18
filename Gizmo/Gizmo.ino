@@ -24,6 +24,7 @@ void setPinsAndMasks(uint8_t pin, uint8_t mode, uint8_t &mask)
 void setup()
     {
     initLED();
+
     setBlinkOnOff(1, 4);   // as fast as we can go.  This is good because we're only redrawing every 32 ticks (about 100 times a second).  It's also faster than 999 BPM (our maximum).
 
     // Show the welcome message
@@ -191,7 +192,3 @@ void loop()
     }
   
 #endif // HEADLESS_RESET
-
-
-
-

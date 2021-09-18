@@ -248,7 +248,11 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
         {
         clearScreen();
         if (scrollMenu)
+//#ifdef TWO_SCREENS_VERTICAL
+//            scrollBuffer(led, led2, led3, led4);
+//#else
             scrollBuffer(led, led2);
+//#endif TWO_SCREENS_VERTICAL
         else 
             writeBuffer(led, led2);
         }    
@@ -1346,6 +1350,10 @@ void clearScreen()
     {
     clearMatrix(led);
     clearMatrix(led2);
+#ifdef TWO_SCREENS_VERTICAL
+    clearMatrix(led3);
+    clearMatrix(led4);
+#endif TWO_SCREENS_VERTICAL
     }
 
 

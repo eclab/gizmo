@@ -2551,15 +2551,43 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters)
     // this code is designed to allow the user to move down to about the middle of the screen,
     // at which point the cursor stays there and the screen scrolls instead.
     uint8_t firstTrack = local.drumSequencer.currentTrack;
+    uint8_t lastTrack = numTracks;          // lastTrack is 1+ the final track we'll be drawing
+
+#ifdef TWO_SCREENS_VERTICAL
+    uint8_t fourteenskip = 14 / skip;
+    if (numTracks <= fourteenskip)              // will all fit on one screen
+        firstTrack = 0;
+    else
+        {
+        if (!drawFooters) firstTrack = 0;
+        uint8_t eightskip =  8 / skip;
+        if (firstTrack <= eightskip)  
+            firstTrack = 0;
+        else firstTrack = firstTrack - eightskip;       //  + 1;   
+        lastTrack = bound(lastTrack, 0, firstTrack + fourteenskip);
+        if (lastTrack == numTracks)
+            {
+            if (lastTrack >= fourteenskip) 
+                firstTrack = lastTrack - fourteenskip;
+            }
+        }
+#else
     if (!drawFooters) firstTrack = 0;
     uint8_t fourskip =  4 / skip;
     if (firstTrack < fourskip)  
         firstTrack = 0;
     else firstTrack = firstTrack - fourskip + 1;
     
-    uint8_t lastTrack = numTracks;          // lastTrack is 1+ the final track we'll be drawing
     uint8_t sixskip = 6 / skip;
     lastTrack = bound(lastTrack, 0, firstTrack + sixskip);
+    if (lastTrack == numTracks)
+        {
+        if (lastTrack >= sixskip) 
+            firstTrack = lastTrack - sixskip;
+        }
+#endif
+
+
 
     // Now we start drawing each of the tracks.  We will make blinky lights for beats or for the cursor
     // and will have solid lights or nothing for the notes or their absence.
@@ -2567,7 +2595,11 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters)
 //    uint8_t playGroup = (local.drumSequencer.scheduleFill == DRUM_SEQUENCER_FILL_ON ?
 //            local.drumSequencer.fillGroup : local.drumSequencer.currentGroup);
 
-    uint8_t y = 7;
+#ifdef TWO_SCREENS_VERTICAL
+    uint8_t y = 15;
+#else
+    uint8_t y = 7;              // we can go negative if we have two vertical screens
+#endif TWO_SCREENS_VERTICAL
     for(uint8_t t = firstTrack; t < lastTrack; t++)  // for each track from top to bottom
         {
         // for each note in the track
@@ -2607,22 +2639,42 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters)
                         {
                         if (d < 8)
                             {
-                            drumSequencerBlinkOrSetPoint(led2, d, y, blink);
+#ifdef TWO_SCREENS_VERTICAL
+                            if (y > 7)
+                                drumSequencerBlinkOrSetPoint(led4, d, y - 8, blink);
+                            else
+#endif TWO_SCREENS_VERTICAL
+                                drumSequencerBlinkOrSetPoint(led2, d, y, blink);
                             }
                         else // < 16
                             {
-                            drumSequencerBlinkOrSetPoint(led, d-8, y, blink);
+#ifdef TWO_SCREENS_VERTICAL
+                            if (y > 7)
+                                drumSequencerBlinkOrSetPoint(led3, d-8, y - 8, blink);
+                            else
+#endif TWO_SCREENS_VERTICAL
+                                drumSequencerBlinkOrSetPoint(led, d-8, y, blink);
                             }
                         }
                     else
                         {
                         if (d < 24)
                             {
-                            drumSequencerBlinkOrSetPoint(led2, d-16, y-1, blink);
+#ifdef TWO_SCREENS_VERTICAL
+                            if (y > 7)
+                                drumSequencerBlinkOrSetPoint(led4, d-16, y-1 - 8, blink);
+                            else
+#endif TWO_SCREENS_VERTICAL
+                                drumSequencerBlinkOrSetPoint(led2, d-16, y-1, blink);
                             }
                         else  // < 32
                             {
-                            drumSequencerBlinkOrSetPoint(led, d-24, y-1, blink);
+#ifdef TWO_SCREENS_VERTICAL
+                            if (y > 7)
+                                drumSequencerBlinkOrSetPoint(led3, d-24, y-1 - 8, blink);
+                            else
+#endif TWO_SCREENS_VERTICAL
+                                drumSequencerBlinkOrSetPoint(led, d-24, y-1, blink);
                             }
                         }
                     }
@@ -2632,22 +2684,42 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters)
                         {
                         if (d < 40)
                             {
-                            drumSequencerBlinkOrSetPoint(led2, d - 32, y-2, blink);
+#ifdef TWO_SCREENS_VERTICAL
+                            if (y > 7)
+                                drumSequencerBlinkOrSetPoint(led4, d-32, y-2 - 8, blink);
+                            else
+#endif TWO_SCREENS_VERTICAL
+                                drumSequencerBlinkOrSetPoint(led2, d-32, y-2, blink);
                             }
                         else // < 48
                             {
-                            drumSequencerBlinkOrSetPoint(led, d-8 -32, y-2, blink);
+#ifdef TWO_SCREENS_VERTICAL
+                            if (y > 7)
+                                drumSequencerBlinkOrSetPoint(led3, d-40, y-2 - 8, blink);
+                            else
+#endif TWO_SCREENS_VERTICAL
+                                drumSequencerBlinkOrSetPoint(led, d-40, y-2, blink);
                             }
                         }
                     else
                         {
                         if (d < 56)
                             {
-                            drumSequencerBlinkOrSetPoint(led2, d-16 - 32, y-3, blink);
+#ifdef TWO_SCREENS_VERTICAL
+                            if (y > 7)
+                                drumSequencerBlinkOrSetPoint(led4, d-48, y-3 - 8, blink);
+                            else
+#endif TWO_SCREENS_VERTICAL
+                                drumSequencerBlinkOrSetPoint(led2, d-48, y-3, blink);
                             }
                         else  // < 64
                             {
-                            drumSequencerBlinkOrSetPoint(led, d-24 - 32, y-3, blink);
+#ifdef TWO_SCREENS_VERTICAL
+                            if (y > 7)
+                                drumSequencerBlinkOrSetPoint(led3, d-56, y-3 - 8, blink);
+                            else
+#endif TWO_SCREENS_VERTICAL
+                                drumSequencerBlinkOrSetPoint(led, d-56, y-3, blink);
                             }
                         }
                     }
@@ -3770,7 +3842,6 @@ void stateDrumSequencerPlay()
         if (octave >= 5)  // middle c and up
             {
             int8_t key = drumSequencerGetKey(octave, note + MIDDLE_C - options.drumSequencerControllerCenter);          // adjust using the keyboard center
-                        
             if (local.drumSequencer.currentEditPosition >= 0 && local.drumSequencer.currentEditPosition < len)
                 {
                 if (local.drumSequencer.drumRegion < 0)

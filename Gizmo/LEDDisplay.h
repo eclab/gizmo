@@ -27,17 +27,20 @@
 ///// WHAT TYPE OF SCREEN ARE WE USING?
 
 #define SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK
-// #define SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK
+//#define SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK
+//#define SCREEN_TYPE_TWO_ADAFRUIT_8x8_BACKPACKS
 
-// We no longer support the following two options, though we have some gunk in the cpp file
-// regarding them.
-//#define SCREEN_TYPE_ADAFRUIT_8x8_BACKPACK
-//#define SCREEN_TYPE_SPARKFUN_8x8_KIT
+
+
+
+///// Have we stacked two screens vertically?
+///// If defined, then I2C_ADDRESS_3 (and if two 8x8 backpacks used, I2C_ADDRESS_4) are the secondary screen (led3 and led4)
+//#define TWO_SCREENS_VERTICAL
 
 
 ///// SHOULD WE ROTATE THE ENTIRE 16x8 SCREEN 180 DEGREES?
 ///// (For example, the screen is installed upside down)
-#define ROTATE_WHOLE_SCREEN
+//#define ROTATE_WHOLE_SCREEN
 
 // SCROLLING DELAY
 #define NO_SCROLLING 65535                      // never scroll
@@ -49,13 +52,11 @@
 #define LED_HEIGHT 8
 
 
-/// LED Pins for the SparkFun 8x8 Kit
-#define PIN_LED_CLK 10  
-#define PIN_LED_CS 9
-#define PIN_LED_DIN 8
-
-
-
+//// These are the I2C address of the first and optional second LED Backpack
+#define I2C_ADDRESS_1    			((uint8_t) 0x70)
+#define I2C_ADDRESS_2     			((uint8_t) 0x71)
+#define I2C_ADDRESS_3     			((uint8_t) 0x72)	// original
+#define I2C_ADDRESS_4     			((uint8_t) 0x73)
 
 
 
@@ -246,7 +247,7 @@ extern const char PROGMEM font_8x5[
 
 
 // Initializes the LED.  Call this in setup()
-void initLED(void);
+void initLED();
 
 // Rotation Directions
 
@@ -262,7 +263,8 @@ void setRotation(uint8_t dir);
 
 // Sends one or more matrices to the LED
 // matrix2 can be NULL only if we're using the 8x8 screens
-void sendMatrix(unsigned char* matrix, unsigned char* matrix2);
+void sendMatrix(unsigned char* matrix, unsigned char* matrix2, uint8_t i2cAddress = I2C_ADDRESS_1, uint8_t i2cAddress2 = I2C_ADDRESS_2);
+
 
 // Rotates a matrix in the given direction.
 void rotateMatrix(unsigned char* in, uint8_t dir);
@@ -337,6 +339,7 @@ void writeShortNumber(unsigned char* mat1, int8_t val, uint8_t leftJustify);
 
 // Writes a number (-9999...19999) to two matrices.
 // The numbers are all written straight [though squished]
+// For historical reasons, mat1 is the one on the RIGHT, and mat2 is on the LEFT
 void writeNumber(unsigned char* mat1, unsigned char* mat2, int16_t val);
 
 // Writes a number (-9999...19999) as a string to the given buffer (which must be 6 in size)
@@ -369,6 +372,7 @@ void writeNote(unsigned char* mat, unsigned char note);
 void writeNotePitch(unsigned char* mat, unsigned char note);
 
 // Prints a note to one matrix and its octave to the other
+// For historical reasons, mat1 is the one on the RIGHT, and mat2 is on the LEFT
 void writeNotePitchLong(unsigned char* mat, unsigned char* mat2, unsigned char note);
 
 // Note speed values
@@ -413,7 +417,7 @@ void resetBuffer(uint8_t doFirstDelay);
 #define SCROLLED 2
 #define SCROLL_DONE 3
  
-// Writes the currently-displaying portion of the scroll to the two matrcies,
+// Writes the currently-displaying portion of the scroll to the four matrcies,
 // then if the scroll delay has counted down, prepares to scroll one column
 // next time.
 //
@@ -423,7 +427,11 @@ void resetBuffer(uint8_t doFirstDelay);
 // SCROLLED     if displayed and incremented afterwards
 // SCROLL_DONE  if displayed and incremented afterwards, and we have completed
 //               the scroll and will next start a new scroll.
-uint8_t scrollBuffer(unsigned char* mat, unsigned char* mat2);
+//
+// The positions of the matrices are:
+// MAT4 MAT3
+// MAT2 MAT1
+uint8_t scrollBuffer(unsigned char* mat, unsigned char* mat2, unsigned char* mat3 = NULL, unsigned char* mat4 = NULL );
 
 // Set the very *first* delay for which the scroll is written,
 // and the *default* delay used thereafter.
@@ -436,7 +444,9 @@ void setScrollDelays(uint16_t firstDelay, uint16_t defaultDelay);
 uint8_t getBufferLength();
 
 // Prints as much of the buffer as can be printed, left-justified, to the matrices
-// mat1 and mat2.
+// mat1 and mat2.  
+//
+// For historical reasons, mat1 is the one on the RIGHT, and mat2 is on the LEFT
 void writeBuffer(unsigned char* mat1, unsigned char* mat2);
 
 // Loads into the buffer the given string

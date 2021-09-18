@@ -467,6 +467,10 @@ void toggleBypass(uint8_t channel);
 extern uint8_t updateDisplay;                                   // indicates whether we should update the display
 extern unsigned char led[LED_WIDTH];
 extern unsigned char led2[LED_WIDTH];
+#ifdef TWO_SCREENS_VERTICAL
+extern unsigned char led3[LED_WIDTH];
+extern unsigned char led4[LED_WIDTH];
+#endif TWO_SCREENS_VERTICAL
 
 
 
