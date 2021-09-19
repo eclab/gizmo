@@ -40,7 +40,7 @@ void addGaugeNumber(uint16_t val)
 /// Writes a note pitch and velocity (or pressure value) to the screen.
 void writeGaugeNote()
     {
-    writeNotePitch(led2, (uint8_t) itemNumber);                           // Note
+    writeNotePitch(led2, (uint8_t) itemNumber);                   // Note
     writeShortNumber(led, (uint8_t) itemValue, false);            // Velocity or Pressure
     }
 
