@@ -120,6 +120,7 @@ struct _options
     uint8_t stepSequencerSendClock;
 	int8_t stepSequencerPlayAlongChannel;
 	uint8_t stepSequencerStop;
+	uint8_t stepSequencerShowNote;
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
 	uint8_t stepSequencerRestNote;
 	uint8_t stepSequencerTieNote;
@@ -139,6 +140,7 @@ struct _options
 	uint8_t drumSequencerLinearCurve;
 	uint8_t drumSequencerDisplayGroup;
 	uint8_t drumSequencerControllerCenter;
+//	uint8_t drumSequencerShowNote;
 #endif INCLUDE_DRUM_SEQUENCER
 
 #ifdef INCLUDE_RECORDER

@@ -2524,6 +2524,29 @@ uint8_t drumSequencerShouldMuteTrack(uint8_t track)
     }
 
 
+void drawDrumSequencerNotePitchAndVelocity(uint8_t trackLen)
+	{
+#ifdef TWO_SCREENS_VERTICAL
+	if (local.stepSequencer.currentEditPosition < 0) return;
+	int8_t pos = local.stepSequencer.currentEditPosition;
+	if (pos < 0)
+		pos = local.stepSequencer.currentPlayPosition;
+	uint8_t note = getNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, pos);
+	if (note)
+		{
+		writeNotePitch(led3, getNotePitch(local.drumSequencer.currentTrack));
+		writeShortNumber(led4, getNoteVelocity(local.drumSequencer.currentTrack), false);
+		}
+	else
+		{
+		// do nothing
+		}
+#else
+	// do nothing
+#endif TWO_SCREENS_VERTICAL
+	}
+
+
 // Draws the sequence with the given track length, number of tracks, and skip size
 void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters)
     {
@@ -2554,38 +2577,38 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters)
     uint8_t lastTrack = numTracks;          // lastTrack is 1+ the final track we'll be drawing
 
 #ifdef TWO_SCREENS_VERTICAL
-    uint8_t fourteenskip = 14 / skip;
-    if (numTracks <= fourteenskip)              // will all fit on one screen
-        firstTrack = 0;
-    else
-        {
-        if (!drawFooters) firstTrack = 0;
-        uint8_t eightskip =  8 / skip;
-        if (firstTrack <= eightskip)  
-            firstTrack = 0;
-        else firstTrack = firstTrack - eightskip;       //  + 1;   
-        lastTrack = bound(lastTrack, 0, firstTrack + fourteenskip);
-        if (lastTrack == numTracks)
-            {
-            if (lastTrack >= fourteenskip) 
-                firstTrack = lastTrack - fourteenskip;
-            }
-        }
+	uint8_t fourteenskip = 14 / skip;
+	if (numTracks <= fourteenskip)              // will all fit on one screen
+		firstTrack = 0;
+	else
+		{
+		if (!drawFooters) firstTrack = 0;
+		uint8_t eightskip =  8 / skip;
+		if (firstTrack <= eightskip)  
+			firstTrack = 0;
+		else firstTrack = firstTrack - eightskip;       //  + 1;   
+		lastTrack = bound(lastTrack, 0, firstTrack + fourteenskip);
+		if (lastTrack == numTracks)
+			{
+			if (lastTrack >= fourteenskip) 
+				firstTrack = lastTrack - fourteenskip;
+			}
+		}
 #else
-    if (!drawFooters) firstTrack = 0;
-    uint8_t fourskip =  4 / skip;
-    if (firstTrack < fourskip)  
-        firstTrack = 0;
-    else firstTrack = firstTrack - fourskip + 1;
-    
-    uint8_t sixskip = 6 / skip;
-    lastTrack = bound(lastTrack, 0, firstTrack + sixskip);
-    if (lastTrack == numTracks)
-        {
-        if (lastTrack >= sixskip) 
-            firstTrack = lastTrack - sixskip;
-        }
-#endif
+	if (!drawFooters) firstTrack = 0;
+	uint8_t fourskip =  4 / skip;
+	if (firstTrack < fourskip)  
+		firstTrack = 0;
+	else firstTrack = firstTrack - fourskip + 1;
+
+	uint8_t sixskip = 6 / skip;
+	lastTrack = bound(lastTrack, 0, firstTrack + sixskip);
+	if (lastTrack == numTracks)
+		{
+		if (lastTrack >= sixskip) 
+			firstTrack = lastTrack - sixskip;
+		}
+#endif TWO_SCREENS_VERTICAL
 
 
 
@@ -2596,7 +2619,7 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters)
 //            local.drumSequencer.fillGroup : local.drumSequencer.currentGroup);
 
 #ifdef TWO_SCREENS_VERTICAL
-    uint8_t y = 15;
+	uint8_t y = 15;
 #else
     uint8_t y = 7;              // we can go negative if we have two vertical screens
 #endif TWO_SCREENS_VERTICAL

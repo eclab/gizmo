@@ -35,7 +35,7 @@
 
 ///// Have we stacked two screens vertically?
 ///// If defined, then I2C_ADDRESS_3 (and if two 8x8 backpacks used, I2C_ADDRESS_4) are the secondary screen (led3 and led4)
-//#define TWO_SCREENS_VERTICAL
+#define TWO_SCREENS_VERTICAL
 
 
 ///// SHOULD WE ROTATE THE ENTIRE 16x8 SCREEN 180 DEGREES?
@@ -54,8 +54,8 @@
 
 //// These are the I2C address of the first and optional second LED Backpack
 #define I2C_ADDRESS_1    			((uint8_t) 0x70)
-#define I2C_ADDRESS_2     			((uint8_t) 0x71)
-#define I2C_ADDRESS_3     			((uint8_t) 0x72)	// original
+#define I2C_ADDRESS_2     			((uint8_t) 0x72)
+#define I2C_ADDRESS_3     			((uint8_t) 0x71)
 #define I2C_ADDRESS_4     			((uint8_t) 0x73)
 
 

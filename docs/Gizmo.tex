@@ -19,6 +19,7 @@
 \usepackage[svgnames]{xcolor}
 \usepackage[hyperfootnotes=false,linktocpage=true,linkbordercolor={0.5 0 0}]{hyperref}
 \usepackage{accsupp}
+\usepackage{soul}
 \hypersetup{
     colorlinks,
     linkcolor={red!50!black},
@@ -122,7 +123,7 @@ Gizmo applications can also be set with a {\it note value} (or {\it note speed})
 
 Attach the four wires for SDA, SCL, 5V (VCC), and GND between the MIDI Shield and the LED Matrix.  On the Mega, these four connections are particularly easy to make: SDA has a dedicated port (20), as does SCL (21), and there are exposed 5V and GND ports in the corners: none of these covered by the SparkFun MIDI Shield and are easily accessed.
 
-You may need to change the I2C address that Gizmo uses to send messages to your backpack.  See a little ways below for information on that.  But first some discussion on backpack options:
+You may need to change the I2C address that Gizmo uses to send messages to your backpack.  See the paragraph ``Customizing the Screen I2C Address`` below for information on that.  But first some discussion on backpack options:
 
 \paragraph{Using the FeatherWing 8x16 Backpack} Instead of the AdaFruit 16x8 LED Matrix, some people have lately been using Adafruit's ``8x16 FeatherWing Backpack''\footnote{https:/\!/www.adafruit.com/product/3152}for their LED display.   This device rotates the LED matrices, so you'll need to account for that so Gizmo can rotate them back.  In the Gizmo file \texttt{LEDDisplay.h}, change the lines:
 
@@ -157,8 +158,7 @@ to
 #define SCREEN_TYPE_TWO_ADAFRUIT_8x8_BACKPACKS
 \end{verbatim}
 
-\paragraph{Stacking Screens Vertically} It's possible to add an additional 16x8 screen vertically, forming a 16x16 square.  At present the only applications which take advantage of this are the Drum Sequencer and the Step Sequencer, which will lay out their tracks using the 16x16 space.  Otherwise (for now) all other operations will use the bottom LED screen, leaving the other one blank.  
-
+\paragraph{Stacking Screens Vertically} It's possible to add an additional 16x8 screen vertically, forming a 16x16 square.  At present the only applications which take advantage of this are the Drum Sequencer and the Step Sequencer, which will lay out their tracks using the 16x16 space.  Otherwise (for now) all other operations will use the bottom LED screen, leaving the other one blank. 
 This is going to be slower than a single 16x8 Matrix Backpack because Gizmo must send two I2C commands each screen refresh, which will worsen MIDI timing. If you would like to try this out, in the Gizmo file \texttt{LEDDisplay.h}, change the lines:
 
 
@@ -172,15 +172,16 @@ to
 #define TWO_SCREENS_VERTICAL
 \end{verbatim}
 
-You can in fact use for 8x8 backpacks as a square, but I would not recommend it: too many calls to I2C.
+You can in fact use for 8x8 backpacks as a square, but I would not recommend it: too many calls to I2C.   {\color{red}\bf Warning:} LED screens draw significant current. Doubling the screens will potentially double the current draw on the Arduino's regulator.  You may want to run the screens at a lower brightness. I've not had any problems (and the regulator does not get warm) running for long periods of time with my customary brightness of 4 on a Mega.
+
 
 \paragraph{Customizing the Screen I2C Address}  The four I2C addresses potentially used by the screen are found in the Gizmo file \texttt{LEDDisplay.h}, and are by default:
 
 \begin{verbatim}
-#define I2C_ADDRESS_1    			((uint8_t) 0x70)
-#define I2C_ADDRESS_2     			((uint8_t) 0x72)
-#define I2C_ADDRESS_3     			((uint8_t) 0x71)	
-#define I2C_ADDRESS_4     			((uint8_t) 0x73)
+#define I2C_ADDRESS_1        ((uint8_t) 0x70)
+#define I2C_ADDRESS_2        ((uint8_t) 0x72)
+#define I2C_ADDRESS_3        ((uint8_t) 0x71)	
+#define I2C_ADDRESS_4        ((uint8_t) 0x73)
 \end{verbatim}
 
 \begin{itemize}
@@ -206,7 +207,7 @@ to
 
 
 
-\item {\bf Modify your Arduino Software}\quad It used to be that you had to perform surgery on your Arduino software to modify the Wire library.  This is no longer required: Gizmo now has its own copies of modified versions of the Wire library.
+\item {\bf \st{Modify your Arduino Software}}\quad It used to be that you had to perform surgery on your Arduino software to modify the Wire library.  This is no longer required: Gizmo now has its own copies of modified versions of the Wire library.
 
 \ignore{
 \item {\bf Modify your Arduino Software}\quad You will need a pretty recent version of the Arduino software, as newer versions have better compilers which compile more compact code.  I developed Gizmo on Arduino 1.6.12 for MacOS X.  You will want to modify the source code files for the Arduino libraries in two spots:
@@ -264,7 +265,7 @@ Again, be warned that certain recent versions of the Arduino software may have t
 \texttt{https:/\!/github.com/eclab/gizmo/}\quad or download a \texttt{.zip} file at\\
 \texttt{https:/\!/github.com/eclab/gizmo/archive/master.zip}
 
-\item {\bf Install the FortySevenEffects MIDI Library}\quad But not straight off of its website.\footnote{https:/\!/github.com/FortySevenEffects/arduino\_midi\_library}  The MIDI library is in a state of flux and is having major additions being made.  The Gizmo code is extremely sensitive to code size.  Thus for now, use the version I include in Gizmo's Github repository.
+\item {\bf Install the FortySevenEffects MIDI Library}\quad But not straight off of its website.\footnote{https:/\!/github.com/FortySevenEffects/arduino\_midi\_library}  The MIDI library is in a state of flux and is having major additions being made.  The Gizmo code is extremely sensitive to code size.  Thus for now, use the version I include in Gizmo's Github repository (called {\tt GizmoMIDI}).
 
 \item {\bf Install the SoftReset Library}\quad A copy of it is in Gizmo's Github repository.
 
@@ -343,7 +344,7 @@ Gizmo will then show the {\bf root menu}.  Use the left potentiometer to scroll 
 
 \subsection{Starting Gizmo Headless}
 
-Gizmo normally targets the SparkFun MIDI Shield, but you might be able to use its code with some other MIDI shield, as long as the shield just intercepts Serial to do its MIDI and doesn't interfere with I2C.  Such MIDI shields are unlikely to have the button, pots, or LEDs that the SparkFun shield has.  But that's okay, you can add those things yourself.  
+Gizmo normally targets the SparkFun MIDI Shield, but you might be able to use its code with some other MIDI shield, as long as the shield just intercepts Serial to do its MIDI and doesn't interfere with I2C.\footnote{I have heard Gizmo user reports suggesting that you avoid the LinkSprite Midi Shield, as it has a tendency to fry your Arduino.}  Such MIDI shields are unlikely to have the button, pots, or LEDs that the SparkFun shield has.  But that's okay, you can add those things yourself.  
 
 Or you could just control the buttons and pots virtually via NRPN, and just do without the two LEDs.  To do this you'll need some way to clear Gizmo's options and files without needing to press any buttons (as you won't have any).  You can do it like this:
 
@@ -845,10 +846,10 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 \item {\bf Solo} (or {\bf No Solo})\quad This plays only the current track, muting the others.  It has no effect in Mono/Duo.
 \item {\bf Reset Track}\quad This wipes out and resets the track.  Unlike Long-Pressing the Middle Button while in Play Position mode, this doesn't just clear the track: it also resets all of its settings to their defaults.
 \item {\bf Note Length (Track)}\quad This specifies the note length of notes in the track, as a percentage (0 is fully staccato and 100 is fully legato).   You can choose numerical values, or choose \texttt{DFLT}, which tells the Step Sequencer to use the default note length specified in the Options menu (see Section \ref{options}).
-\item {\bf Out MIDI (Track)}\quad This specifies the MIDI Out Channel for notes in the track,    You can choose a value 1...16, or \texttt{- - - -} ({\it none}), or \texttt{DFLT}, which tells the Step Sequencer to use the default MIDI Out Channel specified in the Options menu (see Section \ref{options}).
-\item {\bf Velocity (Track)}\quad This lets you specify a key velocity\footnote{By velocity we mean in the MIDI sense: how fast the key is struck; this basically translates to loudness.} that {\it all} notes in the track will use (as a value 1...127).  If you would instead prefer that each note in the track use its own independent key velocity as you had entered them, you can choose {\it none}.
+\item {\bf Out MIDI (Track)}\quad This specifies the MIDI Out Channel for notes in the track,    You can choose a value 1...16, or \texttt{- - - -} ({\it none}), or \texttt{DFLT}, which tells the Step Sequencer to use the default MIDI Out Channel specified in the Options menu (see Section \ref{options}).  By default, track 1 is set to \texttt{DFLT}, track 2 is set to 2, track 3 is set to 3, and so on.  In Mono/Duo mode, all the tracks are by default set to \texttt{DFLT}.
+\item {\bf Velocity (Track)}\quad This lets you specify a key velocity\footnote{By velocity we mean in the MIDI sense: how fast the key is struck; this basically translates to loudness.} that {\it all} notes in the track will use (as a value 1...127).  If you would instead prefer that each note in the track use its own independent key velocity as you had entered them, you can choose {\it none}.  
 \item {\bf Fader (Track)}\quad This lets you specify a volume modifier which is multiplied against the velocities of the notes in the track.  Possible values are 0...31, where 0 completely hushes the notes, 16 lets them play at their specified velocities, and 31 is roughly twice their velocity.  8 is one half-velocity, 4 is one quarter velocity, and so on.  In general, values larger than or smaller than 16 will make the notes louder or quieter respectively.
-\item {\bf Type (Track)} {\it (Advanced Step Sequencer Only)}\quad Lets you specify the type of data stored in this track.  See discussion of {\bf Edit Mode} above.
+\item {\bf Type (Track)} {\it (Advanced Step Sequencer Only)}\quad Lets you specify the type of data stored in this track.  See {\bf Sequencing Data} discussion earlier.
 \item {\bf Pattern} {\it (Non-Mono/Duo only)}\quad Lets you specify the four-bar pattern for this track in this group.  Your options are: \texttt{OOOO, O-O-, -O-O, OOO-, ---O, O--O, -OO-, OO--, --OO, OO-O, --O-, R1/8, R1/4, R1/2, ---X,} or\ \ {\tt XXXX}.  An {\tt O} indicates that the track will be played, and a {\tt -} indicates that it will be hushed.  The {\tt O} patterns are in pairs so you can swap the track being played with some other track.  The three patterns which start with {\tt R} hush at random each bar: the fraction indicates the probability that the track will be hushed.  An {\tt X} indicates {\it exclusive random:} if multiple tracks are designated as {\tt X} for a given bar, then exactly one of them will be played then (the others will be hushed).   {\tt ---X} is exclusive random for the fourth bar only and hushed otherwise; this makes possible random fills, and would be useful with {\tt OOO-}.   If only one track is {\tt X}, it's always played.  If two tracks are {\tt X}, they alternate.  Otherwise Gizmo tries to select a different track each time.
 
 \item {\bf Repeats} {\it (Mono/Duo only)}\quad Lets you specify how many times a track will repeat in Performance Mode before going on to the next track: you can also mark a track as the End of a sequence.  Your options are {\tt LOOP}, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 15, 24, 32, 64, or {\tt END}.
@@ -870,6 +871,8 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 \item {\bf Tie Note} {\it (Advanced Step Sequencer Only)}\quad This selects a {\it tie note}, a key of your choice which, when pressed, enters a tie rather than a note.  If when selecting a tie note you instead press the Select button, this removes any tie note. 
 
 \item {\bf Length}\quad  Lets you set the length of the sequence to a custom value, or to \texttt{- - - -}, meaning to use the default initialized sequence length (16, 24, 32, 48, 64, or 96).  If the initialized length is 16, 24, or 32, then you can customize the length to anything less than it.  If the initialized length is 48, 64, or 96, then you can reduce the length to no less than 31 fewer notes.
+
+\item {\bf Show Note}  (or {\bf No Show Note})\quad  Toggles whether the upper of two vertically stacked 16x8 LEDs displays the value of the note at the edit cursor; or if it is just used for extra track display space.  In the former case, notes are shown with pitch/octave and velocity, and ties are shown with \texttt{TIE}.  Data tracks also show their respective data values.  This menu has no effect at all if you only have one LED screen.
 
 \item {\bf Performance}\quad  This brings up the Performance Mode sub-menu.  You can select these menu items from any mode (not just Performance Mode), but they will only impact on Performance Mode:
 
@@ -917,9 +920,9 @@ Of particular use are Tempo, Note Speed, Swing, and especially Click.
 \hline\\[-0.5em]
 Back Button				& Exit  & Exit & Leave Performance Mode\\
 Back Button (Long)			& Toggle Bypass & Toggle Bypass & Toggle Bypass\\
-Middle Button				& Rest & Toggle Mute Track & Schedule Mute Track\\
+Middle Button				& Rest/Enter Data & Toggle Mute Track & Schedule Mute Track\\
 {\it Mono/Duo}&&Next Track&Schedule Next Track/Unschedule Track\\
-Middle Button (Long)			& Tie & Clear Track & Schedule Solo\\
+Middle Button (Long)			& Tie/Clear Data & Clear Track & Schedule Solo\\
 {\it Mono/Duo}&&&Schedule Track\\
 Select Button				& Start/Stop & Start/Stop & Start/Schedule Stop/Stop\\
 Select Button (Long)			& Menu & Menu & Menu\\
@@ -1509,6 +1512,8 @@ Again: don't remember which group is which?  If you long-press the Middle Button
 \item {\bf Save} \quad This saves the sequence. You then choose the slot to save in.  Slots are displayed by number, plus an \texttt{S} (for Save), plus optionally an \texttt{R} or \texttt{S} or \texttt{D} (for Recorder or Step Sequencer or Drum Sequencer) if the slot is already used by that application.  This letter {\bf blinks} if the file isn't the type of your current application to warn you that you will be overwriting the other application's slot.
 
 \item {\bf Center} \quad This lets you choose a different C, other than middle C, as the base note for keyboard control of the Drum Sequencer.  If you select a note other than C, you'll be told {\tt CANT}.
+
+%\item {\bf Show Note}  (or {\bf No Show Note})\quad  Toggles whether the upper of two vertically stacked 16x8 LED screens is dedicated to displaying the value of the note at the cursor; or if its is just used for extra track display space.  In the former case, notes are shown with the note pitch/octave and velocity (1...8).  This menu has no effect at all if you only have one LED screen.
 
 \item {\bf Options} \quad This brings up the Options menu, which enables you to do...
 \end{itemize}
@@ -2303,7 +2308,7 @@ Initially the transfer mode will display \texttt{-~-~-~-} indicating that nothin
 
 After either sending or receiving a sysex dump, Gizmo will display an ever-increasing integer.  The value of this integer means absolutely nothing: it exists so that when it changes you can tell that something was just successfully received or sent.  If Gizmo receives a bad sysex dump, it will display \texttt{FAIL}.
 
-Gizmo's sysex dump format is simple.  Bytes 0--6 are as follows:\quad\texttt{0xF0 0x7D 'G' 'I' 'Z' 'M' 'O'}.\quad  Byte 7 is the version number (presently \texttt{0x00}). Byte 8 is the sysex type (\texttt{0x00} for slots, \texttt{0x01} for arpeggios).  Next, Gizmo provides a memory dump of the bytes forming a single slot or arp structure (\texttt{struct~{\textunderscore}slot} or \texttt{struct~{\textunderscore}arp} in Gizmo's code).  Each byte in this memory dump is nybblized into two bytes in the sysex stream: that is the high 4 bits of the byte are sent first, followed by the low 4 bits.  For example, if a memory byte was binary 01101001, then the sysex would contain the two bytes 0000{\bf 0110} and 0000{\bf 1001} in that order.  Next, Gizmo has a checksum, which is simply the low 7 bits of the sum of all the nybbles.  Finally comes \texttt{0xF7}.   This structure is not really meant to be parsed, though a cursory reading of the Gizmo code should make it clear what the memory bytes mean.
+Gizmo's sysex dump format is simple.  Bytes 0--6 are as follows:\quad\texttt{0xF0 0x7D 'G' 'I' 'Z' 'M' 'O'}.\quad  Byte 7 is the version number (presently \texttt{0x00}). Byte 8 is the sysex type (\texttt{0x00} for slots, \texttt{0x01} for arpeggios).  Next, Gizmo provides a memory dump of the bytes forming a single slot or arp structure (\texttt{struct~{\textunderscore}slot} or \texttt{struct~{\textunderscore}arp} in Gizmo's code).  Each byte in this memory dump is nybblized into two bytes in the sysex stream: that is the high 4 bits of the byte are sent first, followed by the low 4 bits.  For example, if a memory byte was binary {\bf 0110\ 1001}, then the sysex would contain the two bytes 0000\ {\bf 0110} and 0000\ {\bf 1001} in that order.  Next, Gizmo has a checksum, which is simply the low 7 bits of the sum of all the nybbles.  Finally comes \texttt{0xF7}.   This structure is not really meant to be parsed, though a cursory reading of the Gizmo code should make it clear what the memory bytes mean.
 
 \paragraph{Installation Note} The Sysex facility is not enabled by default, because in order to use it you also need to make a small modification to the MIDI library.  You can't use the Sysex facility on the Uno because there's not enough RAM.  See the {\tt All.h} file for installation instructions.
 

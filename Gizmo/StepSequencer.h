@@ -189,6 +189,20 @@
 // such as the Arp 2600.  
 
 
+// ABOUT DATA TRACKS
+// Tracks can contain data changes, such as CC or Pitch Bend.
+// The DATA VALUE is stored as (data.slot.data.stepSequencer.buffer[pos] << 7 | data.slot.data.stepSequencer.buffer[pos + 1]).
+// The DATA TYPE is stored in local.stepSequencer.data[track].  If the DATA TYPE is STEP_SEQUENCER_DATA_NOTE
+// then there is no special data, it's just note information.
+//
+// If the DATA VALUE is CONTROL_VALUE_EMPTY (16383), this is interpreted as "no data stored" -- no changes is made when "playing" this slot.
+// This means that it's not possible to have a value of 16383 for 
+// NRPN, RPN, or 14-bit CC, nor is it possible to have a value of +8191 for PITCHBEND.
+//
+// The MOST RECENT VALUE of (non-note) data, if any, is stored as local.stepSequencer.lastControlValue[track].
+// When the user presses the middle button, this data is loaded into the buffer.  When the user long-presses
+// the middle button, the buffer slot is set to 0 (cleared).
+
 
 // Sequences may have no more than 12 tracks, but can have fewer depending on format
 #define MAX_STEP_SEQUENCER_TRACKS 12

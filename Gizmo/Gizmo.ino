@@ -28,16 +28,23 @@ void setup()
     setBlinkOnOff(1, 4);   // as fast as we can go.  This is good because we're only redrawing every 32 ticks (about 100 times a second).  It's also faster than 999 BPM (our maximum).
 
     // Show the welcome message
+    clearScreen();
     write8x5Glyph(led2, GLYPH_8x5_GIZMO_PT1);
     write8x5Glyph(led, GLYPH_8x5_GIZMO_PT2);
     sendMatrix(led, led2);
-    delay(2000);
+#ifdef TWO_SCREENS_VERTICAL
+    sendMatrix(led3, led4, I2C_ADDRESS_3, I2C_ADDRESS_4);
+#endif TWO_SCREENS_VERTICAL
+  delay(2000);
 
     // reset and display it
     fullReset();
     clearScreen();
     write3x5Glyphs(GLYPH_SYSTEM_RESET);
     sendMatrix(led, led2);
+#ifdef TWO_SCREENS_VERTICAL
+    sendMatrix(led3, led4, I2C_ADDRESS_3, I2C_ADDRESS_4);
+#endif TWO_SCREENS_VERTICAL
     }
 
 void loop()
@@ -112,9 +119,13 @@ void setup()
     loadOptions();
 
     // Show the welcome message
+    clearScreen();
     write8x5Glyph(led2, GLYPH_8x5_GIZMO_PT1);
     write8x5Glyph(led, GLYPH_8x5_GIZMO_PT2);
     sendMatrix(led, led2);
+#ifdef TWO_SCREENS_VERTICAL
+    sendMatrix(led3, led4, I2C_ADDRESS_3, I2C_ADDRESS_4);
+#endif TWO_SCREENS_VERTICAL
     delay(2000);
 
     // Reset the menu delay

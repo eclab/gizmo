@@ -655,7 +655,7 @@ void resetTrack(uint8_t track)
         }
 #else   
     local.stepSequencer.pattern[track] = STEP_SEQUENCER_PATTERN_ALL;
-    local.stepSequencer.outMIDI[track] = MIDI_OUT_DEFAULT;  // default
+    local.stepSequencer.outMIDI[track] = (track == 0 ? MIDI_OUT_DEFAULT : track + 1);
 #endif INCLUDE_ADVANCED_STEP_SEQUENCER
 
     local.stepSequencer.transposable[track] = 1;
@@ -689,7 +689,83 @@ uint8_t shouldMuteTrack(uint8_t track)
         (!solo && muted);
     }
 
-// Drgkaws the sequence with the given track length, number of tracks, and skip size
+
+void drawStepSequencerNotePitchAndVelocity(uint8_t trackLen)
+	{
+#ifdef TWO_SCREENS_VERTICAL
+	uint16_t pos = ((uint16_t)trackLen) * local.stepSequencer.currentTrack;
+	if (local.stepSequencer.currentEditPosition >= 0)
+		{
+		pos = pos + local.stepSequencer.currentEditPosition;
+		}
+	else
+		{
+		pos = pos + local.stepSequencer.currentPlayPosition;
+		}
+	uint8_t note = data.slot.data.stepSequencer.buffer[pos * 2];
+	uint8_t velocity = data.slot.data.stepSequencer.buffer[pos * 2 + 1];
+	uint8_t type = local.stepSequencer.data[local.stepSequencer.currentTrack];
+	if (type == STEP_SEQUENCER_DATA_NOTE)
+		{
+		if (velocity == 0)
+			{
+			if (note > 0)	// it's a tie
+				{
+				write3x5Glyph(led4, GLYPH_3x5_T, 0);
+				write3x5Glyph(led4, GLYPH_3x5_I, 4);
+				write3x5Glyph(led3, GLYPH_3x5_E, 0);
+				}
+			else			// it's a rest
+				{
+				// do nothing
+				}
+			}
+		else 
+			{
+			writeNotePitch(led4, note);
+			writeShortNumber(led3, velocity, false);
+			}
+		}
+	else if ((note << 7 | velocity) == CONTROL_VALUE_EMPTY)		// it's an empty data value
+		{
+		// write nothing
+		}
+	else if (type == STEP_SEQUENCER_DATA_CC)
+		{
+		writeShortNumber(led3, note - 1, false);
+		write3x5Glyph(led4, GLYPH_3x5_C, 0);
+		write3x5Glyph(led4, GLYPH_3x5_C, 4);
+		}
+	else if (type == STEP_SEQUENCER_DATA_14_BIT_CC || type == STEP_SEQUENCER_DATA_NRPN || type == STEP_SEQUENCER_DATA_RPN)
+		{
+	 	writeNumber(led3, led4, (note << 7) | velocity);
+		}
+	else if (type == STEP_SEQUENCER_DATA_PC)
+		{
+		writeShortNumber(led3, note - 1, false);
+		write3x5Glyph(led4, GLYPH_3x5_P, 0);
+		write3x5Glyph(led4, GLYPH_3x5_C, 4);
+		}
+	else if (type == STEP_SEQUENCER_DATA_BEND)
+		{
+	 	writeNumber(led3, led4, ((int16_t)((note << 7) | velocity)) - 8192);
+		}
+	else if (type == STEP_SEQUENCER_DATA_AFTERTOUCH)
+		{
+		writeShortNumber(led3, note - 1, false);
+		write3x5Glyph(led4, GLYPH_3x5_A, 0);
+		write3x5Glyph(led4, GLYPH_3x5_T, 4);
+		}
+	else	// uh...
+		{
+		// do nothing
+		}
+#else
+	// do nothing
+#endif TWO_SCREENS_VERTICAL
+	}
+
+// Draws the sequence with the given track length, number of tracks, and skip size
 void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
     {
     // this little function correctly maps:
@@ -709,8 +785,18 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
     uint8_t lastTrack = numTracks;          // lastTrack is 1+ the final track we'll be drawing
     
 #ifdef TWO_SCREENS_VERTICAL
-    firstTrack = 0;                         // there is always enough space to fit the entire sequence on screen
-#else
+	if (options.stepSequencerShowNote)
+		{
+		// draw the top screen
+		drawStepSequencerNotePitchAndVelocity(trackLen);
+		}
+		
+	if (!options.stepSequencerShowNote)
+		{
+	    firstTrack = 0;                         // there is always enough space to fit the entire sequence on screen
+	    }
+	else
+#endif TWO_SCREENS_VERTICAL
     if (fullLen == 96)
         {
         // handle 96 specially since it takes up the whole screen
@@ -732,13 +818,16 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
                 firstTrack = lastTrack - sixskip;
             }
         }
-#endif TWO_SCREENS_VERTICAL
 
     // Now we start drawing each of the tracks.  We will make blinky lights for beats or for the cursor
     // and will have solid lights or nothing for the notes or their absence.
         
 #ifdef TWO_SCREENS_VERTICAL
     uint8_t y = 15;
+    if (options.stepSequencerShowNote)
+    	{
+    	y = 7;
+    	}
 #else
     uint8_t y = 7;              // we can go negative if we have two vertical screens
 #endif TWO_SCREENS_VERTICAL
@@ -791,7 +880,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
                 uint8_t isled2 = (((d >> 3) & 0x1) == 0x0);             // (d / 8) is even
                 uint8_t pointy = y - (d >> 4);                    // (y - (d / 16)
 #ifdef TWO_SCREENS_VERTICAL
-                if (pointy > 7)
+                if (pointy > 7 && !options.stepSequencerShowNote)
                     {
                     blinkOrSetPoint(isled2 ? led4 : led3, pointx, pointy - 8, blink);
                     }
@@ -1651,7 +1740,6 @@ void stateStepSequencerPlay()
         }
     else if (newItem && (itemType == MIDI_PITCH_BEND))
         {
-
 // Pitch Bend is entered into non-note tracks
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
         if (local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_BEND)
@@ -1720,7 +1808,6 @@ void stateStepSequencerPlay()
         }
     else if (newItem && (itemType == MIDI_RPN_14_BIT))
         {
-
 // RPN is entered into non-note tracks
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
         if (local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_RPN &&
@@ -2014,10 +2101,11 @@ void stateStepSequencerPlay()
 #define STEP_SEQUENCER_MENU_NO_ECHO 10
 #define STEP_SEQUENCER_MENU_REST 11
 #define STEP_SEQUENCER_MENU_TIE 12
-#define STEP_SEQUENCER_MENU_LENGTH 13
-#define STEP_SEQUENCER_MENU_PERFORMANCE 14
-#define STEP_SEQUENCER_MENU_SAVE 15
-#define STEP_SEQUENCER_MENU_OPTIONS 16
+#define STEP_SEQUENCER_MENU_SHOW_NOTE 13
+#define STEP_SEQUENCER_MENU_LENGTH 14
+#define STEP_SEQUENCER_MENU_PERFORMANCE 15
+#define STEP_SEQUENCER_MENU_SAVE 16
+#define STEP_SEQUENCER_MENU_OPTIONS 17
 
 #else
 
@@ -2050,7 +2138,7 @@ void stateStepSequencerMenu()
     
 // Advanced step sequencer has two more menu options: type (note, non-note) and rest notes
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
-    const char* menuItems[17] = {    
+    const char* menuItems[18] = {    
         (local.stepSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),
         PSTR("RESET TRACK"),
         PSTR("NOTE LENGTH (TRACK)"),
@@ -2064,12 +2152,13 @@ void stateStepSequencerMenu()
         options.stepSequencerNoEcho ? PSTR("ECHO") : PSTR("NO ECHO"), 
         PSTR("REST NOTE"),
         PSTR("TIE NOTE"),
+        options.stepSequencerShowNote ? PSTR("NO SHOW NOTE") : PSTR("SHOW NOTE"),
         PSTR("LENGTH"),
         PSTR("PERFORMANCE"),
         PSTR("SAVE"), 
         options_p 
         };
-    result = doMenuDisplay(menuItems, 17, STATE_NONE, STATE_NONE, 1);
+    result = doMenuDisplay(menuItems, 18, STATE_NONE, STATE_NONE, 1);
 #else
     const char* menuItems[13] = {    
         (local.stepSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),
@@ -2177,6 +2266,12 @@ void stateStepSequencerMenu()
                 case STEP_SEQUENCER_MENU_TIE:
                     {
                     goDownState(STATE_STEP_SEQUENCER_MENU_TIE);
+                    }
+                break;
+                case STEP_SEQUENCER_MENU_SHOW_NOTE:
+                    {
+                    options.stepSequencerShowNote = !options.stepSequencerShowNote;
+                    saveOptions();
                     }
                 break;
 #endif INCLUDE_ADVANCED_STEP_SEQUENCER
