@@ -24,6 +24,7 @@ void resetRecorder()
     local.recorder.currentPos = 0;
     local.recorder.bufferPos = 0;
     local.recorder.iterations = 0;
+	local.recorder.lastNote = RECORDER_NO_NOTE;
     }
         
 
@@ -111,6 +112,8 @@ void stateRecorderPlay()
             data.slot.data.recorder.length = 0;
             local.recorder.numNotes = 0;
             }
+            
+		local.recorder.lastNote = RECORDER_NO_NOTE;
         entry = false;
         }
                 
@@ -272,7 +275,10 @@ void stateRecorderPlay()
                         //tempID = id;
                         local.recorder.currentPos++;
                         local.recorder.bufferPos += 4;
-                        }
+ 
+ 						local.recorder.lastNote = pitch;
+						local.recorder.lastVelocity = velocity;
+                       }
                     }
                 }
             }
@@ -388,7 +394,8 @@ void stateRecorderPlay()
                     // load the velocity
                     data.slot.data.recorder.buffer[data.slot.data.recorder.length+3 - 4] = itemValue;  // the velocity
                     sendNoteOn(itemNumber, itemValue, options.channelOut);
-
+					local.recorder.lastNote = itemNumber;
+					local.recorder.lastVelocity = itemValue;
                     }
                 else if ((itemType == MIDI_NOTE_OFF) && 
                     (data.slot.data.recorder.length <= (RECORDER_BUFFER_SIZE - RECORDER_SIZE_OF_NOTE_OFF)))
@@ -462,7 +469,15 @@ void stateRecorderPlay()
     if (updateDisplay)
         {
         clearScreen();
-        
+
+#ifdef TWO_SCREENS_VERTICAL
+		if (local.recorder.lastNote != RECORDER_NO_NOTE)
+			{
+			writeNotePitch(led4, local.recorder.lastNote);
+			writeShortNumber(led3, local.recorder.lastVelocity, false);
+			}
+#endif TWO_SCREENS_VERTICAL
+
         // draw the recorder
         // this is the slow way to do it.  Too slow?
         recorderDrawPoint(local.recorder.numNotes, 0);

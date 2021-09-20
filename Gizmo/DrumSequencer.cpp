@@ -1514,29 +1514,16 @@ uint8_t doTransitionDisplay(uint8_t initialTransition, uint8_t blink)
                 {
                 if (options.drumSequencerDisplayGroup)
                     {
-                    /*
-                    // compute TRACKLEN, the length of the track
-                    // compute SKIP, the number of lines on the screen the track takes up
-                    uint8_t trackLen = getGroupLength(group);
-                    uint8_t numTracks = local.drumSequencer.numTracks;
-        
-                    // this little function correctly maps:
-                    // 8 -> 1
-                    // 12 -> 1
-                    // 16 -> 1
-                    // 24 -> 2
-                    // 32 -> 2
-                    // 48 -> 3
-                    // 64 -> 4    
-                    // 96 -> 6    
-                    uint8_t skip = ((trackLen + 15) >> 4);      // that is, trackLen / 16
-                    */
-                                        
                     drawDrumSequencer(group, false);
                     }
                 else
                     {
-                    writeShortNumber(led2, (group + 1), false);
+#ifdef TWO_SCREENS_VERTICAL
+	    			clearMatrix(led3);
+    				clearMatrix(led4);
+					drawDrumSequencer(group, false, true);		// draw just the top
+#endif TWO_SCREENS_VERTICAL
+                     writeShortNumber(led2, (group + 1), false);
                     if (repeat == DRUM_SEQUENCER_TRANSITION_REPEAT_LOOP)
                         {
                         write8x5Glyph(led, GLYPH_8x5_INFINITY);
@@ -2364,6 +2351,18 @@ void stateDrumSequencerTransitionEditGroup()
                     drawRange(led2, 0, 1, MAX_DRUM_SEQUENCER_GROUPS, group);
                     }
                 }
+#ifdef TWO_SCREENS_VERTICAL
+            else if (currentDisplay > 0 && currentDisplay <= local.drumSequencer.numGroups)
+				{
+				if (updateDisplay)
+					{
+					uint8_t group = currentDisplay - 1;
+					clearMatrix(led3);
+					clearMatrix(led4);
+					drawDrumSequencer(group, false, true);		// draw just the top
+					}
+				}
+#endif TWO_SCREENS_VERTICAL
             }
         break;
         case MENU_SELECTED:
@@ -2548,7 +2547,7 @@ void drawDrumSequencerNotePitchAndVelocity(uint8_t trackLen)
 
 
 // Draws the sequence with the given track length, number of tracks, and skip size
-void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters)
+void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters, uint8_t topScreenOnly=false)
     {
     // compute TRACKLEN, the length of the track
     // compute SKIP, the number of lines on the screen the track takes up
@@ -2566,7 +2565,13 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters)
     // 96 -> 6    
     uint8_t skip = ((trackLen + 15) >> 4);      // that is, trackLen / 16
 
-    clearScreen();
+    if (topScreenOnly)
+    	{
+    	clearMatrix(led3);
+    	clearMatrix(led4);
+    	}
+    else
+    	clearScreen();
     
     // revise LASTTRACK to be just beyond the last track we'll draw
     //      (where TRACK is the first track we'll draw)     
@@ -2667,7 +2672,7 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters)
                                 drumSequencerBlinkOrSetPoint(led4, d, y - 8, blink);
                             else
 #endif TWO_SCREENS_VERTICAL
-                                drumSequencerBlinkOrSetPoint(led2, d, y, blink);
+                                if (!topScreenOnly) drumSequencerBlinkOrSetPoint(led2, d, y, blink);
                             }
                         else // < 16
                             {
@@ -2676,7 +2681,7 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters)
                                 drumSequencerBlinkOrSetPoint(led3, d-8, y - 8, blink);
                             else
 #endif TWO_SCREENS_VERTICAL
-                                drumSequencerBlinkOrSetPoint(led, d-8, y, blink);
+                                if (!topScreenOnly) drumSequencerBlinkOrSetPoint(led, d-8, y, blink);
                             }
                         }
                     else
@@ -2688,7 +2693,7 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters)
                                 drumSequencerBlinkOrSetPoint(led4, d-16, y-1 - 8, blink);
                             else
 #endif TWO_SCREENS_VERTICAL
-                                drumSequencerBlinkOrSetPoint(led2, d-16, y-1, blink);
+                                if (!topScreenOnly) drumSequencerBlinkOrSetPoint(led2, d-16, y-1, blink);
                             }
                         else  // < 32
                             {
@@ -2697,7 +2702,7 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters)
                                 drumSequencerBlinkOrSetPoint(led3, d-24, y-1 - 8, blink);
                             else
 #endif TWO_SCREENS_VERTICAL
-                                drumSequencerBlinkOrSetPoint(led, d-24, y-1, blink);
+                                if (!topScreenOnly) drumSequencerBlinkOrSetPoint(led, d-24, y-1, blink);
                             }
                         }
                     }
@@ -2712,7 +2717,7 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters)
                                 drumSequencerBlinkOrSetPoint(led4, d-32, y-2 - 8, blink);
                             else
 #endif TWO_SCREENS_VERTICAL
-                                drumSequencerBlinkOrSetPoint(led2, d-32, y-2, blink);
+                                if (!topScreenOnly) drumSequencerBlinkOrSetPoint(led2, d-32, y-2, blink);
                             }
                         else // < 48
                             {
@@ -2721,7 +2726,7 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters)
                                 drumSequencerBlinkOrSetPoint(led3, d-40, y-2 - 8, blink);
                             else
 #endif TWO_SCREENS_VERTICAL
-                                drumSequencerBlinkOrSetPoint(led, d-40, y-2, blink);
+                                if (!topScreenOnly) drumSequencerBlinkOrSetPoint(led, d-40, y-2, blink);
                             }
                         }
                     else
@@ -2733,7 +2738,7 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters)
                                 drumSequencerBlinkOrSetPoint(led4, d-48, y-3 - 8, blink);
                             else
 #endif TWO_SCREENS_VERTICAL
-                                drumSequencerBlinkOrSetPoint(led2, d-48, y-3, blink);
+                                if (!topScreenOnly) drumSequencerBlinkOrSetPoint(led2, d-48, y-3, blink);
                             }
                         else  // < 64
                             {
@@ -2742,13 +2747,20 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters)
                                 drumSequencerBlinkOrSetPoint(led3, d-56, y-3 - 8, blink);
                             else
 #endif TWO_SCREENS_VERTICAL
-                                drumSequencerBlinkOrSetPoint(led, d-56, y-3, blink);
+                                if (!topScreenOnly) drumSequencerBlinkOrSetPoint(led, d-56, y-3, blink);
                             }
                         }
                     }
                 }
             }
         y -= skip;
+
+#ifdef TWO_SCREENS_VERTICAL
+		if (topScreenOnly) 
+			{
+			if (y < 9) break;
+			}
+#endif TWO_SCREENS_VERTICAL
         }
     
     if (drawFooters)

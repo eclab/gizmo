@@ -138,7 +138,7 @@
 #define ARPEGGIATOR_NUMBER_ASSIGN 5
 #define ARPEGGIATOR_NUMBER_CHORD_REPEAT 6
 #define ARPEGGIATOR_NUMBER_CHORD_HOLD 7
-#define ARPEGGIATOR_NUMBER_CREATE 18			// 8 ... 17 are the 10 custom arpeggios
+#define ARPEGGIATOR_NUMBER_CREATE 17			// 7 ... 16 are the 10 custom arpeggios
 
 // Constants for including a blinky cursor when drawing the arpeggio.
 // EDIT_CURSOR_POS puts the cursor just beyond the current arpeggio edit position.
@@ -220,7 +220,11 @@ void resetArpeggiator();
 // Starting at position pos, draws up to next SEVEN notes of the arpeggio.
 // We leave a one-column space so as not to interfere with the right LED matrix.
 // The edit cursor is also drawn, if it is EDIT_CURSOR_POS or EDIT_CURSOR_START
+#ifdef TWO_SCREENS_VERTICAL
+void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len = 16);
+#else
 void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len = 7);
+#endif TWO_SCREENS_VERTICAL
 
 // Continue to play the arpeggio
 void playArpeggio();

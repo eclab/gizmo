@@ -12,10 +12,95 @@ void resetArpeggiator()
     local.arp.currentPosition = ARP_POSITION_START;         
     }
 
+#ifdef TWO_SCREENS_VERTICAL
+// Starting at position pos, draws up to next SIXTEEN notes of the arpeggio.  
+// We leave a one-column space so as not to interfere with the right LED matrix
+void drawArpeggio(uint8_t* mat, uint8_t* mat2, uint8_t pos, uint8_t editCursor, uint8_t len=16)
+    {
+    clearMatrix(mat);
+
+    uint8_t maxNote = 0;  // it's okay that this isn't -1 I think
+    uint8_t minNote = ARP_REST;
+    for(uint8_t i = 0; i < data.arp.length; i++)
+        {
+        uint8_t n = ARP_NOTEX(i);
+        if (n == ARP_TIE) continue;  // don't count rests or ties as part of this
+        if (n == ARP_REST) continue;  // don't count rests as part of this
+        if (n > maxNote) maxNote = n;
+        if (n < minNote) minNote = n;
+        }
+            
+    if (minNote < ARP_TIE) // it's not all rests or ties (or empty)  -- actually it'd be impossible for it to be all ties or a mix of rests and ties...
+        {
+        uint8_t interval = maxNote - minNote + 1;
+
+        uint8_t j = 0;
+        uint8_t i = 0;
+        // we assume we're drawing a user-defined matrix, so we're using local.arp.currentPosition
+        for(i = pos; i < data.arp.length; i++)
+            {
+            j = i - pos;
+            if (j >= len) break;
+                
+            uint8_t n = ARP_NOTEX(i);
+            if (n == ARP_REST)
+                continue;
+            else if (n == ARP_TIE)
+                {
+                if (j >= 8)
+                	setPoint(mat, j-8, 7);
+                else
+                	setPoint(mat2, j, 7);
+                }
+            else if (interval > 7)
+                {
+                if (j >= 8)
+                	{
+                	setPoint(mat, j-8, n >> 1);
+                	if ((n & 1) == 1)  // it's odd, add another point
+                	    setPoint(mat, j-8, (n >> 1) + 1);
+                	}
+                else
+                	{
+                	setPoint(mat2, j, n >> 1);
+                	if ((n & 1) == 1)  // it's odd, add another point
+                	    setPoint(mat2, j, (n >> 1) + 1);
+                	}
+                }
+            else
+                {
+                if (j >= 8)
+	                setPoint(mat, j-8, n);
+	            else
+	                setPoint(mat2, j, n);
+                }
+            }
+        }
+                
+    if (editCursor == EDIT_CURSOR_START)
+        {
+        // use the cursor to indicate where we're playing
+        blinkPoint(mat2, 0, 0);
+        }
+    else if (editCursor == EDIT_CURSOR_POS)
+        {
+        int8_t point = local.arp.currentPosition - pos;
+        if (point >= 0 && point <= len)
+            {
+            // draw at pos + 1
+            if (point >= 8)
+	            blinkPoint(mat, point-8, 0);
+	        else
+	        	blinkPoint(mat2, point, 0);
+	        }
+        }
+    }
+
+#else
+
 // Starting at position pos, draws up to next SEVEN notes of the arpeggio.  
 // We leave a one-column space so as not to interfere with the right LED matrix
-//void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len = 7)
-void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len)
+void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len=7)
     {
     clearMatrix(mat);
 
@@ -75,7 +160,8 @@ void drawArpeggio(uint8_t* mat, uint8_t pos, uint8_t editCursor, uint8_t len)
             blinkPoint(mat, point , 0);
         }
     }
-                
+#endif TWO_SCREENS_VERTICAL
+      
 
 
 void updateNoteOffTime()
@@ -552,8 +638,6 @@ void stateArpeggiatorPlay()
             
     if (entry)
         {
-//        local.arp.oldLeftPot = pot[LEFT_POT];
-//        local.arp.oldRightPot = pot[RIGHT_POT]; 
         local.stepSequencer.pots[LEFT_POT] = pot[LEFT_POT];
         local.stepSequencer.pots[RIGHT_POT] = pot[RIGHT_POT];
         local.arp.playing = 1;
@@ -576,9 +660,15 @@ void stateArpeggiatorPlay()
         if (local.arp.number > ARPEGGIATOR_NUMBER_CHORD_HOLD)
             {
             uint8_t pos = 0;
+#ifdef TWO_SCREENS_VERTICAL
+            if (local.arp.currentPosition >= 16) 
+                pos = local.arp.currentPosition - 15;
+            drawArpeggio(led3, led4, pos, EDIT_CURSOR_POS);
+#else
             if (local.arp.currentPosition >= 7) 
                 pos = local.arp.currentPosition - 6;
             drawArpeggio(led2, pos, EDIT_CURSOR_POS);
+#endif TWO_SCREENS_VERTICAL
             }
         else
             {
@@ -685,9 +775,6 @@ void stateArpeggiatorPlay()
 #define BIG_POT_UPDATE (32)
 
     else if (potUpdated[LEFT_POT]) 
-        // && 
-        //      ((pot[LEFT_POT] > local.arp.oldLeftPot && pot[LEFT_POT] - local.arp.oldLeftPot > ARP_POT_SLOP) ||
-        //    (local.arp.oldLeftPot > pot[LEFT_POT] && local.arp.oldLeftPot - pot[LEFT_POT] > ARP_POT_SLOP)))
         {
         if (potChangedBy(local.stepSequencer.pots, LEFT_POT, BIG_POT_UPDATE))
             {
@@ -696,9 +783,6 @@ void stateArpeggiatorPlay()
             }
         }
     else if (potUpdated[RIGHT_POT])
-        // &&
-        //      ((pot[RIGHT_POT] > local.arp.oldRightPot && pot[RIGHT_POT] - local.arp.oldRightPot > ARP_POT_SLOP) ||
-        //    (local.arp.oldRightPot > pot[RIGHT_POT] && local.arp.oldRightPot - pot[RIGHT_POT] > ARP_POT_SLOP)))
         {
         if (potChangedBy(local.stepSequencer.pots, RIGHT_POT, BIG_POT_UPDATE))
             {
@@ -1116,12 +1200,20 @@ void stateArpeggiatorCreateEdit()
     if (updateDisplay)
         {
         clearScreen();
+#ifdef TWO_SCREENS_VERTICAL
+        int8_t drawPos = local.arp.currentPosition - 16;
+        if (drawPos < 0) 
+            drawPos = 0; 
+
+        drawArpeggio(led3, led4, drawPos, (local.arp.currentPosition < MAX_ARP_NOTES ? EDIT_CURSOR_POS : NO_EDIT_CURSOR));
+#else
         int8_t drawPos = local.arp.currentPosition - 7;
         if (drawPos < 0) 
             drawPos = 0; 
 
         drawArpeggio(led2, drawPos, (local.arp.currentPosition < MAX_ARP_NOTES ? EDIT_CURSOR_POS : NO_EDIT_CURSOR));
-        
+#endif TWO_SCREENS_VERTICAL
+
         // draw the current note
         if (local.arp.currentPosition == 0)
             {

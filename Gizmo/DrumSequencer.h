@@ -585,8 +585,7 @@ struct _drumSequencer
 void clearNotesOnTracks(uint8_t clearEvenIfNoteNotFinished);
 
 // Draws the sequence with the given track length, number of tracks, and skip size
-//void drawDrumSequencer(uint8_t tracklen, uint8_t numTracks, uint8_t skip, uint8_t drawFooters);
-void drawDrumSequencer(uint8_t group, uint8_t drawFooters);
+void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters, uint8_t topScreenOnly=false);
 
 // Reformats the sequence as requested by the user
 void stateDrumSequencerFormat();

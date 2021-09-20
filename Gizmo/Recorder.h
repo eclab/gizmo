@@ -90,6 +90,8 @@
 // playing at any one time.
 #define MAX_RECORDER_NOTES_PLAYING 16
 
+#define RECORDER_NO_NOTE 255
+
 // status values
 #define RECORDER_STOPPED 0
 #define RECORDER_PLAYING 1
@@ -127,6 +129,12 @@ struct _recorderLocal
 
     // Are we scheduled to play?
     uint8_t playScheduled;
+    
+    // What was the last pitch of a note that was recorded or played?
+    uint8_t lastNote;
+
+    // What was the last velocity of a note that was recorded or played?
+    uint8_t lastVelocity;
     };
 
 
