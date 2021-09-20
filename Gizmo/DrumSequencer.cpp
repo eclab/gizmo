@@ -2565,12 +2565,14 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters, uint8_t topScreen
     // 96 -> 6    
     uint8_t skip = ((trackLen + 15) >> 4);      // that is, trackLen / 16
 
+#ifdef TWO_SCREENS_VERTICAL
     if (topScreenOnly)
     	{
     	clearMatrix(led3);
     	clearMatrix(led4);
     	}
     else
+#endif TWO_SCREENS_VERTICAL
     	clearScreen();
     
     // revise LASTTRACK to be just beyond the last track we'll draw
