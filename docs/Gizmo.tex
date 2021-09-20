@@ -158,7 +158,7 @@ to
 #define SCREEN_TYPE_TWO_ADAFRUIT_8x8_BACKPACKS
 \end{verbatim}
 
-\paragraph{Stacking Screens Vertically} It's possible to add an additional 16x8 screen vertically, forming a 16x16 square.  At present the only applications which take advantage of this are the Drum Sequencer and the Step Sequencer, which will lay out their tracks using the 16x16 space.  Otherwise (for now) all other operations will use the bottom LED screen, leaving the other one blank. 
+\paragraph{Stacking Screens Vertically} It's possible to add an additional 16x8 screen vertically, forming a 16x16 square.  At present the only applications which take advantage of this are the Arpeggiator, Recorder, Drum Sequencer, and Step Sequencer.  Otherwise (for now) all other operations will use the bottom LED screen, leaving the other one blank. 
 This is going to be slower than a single 16x8 Matrix Backpack because Gizmo must send two I2C commands each screen refresh, which will worsen MIDI timing. If you would like to try this out, in the Gizmo file \texttt{LEDDisplay.h}, change the lines:
 
 
@@ -172,7 +172,9 @@ to
 #define TWO_SCREENS_VERTICAL
 \end{verbatim}
 
-You can in fact use for 8x8 backpacks as a square, but I would not recommend it: too many calls to I2C.   {\color{red}\bf Warning:} LED screens draw significant current. Doubling the screens will potentially double the current draw on the Arduino's regulator.  You may want to run the screens at a lower brightness. I've not had any problems (and the regulator does not get warm) running for long periods of time with my customary brightness of 4 on a Mega.
+You can in fact use for 8x8 backpacks as a square, but I would not recommend it: too many calls to I2C.   
+
+{\color{red}\bf Warning:} LED screens draw significant current. Doubling the screens will double the current draw on the Arduino's regulator.  According to Adafruit, each 8x8 screen draws 160mA maximum at full brightness with all LEDs lit: thus a vertical stack would draw at most 640mA.  The regulator maxes out at 800mA, so you may want to run the screens at a lower brightness. I've not had any problems (and the regulator does not get warm) running for long periods of time with my customary brightness of 4 on a Mega.
 
 
 \paragraph{Customizing the Screen I2C Address}  The four I2C addresses potentially used by the screen are found in the Gizmo file \texttt{LEDDisplay.h}, and are by default:
@@ -666,6 +668,10 @@ Keystrokes, CC, etc.			& Enter Arpeggio Chord & Enter Arpeggio Notes\\
 \end{center}
 ~		% Give me a bit more space at the end of the page
 
+\paragraph{Vertical Stacked Screens}
+
+When Gizmo has two vertical stacked screens, the Arpeggiator will take advantage of them to display a user arpeggio at full width.
+
 \paragraph{Remote Control over CC}  If you have a remote control surface, you can directly access a number of the Arpeggiator's play or arpeggio creation capabilities by sending CC messages over Gizmo's Control MIDI Channel.    These operations are on top of the CC Control Midi operations (Section \ref{options}, see ``Control MIDI''), and in fact replicate a few of them.
 
 \vspace{1em}
@@ -872,7 +878,7 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 
 \item {\bf Length}\quad  Lets you set the length of the sequence to a custom value, or to \texttt{- - - -}, meaning to use the default initialized sequence length (16, 24, 32, 48, 64, or 96).  If the initialized length is 16, 24, or 32, then you can customize the length to anything less than it.  If the initialized length is 48, 64, or 96, then you can reduce the length to no less than 31 fewer notes.
 
-\item {\bf Show Note}  (or {\bf No Show Note})\quad  Toggles whether the upper of two vertically stacked 16x8 LEDs displays the value of the note at the edit cursor; or if it is just used for extra track display space.  In the former case, notes are shown with pitch/octave and velocity, and ties are shown with \texttt{TIE}.  Data tracks also show their respective data values.  This menu has no effect at all if you only have one LED screen.
+\item {\bf Show Note}  (or {\bf No Show Note})\quad  Toggles whether the upper of two stacked 16x8 LEDs displays the value of the note/data at the cursor.  Notes are shown with pitch/octave and velocity, and ties are shown with \texttt{TIE}.  Data tracks also show their respective data values.  This menu has no effect at all if you only have one LED screen.  See {\bf Vertical Stacked Screens} below.
 
 \item {\bf Performance}\quad  This brings up the Performance Mode sub-menu.  You can select these menu items from any mode (not just Performance Mode), but they will only impact on Performance Mode:
 
@@ -934,6 +940,10 @@ Keystrokes, CC, etc.			& Enter at Edit Cursor&Enter at Play Cursor & Enter at Pl
 						&				  &				   &Transpose {\it or} Route Out\\
 \end{tabular}
 }\\
+
+\paragraph{Vertical Stacked Screens}
+
+When Gizmo has two vertical stacked screens, the Step Sequencer will take advantage of them to display the entire sequence. Optionally if you select the {\bf Show Note} menu option, the Step Sequencer will display the sequence in the normal manner, but use the upper screen to display the note or data information at the current cursor.
 
 \paragraph{Remote Control over CC}  If you have a remote control surface, you can greatly enhance the Step Sequencer's editing and performance chops by sending CC messages over Gizmo's Control MIDI Channel:
 
@@ -1557,7 +1567,10 @@ Right Knob				& Change Step {\it or} &  Edit Mode &  Edit Mode&Change Tempo\\
 						& {\it or} Group Mode && &\\
 \end{tabular}
 }
-\vspace{-1em}
+
+\paragraph{Vertical Stacked Screens}
+
+When Gizmo has two vertical stacked screens, the Drum Sequencer will take advantage of them to display the entire sequence.  You now have 14 rows to display tracks: since you can have up to 20 tracks, you may still have to scroll.  Additionally, when selecting a group, the upper LEDs will display the first 7 rows of the sequence.
 
 \paragraph{Remote Control over CC}  Like the Step Sequencer, the Drum Sequencer responds to a variety of CC messages over Gizmo's Control MIDI Channel.  These operations are on top of the CC Control MIDI operations (Section \ref{options}, see ``Control MIDI''), namely start/stop/continue, back button, middle button, select button, bypass, and left/right knob.
 
@@ -1679,6 +1692,10 @@ Of particular use to you will be Tempo and Click.  Click gives you an audible cl
 \paragraph{Recording and Quantization}
 
 The Recorder records nothing but MIDI NOTE ON and NOTE OFF messages.  It presently quantizes these messages, rounding them up or down to the nearest MIDI Clock pulse, that is, 1/24 of a quarter note.\footnote{This is pretty low-resolution, but there you have it.  Space is tight.}
+
+\paragraph{Vertical Stacked Screens}
+
+When Gizmo has two vertical stacked screens, the Recorder will take advantage of them to display the note pitch and velocity as it is playing or being recorded.
 
 \paragraph{Controls Summary}  Here's what the recorder's controls do in different contexts.
 
@@ -2366,7 +2383,8 @@ Gizmo's sysex dump format is simple.  Bytes 0--6 are as follows:\quad\texttt{0xF
 			\end{tabbing}
 		\end{description}
 		}
-
+\vspace{-.5em}
+\enlargethispage{1em}
 
 %	\begin{center}\begin{tabular}{@{}lr@{}}
 %	{\it Note Speed}&{\it Divisor}\\
