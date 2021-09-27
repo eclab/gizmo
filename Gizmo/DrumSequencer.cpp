@@ -1963,6 +1963,35 @@ void stateDrumSequencerVelocity()
     if (entry) 
         {
         local.drumSequencer.backup = getNoteVelocity(local.drumSequencer.currentTrack);
+        }
+    result = doNumericalDisplay(1, 8, local.drumSequencer.backup + 1, false, GLYPH_NONE, 
+    	GLYPH_NONE, immediateReturn && (immediateReturnState == STATE_DRUM_SEQUENCER_PLAY));
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            {
+            setNoteVelocity(local.drumSequencer.currentTrack, currentDisplay - 1);  // so we can hear it
+            }
+        break;
+        case MENU_SELECTED:
+            {
+            goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+            }
+        break;
+        case MENU_CANCELLED:
+            {
+            setNoteVelocity(local.drumSequencer.currentTrack, local.drumSequencer.backup);
+            goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+            }
+        break;
+        }
+    playDrumSequencer();
+
+    /*
+    uint8_t result;
+    if (entry) 
+        {
+        local.drumSequencer.backup = getNoteVelocity(local.drumSequencer.currentTrack);
         defaultMenuValue = local.drumSequencer.backup;
         }
     const char* menuItems[8] = { PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8") };
@@ -1987,11 +2016,40 @@ void stateDrumSequencerVelocity()
         break;
         }
     playDrumSequencer();
+    */
     }
 
 
 void stateDrumSequencerMenuDefaultVelocity()
     {
+    uint8_t result;
+    if (entry) 
+        {
+        local.drumSequencer.backup = getNoteVelocity(local.drumSequencer.currentTrack);
+        }
+    result = doNumericalDisplay(1, 8, local.drumSequencer.backup + 1, false, GLYPH_NONE, GLYPH_NONE, immediateReturnState == STATE_DRUM_SEQUENCER_PLAY);  // notice getGroupLength, not getGroupLengthData
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            {
+            setNoteVelocity(local.drumSequencer.currentTrack, currentDisplay - 1);  // so we can hear it
+            }
+        break;
+        case MENU_SELECTED:
+            {
+            goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+            }
+        break;
+        case MENU_CANCELLED:
+            {
+            setNoteVelocity(local.drumSequencer.currentTrack, local.drumSequencer.backup);
+            goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+            }
+        break;
+        }
+    playDrumSequencer();
+
+    /*
     uint8_t result;
     if (entry) 
         {
@@ -2023,6 +2081,7 @@ void stateDrumSequencerMenuDefaultVelocity()
         break;
         }
     playDrumSequencer();
+    */
     }
 
 
@@ -3416,7 +3475,7 @@ void stateDrumSequencerPlay()
             if (potChangedBy(local.drumSequencer.pots, RIGHT_POT, BIG_POT_UPDATE))
                 {
                 AUTO_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-                goDownState(STATE_OPTIONS_TEMPO);
+                goDownState(STATE_DRUM_SEQUENCER_TRACK_VELOCITY);
                 }
             }
         else

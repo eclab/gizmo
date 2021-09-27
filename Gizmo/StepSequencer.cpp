@@ -1507,13 +1507,13 @@ void stateStepSequencerPlay()
                 
         if (local.stepSequencer.performanceMode)
             {
-            //// CHANGE TEMPO
+            //// CHANGE FADER
 
 #define BIG_POT_UPDATE (32)
             if (potChangedBy(local.stepSequencer.pots, RIGHT_POT, BIG_POT_UPDATE))
                 {
                 AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
-                goDownState(STATE_OPTIONS_TEMPO);
+                goDownState(STATE_STEP_SEQUENCER_FADER);
                 }
             }
         else
@@ -1944,6 +1944,12 @@ void stateStepSequencerPlay()
                 goDownState(STATE_STEP_SEQUENCER_MENU_EDIT_DUPLICATE);
                 break;
                 }
+            case CC_EXTRA_PARAMETER_9:
+                {
+                IMMEDIATE_RETURN(STATE_STEP_SEQUENCER_PLAY);
+                goDownState(STATE_STEP_SEQUENCER_MENU_SHIFT);
+                break;
+                }
                         
                         
             // this is a discontinuity, hope compiler can handle it
@@ -2099,13 +2105,14 @@ void stateStepSequencerPlay()
 #define STEP_SEQUENCER_MENU_TRANSPOSABLE 8
 #define STEP_SEQUENCER_MENU_EDIT 9
 #define STEP_SEQUENCER_MENU_NO_ECHO 10
-#define STEP_SEQUENCER_MENU_REST 11
-#define STEP_SEQUENCER_MENU_TIE 12
-#define STEP_SEQUENCER_MENU_SHOW_NOTE 13
-#define STEP_SEQUENCER_MENU_LENGTH 14
-#define STEP_SEQUENCER_MENU_PERFORMANCE 15
-#define STEP_SEQUENCER_MENU_SAVE 16
-#define STEP_SEQUENCER_MENU_OPTIONS 17
+#define STEP_SEQUENCER_MENU_SHIFT 11
+#define STEP_SEQUENCER_MENU_REST 12
+#define STEP_SEQUENCER_MENU_TIE 13
+#define STEP_SEQUENCER_MENU_SHOW_NOTE 14
+#define STEP_SEQUENCER_MENU_LENGTH 15
+#define STEP_SEQUENCER_MENU_PERFORMANCE 16
+#define STEP_SEQUENCER_MENU_SAVE 17
+#define STEP_SEQUENCER_MENU_OPTIONS 18
 
 #else
 
@@ -2138,7 +2145,7 @@ void stateStepSequencerMenu()
     
 // Advanced step sequencer has two more menu options: type (note, non-note) and rest notes
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
-    const char* menuItems[18] = {    
+    const char* menuItems[19] = {    
         (local.stepSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),
         PSTR("RESET TRACK"),
         PSTR("NOTE LENGTH (TRACK)"),
@@ -2150,6 +2157,7 @@ void stateStepSequencerMenu()
         local.stepSequencer.transposable[local.stepSequencer.currentTrack] ? PSTR("NO TRANSPOSE (TRACK)") : PSTR("TRANSPOSE (TRACK)"),
         PSTR("EDIT"),
         options.stepSequencerNoEcho ? PSTR("ECHO") : PSTR("NO ECHO"), 
+        PSTR("PITCH SHIFT (TRACK)"),
         PSTR("REST NOTE"),
         PSTR("TIE NOTE"),
         options.stepSequencerShowNote ? PSTR("NO SHOW NOTE") : PSTR("SHOW NOTE"),
@@ -2158,7 +2166,7 @@ void stateStepSequencerMenu()
         PSTR("SAVE"), 
         options_p 
         };
-    result = doMenuDisplay(menuItems, 18, STATE_NONE, STATE_NONE, 1);
+    result = doMenuDisplay(menuItems, 19, STATE_NONE, STATE_NONE, 1);
 #else
     const char* menuItems[13] = {    
         (local.stepSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),
@@ -2258,6 +2266,11 @@ void stateStepSequencerMenu()
 
 // Advanced step sequencer has two more menu options: type (note, non-note) and rest notes
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+                case STEP_SEQUENCER_MENU_SHIFT:
+                    {
+                    goDownState(STATE_STEP_SEQUENCER_MENU_SHIFT);
+                    }
+                break;
                 case STEP_SEQUENCER_MENU_REST:
                     {
                     goDownState(STATE_STEP_SEQUENCER_MENU_REST);
@@ -2780,6 +2793,50 @@ void playStepSequencer()
 
 //// Rest notes are only available with the advanced step sequencer
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+void stateStepSequencerMenuShift()
+	{
+    uint8_t note = stateEnterNote(STATE_STEP_SEQUENCER_MENU);
+    if (note != NO_NOTE)
+        {
+        local.stepSequencer.newData = note;
+        goDownState(STATE_STEP_SEQUENCER_MENU_SHIFT_SECOND);
+        }
+    playStepSequencer();
+	}
+
+void stateStepSequencerMenuShiftSecond()
+	{
+    uint8_t note = stateEnterNote(STATE_STEP_SEQUENCER_MENU, false, GLYPH_TRANSPOSE);
+    if (note != NO_NOTE)
+        {
+		int8_t diff = note - local.stepSequencer.newData;
+    
+    	uint8_t trackLen = GET_TRACK_FULL_LENGTH();
+        uint16_t start = (local.stepSequencer.currentTrack * (uint16_t) trackLen) * 2;
+        for(uint8_t i = 0; i < trackLen; i++)
+        	{
+        	uint16_t pos = start + i * 2;
+    	    int16_t note = (int16_t)(data.slot.data.stepSequencer.buffer[pos]);
+    	    uint8_t vel = (uint8_t)(data.slot.data.stepSequencer.buffer[pos + 1]);
+    	    if (vel > 0) // it's a note
+    	    	{
+	    	    note += diff;
+	    	    if (note < 0)
+	    	    	{
+	    	    	note = 0;
+	    	    	}
+	    	    if (note > 127)
+	    	    	{
+	    	    	note = 127;
+	    	    	}
+				data.slot.data.stepSequencer.buffer[pos] = (uint8_t) note;
+				} 	    	
+    	    }
+        goDownState(STATE_STEP_SEQUENCER_MENU);
+        }
+    playStepSequencer();
+	}
+
 void stateStepSequencerMenuRest()
     {
     uint8_t note = stateEnterNote(STATE_STEP_SEQUENCER_MENU, true);
@@ -2795,6 +2852,7 @@ void stateStepSequencerMenuRest()
         saveOptions();
         goDownState(STATE_STEP_SEQUENCER_MENU);
         }
+    playStepSequencer();
     }
 
 void stateStepSequencerMenuTie()
@@ -2812,6 +2870,7 @@ void stateStepSequencerMenuTie()
         saveOptions();
         goDownState(STATE_STEP_SEQUENCER_MENU);
         }
+    playStepSequencer();
     }
 #endif INCLUDE_ADVANCED_STEP_SEQUENCER
 

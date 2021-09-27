@@ -26,6 +26,64 @@ extern int16_t potDivisor;
 // Returns true if potVals[potNum] differs from pot[potNum] by more than the given amount
 uint8_t potChangedBy(uint16_t* potVals, uint8_t potNum, uint16_t amount);
 
+
+
+
+
+
+///// DRAWING SUPPORT
+
+//// Draws a MIDI channel value of the bottom row of the left LED, using drawRange(...)
+void drawMIDIChannel(uint8_t channel);
+
+//// GLYPHS available to WRITE 3x5 GLYPHS, which writes 4 glyphs filling the whole screen
+#define GLYPH_OFF 0                                    	// ----
+#define GLYPH_OMNI 1                                    // ALLC
+#define GLYPH_DEFAULT 2                                 // DFLT
+#define GLYPH_DECREMENT 3                               // DECR
+#define GLYPH_INCREMENT 4                               // INCR
+#define GLYPH_FREE 5                                    // FREE
+#define GLYPH_NOTE 6                                    // NOTE
+#define GLYPH_SYSEX 7                                   // SYSX
+#define GLYPH_SONG_POSITION 8                           // SPOS
+#define GLYPH_SONG_SELECT 9                             // SSEL
+#define GLYPH_TUNE_REQUEST 10                           // TREQ
+#define GLYPH_START 11                                  // STRT
+#define GLYPH_CONTINUE 12                               // CONT
+#define GLYPH_STOP 13                                   // STOP
+#define GLYPH_SYSTEM_RESET 14                           // RSET
+#define GLYPH_FADE 15									// FADE
+#define GLYPH_PLAY 16									// PLAY
+#define GLYPH_CHORD 17									// CHRD
+#define GLYPH_HIGH 18									// HIGH
+#define GLYPH_TRANSPOSE 19								// TRAN
+#define GLYPH_FAIL 20									// FAIL
+#define GLYPH_LOOP 21									// LOOP
+#define GLYPH_PICK 22									// PICK
+#define GLYPH_CANT 23									// CANT
+#define GLYPH_MUTE 23									// MUTE
+
+#define GLYPH_OTHER (254)	// reserved to represent "use this glyph instead"
+#define GLYPH_NONE	(255)	// reserved to represent "no glyph"
+
+// Writes any of the above glyph sets to the screen
+void write3x5Glyphs(uint8_t index);
+
+//void write3x5GlyphPair(uint8_t glyph1, uint8_t glyph2)
+//    {
+//    write3x5Glyph(led2, glyph1, 0);
+//    write3x5Glyph(led2, glyph2, 4);
+//    }
+
+
+// Clears the screen buffers.
+void clearScreen();
+
+
+
+
+
+
 ///// DOMENUDISPLAY()
 //
 // This function updates a display in the form of a menu of
@@ -121,7 +179,7 @@ uint8_t doMenuDisplay(const char** _menu, uint8_t menuLen, uint8_t baseState, ui
 extern uint8_t glyphs[MAX_GLYPHS];
 extern uint8_t secondGlyph;
 
-uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultValue, uint8_t includeOff, uint8_t includeOther);
+uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultValue, uint8_t includeOff, uint8_t includeOther, uint8_t includeOther2 = GLYPH_NONE, uint8_t rightPot = false);
 
 
 // STATE NUMERICAL
@@ -132,7 +190,7 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
 #define NO_STATE_NUMERICAL_CHANGE 255
 
 extern uint8_t stateNumerical(uint8_t start, uint8_t end, uint8_t &value, uint8_t &backupValue,
-    uint8_t updateOptions, uint8_t includeOff, uint8_t other, uint8_t backState);
+    uint8_t updateOptions, uint8_t includeOff, uint8_t other, uint8_t backState, uint8_t includeOther2 = GLYPH_NONE, uint8_t rightPot = false);
 
 ///// DOGLYPHDISPLAY()
 //
@@ -194,57 +252,6 @@ uint8_t debug(int8_t val1, int8_t val2);
 
 // perform a click track
 void doClick();
-
-
-
-
-
-///// DRAWING SUPPORT
-
-//// Draws a MIDI channel value of the bottom row of the left LED, using drawRange(...)
-void drawMIDIChannel(uint8_t channel);
-
-//// GLYPHS available to WRITE 3x5 GLYPHS, which writes 4 glyphs filling the whole screen
-#define GLYPH_OFF 0                                    	// ----
-#define GLYPH_OMNI 1                                    // ALLC
-#define GLYPH_DEFAULT 2                                 // DFLT
-#define GLYPH_DECREMENT 3                               // DECR
-#define GLYPH_INCREMENT 4                               // INCR
-#define GLYPH_FREE 5                                    // FREE
-#define GLYPH_NOTE 6                                    // NOTE
-#define GLYPH_SYSEX 7                                   // SYSX
-#define GLYPH_SONG_POSITION 8                           // SPOS
-#define GLYPH_SONG_SELECT 9                             // SSEL
-#define GLYPH_TUNE_REQUEST 10                           // TREQ
-#define GLYPH_START 11                                  // STRT
-#define GLYPH_CONTINUE 12                               // CONT
-#define GLYPH_STOP 13                                   // STOP
-#define GLYPH_SYSTEM_RESET 14                           // RSET
-#define GLYPH_FADE 15									// FADE
-#define GLYPH_PLAY 16									// PLAY
-#define GLYPH_CHORD 17									// CHRD
-#define GLYPH_HIGH 18									// HIGH
-#define GLYPH_TRANSPOSE 19								// TRAN
-#define GLYPH_FAIL 20									// FAIL
-#define GLYPH_LOOP 21									// LOOP
-#define GLYPH_PICK 22									// PICK
-#define GLYPH_CANT 23									// CANT
-
-#define GLYPH_OTHER (254)	// reserved to represent "use this glyph instead"
-#define GLYPH_NONE	(255)	// reserved to represent "no glyph"
-
-// Writes any of the above glyph sets to the screen
-void write3x5Glyphs(uint8_t index);
-
-//void write3x5GlyphPair(uint8_t glyph1, uint8_t glyph2)
-//    {
-//    write3x5Glyph(led2, glyph1, 0);
-//    write3x5Glyph(led2, glyph2, 4);
-//    }
-
-
-// Clears the screen buffers.
-void clearScreen();
 
 
 
@@ -324,8 +331,9 @@ void stateCant(uint8_t nextState);
 ///// the global variable stateEnterNoteVelocity.  
 ///// backState                 where we should go after the user has cancelled    
 ///// allowRemoval				can the user optionally indicate that he wants no note at all?                     
+///// glyph						which glyph shoud be displayed?                     
 extern uint8_t stateEnterNoteVelocity;
-uint8_t stateEnterNote(uint8_t backState, uint8_t allowRemoval=false);
+uint8_t stateEnterNote(uint8_t backState, uint8_t allowRemoval=false, uint8_t glyph=GLYPH_NOTE);
 
 
 ///// Call this repeatedly from your notional "please enter a chord" state to query the user about what chord he'd like.

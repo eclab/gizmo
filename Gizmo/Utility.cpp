@@ -326,7 +326,8 @@ int16_t boundValue(int16_t val, int16_t minValue, int16_t maxValue)
 GLOBAL static int8_t potFineTune;
 GLOBAL uint8_t secondGlyph = NO_GLYPH;
 
-uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultValue, uint8_t includeOff, uint8_t includeOther)
+uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultValue, uint8_t includeOff, 
+	uint8_t includeOther, uint8_t includeOther2 = GLYPH_NONE, uint8_t rightPot = false)
     {
     if (maxValue > 19999)
         maxValue = 19999;
@@ -377,17 +378,19 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
         return MENU_SELECTED;
         }
     
-    if (potUpdated[LEFT_POT])
+    uint8_t p = (rightPot? RIGHT_POT : LEFT_POT);
+    
+    if (potUpdated[p])
         {
         potFineTune = 0;
         // can't avoid a divide this time!
         if (potDivisor > 0)  // small numbers
             {
-            currentDisplay = boundValue((pot[LEFT_POT] / potDivisor) + minValue, minValue, maxValue);
+            currentDisplay = boundValue((pot[p] / potDivisor) + minValue, minValue, maxValue);
             }
         else            // big numbers
             {
-            currentDisplay = boundValue((pot[LEFT_POT] * (-potDivisor)) + minValue, minValue, maxValue);
+            currentDisplay = boundValue((pot[p] * (-potDivisor)) + minValue, minValue, maxValue);
             }
         setAutoReturnTime();
         }
@@ -431,6 +434,10 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
             // write "--"
             write3x5Glyphs(GLYPH_OFF);
             }
+        else if ((includeOther2 != GLYPH_NONE) && (includeOther2 != GLYPH_OTHER) && (currentDisplay == maxValue - 1))
+            {
+            write3x5Glyphs(includeOther2);
+            }
         else if ((includeOther != GLYPH_NONE) && (includeOther != GLYPH_OTHER) && (currentDisplay == maxValue))
             {
             write3x5Glyphs(includeOther);
@@ -467,7 +474,7 @@ uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultVa
 // and set *value* to that value.  If updateOptions is true, then stateNumerical will recover from a cancel by
 // overwriting the options with the backup options. Otherwise it will recover by overwriting value with backupValue.  
 uint8_t stateNumerical(uint8_t start, uint8_t end, uint8_t &value, uint8_t &backupValue,
-    uint8_t updateOptions, uint8_t includeOff, uint8_t other, uint8_t backState)
+    uint8_t updateOptions, uint8_t includeOff, uint8_t other, uint8_t backState, uint8_t other2 = GLYPH_NONE, uint8_t rightPot=false)
     {
     uint8_t oldValue = value;
     if (entry)
@@ -476,7 +483,7 @@ uint8_t stateNumerical(uint8_t start, uint8_t end, uint8_t &value, uint8_t &back
         else backupValue = value;
         }
         
-    uint8_t result = doNumericalDisplay(start, end, value, includeOff, other);
+    uint8_t result = doNumericalDisplay(start, end, value, includeOff, other, other2, rightPot);
     switch (result)
         {
         case NO_MENU_SELECTED:
@@ -1179,13 +1186,13 @@ uint8_t incrementAndWrap(uint8_t n, uint8_t max)
         
 GLOBAL uint8_t stateEnterNoteVelocity;
 
-uint8_t stateEnterNote(uint8_t backState, uint8_t allowRemoval=false)
+uint8_t stateEnterNote(uint8_t backState, uint8_t allowRemoval=false, uint8_t glyph=GLYPH_NOTE)
     {
     if (entry)
         {
         newItem = 0;            // clear any current note
         clearScreen();
-        write3x5Glyphs(GLYPH_NOTE);
+        write3x5Glyphs(glyph);
         entry = false;
         }
         
@@ -1361,7 +1368,7 @@ void clearScreen()
 
 
 
-GLOBAL static uint8_t glyphTable[24][4] = 
+GLOBAL static uint8_t glyphTable[25][4] = 
     {
     // These first: ----, ALLC, DFLT, DECR, and INCR, must be the FIRST ones
     // because they correspond to the five glyph types in doNumericalDisplay
@@ -1389,6 +1396,7 @@ GLOBAL static uint8_t glyphTable[24][4] =
     {GLYPH_3x5_L, GLYPH_3x5_O, GLYPH_3x5_O, GLYPH_3x5_P},   // LOOP
     {GLYPH_3x5_P, GLYPH_3x5_I, GLYPH_3x5_C, GLYPH_3x5_K},   // PICK
     {GLYPH_3x5_C, GLYPH_3x5_A, GLYPH_3x5_N, GLYPH_3x5_T},   // CANT
+    {GLYPH_3x5_M, GLYPH_3x5_U, GLYPH_3x5_T, GLYPH_3x5_E},   // MUTE
     };
 
 

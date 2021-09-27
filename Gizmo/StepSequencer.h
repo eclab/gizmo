@@ -475,6 +475,8 @@ void stateStepSequencerMenuRest();
 void stateStepSequencerMenuTie();
 void stateStepSequencerMenuType();
 void stateStepSequencerMenuTypeParameter();
+void stateStepSequencerMenuShift();
+void stateStepSequencerMenuShiftSecond();
 #endif
 
 void stopStepSequencer();

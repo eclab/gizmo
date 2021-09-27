@@ -125,7 +125,7 @@ Attach the four wires for SDA, SCL, 5V (VCC), and GND between the MIDI Shield an
 
 You may need to change the I2C address that Gizmo uses to send messages to your backpack.  See the paragraph ``Customizing the Screen I2C Address`` below for information on that.  But first some discussion on backpack options:
 
-\paragraph{Using the FeatherWing 8x16 Backpack} Instead of the AdaFruit 16x8 LED Matrix, some people have lately been using Adafruit's ``8x16 FeatherWing Backpack''\footnote{https:/\!/www.adafruit.com/product/3152}for their LED display.   This device rotates the LED matrices, so you'll need to account for that so Gizmo can rotate them back.  In the Gizmo file \texttt{LEDDisplay.h}, change the lines:
+\paragraph{Using a FeatherWing 8x16 Backpack} Instead of the AdaFruit 16x8 LED Matrix, some people have lately been using Adafruit's ``8x16 FeatherWing Backpack''\footnote{https:/\!/www.adafruit.com/product/3152}for their LED display.   This device rotates the LED matrices, so you'll need to account for that so Gizmo can rotate them back.  In the Gizmo file \texttt{LEDDisplay.h}, change the lines:
 
 \begin{verbatim}
 #define SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK
@@ -785,7 +785,7 @@ You can get out of play position mode just by turning the right knob so that the
 
 \paragraph{Performance Mode} If you simultaneously Long-Press the Select and Middle buttons when in either Edit or Play Position Mode, you'll enter Performance Mode.  This mode is meant to support performing with completed sequences.  Here, if you play notes or CC values different things might happen, depending on how you've configured things: either the notes will be entered on the track (which will be cleared first if a bar just transpired or the user just switched tracks), or the notes will be routed to some channel in MIDI Out, or the notes will be used to {\it transpose} the sequence as it's playing.  A track is transposed only if you have turned its ``Transpose'' option on (see Menu Options below).
 
-In Performance Mode, a number of controls change their function  Pressing the Back Button doesn't exit the Step Sequencer: but rather, it exits Performance Mode back into whatever previous Mode you had used.  Pressing the Middle Button toggles muting of  the track.  Long-Pressing the Middle Button toggles Soloing: only your current track is played.  You can tell you're in Solo mode because every track {\it except} for the soloed one appears to be muted (LEDs at each end of the tracks are blinking).  The Left Knob changes tracks as usual, but the Right Knob changes the {\bf tempo}.  Long-pressing the Select button brings up the menu.  Pressing the Select button starts and stops playing as usual, but with a catch.  When you press the Select button to stop the sequence, in Performance mode it will instead schedule the sequence to be stopped at the end of the latest iteration.  If you press the Select button {\it again} while it's scheduled to stop, it will stop immediately.
+In Performance Mode, a number of controls change their function  Pressing the Back Button doesn't exit the Step Sequencer: but rather, it exits Performance Mode back into whatever previous Mode you had used.  Pressing the Middle Button toggles muting of  the track.  Long-Pressing the Middle Button toggles Soloing: only your current track is played.  You can tell you're in Solo mode because every track {\it except} for the soloed one appears to be muted (LEDs at each end of the tracks are blinking).  The Left Knob changes tracks as usual, but the Right Knob changes the {\bf fader}.  Long-pressing the Select button brings up the menu.  Pressing the Select button starts and stops playing as usual, but with a catch.  When you press the Select button to stop the sequence, in Performance mode it will instead schedule the sequence to be stopped at the end of the latest iteration.  If you press the Select button {\it again} while it's scheduled to stop, it will stop immediately.
 
 In Performance Mode, sequences can be {\bf chained together}.  You can specify that a given sequence will {\bf repeat} for some number of bars, and then will either stop or will move on to {\it another sequence}.  Since the Mega can hold up to nine sequences, you can use repeating and chaining to make some fairly long songs.  Per-track patterns, repeating, and specifying the next sequence are done in the Menu Options (see later).
 
@@ -802,7 +802,6 @@ If you press solo, you won't {\it toggle} the solo.  Instead, you {\it schedule}
 \item If you are currently soloed: {\bf Schedule Un-solo} \(\rightarrow\) {\bf Undo}
 \end{itemize}
 
-\bump 
 
 Similarly, if you press mute, you {\it schedule} the track to be muted (or not), at the next bar, for exactly one bar, and then to return to its present state.  If you press mute a second time, you schedule the track to be muted (or not) permanently at the next bar.  If you press mute a third time, you undo all this.  This is known as {\bf advancing mute}:
 
@@ -854,12 +853,11 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 \item {\bf Note Length (Track)}\quad This specifies the note length of notes in the track, as a percentage (0 is fully staccato and 100 is fully legato).   You can choose numerical values, or choose \texttt{DFLT}, which tells the Step Sequencer to use the default note length specified in the Options menu (see Section \ref{options}).
 \item {\bf Out MIDI (Track)}\quad This specifies the MIDI Out Channel for notes in the track,    You can choose a value 1...16, or \texttt{- - - -} ({\it none}), or \texttt{DFLT}, which tells the Step Sequencer to use the default MIDI Out Channel specified in the Options menu (see Section \ref{options}).  By default, track 1 is set to \texttt{DFLT}, track 2 is set to 2, track 3 is set to 3, and so on.  In Mono/Duo mode, all the tracks are by default set to \texttt{DFLT}.
 \item {\bf Velocity (Track)}\quad This lets you specify a key velocity\footnote{By velocity we mean in the MIDI sense: how fast the key is struck; this basically translates to loudness.} that {\it all} notes in the track will use (as a value 1...127).  If you would instead prefer that each note in the track use its own independent key velocity as you had entered them, you can choose {\it none}.  
-\item {\bf Fader (Track)}\quad This lets you specify a volume modifier which is multiplied against the velocities of the notes in the track.  Possible values are 0...31, where 0 completely hushes the notes, 16 lets them play at their specified velocities, and 31 is roughly twice their velocity.  8 is one half-velocity, 4 is one quarter velocity, and so on.  In general, values larger than or smaller than 16 will make the notes louder or quieter respectively.
+\item {\bf Fader (Track)}\quad This lets you specify a volume modifier which is multiplied against the velocities of the notes in the track.  Possible values are 0 ... 15 as follows: 0 is fully hushed, 1 is 1/8 velocity, 2 is 1/4 velocity .... 4 is 1/8 velocity ... 8 is normal velocity ... 15 is almost twice velocity.
 \item {\bf Type (Track)} {\it (Advanced Step Sequencer Only)}\quad Lets you specify the type of data stored in this track.  See {\bf Sequencing Data} discussion earlier.
-\item {\bf Pattern} {\it (Non-Mono/Duo only)}\quad Lets you specify the four-bar pattern for this track in this group.  Your options are: \texttt{OOOO, O-O-, -O-O, OOO-, ---O, O--O, -OO-, OO--, --OO, OO-O, --O-, R1/8, R1/4, R1/2, ---X,} or\ \ {\tt XXXX}.  An {\tt O} indicates that the track will be played, and a {\tt -} indicates that it will be hushed.  The {\tt O} patterns are in pairs so you can swap the track being played with some other track.  The three patterns which start with {\tt R} hush at random each bar: the fraction indicates the probability that the track will be hushed.  An {\tt X} indicates {\it exclusive random:} if multiple tracks are designated as {\tt X} for a given bar, then exactly one of them will be played then (the others will be hushed).   {\tt ---X} is exclusive random for the fourth bar only and hushed otherwise; this makes possible random fills, and would be useful with {\tt OOO-}.   If only one track is {\tt X}, it's always played.  If two tracks are {\tt X}, they alternate.  Otherwise Gizmo tries to select a different track each time.
-
-\item {\bf Repeats} {\it (Mono/Duo only)}\quad Lets you specify how many times a track will repeat in Performance Mode before going on to the next track: you can also mark a track as the End of a sequence.  Your options are {\tt LOOP}, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 15, 24, 32, 64, or {\tt END}.
-
+\item {\bf Pattern (Track)} {\it (Non-Mono/Duo only)}\quad Lets you specify the four-bar pattern for this track in this group.  Your options are: \texttt{OOOO, O-O-, -O-O, OOO-, ---O, O--O, -OO-, OO--, --OO, OO-O, --O-, R1/8, R1/4, R1/2, ---X,} or\ \ {\tt XXXX}.  An {\tt O} indicates that the track will be played, and a {\tt -} indicates that it will be hushed.  The {\tt O} patterns are in pairs so you can swap the track being played with some other track.  The three patterns which start with {\tt R} hush at random each bar: the fraction indicates the probability that the track will be hushed.  An {\tt X} indicates {\it exclusive random:} if multiple tracks are designated as {\tt X} for a given bar, then exactly one of them will be played then (the others will be hushed).   {\tt ---X} is exclusive random for the fourth bar only and hushed otherwise; this makes possible random fills, and would be useful with {\tt OOO-}.   If only one track is {\tt X}, it's always played.  If two tracks are {\tt X}, they alternate.  Otherwise Gizmo tries to select a different track each time.
+\item {\bf Repeat (Track)} {\it (Mono/Duo only)}\quad Lets you specify how many times a track will repeat in Performance Mode before going on to the next track: you can also mark a track as the End of a sequence.  Your options are {\tt LOOP}, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 15, 24, 32, 64, or {\tt END}.
+\item {\bf Transpose (Track)} (or {\bf No Transpose (Track)})\quad This toggles whether this track responds to the user transposing the sequencer during performance mode.
 \item {\bf Edit}\quad A submenu for some simple cut/copy/paste-like operations:
 \begin{itemize}
 \item {\bf Mark}\quad Records the current track and edit position as the {\it mark position}.
@@ -868,17 +866,17 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 \item {\bf Move}\quad Works like Copy, except that the mark position track is then erased.
 \item {\bf Duplicate}\quad Duplicate absolutely all of the data in the mark track to the current track (including note data, volume, MIDI out, etc.).  The specific mark (note) position is ignored.
 \end{itemize}
-\item {\bf Transpose (Track)} (or {\bf No Transpose (Track)})\quad This toggles whether this track responds to the user transposing the sequencer during performance mode.
-%\item {\bf Clock Control} (or {\bf No Clock Control}) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note that regardless of the settinmag of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.
 \item {\bf No Echo} (or {\bf Echo}) {\it (Advanced Step Sequencer Only)}\quad This toggles {\it no-echo mode}.  Normally when you enter a note, it's automatically played so you get some feedback.  But in some circumstances this isn't desirable: for example, if you're entering {\it and} playing notes from the same keyboard, then this default behavior will cause two notes to be played whenever you enter a note.  {\bf No Echo} will turn this off.\footnote{Another closely related feature: if you're in play position mode and you have entered a note slightly before its time, Gizmo won't play it (the first time) when its time comes up, because you just played it yourself.  This isn't the case on the Uno: you'll hear a double-played note the first time.  There's not enough space on the Uno to add this feature, sorry.}
+\item {\bf Pitch Shift (Track)} {\it (Advanced Step Sequencer Only)}\quad This lets you shift (transpose) the pitch of all notes in the track.  You'll first be asked ({\tt NOTE}) to enter a note, and then asked ({\tt TRAN}) to enter a second note to transpose the first one to.  All notes will be correspondingly transposed by that amount.  Beware that if a note is transposed below the lowest or highest MIDI notes, it is bounded to those notes, which won't sound very good.
+%\item {\bf Clock Control} (or {\bf No Clock Control}) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note that regardless of the settinmag of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.
 
 \item {\bf Rest Note} {\it (Advanced Step Sequencer Only)}\quad This selects a {\it rest note}, a key of your choice which, when pressed, enters a rest rather than a note.  If when selecting a rest note you instead press the Select button, this removes any rest note. 
 
 \item {\bf Tie Note} {\it (Advanced Step Sequencer Only)}\quad This selects a {\it tie note}, a key of your choice which, when pressed, enters a tie rather than a note.  If when selecting a tie note you instead press the Select button, this removes any tie note. 
 
-\item {\bf Length}\quad  Lets you set the length of the sequence to a custom value, or to \texttt{- - - -}, meaning to use the default initialized sequence length (16, 24, 32, 48, 64, or 96).  If the initialized length is 16, 24, or 32, then you can customize the length to anything less than it.  If the initialized length is 48, 64, or 96, then you can reduce the length to no less than 31 fewer notes.
-
 \item {\bf Show Note}  (or {\bf No Show Note})\quad  Toggles whether the upper of two stacked 16x8 LEDs displays the value of the note/data at the cursor.  Notes are shown with pitch/octave and velocity, and ties are shown with \texttt{TIE}.  Data tracks also show their respective data values.  This menu has no effect at all if you only have one LED screen.  See {\bf Vertical Stacked Screens} below.
+
+\item {\bf Length}\quad  Lets you set the length of the sequence to a custom value, or to \texttt{- - - -}, meaning to use the default initialized sequence length (16, 24, 32, 48, 64, or 96).  If the initialized length is 16, 24, or 32, then you can customize the length to anything less than it.  If the initialized length is 48, 64, or 96, then you can reduce the length to no less than 31 fewer notes.
 
 \item {\bf Performance}\quad  This brings up the Performance Mode sub-menu.  You can select these menu items from any mode (not just Performance Mode), but they will only impact on Performance Mode:
 
@@ -917,6 +915,10 @@ In MIDI& Out MIDI&Control MIDI&MIDI Clock&Volume\\
 Of particular use are Tempo, Note Speed, Swing, and especially Click.
 
 
+\paragraph{Vertical Stacked Screens}
+
+When Gizmo has two vertical stacked screens, the Step Sequencer will take advantage of them to display the entire sequence. Optionally if you select the {\bf Show Note} menu option, the Step Sequencer will display the sequence in the normal manner, but use the upper screen to display the note or data information at the current cursor.
+
 \paragraph{Controls Summary}  The Step Sequencer's controls can be a bit complex.  Here's what they do in each mode.  Note that once you're changing the tempo in the menu, you can also tap the middle button to adjust the tempo in addition to moving the knob.
 
 \vspace{1em}
@@ -927,9 +929,9 @@ Of particular use are Tempo, Note Speed, Swing, and especially Click.
 Back Button				& Exit  & Exit & Leave Performance Mode\\
 Back Button (Long)			& Toggle Bypass & Toggle Bypass & Toggle Bypass\\
 Middle Button				& Rest/Enter Data & Toggle Mute Track & Schedule Mute Track\\
-{\it Mono/Duo}&&Next Track&Schedule Next Track/Unschedule Track\\
+Middle Button {\it Mono/Duo}&Rest/Enter Data &Next Track&Schedule Next Track/Unschedule Track\\
 Middle Button (Long)			& Tie/Clear Data & Clear Track & Schedule Solo\\
-{\it Mono/Duo}&&&Schedule Track\\
+Middle Button (Long)	 {\it Mono/Duo}&Tie/Clear Data &Clear Track&Schedule Track\\
 Select Button				& Start/Stop & Start/Stop & Start/Schedule Stop/Stop\\
 Select Button (Long)			& Menu & Menu & Menu\\
 Select + Middle Button (Long) 	&  Performance Mode &  Performance Mode & Schedule Next Sequence\\
@@ -940,10 +942,6 @@ Keystrokes, CC, etc.			& Enter at Edit Cursor&Enter at Play Cursor & Enter at Pl
 						&				  &				   &Transpose {\it or} Route Out\\
 \end{tabular}
 }\\
-
-\paragraph{Vertical Stacked Screens}
-
-When Gizmo has two vertical stacked screens, the Step Sequencer will take advantage of them to display the entire sequence. Optionally if you select the {\bf Show Note} menu option, the Step Sequencer will display the sequence in the normal manner, but use the upper screen to display the note or data information at the current cursor.
 
 \paragraph{Remote Control over CC}  If you have a remote control surface, you can greatly enhance the Step Sequencer's editing and performance chops by sending CC messages over Gizmo's Control MIDI Channel:
 
@@ -974,6 +972,7 @@ When Gizmo has two vertical stacked screens, the Step Sequencer will take advant
 95	&	Any		& Splat\\
 116	&	Any		& Move\\
 117	&	Any		& Duplicate\\
+118	&	Any		& Pitch Shift\\
 16	&	0--127		& Set Track Note Length (press Select to set, Back to cancel)\\
 17	&	0--127		& Set Track MIDI Out (press Select to set, Back to cancel)\\
 18	&	0--127		& Set Track Velocity (press Select to set, Back to cancel)\\
@@ -1267,7 +1266,7 @@ One weakness of BIG LOOP is that the final transition in the loop will be played
 
 Pressing the Select button does a start/stop, but not in the same way it does in the other modes.  Instead of starting playing the given group, this button will {\it start the transition chain}, and so begin playing the group associated with the first transition.  When the transition is finished, Performance Mode will then continue on to the next transition, and so on.   Pressing the Select button while playing will stop and reset to the beginning of the chain when the latest iteration of is complete.  There is a performance menu option to specify whether stopping will occur at the last note of the current iteration, or the first note of the {\it next} iteration.  If you press the Select button a second time before stopping has occurred, then it will stop and reset immediately.  There is also a menu option to pause performance without resetting.  
 
-In Performance Mode, the left knob changes the current track, but the right knob changes the {\bf tempo}.  After changing the tempo, pressing Select will choose the tempo while pressing Back button will cancel.  
+In Performance Mode, the left knob changes the current track, but the right knob changes the {\bf track velocity}.  After changing the velocity, pressing Select will enter the value while Back will cancel.  
 
 Performance mode handles the keyboard in much the same way as the Step Sequencer.  As determined by a {\bf menu} option, you can treat the keyboard just like Play Position Mode; or you can route the key notes out any MIDI channel; or you can select the {\tt PICK} option, which allows you to schedule specific transitions by pressing keys.  Unlike the Step Sequencer, you cannot transpose with the keyboard.
 
@@ -2600,7 +2599,7 @@ I have three Gizmos which I chain together when playing. One might run a Drum Se
 
 \paragraph{Sending Note Data} By default Gizmo pass through MIDI data on all channels other than its MIDI In.  Thus if each of your Gizmos have a different MIDI In, you can send data to each one just by changing your controller's MIDI channel, assuming they're all currently running applications.
 
-If a Gizmo is in the top menu or is running something which doesn't pass through non-MIDI-In data, you can always turn on Bypass.  Remember that Bypass is on by default when you power your Gizmo up.  I've not found MIDI note latency to be bad at all even in my very strung out setup (SL\(\leftarrow\)Zero\(\leftarrow\)Gizmo\(\leftarrow\)Gizmo\(\leftarrow\)Gizmo\(\leftarrow\)Router\(\leftarrow\)Synths)
+If a Gizmo is in the top menu or is running something which doesn't pass through non-MIDI-In data, you can always turn on Bypass.  Remember that Bypass is on by default when you power your Gizmo up.  I've not found MIDI note latency to be bad at all even in my very strung out setup (SL\(\rightarrow\)Zero\(\rightarrow\)Gizmo\(\rightarrow\)Gizmo\(\rightarrow\)Gizmo\(\rightarrow\)Router\(\rightarrow\)Synths)
 
 \paragraph{Controlling a Gizmo} By default Gizmo pass through MIDI data on channels other than its MIDI In.  If you just want to control a given Gizmo, simply set the upstream and downstream Gizmos to bypass.  
 

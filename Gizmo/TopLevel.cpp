@@ -896,14 +896,14 @@ void go()
             {
             // 0 represents FREE velocity
             stateNumerical(0, 127, local.stepSequencer.velocity[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, true, GLYPH_NONE,
-                immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);
+                immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);	//, GLYPH_NONE, immediateReturn && (immediateReturnState == STATE_STEP_SEQUENCER_PLAY));
             playStepSequencer();
             }
         break;
         case STATE_STEP_SEQUENCER_FADER:
             {
             stateNumerical(0, 31, local.stepSequencer.fader[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_NONE, 
-                immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);
+                immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU, GLYPH_NONE, immediateReturn && (immediateReturnState == STATE_STEP_SEQUENCER_PLAY));		// not MENU because we can be called from the pot
             playStepSequencer();
             }
         break;
@@ -911,7 +911,7 @@ void go()
             {
             // 101 represents DEFAULT length
             stateNumerical(0, 101, local.stepSequencer.noteLength[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_DEFAULT,
-                immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);
+                immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);	// , GLYPH_NONE, immediateReturn && (immediateReturnState == STATE_STEP_SEQUENCER_PLAY));
             playStepSequencer();
             }
         break;
@@ -946,6 +946,16 @@ void go()
         case STATE_STEP_SEQUENCER_MENU_TIE:
             {
             stateStepSequencerMenuTie();
+            }
+        break;
+        case STATE_STEP_SEQUENCER_MENU_SHIFT:
+            {
+            stateStepSequencerMenuShift();
+            }
+        break;
+        case STATE_STEP_SEQUENCER_MENU_SHIFT_SECOND:
+            {
+            stateStepSequencerMenuShiftSecond();
             }
         break;
 #endif INCLUDE_ADVANCED_STEP_SEQUENCER
