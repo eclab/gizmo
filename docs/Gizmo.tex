@@ -342,13 +342,13 @@ Gizmo will reset all of its flash RAM and reboot.  This means that all options w
 
 If you power up Gizmo, or press its reset button, it will display its {\bf boot screen}, which includes the version number (at right, the version number is ``1'').
 
-Gizmo will then show the {\bf root menu}.  Use the left potentiometer to scroll to any of the following applications, and use the select button to select an application.  
+Gizmo will then show the {\bf top level menu}.  Use the left potentiometer to scroll to any of the following applications, and use the select button to select an application.  
 
 \subsection{Starting Gizmo Headless}
 
 Gizmo normally targets the SparkFun MIDI Shield, but you might be able to use its code with some other MIDI shield, as long as the shield just intercepts Serial to do its MIDI and doesn't interfere with I2C.\footnote{I have heard Gizmo user reports suggesting that you avoid the LinkSprite Midi Shield, as it has a tendency to fry your Arduino.}  Such MIDI shields are unlikely to have the button, pots, or LEDs that the SparkFun shield has.  But that's okay, you can add those things yourself.  
 
-Or you could just control the buttons and pots virtually via NRPN, and just do without the two LEDs.  To do this you'll need some way to clear Gizmo's options and files without needing to press any buttons (as you won't have any).  You can do it like this:
+Or you could just control the buttons and pots virtually via NRPN, and go without the two LEDs.  To do this you'll need some way to clear Gizmo's options and files without needing to press any buttons (as you won't have any).  You can do it like this:
 
 \begin{enumerate}
 \item In the \texttt{All.h} file, change the line 
@@ -733,7 +733,7 @@ If you have chosen {\it none}, or have chosen an empty slot or one presently fil
 
 \paragraph{Organization} Figure~\ref{stepsequencer} shows the general step sequencer display structure.  The {\it Tracks} region is where sequencer tracks are displayed and edited.  The {\it Track Number} area tells you the number of the currently-edited track.  Figure~\ref{tracknumber} explains how to interpret this.  The {\it Stopped} LED tells you if the step sequencer is currently stopped (or playing).  The {\it Track Uses a Default Velocity} LED tell you if all notes in the current track are fixed to the same velocity, or permitted to use different velocities.  The {\it Track Uses a Fader} LED is lit when the pre-track fader (volume) is set to something other than maximum volume for the current track.   Finally, the {\it MIDI Out Channel for Track} tells you what channel the current track is playing.  The patterns for the MIDI Out Channel for Track are the same as those in Figure~\ref{midichannelvalues}, except that MIDI Out does not support ALL (OMNI).  Other LEDs are discussed later.
 
-Pressing the Select button will toggle whether the Step Sequencer is playing or stopped.  When you start playing the Step Sequencer, it waits for the clock to reach a measure boundary before beginning.  Note that if you start playing the Step Sequencer, but the clock isn't running, it won't play at all.  You'll need a clock (internal or external) to drive it.
+Pressing the Select button will toggle whether the Step Sequencer is {\bf playing} or {\bf stopped}.  When you start playing the Step Sequencer, it waits for the clock to reach a measure boundary before beginning.  Note that if you start playing the Step Sequencer, but the clock isn't running, it won't play at all.  You'll need a clock (internal or external) to drive it.
 
 You'll enter notes (or other kinds of sequenced data) in one of several {\it tracks}. You select your current track by turning the left knob.  In a given track, you choose the current note position by turning the right knob.  When the Step Sequencer is playing, the  tracks region will also display the {\it play position cursor}, a blinking vertical set of LEDs which indicate which notes in the tracks are currently playing.  This vertical group heads to the right, eventually wrapping around. 
 
@@ -757,19 +757,7 @@ Typically you'll start in Edit Mode.  Somewhere on the screen there will be a si
 
 You enter notes by moving the edit cursor to the desired location, then playing keys.  You can also press the Middle Button to enter a rest, or Long Press the Middle Button to enter a {\it tie}.  A tie just means ``keep playing the previous note'': it essentially lengthens the previous note.  You can enter multiple ties in series to make a note as long as you like.
 
-\paragraph{Sequencing Data {\it (Advanced Step Sequencer Only)}} The Step Sequencer allows you to store other kinds of data besides Note-On and Note-Off.  Specifically, you can set a given track to store and replay any one of (raw) CC, 14 Bit CC, NRPN, RPN, Pitch Bend, Channel Aftertouch, or Program Change commands by choosing {\bf Type} from the menu (see {\bf Menu Options} below).  If you select (raw) CC, 14 Bit CC, NRPN, or RPN, you will be further prompted to specify which parameter number you'd like to sequence (for example, CC\# 42 or NRPN\# 12312).
-
-Non-note data is entered differently than note data.  To enter non-note events, send an event to the MIDI In Channel, then press the {\bf middle button}: the most recent sent event will then be recorded at the current position.  You can erase data at the current position (essentially send a rest) by long-pressing the middle button.\footnote{This may be confusing as rests are entered by simply {\it pressing} the middle button for note data, but I figured entering data was more important than entering rests in the non-note case.  Sorry.}
-
-\begin{wrapfigure}{r}{1.25in}
-\vspace{-1.5em}\hspace{\fill}\includegraphics[width=0.7in]{playpositionmode}\hspace{\fill}%
-\vspace{-1em}
-\caption{\small The Play Position Mode Cursor.  The two dots mark the current track.}
-\vspace{-1em}
-\label{playpositionmode}
-\end{wrapfigure}
-
-Some notes.  First, if you sent a Polyphonic Aftertouch event (on any key) it will be recorded instead as Channel Aftertouch.  Second, if your track is configured for (raw) CC, then you can send {\it any} raw CC value to it (all 127 parameter numbers), and it will also emit the same; but if your track is configured for 14-bit CC, then only the first 31 parameter numbers may be used.  Third, any Pitch Bend value can be stored except for 8191 (the high value).  Fourth, any 14 Bit CC, RPN, or NRPN value can be stored except for 16383 (again, the high value).  
+If the sequencer is {\it stopped}, then notes will be played as you enter them in Edit mode so you can hear what you're entering.  However if the sequencer is {\it playing}, this won't happen, as it might be confused with the notes being played.
 
 \paragraph{Play Position Mode}
 
@@ -811,6 +799,20 @@ Similarly, if you press mute, you {\it schedule} the track to be muted (or not),
 \end{itemize}
 
 If you include a CC control surface (see {\it Remote Control over CC} below) you have the further option of advancing mute on any track individually.  This is useful to perform with Gizmo as a groove surface, where you trigger various tracks to play once or turn them on or off during the performance.
+
+\paragraph{Sequencing Data {\it (Advanced Step Sequencer Only)}} The Step Sequencer allows you to store other kinds of data besides Note-On and Note-Off.  Specifically, you can set a given track to store and replay any one of (raw) CC, 14 Bit CC, NRPN, RPN, Pitch Bend, Channel Aftertouch, or Program Change commands by choosing {\bf Type} from the menu (see {\bf Menu Options} below).  If you select (raw) CC, 14 Bit CC, NRPN, or RPN, you will be further prompted to specify which parameter number you'd like to sequence (for example, CC\# 42 or NRPN\# 12312).
+
+Non-note data is entered differently than note data.  To enter non-note events, send an event to the MIDI In Channel, then press the {\bf middle button}: the most recent sent event will then be recorded at the current position.  You can erase data at the current position (essentially send a rest) by long-pressing the middle button.\footnote{This may be confusing as rests are entered by simply {\it pressing} the middle button for note data, but I figured entering data was more important than entering rests in the non-note case.  Sorry.}
+
+\begin{wrapfigure}{r}{1.25in}
+\vspace{-1.5em}\hspace{\fill}\includegraphics[width=0.7in]{playpositionmode}\hspace{\fill}%
+\vspace{-1em}
+\caption{\small The Play Position Mode Cursor.  The two dots mark the current track.}
+\vspace{-1em}
+\label{playpositionmode}
+\end{wrapfigure}
+
+Some notes.  First, if you sent a Polyphonic Aftertouch event (on any key) it will be recorded instead as Channel Aftertouch.  Second, if your track is configured for (raw) CC, then you can send {\it any} raw CC value to it (all 127 parameter numbers), and it will also emit the same; but if your track is configured for 14-bit CC, then only the first 31 parameter numbers may be used.  Third, any Pitch Bend value can be stored except for 8191 (the high value).  Fourth, any 14 Bit CC, RPN, or NRPN value can be stored except for 16383 (again, the high value).  
 
 \paragraph{Monophonic and Duophonic Formats {\it (Advanced Step Sequencer Only)}}
 These are alternative track formats you can choose when you initialize your sequence. These formats look the same as the regular layouts, but they don't play the same.  The purpose of these formats is to maximize your ability to make long sequences for a monophonic or duophonic sequencer, rather than short multitrack sequences for multiple synths.\footnote{You'll notice that this feels like a hacked-up, bad version of the Drum Sequencer's groups facility and you'd be right.  The Drum Sequencer was built from the ground up; but the Mono and Duo formats were added to the Step Sequencer long after the fact, so we can't do groups per se: and we don't have the memory to store group information anyway.  Instead this is the best   compromise I was able to make, knowing that its somewhat inconvenient to use.} When in Performance mode, the step sequencer will run through each track in turn rather than playing them all at the same time.  This allows you to, in some sense, create one long \(12 \times 16\) track rather than 12 separate 16-note tracks, for example.
@@ -861,13 +863,14 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 \item {\bf Edit}\quad A submenu for some simple cut/copy/paste-like operations:
 \begin{itemize}
 \item {\bf Mark}\quad Records the current track and edit position as the {\it mark position}.
-\item {\bf Copy}\quad Copies the data at the mark position to the current track starting at the current edit position.  The copied data is wrapped around when it goes beyond the end of the current track.
+\item {\bf Copy}\quad Copies the data at the mark position to the current track starting at the current edit position.  The copied data is wrapped around when it goes beyond the end of the current track.  This can also be used to rotate (shift) the track in its entirety.
 \item {\bf Splat}\quad Copies the data at the mark position to the current track starting at the current edit position.  The copied data is {\it not} wrapped around when it goes beyond the end of the current track: it just stops there.
 \item {\bf Move}\quad Works like Copy, except that the mark position track is then erased.
-\item {\bf Duplicate}\quad Duplicate absolutely all of the data in the mark track to the current track (including note data, volume, MIDI out, etc.).  The specific mark (note) position is ignored.
+\item {\bf Duplicate}\quad Duplicate absolutely all of the data in the mark track to the current track (including note data, volume, MIDI out, etc.).  The specific mark note position is ignored.
+\item {\bf Swap}\quad Swap all of the data in the mark track with the current track (including note data, volume, MIDI out, etc.).  The specific mark note position is ignored.
 \end{itemize}
-\item {\bf No Echo} (or {\bf Echo}) {\it (Advanced Step Sequencer Only)}\quad This toggles {\it no-echo mode}.  Normally when you enter a note, it's automatically played so you get some feedback.  But in some circumstances this isn't desirable: for example, if you're entering {\it and} playing notes from the same keyboard, then this default behavior will cause two notes to be played whenever you enter a note.  {\bf No Echo} will turn this off.\footnote{Another closely related feature: if you're in play position mode and you have entered a note slightly before its time, Gizmo won't play it (the first time) when its time comes up, because you just played it yourself.  This isn't the case on the Uno: you'll hear a double-played note the first time.  There's not enough space on the Uno to add this feature, sorry.}
-\item {\bf Pitch Shift (Track)} {\it (Advanced Step Sequencer Only)}\quad This lets you shift (transpose) the pitch of all notes in the track.  You'll first be asked ({\tt NOTE}) to enter a note, and then asked ({\tt TRAN}) to enter a second note to transpose the first one to.  All notes will be correspondingly transposed by that amount.  Beware that if a note is transposed below the lowest or highest MIDI notes, it is bounded to those notes, which won't sound very good.
+%\item {\bf No Echo} (or {\bf Echo}) {\it (Advanced Step Sequencer Only)}\quad This toggles {\it no-echo mode}.  Normally when you enter a note, it's automatically played so you get some feedback.  But in some circumstances this isn't desirable: for example, if you're entering {\it and} playing notes from the same keyboard, then this default behavior will cause two notes to be played whenever you enter a note.  {\bf No Echo} will turn this off.\footnote{Another closely related feature: if you're in play position mode and you have entered a note slightly before its time, Gizmo won't play it (the first time) when its time comes up, because you just played it yourself.  This isn't the case on the Uno: you'll hear a double-played note the first time.  There's not enough space on the Uno to add this feature, sorry.}
+\item {\bf Pitch Shift (Track)} {\it (Advanced Step Sequencer Only)}\quad This lets you shift (transpose) the pitch of all notes in the track.  You'll first be asked ({\tt NOTE}) to enter a note, and then asked ({\tt TRAN}) to enter a second note to transpose the first one to.  All notes will be correspondingly transposed by that amount.  Beware that if a note is transposed below the lowest or above the highest MIDI notes, it is bounded to those notes, which won't sound very good.
 %\item {\bf Clock Control} (or {\bf No Clock Control}) \quad This toggles {\it clock control mode}.  Normally, if you play or stop the sequencer, it will not send MIDI STOP or MIDI PLAY commands\,---\,if you want to start the MIDI clock you have to do so separately (see Section \ref{startingclock}).  However it's common for sequencers to issue these commands when you start or stop the sequencer, so as to also start or stop other sequencers listening over MIDI.  To do this, turn on clock control mode.  Note that this only has an effect if Gizmo is {\bf generating} a MIDI Clock (see ``MIDI Clock'' in Section \ref{options}).  Finally note that regardless of the settinmag of this options, if Gizmo is {\it using} an external MIDI Clock (again, see ``MIDI Clock'' in Section \ref{options}), the Step Sequencer will stop and start in response to incoming MIDI Clock commands.
 
 \item {\bf Rest Note} {\it (Advanced Step Sequencer Only)}\quad This selects a {\it rest note}, a key of your choice which, when pressed, enters a rest rather than a note.  If when selecting a rest note you instead press the Select button, this removes any rest note. 
