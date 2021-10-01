@@ -116,7 +116,6 @@ struct _options
 
 #ifdef INCLUDE_STEP_SEQUENCER
 	// there are 4 here
-    uint8_t stepSequencerNoEcho;
     uint8_t stepSequencerSendClock;
 	int8_t stepSequencerPlayAlongChannel;
 	uint8_t stepSequencerStop;

@@ -56,7 +56,7 @@ void stateStepSequencerMenuEditMark()
     local.stepSequencer.markPosition = local.stepSequencer.currentEditPosition;
     if (local.stepSequencer.markPosition < 0)
         local.stepSequencer.markPosition = 0;
-    goUpState(immediateReturnState);
+    goUpState(immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_PLAY);
     }
 
 
@@ -125,7 +125,7 @@ void stateStepSequencerMenuEditCopy(uint8_t splat, uint8_t move)
         // we gotta do this because we just deleted some notes :-(
         sendAllSoundsOff();
                         
-        goUpState(immediateReturnState);
+        goUpState(immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_PLAY);
         }
     else
         {
@@ -133,6 +133,44 @@ void stateStepSequencerMenuEditCopy(uint8_t splat, uint8_t move)
         }
     }
 
+
+void stateStepSequencerMenuEditSwap()
+    {
+    uint8_t swap;
+#define STEP_SEQUENCER_SWAP(x, y) swap = x; x = y; y = swap;
+    STEP_SEQUENCER_SWAP(local.stepSequencer.data[local.stepSequencer.currentTrack], local.stepSequencer.data[local.stepSequencer.markTrack])
+    STEP_SEQUENCER_SWAP(local.stepSequencer.noteLength[local.stepSequencer.currentTrack], local.stepSequencer.noteLength[local.stepSequencer.markTrack])
+    STEP_SEQUENCER_SWAP(local.stepSequencer.muted[local.stepSequencer.currentTrack], local.stepSequencer.muted[local.stepSequencer.markTrack])
+    STEP_SEQUENCER_SWAP(local.stepSequencer.velocity[local.stepSequencer.currentTrack], local.stepSequencer.velocity[local.stepSequencer.markTrack])
+    STEP_SEQUENCER_SWAP(local.stepSequencer.fader[local.stepSequencer.currentTrack], local.stepSequencer.fader[local.stepSequencer.markTrack])
+    STEP_SEQUENCER_SWAP(local.stepSequencer.offTime[local.stepSequencer.currentTrack], local.stepSequencer.offTime[local.stepSequencer.markTrack])
+    STEP_SEQUENCER_SWAP(local.stepSequencer.noteOff[local.stepSequencer.currentTrack], local.stepSequencer.noteOff[local.stepSequencer.markTrack])
+    STEP_SEQUENCER_SWAP(local.stepSequencer.shouldPlay[local.stepSequencer.currentTrack], local.stepSequencer.shouldPlay[local.stepSequencer.markTrack])
+    STEP_SEQUENCER_SWAP(local.stepSequencer.transposable[local.stepSequencer.currentTrack], local.stepSequencer.transposable[local.stepSequencer.markTrack])
+    STEP_SEQUENCER_SWAP(local.stepSequencer.dontPlay[local.stepSequencer.currentTrack], local.stepSequencer.dontPlay[local.stepSequencer.markTrack])
+    STEP_SEQUENCER_SWAP(local.stepSequencer.pattern[local.stepSequencer.currentTrack], local.stepSequencer.pattern[local.stepSequencer.markTrack])
+    STEP_SEQUENCER_SWAP(local.stepSequencer.controlParameter[local.stepSequencer.currentTrack], local.stepSequencer.controlParameter[local.stepSequencer.markTrack])
+    STEP_SEQUENCER_SWAP(local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack], local.stepSequencer.lastControlValue[local.stepSequencer.markTrack])
+
+    if (IS_MONO() || IS_DUO())
+        {
+        // don't ever swap midiOut(event) data.  For DUO we'll have to avoid sending repeats (pattern) data too maybe?
+        }
+    else
+        {
+        STEP_SEQUENCER_SWAP(local.stepSequencer.outMIDI[local.stepSequencer.currentTrack],local.stepSequencer.outMIDI[local.stepSequencer.markTrack])
+        }
+
+	// swap buffer data
+	uint8_t len = GET_TRACK_LENGTH();
+	uint8_t buf[MAXIMUM_TRACK_LENGTH * 2];
+	memcpy(buf, data.slot.data.stepSequencer.buffer + local.stepSequencer.markTrack * ((uint16_t)len) * 2, len * 2);
+	memcpy(data.slot.data.stepSequencer.buffer + local.stepSequencer.markTrack * ((uint16_t)len) * 2,
+		 data.slot.data.stepSequencer.buffer + local.stepSequencer.currentTrack * ((uint16_t)len) * 2, len * 2);
+	memcpy(data.slot.data.stepSequencer.buffer + local.stepSequencer.currentTrack * ((uint16_t)len) * 2, buf, len * 2);
+
+    goUpState(immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_PLAY);
+    }
 
 
 void stateStepSequencerMenuEditDuplicate()
@@ -148,24 +186,17 @@ void stateStepSequencerMenuEditDuplicate()
     local.stepSequencer.transposable[local.stepSequencer.currentTrack] = local.stepSequencer.transposable[local.stepSequencer.markTrack];
     local.stepSequencer.dontPlay[local.stepSequencer.currentTrack] = local.stepSequencer.dontPlay[local.stepSequencer.markTrack];
     local.stepSequencer.pattern[local.stepSequencer.currentTrack] = local.stepSequencer.pattern[local.stepSequencer.markTrack];
-
-// Advanced step sequencer transfers control data
-// Also if we're mono, we need to deny the ability to transfer MIDI data since all MIDI data is handled on track 0
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
     local.stepSequencer.controlParameter[local.stepSequencer.currentTrack] = local.stepSequencer.controlParameter[local.stepSequencer.markTrack];
     local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = local.stepSequencer.lastControlValue[local.stepSequencer.markTrack];
 
     if (IS_MONO() || IS_DUO())
         {
-        // don't ever copy midiOut(event) data.  For DUO and TRIO we'll have to avoid sending repeats (pattern) data too maybe?
+        // don't ever copy midiOut(event) data.  For DUO we'll have to avoid sending repeats (pattern) data too maybe?
         }
     else
         {
         local.stepSequencer.outMIDI[local.stepSequencer.currentTrack] = local.stepSequencer.outMIDI[local.stepSequencer.markTrack];
         }
-#else
-    local.stepSequencer.outMIDI[local.stepSequencer.currentTrack] = local.stepSequencer.outMIDI[local.stepSequencer.markTrack];
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
                 
     // set the mark and edit positions to 0 temporarily so we can copy the note data properly
     uint8_t backupMarkPosition = local.stepSequencer.markPosition;
@@ -178,7 +209,7 @@ void stateStepSequencerMenuEditDuplicate()
     local.stepSequencer.markPosition = backupMarkPosition;
     local.stepSequencer.currentEditPosition = backupEditPosition;
         
-    goUpState(immediateReturnState);
+    goUpState(immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_PLAY);
     }
 
 
@@ -975,12 +1006,11 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
 // Reformats the sequence as requested by the user
 void stateStepSequencerFormat()
     {
-/// The advanced step sequencer has 6 additional MONO modes (for a total of 12) and possibly in the future some DUO or TRIO modes
+/// The advanced step sequencer has 6 additional MONO modes (for a total of 12) and possibly in the future some DUO
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
     const char* menuItems[16] = {  PSTR("16 NOTES"), PSTR("24 NOTES"), PSTR("32 NOTES"), PSTR("48 NOTES"), PSTR("64 NOTES"), PSTR("96 NOTES"), 
                                    PSTR("16 MONO"), PSTR("24 MONO"), PSTR("32 MONO"), PSTR("48 MONO"), PSTR("64 MONO"), PSTR("96 MONO"),
-                                   PSTR("16 DUO"), PSTR("24 DUO"), PSTR("32 DUO"), PSTR("48 DUO") };               // No PSTR("96 DUO") because we want two tracks per screen
-    // PSTR("16 TRIO"), PSTR("32 TRIO"), PSTR("64 TRIO") };
+                                   PSTR("16 DUO"), PSTR("24 DUO"), PSTR("32 DUO"), PSTR("48 DUO") };
     uint8_t result = doMenuDisplay(menuItems, 16, STATE_NONE, 0, 1);
 #else
     const char* menuItems[6] = {  PSTR("16 NOTES"), PSTR("24 NOTES"), PSTR("32 NOTES"), PSTR("48 NOTES"), PSTR("64 NOTES"), PSTR("96 NOTES") };
@@ -998,14 +1028,12 @@ void stateStepSequencerFormat()
             {
             data.slot.type = SLOT_TYPE_STEP_SEQUENCER;
 
-/// The advanced step sequencer has 6 additional MONO modes (for a total of 12) and possibly in the future some DUO or TRIO modes
+/// The advanced step sequencer has 6 additional MONO modes and four DUO modes (for a total of 16) 
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
             const uint8_t formats[16] = { STEP_SEQUENCER_FORMAT_16x12, STEP_SEQUENCER_FORMAT_24x8, STEP_SEQUENCER_FORMAT_32x6, STEP_SEQUENCER_FORMAT_48x4, STEP_SEQUENCER_FORMAT_64x3, STEP_SEQUENCER_FORMAT_96x2,
-                                          STEP_SEQUENCER_FORMAT_16x12, STEP_SEQUENCER_FORMAT_24x8, STEP_SEQUENCER_FORMAT_32x6, STEP_SEQUENCER_FORMAT_48x4, STEP_SEQUENCER_FORMAT_64x3, STEP_SEQUENCER_FORMAT_96x2 };
-            STEP_SEQUENCER_FORMAT_16x12, STEP_SEQUENCER_FORMAT_24x8, STEP_SEQUENCER_FORMAT_32x6, STEP_SEQUENCER_FORMAT_48x4, // STEP_SEQUENCER_FORMAT_96x2,
-                // STEP_SEQUENCER_FORMAT_16x12, STEP_SEQUENCER_FORMAT_32x6, STEP_SEQUENCER_FORMAT_64x3 };
-/// For now MONO mode sets mono to 1: maybe later we'll set to 2 or 3 for duo or trio mode                                                               
-                data.slot.data.stepSequencer.mono = (currentDisplay < 6 ? 0 : (currentDisplay < 12 ? 1 : 2));               // (currentDisplay < 17 ? 2 : 3)));
+                                          STEP_SEQUENCER_FORMAT_16x12, STEP_SEQUENCER_FORMAT_24x8, STEP_SEQUENCER_FORMAT_32x6, STEP_SEQUENCER_FORMAT_48x4, STEP_SEQUENCER_FORMAT_64x3, STEP_SEQUENCER_FORMAT_96x2,
+            							  STEP_SEQUENCER_FORMAT_16x12, STEP_SEQUENCER_FORMAT_24x8, STEP_SEQUENCER_FORMAT_32x6, STEP_SEQUENCER_FORMAT_48x4 };
+                data.slot.data.stepSequencer.mono = (currentDisplay < 6 ? 0 : (currentDisplay < 12 ? 1 : 2));
 #else
             const uint8_t formats[6] = { STEP_SEQUENCER_FORMAT_16x12, STEP_SEQUENCER_FORMAT_24x8, STEP_SEQUENCER_FORMAT_32x6, STEP_SEQUENCER_FORMAT_48x4, STEP_SEQUENCER_FORMAT_64x3, STEP_SEQUENCER_FORMAT_96x2 };
 #endif INCLUDE_ADVANCED_STEP_SEQUENCER
@@ -1615,7 +1643,7 @@ void stateStepSequencerPlay()
         uint8_t note = itemNumber;
         uint8_t velocity = itemValue;
         
-        if ((local.stepSequencer.muted[local.stepSequencer.currentTrack] && !options.stepSequencerNoEcho)
+        if (local.stepSequencer.muted[local.stepSequencer.currentTrack]
             || (local.stepSequencer.performanceMode && options.stepSequencerPlayAlongChannel == CHANNEL_ADD_TO_STEP_SEQUENCER ))
             {
             // play the note
@@ -1643,14 +1671,16 @@ void stateStepSequencerPlay()
                 local.stepSequencer.lastNote = NO_SEQUENCER_NOTE;
                 local.stepSequencer.lastNotePos = NO_SEQUENCER_POS;
                 }
-            else
-                {            
 /// "Rest Notes" are only with the advanced sequencer
-                if (note == options.stepSequencerRestNote)  // aha!  Add a rest
-                    {
-                    note = 0;
-                    velocity = 0;
-                    }
+            else if (note == options.stepSequencerRestNote)	// aha!  Add a rest
+                {            
+                loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + pos, 0, 0);
+                removeSuccessiveTies(pos, trackLen);
+				local.stepSequencer.lastNote = NO_SEQUENCER_NOTE;
+				local.stepSequencer.lastNotePos = NO_SEQUENCER_POS;
+                }
+            else
+            	{
                 loadBuffer(((uint16_t)trackLen) * local.stepSequencer.currentTrack + pos, note, velocity);
                 removeSuccessiveTies(pos, trackLen);
                 local.stepSequencer.lastNote = note;
@@ -1666,25 +1696,31 @@ void stateStepSequencerPlay()
             
             if (local.stepSequencer.currentEditPosition >= 0 && !(local.stepSequencer.performanceMode)
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
-                && note != options.stepSequencerTieNote
+                && note != options.stepSequencerTieNote			// ties notes are advanced on NOTE OFF, not NOTE ON
 #endif INCLUDE_ADVANCED_STEP_SEQUENCER
                 )
                 {
                 local.stepSequencer.currentEditPosition = incrementAndWrap(local.stepSequencer.currentEditPosition, trackLen);
+                if (local.stepSequencer.playState == PLAY_STATE_STOPPED)
+                	{
+                    sendTrackNote(note, velocity, local.stepSequencer.currentTrack);
+                	}
                 }
             else 
                 {
                 local.stepSequencer.dontPlay[local.stepSequencer.currentTrack] = 1;
 
-// We have to check for rest notes here and not echo them
+// We have to check for rest notes here and not play them
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
-                if (!options.stepSequencerNoEcho && note != options.stepSequencerRestNote && note != options.stepSequencerTieNote)
-#else
-                    if (!options.stepSequencerNoEcho)               // only play if we're echoing
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+                if (note != options.stepSequencerRestNote && note != options.stepSequencerTieNote)
                         {
                         sendTrackNote(note, velocity, local.stepSequencer.currentTrack);
                         }
+#else
+                        {
+                        sendTrackNote(note, velocity, local.stepSequencer.currentTrack);
+                        }
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
                 }
                         
             local.stepSequencer.currentRightPot = getNewCursorXPos(trackLen);
@@ -2104,32 +2140,24 @@ void stateStepSequencerPlay()
 #define STEP_SEQUENCER_MENU_PATTERN 7
 #define STEP_SEQUENCER_MENU_TRANSPOSABLE 8
 #define STEP_SEQUENCER_MENU_EDIT 9
-#define STEP_SEQUENCER_MENU_NO_ECHO 10
-#define STEP_SEQUENCER_MENU_SHIFT 11
-#define STEP_SEQUENCER_MENU_REST 12
-#define STEP_SEQUENCER_MENU_TIE 13
-#define STEP_SEQUENCER_MENU_SHOW_NOTE 14
-#define STEP_SEQUENCER_MENU_LENGTH 15
-#define STEP_SEQUENCER_MENU_PERFORMANCE 16
-#define STEP_SEQUENCER_MENU_SAVE 17
-#define STEP_SEQUENCER_MENU_OPTIONS 18
+#define STEP_SEQUENCER_MENU_SHIFT 10
+#define STEP_SEQUENCER_MENU_REST 11
+#define STEP_SEQUENCER_MENU_TIE 12
+#define STEP_SEQUENCER_MENU_SHOW_NOTE 13
+#define STEP_SEQUENCER_MENU_LENGTH 14
+#define STEP_SEQUENCER_MENU_PERFORMANCE 15
+#define STEP_SEQUENCER_MENU_SAVE 16
+#define STEP_SEQUENCER_MENU_OPTIONS 17
 
 #else
-
-
-///// FIXME: I have temporarily removed NoEcho as an option for the standard step sequencer in order
-///// to get it to fit.  Not sure what I had done which had bloated it.  Trying to squeeze it back down
-///// again.  At any rate, the noEcho checks are still in the standard step sequencer code, I've not
-///// ifdef'ed them out (nor in Options).
 
 #define STEP_SEQUENCER_MENU_PATTERN 6
 #define STEP_SEQUENCER_MENU_TRANSPOSABLE 7
 #define STEP_SEQUENCER_MENU_EDIT 8
-#define STEP_SEQUENCER_MENU_NO_ECHO 9
-#define STEP_SEQUENCER_MENU_LENGTH 10
-#define STEP_SEQUENCER_MENU_PERFORMANCE 11
-#define STEP_SEQUENCER_MENU_SAVE 12
-#define STEP_SEQUENCER_MENU_OPTIONS 13
+#define STEP_SEQUENCER_MENU_LENGTH 9
+#define STEP_SEQUENCER_MENU_PERFORMANCE 10
+#define STEP_SEQUENCER_MENU_SAVE 11
+#define STEP_SEQUENCER_MENU_OPTIONS 12
 
 #endif INCLUDE_ADVANCED_STEP_SEQUENCER
 
@@ -2145,7 +2173,7 @@ void stateStepSequencerMenu()
     
 // Advanced step sequencer has two more menu options: type (note, non-note) and rest notes
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
-    const char* menuItems[19] = {    
+    const char* menuItems[18] = {    
         (local.stepSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),
         PSTR("RESET TRACK"),
         PSTR("NOTE LENGTH (TRACK)"),
@@ -2156,7 +2184,6 @@ void stateStepSequencerMenu()
         ((IS_MONO() || IS_DUO()) ? PSTR("REPEAT (TRACK)") : PSTR("PATTERN (TRACK)")),
         local.stepSequencer.transposable[local.stepSequencer.currentTrack] ? PSTR("NO TRANSPOSE (TRACK)") : PSTR("TRANSPOSE (TRACK)"),
         PSTR("EDIT"),
-        options.stepSequencerNoEcho ? PSTR("ECHO") : PSTR("NO ECHO"), 
         PSTR("PITCH SHIFT (TRACK)"),
         PSTR("REST NOTE"),
         PSTR("TIE NOTE"),
@@ -2166,7 +2193,7 @@ void stateStepSequencerMenu()
         PSTR("SAVE"), 
         options_p 
         };
-    result = doMenuDisplay(menuItems, 19, STATE_NONE, STATE_NONE, 1);
+    result = doMenuDisplay(menuItems, 18, STATE_NONE, STATE_NONE, 1);
 #else
     const char* menuItems[13] = {    
         (local.stepSequencer.solo) ? PSTR("NO SOLO") : PSTR("SOLO"),
@@ -2178,7 +2205,6 @@ void stateStepSequencerMenu()
         PSTR("PATTERN (TRACK)"),
         local.stepSequencer.transposable[local.stepSequencer.currentTrack] ? PSTR("NO TRANSPOSE (TRACK)") : PSTR("TRANSPOSE (TRACK)"),
         PSTR("EDIT"),
-//        options.stepSequencerNoEcho ? PSTR("ECHO") : PSTR("NO ECHO"), 
         PSTR("LENGTH"),
         PSTR("PERFORMANCE"),
         PSTR("SAVE"), 
@@ -2255,12 +2281,6 @@ void stateStepSequencerMenu()
                 case STEP_SEQUENCER_MENU_EDIT:
                     {
                     goDownState(STATE_STEP_SEQUENCER_MENU_EDIT);
-                    }
-                break;
-                case STEP_SEQUENCER_MENU_NO_ECHO:
-                    {
-                    options.stepSequencerNoEcho = !options.stepSequencerNoEcho;
-                    saveOptions();
                     }
                 break;
 

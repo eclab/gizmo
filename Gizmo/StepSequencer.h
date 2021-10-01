@@ -25,11 +25,6 @@
 // 
 // 3. Stop, start, and restart the sequencer (including affecting external MIDI Clocks), mute tracks, and clear tracks.   
 // 
-// 4. Toggle ECHO.  Normally when you enter a note, in step-by-step mode, it is played so you can hear what you're entering
-//    [in play position mode the step sequencer doesn't play the notes immediately but instead lets the play cursor play them].
-//    NO ECHO tells the step sequencer to not play notes when you're entering them AT ALL.  This is useful when you are playing
-//    and entering notes using the same device (which is playing as you enter them).
-//
 // 5. Mute tracks, clear tracks, specify the MIDI OUT on a per-track basis (or use the default), specify the note velocity 
 //    on a per-track basis (or use the velocity entered for each note), specify the note length on a per-track basis
 //    (or use the default), change the volume of the tracks (a 7-bit fader), or save sequences.
@@ -82,7 +77,7 @@
 //// In DUO MODE:
 ////	Exactly the same as mono mode except that the even track's pattern and MIDI Channel are completely ignored
 
-//// In TRIO MODE:
+//// In (unused) TRIO MODE:
 ////	Exactly the same as mono mode except that the second and third (of three) track's pattern and MIDI Channel are completely ignored
 */
 
@@ -98,8 +93,6 @@
 // OPTIONS
 //
 // Permanent options special to the Step Sequencer are:
-//
-// options.stepSequencerNoEcho          Toggle for Echo
 //
 // Other permanent options affecting the Step Sequencer include:
 //
@@ -154,7 +147,6 @@
 //                                      Out MIDI (Track):       Set Track MIDI out (or default, or off)         STATE_STEP_SEQUENCER_MIDI_CHANNEL_OUT
 //                                      Velocity:                       Set Track note velocity (or none, meaning use each note's individual velocity)  STATE_STEP_SEQUENCER_VELOCITY
 //                                      Fader:                          Set Track fader         STATE_STEP_SEQUENCER_FADER
-//                                      Echo:                           Toggle ECHO mode
 //                                      Save:                           Save the sequence.  STATE_STEP_SEQUENCER_SAVE, then back to STATE_STEP_SEQUENCER_PLAY
 //                                      Options:                        STATE_OPTIONS (display options menu)
 
@@ -184,9 +176,6 @@
 //		                                  		which says how long the track repeats (or "END")
 //
 // New macros: IS_MONO() is true if mono mode, IS_STANDARD is true if not mono mode
-//
-// At some point in the future I might at DUO and TRIO modes for duophonic or triphonic synths
-// such as the Arp 2600.  
 
 
 // ABOUT DATA TRACKS
@@ -374,7 +363,7 @@ struct _stepSequencer
     uint8_t repeat;									// (Low 4 bits) how many iterations before we stop: forever, 1 time, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 24, 32, 64, 128 times 
 													// (High 4 bits) what to do when we're done: 
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
-	uint8_t mono;									// (Low 2 bits): mono or standard formats, presently 0 = NOT MONO, 1 = MONO, 2 and 3 reserved for DUO, TRIO
+	uint8_t mono;									// (Low 2 bits): mono or standard formats, presently 0 = NOT MONO, 1 = MONO, 2 = DUO, and 3 reserved for TRIO
 													// (High 6 bits): UNUSED
 #else
 	uint8_t unused;
@@ -400,8 +389,8 @@ extern uint8_t _numTracks[6];
 /// is 1 ... 31).
 ///
 /// MONO MODE
-/// The sequencer can be set to either "standard" mode or "mono" mode.
-/// Space is reserved for (in the future) also having a "duo" or "trio" mode.
+/// The sequencer can be set to either "standard" mode, "mono" mode, or "duo" mode.
+/// Space is reserved for (in the future) also having a "trio" mode.
 
 // Returns the track format
 #define GET_TRACK_FORMAT() 	(data.slot.data.stepSequencer.format & 7)
@@ -409,7 +398,7 @@ extern uint8_t _numTracks[6];
 #define GET_MONO_FORMAT() 	(data.slot.data.stepSequencer.mono & 3)
 // Is the format "standard"?
 #define IS_STANDARD() 	(GET_MONO_FORMAT() == 0)
-// Is the format a "non-standard" (mono, duo, or trio) format?
+// Is the format a "non-standard" (mono, duo, etc.) format?
 //#define IS_NON_STANDARD() 	(data.slot.data.stepSequencer.mono >= 1)
 // Is the format a mono format?
 #define IS_MONO() 	(GET_MONO_FORMAT() == 1)
@@ -419,7 +408,7 @@ extern uint8_t _numTracks[6];
 //#define IS_TRIO() 	(data.slot.data.stepSequencer.mono == 3)
 // For a given non-standard format track, which track defines its repeats?
 #define GET_PRIMARY_TRACK(track) (IS_DUO() ? ((track >> 1) << 1) : track)
-//	(GET_TRIO() ? div3(track) * 3 : \
+//#define GET_PRIMARY_TRACK(track) (IS_TRIO() ? div3(track) * 3  : (IS_DUO() ? ((track >> 1) << 1) : track))
 // Returns the number of tracks in the current format
 #define GET_NUM_TRACKS() (_numTracks[GET_TRACK_FORMAT()])
 // The largest possible track length
@@ -499,6 +488,7 @@ void stateStepSequencerMenuPerformanceStop();
 void stateStepSequencerMenuEditMark();
 void stateStepSequencerMenuEditCopy(uint8_t splat, uint8_t paste);
 void stateStepSequencerMenuEditDuplicate();
+void stateStepSequencerMenuEditSwap();
 
 #endif
 

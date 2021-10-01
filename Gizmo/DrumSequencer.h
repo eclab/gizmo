@@ -159,9 +159,6 @@ and unlload these globals, plus set up some other stuff.
 
 OPTIONS
 
-Permanent options special to the Drum Sequencer are:
-
-options.drumSequencerNoEcho          Toggle for Echo
 
 Other permanent options affecting the Drum Sequencer include:
 
@@ -349,7 +346,6 @@ Root
                                      	Other:					[If ---- was selected, choose the END marker or a random-group option]
                                      Pattern (Track/Group):	Set Track/Group pattern
                                      Clock Control:         Toggle cock control
-                                     Echo:       	 		Toggle Echo
                                      Performance:         	MENU
                                      	Keyboard:			Route keys to sequencer, or out a MIDI channel
                                      	Repeat:				How often to repeat the entire sequence
