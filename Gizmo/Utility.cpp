@@ -1166,7 +1166,6 @@ void stateCant(uint8_t nextState)
     }
 
 
-
 // bounds n to be between min and max 
 uint8_t bound(uint8_t n, uint8_t min, uint8_t max)
     {

@@ -843,6 +843,8 @@ A {\bf Duophonic} format works very similarly, except that two tracks play at th
 \item In Edit or Play Position Mode, if you are editing the second track of a pair, the first LED of the first track in the pair will blink.
 \end{itemize}
 
+An {\bf important hint regarding Duophonic formats}.  When playing two notes simultaneously, {\it some} note has to be sent to MIDI first, and some duophonic synthesizers may sound different depending on the order in which the two notes are played.  In Gizmo, notes in earlier tracks are sent to MIDI before their simultaneous brethren in later tracks.  If you need to change this order, Gizmo has a {\bf Swap} option in the {\bf Edit} menu to swap the order of two tracks.
+
 
 
 \paragraph{Menu Options}
@@ -975,7 +977,8 @@ Keystrokes, CC, etc.			& Enter at Edit Cursor&Enter at Play Cursor & Enter at Pl
 95	&	Any		& Splat\\
 116	&	Any		& Move\\
 117	&	Any		& Duplicate\\
-118	&	Any		& Pitch Shift\\
+118	&	Any		& Swap\\
+119	&	Any		& Pitch Shift\\
 16	&	0--127		& Set Track Note Length (press Select to set, Back to cancel)\\
 17	&	0--127		& Set Track MIDI Out (press Select to set, Back to cancel)\\
 18	&	0--127		& Set Track Velocity (press Select to set, Back to cancel)\\

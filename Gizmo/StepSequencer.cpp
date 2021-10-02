@@ -1983,6 +1983,12 @@ void stateStepSequencerPlay()
             case CC_EXTRA_PARAMETER_9:
                 {
                 IMMEDIATE_RETURN(STATE_STEP_SEQUENCER_PLAY);
+                goDownState(STATE_STEP_SEQUENCER_MENU_EDIT_SWAP);
+                break;
+                }
+            case CC_EXTRA_PARAMETER_10:
+                {
+                IMMEDIATE_RETURN(STATE_STEP_SEQUENCER_PLAY);
                 goDownState(STATE_STEP_SEQUENCER_MENU_SHIFT);
                 break;
                 }
