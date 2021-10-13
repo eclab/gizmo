@@ -2524,6 +2524,18 @@ Why is this useful?  Here's an example scenario.  You have a sequencer on Device
 	\item{\bf Click} or {\bf No Click}\\
 		This toggles the note played by Gizmo to provide a click track for applications such as the Step Sequencer or Recorder.  If you select {\bf Click}, you will be asked to play a {\bf note}.  The note pitch and velocity form the click.  If you select {\bf No Click}, this turns off the click track.
 		
+		There is a Mega-Only option to click using a piezoelectric buzzer or other small speaker rather than a MIDI note.  This is particularly useful for monophonic synthesizers which cannot afford a click note.  To do this, in the \texttt{All.h} file, modify the line 
+\begin{verbatim}
+        //#define INCLUDE_ARDUINO_CLICK
+\end{verbatim}
+...to...
+\begin{verbatim}
+        #define INCLUDE_ARDUINO_CLICK
+\end{verbatim}
+
+You will also need to change the {\tt ARDUINO\_CLICK\_PIN} to the pin attached to your buzzer, and can also alter the {\tt ARDUINO\_CLICK\_FREQUENCY} to your liking.
+
+		
 \hspace{\fill}\smash{\\\includegraphics[width=1in]{note.pdf}}\vspace{-1.5em}
 
 	\item{\bf Screen Brightness}\\
@@ -2565,7 +2577,7 @@ Why is this useful?  Here's an example scenario.  You have a sequencer on Device
 %		Toggles whether Gizmo will send control voltage and gate information.  If {\bf CV+Velocity}, then control voltage will be sent out DAC A (I2C address 0x62), velocity will be sent out DAC B (I2C address 0x63), and digital pin 8 will be set HIGH (5V) when a note is played (or LOW (0V) when a note is released), thus acting as a Gate.\footnote{As mentioned in an earlier footnote, Gizmo assumes you're DACs of this kind: https:/\!/www.adafruit.com/product/935} If {\bf CV+Aftertouch}, then the same is done except that aftertouch will be sent out DAC B instead of velocity.  If {\bf No CV}, then nothing is sent.  Pitch Bend at present has no effect.	\footnote{Note that at present if you have set either knob in the Controller to control voltage, that DAC will be unavailable even outside the Controller.  I'll fix that soon.}
 		
 	\item{\bf The About Screen}\\
-		Presently says:\quad \texttt{GIZMO V5 (C) 2018 BY SEAN LUKE}
+		Presently says:\quad \texttt{GIZMO V9 (C) 2021 BY SEAN LUKE}
 	\end{description}
 
 \clearpage

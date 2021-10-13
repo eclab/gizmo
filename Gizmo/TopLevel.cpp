@@ -767,13 +767,13 @@ void go()
             const char* menuItems[16] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
                                           PSTR("VOLUME"), PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), 
                                           PSTR("CONTROL MIDI"), PSTR("CLOCK"), PSTR("DIVIDE"), ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
-                                          PSTR("BRIGHTNESS"), PSTR("MENU DELAY"), PSTR("AUTO RETURN"), PSTR("GIZMO V8 (C) 2021 SEAN LUKE") };
+                                          PSTR("BRIGHTNESS"), PSTR("MENU DELAY"), PSTR("AUTO RETURN"), PSTR("GIZMO V9 (C) 2021 SEAN LUKE") };
             doMenuDisplay(menuItems, 16, STATE_OPTIONS_TEMPO, immediateReturnState, 1);
 #endif
 #if defined(__UNO__)
             const char* menuItems[11] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("LENGTH"), 
                                           PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), 
-                                          ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")), PSTR("BRIGHTNESS"), PSTR("GIZMO V8 (C) 2021 SEAN LUKE") };
+                                          ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")), PSTR("BRIGHTNESS"), PSTR("GIZMO V9 (C) 2021 SEAN LUKE") };
             doMenuDisplay(menuItems, 11, STATE_OPTIONS_TEMPO, immediateReturnState, 1);
 #endif
 
@@ -966,8 +966,13 @@ void go()
         break;
         case STATE_STEP_SEQUENCER_MENU_EDIT:
             {
+#ifdef INCLUDE_MONO
             const char* menuItems[6] = { PSTR("MARK"), PSTR("COPY"), PSTR("SPLAT"), PSTR("MOVE"), PSTR("DUPLICATE"), PSTR("SWAP") };
             doMenuDisplay(menuItems, 6, STATE_STEP_SEQUENCER_MENU_EDIT_MARK, STATE_STEP_SEQUENCER_MENU, 1);
+#else
+            const char* menuItems[5] = { PSTR("MARK"), PSTR("COPY"), PSTR("SPLAT"), PSTR("MOVE"), PSTR("DUPLICATE") };
+            doMenuDisplay(menuItems, 5, STATE_STEP_SEQUENCER_MENU_EDIT_MARK, STATE_STEP_SEQUENCER_MENU, 1);
+#endif INCLUDE_MONO
             playStepSequencer();
             }
         break;
@@ -1000,12 +1005,14 @@ void go()
             playStepSequencer();
             }
         break;
+#ifdef INCLUDE_MONO
         case STATE_STEP_SEQUENCER_MENU_EDIT_SWAP:
             {
             stateStepSequencerMenuEditSwap();
             playStepSequencer();
             }
         break;
+#endif INCLUDE_MONO
         case STATE_STEP_SEQUENCER_MENU_LENGTH:
             {
             stateStepSequencerMenuLength();

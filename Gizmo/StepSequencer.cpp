@@ -15,9 +15,9 @@ GLOBAL uint8_t _numTracks[6] = { 12, 8, 6, 4, 3, 2 };
 // all requests about MIDI on tracks to track 0
 uint8_t outMIDI(uint8_t track)
     {
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
     if (IS_MONO() || IS_DUO()) return local.stepSequencer.outMIDI[0];
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
     return local.stepSequencer.outMIDI[track];
     }
 
@@ -26,12 +26,12 @@ void stateStepSequencerMidiChannelOut()
     uint8_t track = local.stepSequencer.currentTrack;
 
 // If we're mono, we need to force the track to be 0
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
     if (IS_MONO() || IS_DUO())
         {
         track = 0;
         }
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
 
     if (entry)
         {
@@ -133,7 +133,60 @@ void stateStepSequencerMenuEditCopy(uint8_t splat, uint8_t move)
         }
     }
 
+void stateStepSequencerMenuEditDuplicate()
+    {
+    local.stepSequencer.data[local.stepSequencer.currentTrack] = local.stepSequencer.data[local.stepSequencer.markTrack];
+    local.stepSequencer.noteLength[local.stepSequencer.currentTrack] = local.stepSequencer.noteLength[local.stepSequencer.markTrack];
+    local.stepSequencer.muted[local.stepSequencer.currentTrack] = local.stepSequencer.muted[local.stepSequencer.markTrack];
+    local.stepSequencer.velocity[local.stepSequencer.currentTrack] = local.stepSequencer.velocity[local.stepSequencer.markTrack];
+    local.stepSequencer.fader[local.stepSequencer.currentTrack] = local.stepSequencer.fader[local.stepSequencer.markTrack];
+    local.stepSequencer.offTime[local.stepSequencer.currentTrack] = local.stepSequencer.offTime[local.stepSequencer.markTrack];
+    local.stepSequencer.noteOff[local.stepSequencer.currentTrack] = local.stepSequencer.noteOff[local.stepSequencer.markTrack];
+    local.stepSequencer.shouldPlay[local.stepSequencer.currentTrack] = local.stepSequencer.shouldPlay[local.stepSequencer.markTrack];
+    local.stepSequencer.transposable[local.stepSequencer.currentTrack] = local.stepSequencer.transposable[local.stepSequencer.markTrack];
+    local.stepSequencer.dontPlay[local.stepSequencer.currentTrack] = local.stepSequencer.dontPlay[local.stepSequencer.markTrack];
+    local.stepSequencer.pattern[local.stepSequencer.currentTrack] = local.stepSequencer.pattern[local.stepSequencer.markTrack];
 
+// Advanced step sequencer transfers control data
+// Also if we're mono, we need to deny the ability to transfer MIDI data since all MIDI data is handled on track 0
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+    local.stepSequencer.controlParameter[local.stepSequencer.currentTrack] = local.stepSequencer.controlParameter[local.stepSequencer.markTrack];
+    local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = local.stepSequencer.lastControlValue[local.stepSequencer.markTrack];
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+
+#ifdef INCLUDE_MONO
+    if (IS_MONO() || IS_DUO())
+        {
+        // don't ever copy midiOut(event) data.  For DUO we'll have to avoid sending repeats (pattern) data too maybe?
+        }
+    else
+        {
+        local.stepSequencer.outMIDI[local.stepSequencer.currentTrack] = local.stepSequencer.outMIDI[local.stepSequencer.markTrack];
+        }
+#else
+    local.stepSequencer.outMIDI[local.stepSequencer.currentTrack] = local.stepSequencer.outMIDI[local.stepSequencer.markTrack];
+#endif INCLUDE_MONO
+                
+                
+    // set the mark and edit positions to 0 temporarily so we can copy the note data properly
+    uint8_t backupMarkPosition = local.stepSequencer.markPosition;
+    uint8_t backupEditPosition = local.stepSequencer.currentEditPosition;
+    local.stepSequencer.markPosition = 0;
+    local.stepSequencer.currentEditPosition = 0;
+    stateStepSequencerMenuEditCopy(false, false);  // we copy rather than splat to save some time
+        
+    // reset the mark and edit positions
+    local.stepSequencer.markPosition = backupMarkPosition;
+    local.stepSequencer.currentEditPosition = backupEditPosition;
+        
+    goUpState(immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_PLAY);
+    }
+
+
+
+
+
+#ifdef INCLUDE_MONO
 void stateStepSequencerMenuEditSwap()
     {
     uint8_t swap;
@@ -149,8 +202,10 @@ void stateStepSequencerMenuEditSwap()
     STEP_SEQUENCER_SWAP(local.stepSequencer.transposable[local.stepSequencer.currentTrack], local.stepSequencer.transposable[local.stepSequencer.markTrack])
     STEP_SEQUENCER_SWAP(local.stepSequencer.dontPlay[local.stepSequencer.currentTrack], local.stepSequencer.dontPlay[local.stepSequencer.markTrack])
     STEP_SEQUENCER_SWAP(local.stepSequencer.pattern[local.stepSequencer.currentTrack], local.stepSequencer.pattern[local.stepSequencer.markTrack])
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
     STEP_SEQUENCER_SWAP(local.stepSequencer.controlParameter[local.stepSequencer.currentTrack], local.stepSequencer.controlParameter[local.stepSequencer.markTrack])
     STEP_SEQUENCER_SWAP(local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack], local.stepSequencer.lastControlValue[local.stepSequencer.markTrack])
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
 
     if (IS_MONO() || IS_DUO())
         {
@@ -171,47 +226,7 @@ void stateStepSequencerMenuEditSwap()
 
     goUpState(immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_PLAY);
     }
-
-
-void stateStepSequencerMenuEditDuplicate()
-    {
-    local.stepSequencer.data[local.stepSequencer.currentTrack] = local.stepSequencer.data[local.stepSequencer.markTrack];
-    local.stepSequencer.noteLength[local.stepSequencer.currentTrack] = local.stepSequencer.noteLength[local.stepSequencer.markTrack];
-    local.stepSequencer.muted[local.stepSequencer.currentTrack] = local.stepSequencer.muted[local.stepSequencer.markTrack];
-    local.stepSequencer.velocity[local.stepSequencer.currentTrack] = local.stepSequencer.velocity[local.stepSequencer.markTrack];
-    local.stepSequencer.fader[local.stepSequencer.currentTrack] = local.stepSequencer.fader[local.stepSequencer.markTrack];
-    local.stepSequencer.offTime[local.stepSequencer.currentTrack] = local.stepSequencer.offTime[local.stepSequencer.markTrack];
-    local.stepSequencer.noteOff[local.stepSequencer.currentTrack] = local.stepSequencer.noteOff[local.stepSequencer.markTrack];
-    local.stepSequencer.shouldPlay[local.stepSequencer.currentTrack] = local.stepSequencer.shouldPlay[local.stepSequencer.markTrack];
-    local.stepSequencer.transposable[local.stepSequencer.currentTrack] = local.stepSequencer.transposable[local.stepSequencer.markTrack];
-    local.stepSequencer.dontPlay[local.stepSequencer.currentTrack] = local.stepSequencer.dontPlay[local.stepSequencer.markTrack];
-    local.stepSequencer.pattern[local.stepSequencer.currentTrack] = local.stepSequencer.pattern[local.stepSequencer.markTrack];
-    local.stepSequencer.controlParameter[local.stepSequencer.currentTrack] = local.stepSequencer.controlParameter[local.stepSequencer.markTrack];
-    local.stepSequencer.lastControlValue[local.stepSequencer.currentTrack] = local.stepSequencer.lastControlValue[local.stepSequencer.markTrack];
-
-    if (IS_MONO() || IS_DUO())
-        {
-        // don't ever copy midiOut(event) data.  For DUO we'll have to avoid sending repeats (pattern) data too maybe?
-        }
-    else
-        {
-        local.stepSequencer.outMIDI[local.stepSequencer.currentTrack] = local.stepSequencer.outMIDI[local.stepSequencer.markTrack];
-        }
-                
-    // set the mark and edit positions to 0 temporarily so we can copy the note data properly
-    uint8_t backupMarkPosition = local.stepSequencer.markPosition;
-    uint8_t backupEditPosition = local.stepSequencer.currentEditPosition;
-    local.stepSequencer.markPosition = 0;
-    local.stepSequencer.currentEditPosition = 0;
-    stateStepSequencerMenuEditCopy(false, false);  // we copy rather than splat to save some time
-        
-    // reset the mark and edit positions
-    local.stepSequencer.markPosition = backupMarkPosition;
-    local.stepSequencer.currentEditPosition = backupEditPosition;
-        
-    goUpState(immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_PLAY);
-    }
-
+#endif INCLUDE_MONO
 
 
 //// FIXME: Eventually we'll have to get rid of mute for MONO MODE?
@@ -283,7 +298,7 @@ void advanceSolo()
 
 
 /// This is the mono version which replaces patterns with repeats
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
 void stateStepSequencerMenuPatternDoRepeats()    
     {
     const char* menuItems[16] = { PSTR("LOOP"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8"), 
@@ -317,7 +332,7 @@ void stateStepSequencerMenuPatternDoRepeats()
         break;
         }
     }
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
 
 
 
@@ -366,8 +381,7 @@ void stateStepSequencerMenuPatternDoPattern()
 
 void stateStepSequencerMenuPattern()
     {
-// If (IS_MONO() || IS_DUO()), we do repeats here rather than patterns
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
     if (IS_MONO() || IS_DUO())
         {
         stateStepSequencerMenuPatternDoRepeats();
@@ -378,7 +392,7 @@ void stateStepSequencerMenuPattern()
         }
 #else
     stateStepSequencerMenuPatternDoPattern();
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
     }
         
 
@@ -632,14 +646,14 @@ uint8_t loadSequence(uint8_t slot)
                         
         stripHighBits();
 
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
 /// FIXME: controlParameter and lastControlValue are MISSING.  This is wrong?
 
 // In MONO mode the play track is used to keep track of which track is playing during performance.  We set it to 0 here.
         local.stepSequencer.playTrack = 0;
         if (IS_MONO() || IS_DUO())
             local.stepSequencer.NEXT_PLAY_TRACK = NO_TRACK;
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
         local.stepSequencer.scheduleStop = 0;
         local.stepSequencer.goNextSequence = 0;
         local.stepSequencer.solo = STEP_SEQUENCER_NO_SOLO;
@@ -673,7 +687,9 @@ void resetTrack(uint8_t track)
 /// Also if IS_MONO we need to handle MIDI channel and repeats properly
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
     local.stepSequencer.lastControlValue[track] = 0;
-    
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+
+#ifdef INCLUDE_MONO
     if (IS_MONO() || IS_DUO())
         {
         // don't screw with the MIDI channel
@@ -687,7 +703,7 @@ void resetTrack(uint8_t track)
 #else   
     local.stepSequencer.pattern[track] = STEP_SEQUENCER_PATTERN_ALL;
     local.stepSequencer.outMIDI[track] = (track == 0 ? MIDI_OUT_DEFAULT : track + 1);
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
 
     local.stepSequencer.transposable[track] = 1;
     local.stepSequencer.noteLength[track] = PLAY_LENGTH_USE_DEFAULT;
@@ -899,10 +915,10 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
                 // draw mute or solo indicator.  Solo overrides mute.
                 // So draw if solo is on but we're not it, OR if solo is turned off and we're muted
                 ((xpos == 0 || xpos == 15) && shouldDrawMuted)
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
                 || (local.stepSequencer.performanceMode && (IS_MONO() || IS_DUO()) && d == 0 && GET_PRIMARY_TRACK(t) == local.stepSequencer.playTrack)
                 || ((!local.stepSequencer.performanceMode) && IS_DUO() && d == 0 && t == GET_PRIMARY_TRACK(local.stepSequencer.currentTrack) && t != local.stepSequencer.currentTrack)
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
                 );
 
             if (vel || blink)
@@ -932,7 +948,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
 
 
     // If MONO we draw the play track rather than the MIDI channel
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
     if (IS_MONO() || IS_DUO())
         {
         if (local.stepSequencer.performanceMode && local.stepSequencer.playTrack < GET_NUM_TRACKS())
@@ -952,7 +968,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
     drawMIDIChannel(
         (outMIDI(local.stepSequencer.currentTrack) == MIDI_OUT_DEFAULT) ?
         options.channelOut : outMIDI(local.stepSequencer.currentTrack));
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
 
     // Are we in performance mode?
     if (local.stepSequencer.performanceMode)
@@ -968,7 +984,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
                 
     // If MONO we want to blink if we're trying to edit (or jump to) an END track
     // Otherwise we use those two spots for the sequence iteration
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
     if (IS_MONO() || IS_DUO())
         {
         if (local.stepSequencer.MONO_REPEATS[GET_PRIMARY_TRACK(local.stepSequencer.currentTrack)] == STEP_SEQUENCER_MONO_REPEATS_END)
@@ -984,7 +1000,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
 #else
     drawRange(led, 0, 1, 4, local.stepSequencer.countup & 3);
         
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
 
     // Do we have a fader value != FADER_IDENDITY_VALUE ?
     if (local.stepSequencer.fader[local.stepSequencer.currentTrack] != FADER_IDENTITY_VALUE)
@@ -1007,7 +1023,7 @@ void drawStepSequencer(uint8_t trackLen, uint8_t fullLen, uint8_t numTracks)
 void stateStepSequencerFormat()
     {
 /// The advanced step sequencer has 6 additional MONO modes (for a total of 12) and possibly in the future some DUO
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
     const char* menuItems[16] = {  PSTR("16 NOTES"), PSTR("24 NOTES"), PSTR("32 NOTES"), PSTR("48 NOTES"), PSTR("64 NOTES"), PSTR("96 NOTES"), 
                                    PSTR("16 MONO"), PSTR("24 MONO"), PSTR("32 MONO"), PSTR("48 MONO"), PSTR("64 MONO"), PSTR("96 MONO"),
                                    PSTR("16 DUO"), PSTR("24 DUO"), PSTR("32 DUO"), PSTR("48 DUO") };
@@ -1015,7 +1031,7 @@ void stateStepSequencerFormat()
 #else
     const char* menuItems[6] = {  PSTR("16 NOTES"), PSTR("24 NOTES"), PSTR("32 NOTES"), PSTR("48 NOTES"), PSTR("64 NOTES"), PSTR("96 NOTES") };
     uint8_t result = doMenuDisplay(menuItems, 6, STATE_NONE, 0, 1);
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
 
     switch (result)
         {
@@ -1029,14 +1045,14 @@ void stateStepSequencerFormat()
             data.slot.type = SLOT_TYPE_STEP_SEQUENCER;
 
 /// The advanced step sequencer has 6 additional MONO modes and four DUO modes (for a total of 16) 
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
             const uint8_t formats[16] = { STEP_SEQUENCER_FORMAT_16x12, STEP_SEQUENCER_FORMAT_24x8, STEP_SEQUENCER_FORMAT_32x6, STEP_SEQUENCER_FORMAT_48x4, STEP_SEQUENCER_FORMAT_64x3, STEP_SEQUENCER_FORMAT_96x2,
                                           STEP_SEQUENCER_FORMAT_16x12, STEP_SEQUENCER_FORMAT_24x8, STEP_SEQUENCER_FORMAT_32x6, STEP_SEQUENCER_FORMAT_48x4, STEP_SEQUENCER_FORMAT_64x3, STEP_SEQUENCER_FORMAT_96x2,
             							  STEP_SEQUENCER_FORMAT_16x12, STEP_SEQUENCER_FORMAT_24x8, STEP_SEQUENCER_FORMAT_32x6, STEP_SEQUENCER_FORMAT_48x4 };
                 data.slot.data.stepSequencer.mono = (currentDisplay < 6 ? 0 : (currentDisplay < 12 ? 1 : 2));
 #else
             const uint8_t formats[6] = { STEP_SEQUENCER_FORMAT_16x12, STEP_SEQUENCER_FORMAT_24x8, STEP_SEQUENCER_FORMAT_32x6, STEP_SEQUENCER_FORMAT_48x4, STEP_SEQUENCER_FORMAT_64x3, STEP_SEQUENCER_FORMAT_96x2 };
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
 
             data.slot.data.stepSequencer.format = formats[currentDisplay];
             setParseRawCC(false);
@@ -1047,12 +1063,12 @@ void stateStepSequencerFormat()
                 }
 
 /// MONO mode only uses track 0.  resetTrack() above no longer clears midi in mono mode, so we need to reset it here
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
             if (IS_MONO() || IS_DUO())
                 {
                 local.stepSequencer.outMIDI[0] = MIDI_OUT_DEFAULT;
                 }
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
 
             stopStepSequencer();
             // stopStepSequencer() just set the countdown to something insane.  Set it to infinity
@@ -1064,11 +1080,11 @@ void stateStepSequencerFormat()
             local.stepSequencer.goNextSequence = 0;
             
 /// MONO mode would reset the play track (unused otherwise)
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
             local.stepSequencer.playTrack = 0;
             if (IS_MONO() || IS_DUO())
                 local.stepSequencer.NEXT_PLAY_TRACK = NO_TRACK;
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
 
             local.stepSequencer.scheduleStop = 0;
             local.stepSequencer.solo = 0;
@@ -1192,11 +1208,11 @@ void stopStepSequencer()
     local.stepSequencer.lastExclusiveTrack = NO_TRACK;
     
 /// MONO mode would reset the play track (unused otherwise)
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
     local.stepSequencer.playTrack = 0;
     if (IS_MONO() || IS_DUO())
         local.stepSequencer.NEXT_PLAY_TRACK = NO_TRACK;
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
 
     sendAllSoundsOff();
     }
@@ -1253,9 +1269,9 @@ void stateStepSequencerPlay()
         local.stepSequencer.currentRightPot = -1;
         local.stepSequencer.pots[LEFT_POT] = pot[LEFT_POT];
         local.stepSequencer.pots[RIGHT_POT] = pot[RIGHT_POT];
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
         local.stepSequencer.lastCurrentTrack = NO_TRACK;
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
         }
 
     immediateReturn = false;
@@ -1289,7 +1305,7 @@ void stateStepSequencerPlay()
         if (local.stepSequencer.performanceMode)
             {
 /// We handle non-note data here
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
             if (IS_MONO())
                 {
                 if (local.stepSequencer.playTrack + 1 < numTracks)
@@ -1325,7 +1341,7 @@ void stateStepSequencerPlay()
 #else
             //// SCHEDULE MUTE
             advanceMute(local.stepSequencer.currentTrack);
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
             }
         else if (local.stepSequencer.currentEditPosition >= 0)
             {
@@ -1357,7 +1373,7 @@ void stateStepSequencerPlay()
             }
         else
             {
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
             if (IS_MONO() || IS_DUO())
                 {
                 /// Advance to next track
@@ -1371,7 +1387,7 @@ void stateStepSequencerPlay()
                     }
                 }
             else 
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
                 {
                 //// TOGGLE MUTE
                 local.stepSequencer.muted[local.stepSequencer.currentTrack] = !local.stepSequencer.muted[local.stepSequencer.currentTrack];
@@ -1404,7 +1420,7 @@ void stateStepSequencerPlay()
             {
             if (local.stepSequencer.performanceMode)
                 {
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
                 if (IS_MONO() || IS_DUO())
                     {
                     local.stepSequencer.NEXT_PLAY_TRACK = GET_PRIMARY_TRACK(local.stepSequencer.currentTrack);
@@ -1416,7 +1432,7 @@ void stateStepSequencerPlay()
 #else
                 //// SCHEDULE SOLO
                 advanceSolo();
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
                 }
             else if (local.stepSequencer.currentEditPosition >= 0)
                 {
@@ -1448,9 +1464,9 @@ void stateStepSequencerPlay()
                 case PLAY_STATE_STOPPED:
                     {
                     resetStepSequencer();
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
                     local.stepSequencer.playTrack = 0;
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
                     local.stepSequencer.scheduleStop = false;
                     local.stepSequencer.goNextSequence = false;
                     local.stepSequencer.playState = PLAY_STATE_WAITING;
@@ -1512,7 +1528,7 @@ void stateStepSequencerPlay()
         uint8_t newTrack = ((pot[LEFT_POT] * numTracks) >> 10);         //  / 1024;
         newTrack = bound(newTrack, 0, numTracks);
 // If MONO mode we need to clear notes if we're going to a new track
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
         if (newTrack != local.stepSequencer.lastCurrentTrack)           // we only update if it's different so we can ALSO change the current track using the middle button
             {
             if (!local.stepSequencer.performanceMode && (GET_PRIMARY_TRACK(newTrack) != GET_PRIMARY_TRACK(local.stepSequencer.currentTrack)) && (IS_MONO() || IS_DUO()))    
@@ -1526,7 +1542,7 @@ void stateStepSequencerPlay()
 #else
         local.stepSequencer.currentTrack = newTrack;
         setParseRawCC(local.stepSequencer.data[local.stepSequencer.currentTrack] == STEP_SEQUENCER_DATA_CC);
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
         }
     else if (potUpdated[RIGHT_POT])
         {
@@ -1980,12 +1996,14 @@ void stateStepSequencerPlay()
                 goDownState(STATE_STEP_SEQUENCER_MENU_EDIT_DUPLICATE);
                 break;
                 }
+#ifdef INCLUDE_MONO
             case CC_EXTRA_PARAMETER_9:
                 {
                 IMMEDIATE_RETURN(STATE_STEP_SEQUENCER_PLAY);
                 goDownState(STATE_STEP_SEQUENCER_MENU_EDIT_SWAP);
                 break;
                 }
+#endif
             case CC_EXTRA_PARAMETER_10:
                 {
                 IMMEDIATE_RETURN(STATE_STEP_SEQUENCER_PLAY);
@@ -2208,7 +2226,11 @@ void stateStepSequencerMenu()
         PSTR("OUT MIDI (TRACK)"),
         PSTR("VELOCITY (TRACK)"),
         PSTR("FADER (TRACK)"), 
+#ifdef INCLUDE_MONO
+        ((IS_MONO() || IS_DUO()) ? PSTR("REPEAT (TRACK)") : PSTR("PATTERN (TRACK)")),
+#else
         PSTR("PATTERN (TRACK)"),
+#endif INCLUDE_MONO
         local.stepSequencer.transposable[local.stepSequencer.currentTrack] ? PSTR("NO TRANSPOSE (TRACK)") : PSTR("TRANSPOSE (TRACK)"),
         PSTR("EDIT"),
         PSTR("LENGTH"),
@@ -2468,7 +2490,7 @@ void clearNotesOnTracks(uint8_t clearEvenIfNoteNotFinished)
 
 
 // Advanced step sequencer has non-note data
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER  
+#ifdef INCLUDE_MONO  
 // this method exists to avoid storing this data in RAM
 uint8_t getMonoRepeats(uint8_t val)
     {
@@ -2476,7 +2498,7 @@ uint8_t getMonoRepeats(uint8_t val)
     const uint8_t _monoRepeats[16] = { 255, 0, 1, 2, 3, 4, 5, 6, 7, 8, 11, 15, 23, 31, 63, 0 };
     return _monoRepeats[val];
     }
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER  
+#endif INCLUDE_MONO  
 
 
 
@@ -2534,7 +2556,7 @@ void playStepSequencer()
                     }
 
 // Mono Mode never solos
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER  
+#ifdef INCLUDE_MONO  
                 if (IS_MONO() || IS_DUO())
                     local.stepSequencer.solo = STEP_SEQUENCER_NO_SOLO;                                              // we never solo
                 else if (local.stepSequencer.solo == STEP_SEQUENCER_SOLO_ON_SCHEDULED)
@@ -2546,12 +2568,12 @@ void playStepSequencer()
                     local.stepSequencer.solo = STEP_SEQUENCER_SOLO;
                 else if (local.stepSequencer.solo == STEP_SEQUENCER_SOLO_OFF_SCHEDULED)
                     local.stepSequencer.solo = STEP_SEQUENCER_NO_SOLO;
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
 
 
 
 // MONO mode handles countup and countdown differently from the standard step sequencer
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
                 /// Mono uses countup to repeat tracks, and uses countdown to repeat the entire sequence.
                 /// This is different from standard, which doesn't repeat tracks. 
                 if (IS_MONO() || IS_DUO())
@@ -2615,7 +2637,7 @@ void playStepSequencer()
                         }
                     }
                 else
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
                     {
                     if (local.stepSequencer.goNextSequence || 
                         (oldPlayPosition == trackLen - 1 && local.stepSequencer.countdown == 0))
@@ -2646,9 +2668,9 @@ void playStepSequencer()
                                 
                                 
 // Patterns are not done in MONO
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
                 if (IS_STANDARD())
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER        
+#endif INCLUDE_MONO        
                     // pick an exclusive random track
                     {
                     // determine options
@@ -2702,9 +2724,9 @@ void playStepSequencer()
  
             if (local.stepSequencer.currentPlayPosition == 0 
 /// MONO mode does not do patterns            
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
                 && IS_STANDARD()
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER                  
+#endif INCLUDE_MONO                  
                 )
                 {
                 // pick a random track                          
@@ -2736,7 +2758,7 @@ void playStepSequencer()
                 if (!local.stepSequencer.shouldPlay[track]) 
                     clearNoteOnTrack(track);
                 }
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
             else if (IS_MONO() || IS_DUO())                         // MONO MODE always plays a track if it's the current track -- note that this is called every timestep, not just timestep 0
                 {
                 if ((local.stepSequencer.performanceMode && GET_PRIMARY_TRACK(track) == GET_PRIMARY_TRACK(local.stepSequencer.playTrack)) ||
@@ -2750,7 +2772,7 @@ void playStepSequencer()
                     clearNoteOnTrack(track);                // just in case
                     }
                 }
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER                  
+#endif INCLUDE_MONO                  
                               
             uint8_t shouldPlay = local.stepSequencer.shouldPlay[track] ;
                                 

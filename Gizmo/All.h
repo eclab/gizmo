@@ -103,6 +103,10 @@
 #define INCLUDE_SYNTH
 #define INCLUDE_MEASURE
 
+// If you have a piezoelectric buzzer or whatnot, you can attach it to make a click rather than using MIDI
+#define INCLUDE_ARDUINO_CLICK
+
+
 #define INCLUDE_MEGA_POTS
 
 #define MENU_ITEMS()     const char* menuItems[11] = { PSTR("ARPEGGIATOR"), PSTR("STEP SEQUENCER"), PSTR("DRUM SEQUENCER"), PSTR("RECORDER"), PSTR("GAUGE"), PSTR("CONTROLLER"), PSTR("SPLIT"), PSTR("THRU"), PSTR("SYNTH"), PSTR("MEASURE"), options_p };
@@ -199,7 +203,10 @@
 #endif __UNO__
 
 
-
+#ifdef INCLUDE_ARDUINO_CLICK
+#define ARDUINO_CLICK_FREQUENCY (1600)
+#define ARDUINO_CLICK_PIN (53)
+#endif
 
 
 

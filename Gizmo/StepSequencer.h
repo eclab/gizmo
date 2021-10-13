@@ -10,6 +10,10 @@
 
 #include "All.h"
 
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#define INCLUDE_MONO
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+
 
 
 
@@ -313,9 +317,11 @@ struct _stepSequencerLocal
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
 	uint16_t controlParameter[MAX_STEP_SEQUENCER_TRACKS];			// If the data is a control data type, what is its parameter?
     uint16_t lastControlValue[MAX_STEP_SEQUENCER_TRACKS];			// If the data is a control data type, what was the last control value it held?
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
 	uint8_t playTrack;												// In Mono mode, when in performance mode, what track is playing?
 	uint8_t lastCurrentTrack;										// Keeps track of the last place the left pot set the current track to.  This way we can avoid the pot resetting the current track if we've changed it using the middle button in MONO mode.
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
     uint8_t newData;				// A temporary variable.  comes in from STATE_STEP_SEQUENCER_MENU_TYPE, used in STATE_STEP_SEQUENCER_MENU_TYPE_PARAMETER
 	int8_t transpose;				// Current transposition due to performance mode.  Note: signed.
     uint8_t performanceMode;		// We are in performance mode
@@ -362,12 +368,13 @@ struct _stepSequencer
     												// (High 5 bits) track custom length
     uint8_t repeat;									// (Low 4 bits) how many iterations before we stop: forever, 1 time, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 24, 32, 64, 128 times 
 													// (High 4 bits) what to do when we're done: 
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+#ifdef INCLUDE_MONO
+
 	uint8_t mono;									// (Low 2 bits): mono or standard formats, presently 0 = NOT MONO, 1 = MONO, 2 = DUO, and 3 reserved for TRIO
 													// (High 6 bits): UNUSED
 #else
 	uint8_t unused;
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
+#endif INCLUDE_MONO
     uint8_t buffer[STEP_SEQUENCER_BUFFER_SIZE];		// 384 bytes
     };
 
@@ -466,7 +473,7 @@ void stateStepSequencerMenuType();
 void stateStepSequencerMenuTypeParameter();
 void stateStepSequencerMenuShift();
 void stateStepSequencerMenuShiftSecond();
-#endif
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
 
 void stopStepSequencer();
 
@@ -488,7 +495,11 @@ void stateStepSequencerMenuPerformanceStop();
 void stateStepSequencerMenuEditMark();
 void stateStepSequencerMenuEditCopy(uint8_t splat, uint8_t paste);
 void stateStepSequencerMenuEditDuplicate();
+#ifdef INCLUDE_MONO
 void stateStepSequencerMenuEditSwap();
+#endif INCLUDE_MONO
 
-#endif
+
+#endif __STEP_SEQUENCER_H__
+
 

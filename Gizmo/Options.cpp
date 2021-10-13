@@ -361,6 +361,25 @@ void stateOptionsMIDIClock()
         
 void stateOptionsClick()
     {
+    #ifdef INCLUDE_ARDUINO_CLICK
+    // this will be weird, as NO_NOTE is 128, not 0
+    if (entry)
+    	{
+		if (options.click == NO_NOTE)
+			{
+			options.click = 60;	// or whatever
+			}
+		else
+			{
+			options.click = NO_NOTE;
+			}
+        saveOptions();
+		if (immediateReturn)
+			goUpState(immediateReturnState);
+		else
+			goUpState(STATE_OPTIONS);
+		}
+    #else
     // The logic here is somewhat tricky. On entering, if we are presently clicking,
     // then I want to NOT click and be done with it.  Otherwise on entering or NOT,
     // I want to enter a note.  But I don't want to enter that note if I just turned
@@ -395,6 +414,7 @@ void stateOptionsClick()
                 goUpState(STATE_OPTIONS);
             }
         }
+    #endif INCLUDE_ARDUINO_CLICK
     playApplication();
     }
         

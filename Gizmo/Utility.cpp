@@ -1437,6 +1437,20 @@ GLOBAL static uint8_t clickNote = NO_NOTE;
         
 void doClick()
     {
+    #ifdef INCLUDE_ARDUINO_CLICK
+    if (pulse && (clickNote != NO_NOTE))
+        {
+        noTone(ARDUINO_CLICK_PIN);
+        clickNote = NO_NOTE;
+        }
+    
+    // turn on new click
+    if (beat && (options.click != NO_NOTE))
+        {
+        tone(ARDUINO_CLICK_PIN, ARDUINO_CLICK_FREQUENCY);
+        clickNote = options.click;
+        }
+    #else
     // turn off previous click
     if (pulse && (clickNote != NO_NOTE))
         {
@@ -1450,6 +1464,7 @@ void doClick()
         sendNoteOn(options.click, options.clickVelocity, options.channelOut);
         clickNote = options.click;
         }
+    #endif INCLUDE_ARDUINO_CLICK
     }
 
 
