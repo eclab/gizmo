@@ -590,6 +590,7 @@ void go()
             
             if (entry)
                 {
+				dontBypassOut = false;
                 immediateReturnState = STATE_ROOT;
 #if defined(__MEGA__)
                 lastRoutePotValue = 0;
@@ -637,6 +638,7 @@ void go()
             {
             if (entry)              // we do this because this state is entered just before we exit the entire step sequencer
                 {
+				dontBypassOut = true;            
                 setParseRawCC(false);
                 }
             stateLoad(STATE_STEP_SEQUENCER_PLAY, STATE_STEP_SEQUENCER_FORMAT, STATE_ROOT, STATE_STEP_SEQUENCER);
@@ -648,6 +650,7 @@ void go()
             {
             if (entry)              // we do this because this state is entered just before we exit the entire step sequencer
                 {
+				dontBypassOut = true;            
                 setParseRawCC(false);
                 setNotePulseRate(options.noteSpeedType);                // reset the note speed
                 }
@@ -658,6 +661,10 @@ void go()
 #ifdef INCLUDE_RECORDER
         case STATE_RECORDER:
             {
+            if (entry)              // we do this because this state is entered just before we exit the entire step sequencer
+                {
+				dontBypassOut = true;            
+                }
             stateLoad(STATE_RECORDER_PLAY, STATE_RECORDER_PLAY, STATE_ROOT, STATE_RECORDER);
             }
         break;

@@ -3968,18 +3968,53 @@ void stateDrumSequencerPlay()
                         // at this point key should range from 0...15
 
                         uint8_t toggle = key + 16 * local.drumSequencer.drumRegion;
-                        if (toggle < len)
-                            {
-                            uint8_t track = local.drumSequencer.currentTrack;
-                            if (local.drumSequencer.accent && track < local.drumSequencer.numTracks - 1)  // there's another track
-                                {
-                                track++;
-                                }
-                            toggleNote(local.drumSequencer.currentGroup, track, toggle);
-                            }
+                        
+                        // doing this without % is painful
+                        if (toggle >= len)
+                        	{
+                        	if (len == 8)
+								{
+								toggle = toggle - ((toggle >> 3) << 3);		// toggle = toggle % 8
+								}
+							else if (len == 16)
+								{
+								toggle = toggle - ((toggle >> 4) << 4);		// toggle = toggle % 16
+								}
+							else if (len == 32)
+								{
+								toggle = toggle - ((toggle >> 5) << 5);		// toggle = toggle % 32
+								}
+							}
+                        	
+						uint8_t track = local.drumSequencer.currentTrack;
+						if (local.drumSequencer.accent && track < local.drumSequencer.numTracks - 1)  // there's another track
+							{
+							track++;
+							}
+						toggleNote(local.drumSequencer.currentGroup, track, toggle);
                         }
                     }
                 else if (key == -6 && octave == 5)
+                    {
+                    uint8_t track = local.drumSequencer.currentTrack;
+                    if (local.drumSequencer.accent && track < local.drumSequencer.numTracks - 1)  // there's another track
+                        {
+                        track++;
+                        }
+                    setNote(local.drumSequencer.currentGroup, track, local.drumSequencer.currentEditPosition);
+                    local.drumSequencer.currentEditPosition = incrementAndWrap(local.drumSequencer.currentEditPosition, len);
+                    }
+                else if (key == -6 && octave == 6)
+                    {
+                    uint8_t track = local.drumSequencer.currentTrack;
+                    if (local.drumSequencer.accent && track < local.drumSequencer.numTracks - 1)  // there's another track
+                        {
+                        track++;
+                        }
+                    clearNote(local.drumSequencer.currentGroup, track, local.drumSequencer.currentEditPosition);
+                    local.drumSequencer.currentEditPosition = incrementAndWrap(local.drumSequencer.currentEditPosition, len);
+                    }
+                else if (key == -6 && octave == 7)
                     {
                     uint8_t track = local.drumSequencer.currentTrack;
                     if (local.drumSequencer.accent && track < local.drumSequencer.numTracks - 1)  // there's another track

@@ -1589,7 +1589,7 @@ void stateStepSequencerPlay()
         }
     
     // rerouting to new channel
-    if (newItem && 
+    else if (newItem && 
         itemType != MIDI_CUSTOM_CONTROLLER && 
         local.stepSequencer.performanceMode && 
         options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE && 

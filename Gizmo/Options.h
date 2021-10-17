@@ -80,12 +80,13 @@ struct _options
 	uint8_t a3ControlType;
 #endif INCLUDE_CONTROLLER
 
-	// There are 4 here
+	// There are 5 here
 #ifdef INCLUDE_ARPEGGIATOR
     uint8_t arpeggiatorPlayOctaves;
     uint8_t arpeggiatorPlayVelocity;
     uint8_t arpeggiatorLatch;  
     uint8_t arpeggiatorPlayAlongChannel;
+    uint8_t arpeggiatorArmClock;
 #endif INCLUDE_ARPEGGIATOR
 
 #ifdef INCLUDE_SPLIT

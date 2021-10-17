@@ -178,6 +178,7 @@ struct _arpLocal
 //	uint16_t oldRightPot;
     uint16_t pots[2];				// Pot values (left and right)
 	int8_t accompaniment;
+	uint8_t clockArmed;
     // We have to jump by at least 2 to start scrolling -- this is an anti-noise measure
     };
         

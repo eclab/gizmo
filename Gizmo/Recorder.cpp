@@ -106,6 +106,7 @@ void stateRecorderPlay()
                         
         resetRecorder();
         local.recorder.status = RECORDER_STOPPED;
+		stopClock(true);
         local.recorder.tickoff = 0;
         if ((currentDisplay == -1) || (data.slot.type != slotTypeForApplication(STATE_RECORDER))) // initialize
             {
@@ -120,6 +121,7 @@ void stateRecorderPlay()
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
         ended = ENDED;
+		stopClock(true);
         goUpState(STATE_RECORDER_EXIT);
         }
         
@@ -131,10 +133,14 @@ void stateRecorderPlay()
         if (local.recorder.status == RECORDER_PLAYING || local.recorder.status == RECORDER_RECORDING)
             {
             ended = ENDED;
+			if (local.recorder.status == RECORDER_PLAYING)
+				stopClock(true);
             }
         else 
             {
             local.recorder.status = RECORDER_PLAYING;
+			stopClock(true);
+			startClock(true);
             }
         local.recorder.playScheduled = false;
         }
@@ -167,6 +173,8 @@ void stateRecorderPlay()
             resetRecorder();
             sendAllSoundsOff();
             local.recorder.status = RECORDER_PLAYING;
+			stopClock(true);
+			startClock(true);
             }
         else
             {
@@ -348,6 +356,10 @@ void stateRecorderPlay()
             {
             ended = ENDED;
             }
+        else if (bypass)
+        	{
+        	// do nothing
+        	}
         else
             {
             // record!

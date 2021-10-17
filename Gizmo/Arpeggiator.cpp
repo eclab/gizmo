@@ -231,8 +231,8 @@ void playArpeggio()
     //
     // The last condition is because if the note length is 100% we want to NEVER turn off unless there's
     // a note pulse, even if the off time is exceeded, because we're doing fully legato.
-    //    if (!bypassOut && local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || (currentTime >= local.arp.offTime && options.noteLength < 100)) &&
-    if (!bypassOut && local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || (TIME_GREATER_THAN_OR_EQUAL(currentTime, local.arp.offTime) && options.noteLength < 100)) &&
+
+    if (local.arp.noteOff != NO_NOTE && local.arp.offTime != 0 && (notePulse || (TIME_GREATER_THAN_OR_EQUAL(currentTime, local.arp.offTime) && options.noteLength < 100)) &&
         // we don't want to turn off the note if the next note is a tie
         !((local.arp.number > ARPEGGIATOR_NUMBER_CHORD_HOLD &&                                                                                                                  // we're doing a custom arpeggio AND
                 ARP_NOTEX(local.arp.currentPosition + 1 >= data.arp.length ? 0 : local.arp.currentPosition + 1) == ARP_TIE)))    // the next note is a TIE
@@ -459,6 +459,13 @@ void arpeggiatorRemoveNote(uint8_t note)
 // Add a note to chordNotes.
 void arpeggiatorAddNote(uint8_t note, uint8_t velocity)
     {
+    if (local.arp.clockArmed)
+    	{
+		stopClock(true);
+		startClock(true);
+    	local.arp.clockArmed = false;
+    	}
+    	
     // remove latched notes if ALL of them are marked
     uint8_t marked = 0;
     for(uint8_t i = 0; i < local.arp.numChordNotes; i++)
@@ -546,18 +553,12 @@ void toggleAccompaniment()
     else local.arp.accompaniment = 0;
     }
 
-void arpeggiatorStartStopClock()
-    {
-    if (getClockState() == CLOCK_RUNNING)
-        {
-        stopClock(true);
-        }
-    else
-        {
-        resetArpeggiator();
-        startClock(true);
-        }
-    }
+void arpeggiatorArmClock()
+	{
+	options.arpeggiatorArmClock = !options.arpeggiatorArmClock;
+	saveOptions();
+	}
+
         
 void arpeggiatorEnterPerformanceMode()
     {
@@ -584,6 +585,8 @@ void stateArpeggiator()
     uint8_t result;
     if (entry)
         {
+		dontBypassOut = true;            
+        stopClock(true);
         local.arp.numChordNotes = 0;  // same reason     
         local.arp.currentPosition = ARP_POSITION_START;  // same reason
         local.arp.offTime = 0;  // same reason
@@ -622,6 +625,7 @@ void stateArpeggiator()
         case MENU_CANCELLED:
             {
             goUpState(STATE_ROOT);
+			stopClock(true);
             }
         break;
         }
@@ -638,6 +642,7 @@ void stateArpeggiatorPlay()
             
     if (entry)
         {
+        local.arp.clockArmed = options.arpeggiatorArmClock;
         local.stepSequencer.pots[LEFT_POT] = pot[LEFT_POT];
         local.stepSequencer.pots[RIGHT_POT] = pot[RIGHT_POT];
         local.arp.playing = 1;
@@ -802,7 +807,7 @@ void stateArpeggiatorPlay()
             /*
               case CC_EXTRA_PARAMETER_Z:
               {
-              arpeggiatorStartStopClock();
+              arpeggiatorArmClock();
               break;
               }
             */
@@ -918,7 +923,7 @@ void stateArpeggiatorPlay()
 
 void stateArpeggiatorMenu()
     {
-    const char* menuItems[5] = { PSTR("OCTAVES"), getClockState() == CLOCK_RUNNING ? PSTR("STOP CLOCK") : PSTR("START CLOCK"), PSTR("VELOCITY"), PSTR("PERFORMANCE"), options_p };
+    const char* menuItems[5] = { PSTR("OCTAVES"), options.arpeggiatorArmClock ? PSTR("DISARM CLOCK") : PSTR("ARM CLOCK"), PSTR("VELOCITY"), PSTR("PERFORMANCE"), options_p };
     uint8_t result = doMenuDisplay(menuItems, 5, STATE_NONE, 0, 1);
     switch (result)
         {
@@ -937,7 +942,7 @@ void stateArpeggiatorMenu()
                 break;
                 case ARPEGGIATOR_PLAY_CLOCK:
                     {
-                    arpeggiatorStartStopClock();
+                    arpeggiatorArmClock();
                     goUpState(STATE_ARPEGGIATOR_PLAY);
                     }
                 break;
@@ -1073,6 +1078,35 @@ void stateArpeggiatorCreateEdit()
         {
         arpeggiatorEnterTie();
         }
+    
+   if (potUpdated[RIGHT_POT])
+        {
+        uint8_t oldpos = local.arp.currentPosition;
+        // set to a value between 0 and arpMaxPosition inclusive
+        uint8_t newpos = (uint8_t) ((pot[RIGHT_POT] * ((uint16_t) data.arp.length + 1)) >> 10);  //  / 1024);
+        
+        if (lockoutPots ||                                                              // the potUpdated came from NRPN
+            local.arp.currentRightPot == -1 ||              // this is the first time data is being updated
+            local.arp.currentRightPot >= newpos && local.arp.currentRightPot - newpos >= 2 ||  // big enough change
+            local.arp.currentRightPot < newpos && newpos - local.arp.currentRightPot >= 2)     // big enough change
+            {
+            local.arp.currentPosition = newpos;
+            if (local.arp.currentPosition > data.arp.length)
+                local.arp.currentPosition = data.arp.length;
+            if (oldpos != local.arp.currentPosition)
+                {
+                sendAllSoundsOff();
+                if (local.arp.currentPosition > 0)
+                    sendNoteOn(local.arp.chordNotes[ARP_NOTEX(local.arp.currentPosition - 1)], local.arp.lastVelocity, options.channelOut);
+                }
+            local.arp.currentRightPot = -1;
+            }
+        }
+    
+    if (bypass)
+    	{
+    	// do nothing
+    	}
     else if (newItem == NEW_ITEM && itemType == MIDI_NOTE_ON)
         {
         local.arp.currentRightPot = (uint8_t) ((pot[RIGHT_POT] * ((uint16_t) data.arp.length + 1)) >> 10);  //  / 1024);
@@ -1158,29 +1192,6 @@ void stateArpeggiatorCreateEdit()
         {
         sendNoteOff(itemNumber, itemValue, options.channelOut);
         }
-    else if (potUpdated[RIGHT_POT])
-        {
-        uint8_t oldpos = local.arp.currentPosition;
-        // set to a value between 0 and arpMaxPosition inclusive
-        uint8_t newpos = (uint8_t) ((pot[RIGHT_POT] * ((uint16_t) data.arp.length + 1)) >> 10);  //  / 1024);
-        
-        if (lockoutPots ||                                                              // the potUpdated came from NRPN
-            local.arp.currentRightPot == -1 ||              // this is the first time data is being updated
-            local.arp.currentRightPot >= newpos && local.arp.currentRightPot - newpos >= 2 ||  // big enough change
-            local.arp.currentRightPot < newpos && newpos - local.arp.currentRightPot >= 2)     // big enough change
-            {
-            local.arp.currentPosition = newpos;
-            if (local.arp.currentPosition > data.arp.length)
-                local.arp.currentPosition = data.arp.length;
-            if (oldpos != local.arp.currentPosition)
-                {
-                sendAllSoundsOff();
-                if (local.arp.currentPosition > 0)
-                    sendNoteOn(local.arp.chordNotes[ARP_NOTEX(local.arp.currentPosition - 1)], local.arp.lastVelocity, options.channelOut);
-                }
-            local.arp.currentRightPot = -1;
-            }
-        }
     else if (newItem && (itemType == MIDI_CUSTOM_CONTROLLER))
         {
         switch (itemNumber)
@@ -1197,6 +1208,7 @@ void stateArpeggiatorCreateEdit()
                 }
             }
         }
+
     if (updateDisplay)
         {
         clearScreen();
