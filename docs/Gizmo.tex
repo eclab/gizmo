@@ -612,13 +612,15 @@ The preset arpeggio patterns (such as Up-Down) vary with the number of notes in 
 
 What happens if your arpeggio is designed for three notes but you hold down  five notes in your chord?  Only three of your five notes will be played.
 
-\bump
-
 On the other hand, what happens if your arpeggio is designed for five notes but you hold down only three notes in your chord?  Then notes from the bottom (or top, as appropriate) of your chord will be transposed up/down one octave to make up the remaining notes.
 
 Also, because they are fixed in size, user-created arpeggios do not respond to the octaves option.
 
 If you're playing a user-created arpeggio, and you press the Select button, Gizmo will schedule an {\bf advance to the next non-empty user-created arpeggio} after the current arpeggio has finished.\footnote{Which brings up the question: how do you delete a user-created arpeggio?  Maybe you have some junk you don't want to advance to.  The answer is: go to CREATE an arpeggio, then while it's still empty, save it to the slot you want to delete.}
+
+\paragraph{Arming the Clock}
+
+In the Step Sequencer, Drum Sequencer, and Recorder, the clock is started as soon as you start playing.  But this doesn't make much sense for the Arpeggiator.  Instead, you have the Menu option of {\it arming the clock} so that it is starts when you enter the first note in your arpeggio. Or you can {\it disarm} the clock so that it doesn't start at all.  
 
 \paragraph{More Arpeggiator Options}
 
@@ -1113,12 +1115,12 @@ Let's say you don't know what note to choose.  What to do?  When you see {\tt NO
 \vspace{-0.5em}
 \hspace{\fill}\includegraphics[width=4in]{EditModeKeys}
 \vspace{-1em}
-\caption{\small Edit Mode key input, starting at Middle C (MIDI 60).  White keys toggle one of 16 steps each.  C\# sets these keys to correspond to steps 1...16 (region ``A'').  D\# sets them to correspond to steps 17...32 (region~``B'').  F\#~sets them to correspond to steps 33...48 (region ``C'').  G\# sets them to correspond to steps 39...64 (region ``D'').  The default is region ``A''.  A\#~toggles the current step ({\it ``here''}) at the edit cursor.  Holding down a high key as shown while playing a key will enter it in the next track instead.  This is useful if you have set up the next track as an accent track (see {\bf Accents}).  Playing a key below middle C will just play the current drum sound. (You can change the Middle C to a different C from the menu).}
+\caption{\small Edit Mode key input, starting at Middle C (MIDI 60).  White keys toggle one of 16 steps each.  C\# sets these keys to correspond to steps 1...16 (region ``A'').  D\# sets them to correspond to steps 17...32 (region~``B'').  F\#~sets them to correspond to steps 33...48 (region ``C'').  G\# sets them to correspond to steps 39...64 (region ``D'').  The default is region ``A''.  A\#~sets, clears, or toggles the step at the {\it edit cursor} and increments the cursor.  Holding down a high key as shown while playing a key will enter it in the next track instead.  This is useful if you have set up the next track as an accent track (see {\bf Accents}).  Playing a key below middle C will just play the current drum sound. (You can change the Middle C to a different C from the menu).}
 \vspace{-1em}
 \label{editmodekeys}
 \end{wrapfigure}
 
-Now we've set our track's MIDI channel, velocity, and drum note, and we're back in Edit mode and ready to enter data.  In Edit mode data can be entered at the edit cursor, like the Step Sequencer, by pressing the Middle button; but usually it's entered in another way.  Namely, the Drum Sequencer is set up more like traditional drum machines: keys correspond to individual steps.  Your edit cursor specifies the current track.  When you press a white key (starting at middle C, as shown in Figure~\ref{editmodekeys}), a step on that track is toggled on/off.  You can also press the key A\# to toggle the step exactly at the edit cursor (like the Middle Button).  
+Now we've set our track's MIDI channel, velocity, and drum note, and we're back in Edit mode and ready to enter data.  In Edit mode data can be entered at the edit cursor, like the Step Sequencer, by pressing the Middle button; but usually it's entered in another way.  Namely, the Drum Sequencer is set up more like traditional drum machines: keys correspond to individual steps.  Your edit cursor specifies the current track.  When you press a white key (starting at middle C, as shown in Figure~\ref{editmodekeys}), a step on that track is toggled on/off.  You can also press the key A\# to set, clear or toggle the step exactly under the edit cursor.  
 
 \begin{wrapfigure}{r}{1.3in}
 \hspace{\fill}\includegraphics[width=1.3in]{drumregion}\hspace{\fill}%
@@ -2615,15 +2617,28 @@ I have three Gizmos which I chain together when playing. One might run a Drum Se
 \item A final synthesizer, which I control from the Controller when all three Gizmos are doing their thing, could be set to MIDI Channel 5.
 \end{itemize}
 
+\begin{wrapfigure}{r}{2in}
+\includegraphics[width=2in]{MultiGizmoLayout.pdf}
+\vspace{-1em}\caption{\small Example Layout}\vspace{-2em}
+\label{MultiGizmoLayout}
+\end{wrapfigure}
+
 \paragraph{Sending Note Data} By default Gizmo pass through MIDI data on all channels other than its MIDI In.  Thus if each of your Gizmos have a different MIDI In, you can send data to each one just by changing your controller's MIDI channel, assuming they're all currently running applications.
 
 If a Gizmo is in the top menu or is running something which doesn't pass through non-MIDI-In data, you can always turn on Bypass.  Remember that Bypass is on by default when you power your Gizmo up.  I've not found MIDI note latency to be bad at all even in my very strung out setup (SL\(\rightarrow\)Zero\(\rightarrow\)Gizmo\(\rightarrow\)Gizmo\(\rightarrow\)Gizmo\(\rightarrow\)Router\(\rightarrow\)Synths)
 
+\paragraph{Handling the Clock} You will often be turning on bypass in your upstream Gizmo in order to control a downstream Gizmo or to enter note data into it.  If this upstream Gizmo is handling the clock, turning on bypass will stop the clock, which you probably don't want.  Instead, you can set the clock to {\bf Merge}, and it will continue to run even in bypass mode.
+
 \paragraph{Controlling a Gizmo} By default Gizmo pass through MIDI data on channels other than its MIDI In.  If you just want to control a given Gizmo, simply set the upstream and downstream Gizmos to bypass.  
 
 
-If you just want to control a given Gizmo, simply set the upstream and downstream Gizmos to bypass.  
+\paragraph{Example} Figure~\ref{MultiGizmoLayout} shows a real layout I've used: you get bonus points for identifying the devices in question.   In this layout, both Gizmo A and B are sent note information by the Keyboard controller and are controlled by  the CC controller.  The keyboard controller is fixed to channel 1, but Gizmo A can always convert channel 1 to any other channel via the MIDI Routing Channel to play a downstream synthesizer (see ``Secrets of the Top Level Menu'', Section~\ref{secretsofthetoplevelmenu}).
 
+Gizmo A is set up with MIDI In = Channel 1 (same as Keyboard controller), MIDI Out = 10 (same as drum synthesizer), MIDI Control = Channel 16 (same as CC controller), and Clock = Merge, so clock information is sent even if bypass is turned on.  Gizmo A is playing the Drum Sequencer.
+
+Gizmo B is set up with MIDI In = Channel 1, MIDI Out = 1 (same as synthesizer 1), MIDI Control = Channel 16, and Clock = Use (Consume is fine too), so it uses the clock information sent by Gizmo A.  Gizmo B is playing the Step Sequencer, with some tracks set to Channel 2 (same as synthesizer 2).   
+
+To control Gizmo B, you just need to turn on bypass for Gizmo A, which passes through to B both keyboard and CC controller information.  When starting the Drum Sequencer on Gizmo A, the clock is also started, which does the same on Gizmo B.  If you want to play just Gizmo B, you can always set its Clock to Ignore.
 
 
 \section{Development Hints}
