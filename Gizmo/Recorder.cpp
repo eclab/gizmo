@@ -24,7 +24,7 @@ void resetRecorder()
     local.recorder.currentPos = 0;
     local.recorder.bufferPos = 0;
     local.recorder.iterations = 0;
-	local.recorder.lastNote = RECORDER_NO_NOTE;
+    local.recorder.lastNote = RECORDER_NO_NOTE;
     }
         
 
@@ -106,7 +106,7 @@ void stateRecorderPlay()
                         
         resetRecorder();
         local.recorder.status = RECORDER_STOPPED;
-		stopClock(true);
+        stopClock(true);
         local.recorder.tickoff = 0;
         if ((currentDisplay == -1) || (data.slot.type != slotTypeForApplication(STATE_RECORDER))) // initialize
             {
@@ -114,14 +114,14 @@ void stateRecorderPlay()
             local.recorder.numNotes = 0;
             }
             
-		local.recorder.lastNote = RECORDER_NO_NOTE;
+        local.recorder.lastNote = RECORDER_NO_NOTE;
         entry = false;
         }
                 
     if (isUpdated(BACK_BUTTON, RELEASED))
         {
         ended = ENDED;
-		stopClock(true);
+        stopClock(true);
         goUpState(STATE_RECORDER_EXIT);
         }
         
@@ -133,14 +133,14 @@ void stateRecorderPlay()
         if (local.recorder.status == RECORDER_PLAYING || local.recorder.status == RECORDER_RECORDING)
             {
             ended = ENDED;
-			if (local.recorder.status == RECORDER_PLAYING)
-				stopClock(true);
+            if (local.recorder.status == RECORDER_PLAYING)
+                stopClock(true);
             }
         else 
             {
             local.recorder.status = RECORDER_PLAYING;
-			stopClock(true);
-			startClock(true);
+            stopClock(true);
+            startClock(true);
             }
         local.recorder.playScheduled = false;
         }
@@ -173,8 +173,8 @@ void stateRecorderPlay()
             resetRecorder();
             sendAllSoundsOff();
             local.recorder.status = RECORDER_PLAYING;
-			stopClock(true);
-			startClock(true);
+            stopClock(true);
+            startClock(true);
             }
         else
             {
@@ -284,9 +284,9 @@ void stateRecorderPlay()
                         local.recorder.currentPos++;
                         local.recorder.bufferPos += 4;
  
- 						local.recorder.lastNote = pitch;
-						local.recorder.lastVelocity = velocity;
-                       }
+                        local.recorder.lastNote = pitch;
+                        local.recorder.lastVelocity = velocity;
+                        }
                     }
                 }
             }
@@ -357,9 +357,9 @@ void stateRecorderPlay()
             ended = ENDED;
             }
         else if (bypass)
-        	{
-        	// do nothing
-        	}
+            {
+            // do nothing
+            }
         else
             {
             // record!
@@ -406,8 +406,8 @@ void stateRecorderPlay()
                     // load the velocity
                     data.slot.data.recorder.buffer[data.slot.data.recorder.length+3 - 4] = itemValue;  // the velocity
                     sendNoteOn(itemNumber, itemValue, options.channelOut);
-					local.recorder.lastNote = itemNumber;
-					local.recorder.lastVelocity = itemValue;
+                    local.recorder.lastNote = itemNumber;
+                    local.recorder.lastVelocity = itemValue;
                     }
                 else if ((itemType == MIDI_NOTE_OFF) && 
                     (data.slot.data.recorder.length <= (RECORDER_BUFFER_SIZE - RECORDER_SIZE_OF_NOTE_OFF)))
@@ -483,11 +483,11 @@ void stateRecorderPlay()
         clearScreen();
 
 #ifdef TWO_SCREENS_VERTICAL
-		if (local.recorder.lastNote != RECORDER_NO_NOTE)
-			{
-			writeNotePitch(led4, local.recorder.lastNote);
-			writeShortNumber(led3, local.recorder.lastVelocity, false);
-			}
+        if (local.recorder.lastNote != RECORDER_NO_NOTE)
+            {
+            writeNotePitch(led4, local.recorder.lastNote);
+            writeShortNumber(led3, local.recorder.lastVelocity, false);
+            }
 #endif TWO_SCREENS_VERTICAL
 
         // draw the recorder

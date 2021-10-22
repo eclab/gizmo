@@ -1519,11 +1519,11 @@ uint8_t doTransitionDisplay(uint8_t initialTransition, uint8_t blink)
                 else
                     {
 #ifdef TWO_SCREENS_VERTICAL
-	    			clearMatrix(led3);
-    				clearMatrix(led4);
-					drawDrumSequencer(group, false, true);		// draw just the top
+                    clearMatrix(led3);
+                    clearMatrix(led4);
+                    drawDrumSequencer(group, false, true);          // draw just the top
 #endif TWO_SCREENS_VERTICAL
-                     writeShortNumber(led2, (group + 1), false);
+                    writeShortNumber(led2, (group + 1), false);
                     if (repeat == DRUM_SEQUENCER_TRANSITION_REPEAT_LOOP)
                         {
                         write8x5Glyph(led, GLYPH_8x5_INFINITY);
@@ -1965,7 +1965,7 @@ void stateDrumSequencerVelocity()
         local.drumSequencer.backup = getNoteVelocity(local.drumSequencer.currentTrack);
         }
     result = doNumericalDisplay(1, 8, local.drumSequencer.backup + 1, false, GLYPH_NONE, 
-    	GLYPH_NONE, immediateReturn && (immediateReturnState == STATE_DRUM_SEQUENCER_PLAY));
+        GLYPH_NONE, immediateReturn && (immediateReturnState == STATE_DRUM_SEQUENCER_PLAY));
     switch (result)
         {
         case NO_MENU_SELECTED:
@@ -1988,34 +1988,34 @@ void stateDrumSequencerVelocity()
     playDrumSequencer();
 
     /*
-    uint8_t result;
-    if (entry) 
-        {
-        local.drumSequencer.backup = getNoteVelocity(local.drumSequencer.currentTrack);
-        defaultMenuValue = local.drumSequencer.backup;
-        }
-    const char* menuItems[8] = { PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8") };
-    result = doMenuDisplay(menuItems, 8, STATE_NONE, STATE_NONE, 1);
-    switch (result)
-        {
-        case NO_MENU_SELECTED:
-            {
-            setNoteVelocity(local.drumSequencer.currentTrack, currentDisplay);  // so we can hear it
-            }
-        break;
-        case MENU_SELECTED:
-            {
-            goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
-            }
-        break;
-        case MENU_CANCELLED:
-            {
-            setNoteVelocity(local.drumSequencer.currentTrack, local.drumSequencer.backup);
-            goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
-            }
-        break;
-        }
-    playDrumSequencer();
+      uint8_t result;
+      if (entry) 
+      {
+      local.drumSequencer.backup = getNoteVelocity(local.drumSequencer.currentTrack);
+      defaultMenuValue = local.drumSequencer.backup;
+      }
+      const char* menuItems[8] = { PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8") };
+      result = doMenuDisplay(menuItems, 8, STATE_NONE, STATE_NONE, 1);
+      switch (result)
+      {
+      case NO_MENU_SELECTED:
+      {
+      setNoteVelocity(local.drumSequencer.currentTrack, currentDisplay);  // so we can hear it
+      }
+      break;
+      case MENU_SELECTED:
+      {
+      goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+      }
+      break;
+      case MENU_CANCELLED:
+      {
+      setNoteVelocity(local.drumSequencer.currentTrack, local.drumSequencer.backup);
+      goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+      }
+      break;
+      }
+      playDrumSequencer();
     */
     }
 
@@ -2050,37 +2050,37 @@ void stateDrumSequencerMenuDefaultVelocity()
     playDrumSequencer();
 
     /*
-    uint8_t result;
-    if (entry) 
-        {
-        local.drumSequencer.backup = getNoteVelocity(local.drumSequencer.currentTrack);
-        defaultMenuValue = options.drumSequencerDefaultVelocity;
-        }
-    const char* menuItems[8] = { PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8") };
-    result = doMenuDisplay(menuItems, 8, STATE_NONE, STATE_NONE, 1);
-    switch (result)
-        {
-        case NO_MENU_SELECTED:
-            {
-            setNoteVelocity(local.drumSequencer.currentTrack, currentDisplay);  // so we can hear it
-            }
-        break;
-        case MENU_SELECTED:
-            { 
-            options.drumSequencerDefaultVelocity = currentDisplay;   
-            saveOptions();
-            setNoteVelocity(local.drumSequencer.currentTrack, local.drumSequencer.backup);
-            goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
-            }
-        break;
-        case MENU_CANCELLED:
-            {
-            setNoteVelocity(local.drumSequencer.currentTrack, local.drumSequencer.backup);
-            goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
-            }
-        break;
-        }
-    playDrumSequencer();
+      uint8_t result;
+      if (entry) 
+      {
+      local.drumSequencer.backup = getNoteVelocity(local.drumSequencer.currentTrack);
+      defaultMenuValue = options.drumSequencerDefaultVelocity;
+      }
+      const char* menuItems[8] = { PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), PSTR("8") };
+      result = doMenuDisplay(menuItems, 8, STATE_NONE, STATE_NONE, 1);
+      switch (result)
+      {
+      case NO_MENU_SELECTED:
+      {
+      setNoteVelocity(local.drumSequencer.currentTrack, currentDisplay);  // so we can hear it
+      }
+      break;
+      case MENU_SELECTED:
+      { 
+      options.drumSequencerDefaultVelocity = currentDisplay;   
+      saveOptions();
+      setNoteVelocity(local.drumSequencer.currentTrack, local.drumSequencer.backup);
+      goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+      }
+      break;
+      case MENU_CANCELLED:
+      {
+      setNoteVelocity(local.drumSequencer.currentTrack, local.drumSequencer.backup);
+      goUpState(immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU);
+      }
+      break;
+      }
+      playDrumSequencer();
     */
     }
 
@@ -2412,15 +2412,15 @@ void stateDrumSequencerTransitionEditGroup()
                 }
 #ifdef TWO_SCREENS_VERTICAL
             else if (currentDisplay > 0 && currentDisplay <= local.drumSequencer.numGroups)
-				{
-				if (updateDisplay)
-					{
-					uint8_t group = currentDisplay - 1;
-					clearMatrix(led3);
-					clearMatrix(led4);
-					drawDrumSequencer(group, false, true);		// draw just the top
-					}
-				}
+                {
+                if (updateDisplay)
+                    {
+                    uint8_t group = currentDisplay - 1;
+                    clearMatrix(led3);
+                    clearMatrix(led4);
+                    drawDrumSequencer(group, false, true);          // draw just the top
+                    }
+                }
 #endif TWO_SCREENS_VERTICAL
             }
         break;
@@ -2583,26 +2583,26 @@ uint8_t drumSequencerShouldMuteTrack(uint8_t track)
 
 
 void drawDrumSequencerNotePitchAndVelocity(uint8_t trackLen)
-	{
+    {
 #ifdef TWO_SCREENS_VERTICAL
-	if (local.stepSequencer.currentEditPosition < 0) return;
-	int8_t pos = local.stepSequencer.currentEditPosition;
-	if (pos < 0)
-		pos = local.stepSequencer.currentPlayPosition;
-	uint8_t note = getNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, pos);
-	if (note)
-		{
-		writeNotePitch(led3, getNotePitch(local.drumSequencer.currentTrack));
-		writeShortNumber(led4, getNoteVelocity(local.drumSequencer.currentTrack), false);
-		}
-	else
-		{
-		// do nothing
-		}
+    if (local.stepSequencer.currentEditPosition < 0) return;
+    int8_t pos = local.stepSequencer.currentEditPosition;
+    if (pos < 0)
+        pos = local.stepSequencer.currentPlayPosition;
+    uint8_t note = getNote(local.drumSequencer.currentGroup, local.drumSequencer.currentTrack, pos);
+    if (note)
+        {
+        writeNotePitch(led3, getNotePitch(local.drumSequencer.currentTrack));
+        writeShortNumber(led4, getNoteVelocity(local.drumSequencer.currentTrack), false);
+        }
+    else
+        {
+        // do nothing
+        }
 #else
-	// do nothing
+    // do nothing
 #endif TWO_SCREENS_VERTICAL
-	}
+    }
 
 
 // Draws the sequence with the given track length, number of tracks, and skip size
@@ -2626,13 +2626,13 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters, uint8_t topScreen
 
 #ifdef TWO_SCREENS_VERTICAL
     if (topScreenOnly)
-    	{
-    	clearMatrix(led3);
-    	clearMatrix(led4);
-    	}
+        {
+        clearMatrix(led3);
+        clearMatrix(led4);
+        }
     else
 #endif TWO_SCREENS_VERTICAL
-    	clearScreen();
+        clearScreen();
     
     // revise LASTTRACK to be just beyond the last track we'll draw
     //      (where TRACK is the first track we'll draw)     
@@ -2643,37 +2643,37 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters, uint8_t topScreen
     uint8_t lastTrack = numTracks;          // lastTrack is 1+ the final track we'll be drawing
 
 #ifdef TWO_SCREENS_VERTICAL
-	uint8_t fourteenskip = 14 / skip;
-	if (numTracks <= fourteenskip)              // will all fit on one screen
-		firstTrack = 0;
-	else
-		{
-		if (!drawFooters) firstTrack = 0;
-		uint8_t eightskip =  8 / skip;
-		if (firstTrack <= eightskip)  
-			firstTrack = 0;
-		else firstTrack = firstTrack - eightskip;       //  + 1;   
-		lastTrack = bound(lastTrack, 0, firstTrack + fourteenskip);
-		if (lastTrack == numTracks)
-			{
-			if (lastTrack >= fourteenskip) 
-				firstTrack = lastTrack - fourteenskip;
-			}
-		}
+    uint8_t fourteenskip = 14 / skip;
+    if (numTracks <= fourteenskip)              // will all fit on one screen
+        firstTrack = 0;
+    else
+        {
+        if (!drawFooters) firstTrack = 0;
+        uint8_t eightskip =  8 / skip;
+        if (firstTrack <= eightskip)  
+            firstTrack = 0;
+        else firstTrack = firstTrack - eightskip;       //  + 1;   
+        lastTrack = bound(lastTrack, 0, firstTrack + fourteenskip);
+        if (lastTrack == numTracks)
+            {
+            if (lastTrack >= fourteenskip) 
+                firstTrack = lastTrack - fourteenskip;
+            }
+        }
 #else
-	if (!drawFooters) firstTrack = 0;
-	uint8_t fourskip =  4 / skip;
-	if (firstTrack < fourskip)  
-		firstTrack = 0;
-	else firstTrack = firstTrack - fourskip + 1;
+    if (!drawFooters) firstTrack = 0;
+    uint8_t fourskip =  4 / skip;
+    if (firstTrack < fourskip)  
+        firstTrack = 0;
+    else firstTrack = firstTrack - fourskip + 1;
 
-	uint8_t sixskip = 6 / skip;
-	lastTrack = bound(lastTrack, 0, firstTrack + sixskip);
-	if (lastTrack == numTracks)
-		{
-		if (lastTrack >= sixskip) 
-			firstTrack = lastTrack - sixskip;
-		}
+    uint8_t sixskip = 6 / skip;
+    lastTrack = bound(lastTrack, 0, firstTrack + sixskip);
+    if (lastTrack == numTracks)
+        {
+        if (lastTrack >= sixskip) 
+            firstTrack = lastTrack - sixskip;
+        }
 #endif TWO_SCREENS_VERTICAL
 
 
@@ -2685,7 +2685,7 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters, uint8_t topScreen
 //            local.drumSequencer.fillGroup : local.drumSequencer.currentGroup);
 
 #ifdef TWO_SCREENS_VERTICAL
-	uint8_t y = 15;
+    uint8_t y = 15;
 #else
     uint8_t y = 7;              // we can go negative if we have two vertical screens
 #endif TWO_SCREENS_VERTICAL
@@ -2817,10 +2817,10 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters, uint8_t topScreen
         y -= skip;
 
 #ifdef TWO_SCREENS_VERTICAL
-		if (topScreenOnly) 
-			{
-			if (y < 9) break;
-			}
+        if (topScreenOnly) 
+            {
+            if (y < 9) break;
+            }
 #endif TWO_SCREENS_VERTICAL
         }
     
@@ -3971,27 +3971,27 @@ void stateDrumSequencerPlay()
                         
                         // doing this without % is painful
                         if (toggle >= len)
-                        	{
-                        	if (len == 8)
-								{
-								toggle = toggle - ((toggle >> 3) << 3);		// toggle = toggle % 8
-								}
-							else if (len == 16)
-								{
-								toggle = toggle - ((toggle >> 4) << 4);		// toggle = toggle % 16
-								}
-							else if (len == 32)
-								{
-								toggle = toggle - ((toggle >> 5) << 5);		// toggle = toggle % 32
-								}
-							}
-                        	
-						uint8_t track = local.drumSequencer.currentTrack;
-						if (local.drumSequencer.accent && track < local.drumSequencer.numTracks - 1)  // there's another track
-							{
-							track++;
-							}
-						toggleNote(local.drumSequencer.currentGroup, track, toggle);
+                            {
+                            if (len == 8)
+                                {
+                                toggle = toggle - ((toggle >> 3) << 3);         // toggle = toggle % 8
+                                }
+                            else if (len == 16)
+                                {
+                                toggle = toggle - ((toggle >> 4) << 4);         // toggle = toggle % 16
+                                }
+                            else if (len == 32)
+                                {
+                                toggle = toggle - ((toggle >> 5) << 5);         // toggle = toggle % 32
+                                }
+                            }
+                                
+                        uint8_t track = local.drumSequencer.currentTrack;
+                        if (local.drumSequencer.accent && track < local.drumSequencer.numTracks - 1)  // there's another track
+                            {
+                            track++;
+                            }
+                        toggleNote(local.drumSequencer.currentGroup, track, toggle);
                         }
                     }
                 else if (key == -6 && octave == 5)

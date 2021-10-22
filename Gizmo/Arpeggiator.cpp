@@ -48,31 +48,31 @@ void drawArpeggio(uint8_t* mat, uint8_t* mat2, uint8_t pos, uint8_t editCursor, 
             else if (n == ARP_TIE)
                 {
                 if (j >= 8)
-                	setPoint(mat, j-8, 7);
+                    setPoint(mat, j-8, 7);
                 else
-                	setPoint(mat2, j, 7);
+                    setPoint(mat2, j, 7);
                 }
             else if (interval > 7)
                 {
                 if (j >= 8)
-                	{
-                	setPoint(mat, j-8, n >> 1);
-                	if ((n & 1) == 1)  // it's odd, add another point
-                	    setPoint(mat, j-8, (n >> 1) + 1);
-                	}
+                    {
+                    setPoint(mat, j-8, n >> 1);
+                    if ((n & 1) == 1)  // it's odd, add another point
+                        setPoint(mat, j-8, (n >> 1) + 1);
+                    }
                 else
-                	{
-                	setPoint(mat2, j, n >> 1);
-                	if ((n & 1) == 1)  // it's odd, add another point
-                	    setPoint(mat2, j, (n >> 1) + 1);
-                	}
+                    {
+                    setPoint(mat2, j, n >> 1);
+                    if ((n & 1) == 1)  // it's odd, add another point
+                        setPoint(mat2, j, (n >> 1) + 1);
+                    }
                 }
             else
                 {
                 if (j >= 8)
-	                setPoint(mat, j-8, n);
-	            else
-	                setPoint(mat2, j, n);
+                    setPoint(mat, j-8, n);
+                else
+                    setPoint(mat2, j, n);
                 }
             }
         }
@@ -89,10 +89,10 @@ void drawArpeggio(uint8_t* mat, uint8_t* mat2, uint8_t pos, uint8_t editCursor, 
             {
             // draw at pos + 1
             if (point >= 8)
-	            blinkPoint(mat, point-8, 0);
-	        else
-	        	blinkPoint(mat2, point, 0);
-	        }
+                blinkPoint(mat, point-8, 0);
+            else
+                blinkPoint(mat2, point, 0);
+            }
         }
     }
 
@@ -460,12 +460,12 @@ void arpeggiatorRemoveNote(uint8_t note)
 void arpeggiatorAddNote(uint8_t note, uint8_t velocity)
     {
     if (local.arp.clockArmed)
-    	{
-		stopClock(true);
-		startClock(true);
-    	local.arp.clockArmed = false;
-    	}
-    	
+        {
+        stopClock(true);
+        startClock(true);
+        local.arp.clockArmed = false;
+        }
+        
     // remove latched notes if ALL of them are marked
     uint8_t marked = 0;
     for(uint8_t i = 0; i < local.arp.numChordNotes; i++)
@@ -554,10 +554,10 @@ void toggleAccompaniment()
     }
 
 void arpeggiatorArmClock()
-	{
-	options.arpeggiatorArmClock = !options.arpeggiatorArmClock;
-	saveOptions();
-	}
+    {
+    options.arpeggiatorArmClock = !options.arpeggiatorArmClock;
+    saveOptions();
+    }
 
         
 void arpeggiatorEnterPerformanceMode()
@@ -585,7 +585,7 @@ void stateArpeggiator()
     uint8_t result;
     if (entry)
         {
-		dontBypassOut = true;            
+        dontBypassOut = true;            
         stopClock(true);
         local.arp.numChordNotes = 0;  // same reason     
         local.arp.currentPosition = ARP_POSITION_START;  // same reason
@@ -625,7 +625,7 @@ void stateArpeggiator()
         case MENU_CANCELLED:
             {
             goUpState(STATE_ROOT);
-			stopClock(true);
+            stopClock(true);
             }
         break;
         }
@@ -1079,7 +1079,7 @@ void stateArpeggiatorCreateEdit()
         arpeggiatorEnterTie();
         }
     
-   if (potUpdated[RIGHT_POT])
+    if (potUpdated[RIGHT_POT])
         {
         uint8_t oldpos = local.arp.currentPosition;
         // set to a value between 0 and arpMaxPosition inclusive
@@ -1104,9 +1104,9 @@ void stateArpeggiatorCreateEdit()
         }
     
     if (bypass)
-    	{
-    	// do nothing
-    	}
+        {
+        // do nothing
+        }
     else if (newItem == NEW_ITEM && itemType == MIDI_NOTE_ON)
         {
         local.arp.currentRightPot = (uint8_t) ((pot[RIGHT_POT] * ((uint16_t) data.arp.length + 1)) >> 10);  //  / 1024);

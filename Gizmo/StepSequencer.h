@@ -10,12 +10,6 @@
 
 #include "All.h"
 
-#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
-#define INCLUDE_MONO
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
-
-
-
 
 /////// THE STEP SEQUENCER
 //
@@ -62,8 +56,9 @@
 ////     7 bits note length (0...100 as a percentage, or PLAY_LENGTH_USE_DEFAULT)
 ////     7 bits note velocity (0 = "use per-note velocity", or 1...127)
 ////     1 bit transposable
-////     5 bits fader
+////     5 bits fader or (if chord is set) chord Selection
 ////	 4 bits pattern
+////     1 bit chord flag
 
 //// If CONTROL:
 ////     3 bits: CC MSB, NRPN MSB, RPN MSB, PC, BEND MSB, AFTERTOUCH, INTERNAL
@@ -75,7 +70,7 @@
 //// In MONO MODE:
 ////	Pattern is replaced with REPEATS
 //// 		The REPEATS are END, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 64, 128
-////	The only MIDI channel used is for track 1
+////	The only MIDI channel used is for the first track
 
 /*
 //// In DUO MODE:
@@ -307,21 +302,23 @@ struct _stepSequencerLocal
     uint8_t muted[MAX_STEP_SEQUENCER_TRACKS];               		// Per-track mute toggle
     uint8_t velocity[MAX_STEP_SEQUENCER_TRACKS];    				// Per track note velocity, or STEP_SEQUENCER_NO_OVERRIDE_VELOCITY
     uint8_t fader[MAX_STEP_SEQUENCER_TRACKS];               		// Per-track fader, values from 1...16
+#define CHORD_TYPE fader											// Chords are stored in the fader.
     uint32_t offTime[MAX_STEP_SEQUENCER_TRACKS];    				// When do we turn off? 
     uint8_t noteOff[MAX_STEP_SEQUENCER_TRACKS];						// What note should be turned off?
     uint8_t shouldPlay[MAX_STEP_SEQUENCER_TRACKS];					// Should the track be played this time around (due to the pattern)?
     uint8_t transposable[MAX_STEP_SEQUENCER_TRACKS];				// Can this track be transposed in performance mode?
     uint8_t pattern[MAX_STEP_SEQUENCER_TRACKS];						// Track pattern.  Repurposed to hold repeats if in Mono Mode
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+    uint8_t chord[MAX_STEP_SEQUENCER_TRACKS];						// Chord for given track
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
 #define MONO_REPEATS pattern										// Mono-mode doesn't use pattern.  Instead, each track has REPEATS: Loop, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 64, 128
     uint8_t dontPlay[MAX_STEP_SEQUENCER_TRACKS];					// Don't play the note on this track this step because it was played manually while being entered
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
 	uint16_t controlParameter[MAX_STEP_SEQUENCER_TRACKS];			// If the data is a control data type, what is its parameter?
     uint16_t lastControlValue[MAX_STEP_SEQUENCER_TRACKS];			// If the data is a control data type, what was the last control value it held?
-#endif INCLUDE_ADVANCED_STEP_SEQUENCER
-#ifdef INCLUDE_MONO
 	uint8_t playTrack;												// In Mono mode, when in performance mode, what track is playing?
 	uint8_t lastCurrentTrack;										// Keeps track of the last place the left pot set the current track to.  This way we can avoid the pot resetting the current track if we've changed it using the middle button in MONO mode.
-#endif INCLUDE_MONO
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
     uint8_t newData;				// A temporary variable.  comes in from STATE_STEP_SEQUENCER_MENU_TYPE, used in STATE_STEP_SEQUENCER_MENU_TYPE_PARAMETER
 	int8_t transpose;				// Current transposition due to performance mode.  Note: signed.
     uint8_t performanceMode;		// We are in performance mode
@@ -368,13 +365,13 @@ struct _stepSequencer
     												// (High 5 bits) track custom length
     uint8_t repeat;									// (Low 4 bits) how many iterations before we stop: forever, 1 time, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 24, 32, 64, 128 times 
 													// (High 4 bits) what to do when we're done: 
-#ifdef INCLUDE_MONO
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
 
 	uint8_t mono;									// (Low 2 bits): mono or standard formats, presently 0 = NOT MONO, 1 = MONO, 2 = DUO, and 3 reserved for TRIO
 													// (High 6 bits): UNUSED
 #else
 	uint8_t unused;
-#endif INCLUDE_MONO
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
     uint8_t buffer[STEP_SEQUENCER_BUFFER_SIZE];		// 384 bytes
     };
 
@@ -466,6 +463,8 @@ void playStepSequencer();
 // Gives other options
 void stateStepSequencerMenu();
 
+void sendTrackNote(uint8_t note, uint8_t velocity, uint8_t track);
+
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
 void stateStepSequencerMenuRest();
 void stateStepSequencerMenuTie();
@@ -495,10 +494,10 @@ void stateStepSequencerMenuPerformanceStop();
 void stateStepSequencerMenuEditMark();
 void stateStepSequencerMenuEditCopy(uint8_t splat, uint8_t paste);
 void stateStepSequencerMenuEditDuplicate();
-#ifdef INCLUDE_MONO
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
 void stateStepSequencerMenuEditSwap();
-#endif INCLUDE_MONO
-
+void stateStepSequencerChord();
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
 
 #endif __STEP_SEQUENCER_H__
 

@@ -590,7 +590,7 @@ void go()
             
             if (entry)
                 {
-				dontBypassOut = false;
+                dontBypassOut = false;
                 immediateReturnState = STATE_ROOT;
 #if defined(__MEGA__)
                 lastRoutePotValue = 0;
@@ -638,7 +638,7 @@ void go()
             {
             if (entry)              // we do this because this state is entered just before we exit the entire step sequencer
                 {
-				dontBypassOut = true;            
+                dontBypassOut = true;            
                 setParseRawCC(false);
                 }
             stateLoad(STATE_STEP_SEQUENCER_PLAY, STATE_STEP_SEQUENCER_FORMAT, STATE_ROOT, STATE_STEP_SEQUENCER);
@@ -650,7 +650,7 @@ void go()
             {
             if (entry)              // we do this because this state is entered just before we exit the entire step sequencer
                 {
-				dontBypassOut = true;            
+                dontBypassOut = true;            
                 setParseRawCC(false);
                 setNotePulseRate(options.noteSpeedType);                // reset the note speed
                 }
@@ -663,7 +663,7 @@ void go()
             {
             if (entry)              // we do this because this state is entered just before we exit the entire step sequencer
                 {
-				dontBypassOut = true;            
+                dontBypassOut = true;            
                 }
             stateLoad(STATE_RECORDER_PLAY, STATE_RECORDER_PLAY, STATE_ROOT, STATE_RECORDER);
             }
@@ -780,7 +780,7 @@ void go()
 #if defined(__UNO__)
             const char* menuItems[11] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("LENGTH"), 
                                           PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), 
-                                          ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")), PSTR("BRIGHTNESS"), PSTR("GIZMO V9 (C) 2021 SEAN LUKE") };
+                                          ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")), PSTR("BRIGHTNESS"), PSTR("GIZMO V10 (C) 2021 SEAN LUKE") };
             doMenuDisplay(menuItems, 11, STATE_OPTIONS_TEMPO, immediateReturnState, 1);
 #endif
 
@@ -903,14 +903,14 @@ void go()
             {
             // 0 represents FREE velocity
             stateNumerical(0, 127, local.stepSequencer.velocity[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, true, GLYPH_NONE,
-                immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);	//, GLYPH_NONE, immediateReturn && (immediateReturnState == STATE_STEP_SEQUENCER_PLAY));
+                immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);    //, GLYPH_NONE, immediateReturn && (immediateReturnState == STATE_STEP_SEQUENCER_PLAY));
             playStepSequencer();
             }
         break;
         case STATE_STEP_SEQUENCER_FADER:
             {
             stateNumerical(0, 31, local.stepSequencer.fader[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_NONE, 
-                immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU, GLYPH_NONE, immediateReturn && (immediateReturnState == STATE_STEP_SEQUENCER_PLAY));		// not MENU because we can be called from the pot
+                immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU, GLYPH_NONE, immediateReturn && (immediateReturnState == STATE_STEP_SEQUENCER_PLAY));                // not MENU because we can be called from the pot
             playStepSequencer();
             }
         break;
@@ -918,7 +918,7 @@ void go()
             {
             // 101 represents DEFAULT length
             stateNumerical(0, 101, local.stepSequencer.noteLength[local.stepSequencer.currentTrack], local.stepSequencer.backup, false, false, GLYPH_DEFAULT,
-                immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);	// , GLYPH_NONE, immediateReturn && (immediateReturnState == STATE_STEP_SEQUENCER_PLAY));
+                immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);    // , GLYPH_NONE, immediateReturn && (immediateReturnState == STATE_STEP_SEQUENCER_PLAY));
             playStepSequencer();
             }
         break;
@@ -934,7 +934,13 @@ void go()
             playStepSequencer();
             }
         break;
+
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+        case STATE_STEP_SEQUENCER_CHORD:
+            {
+            stateStepSequencerChord();
+            }
+        break;
         case STATE_STEP_SEQUENCER_MENU_TYPE:
             {
             stateStepSequencerMenuType();
@@ -973,13 +979,13 @@ void go()
         break;
         case STATE_STEP_SEQUENCER_MENU_EDIT:
             {
-#ifdef INCLUDE_MONO
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
             const char* menuItems[6] = { PSTR("MARK"), PSTR("COPY"), PSTR("SPLAT"), PSTR("MOVE"), PSTR("DUPLICATE"), PSTR("SWAP") };
             doMenuDisplay(menuItems, 6, STATE_STEP_SEQUENCER_MENU_EDIT_MARK, STATE_STEP_SEQUENCER_MENU, 1);
 #else
             const char* menuItems[5] = { PSTR("MARK"), PSTR("COPY"), PSTR("SPLAT"), PSTR("MOVE"), PSTR("DUPLICATE") };
             doMenuDisplay(menuItems, 5, STATE_STEP_SEQUENCER_MENU_EDIT_MARK, STATE_STEP_SEQUENCER_MENU, 1);
-#endif INCLUDE_MONO
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
             playStepSequencer();
             }
         break;
@@ -1012,14 +1018,14 @@ void go()
             playStepSequencer();
             }
         break;
-#ifdef INCLUDE_MONO
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
         case STATE_STEP_SEQUENCER_MENU_EDIT_SWAP:
             {
             stateStepSequencerMenuEditSwap();
             playStepSequencer();
             }
         break;
-#endif INCLUDE_MONO
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
         case STATE_STEP_SEQUENCER_MENU_LENGTH:
             {
             stateStepSequencerMenuLength();
@@ -1056,11 +1062,7 @@ void go()
         case STATE_STEP_SEQUENCER_MENU_CANT:
             {
             stateCant(immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU);
-            /*
-              const char* menuItems[1] = { PSTR("CANT") };
-              doMenuDisplay(menuItems, 1, immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU, immediateReturn ? immediateReturnState : STATE_STEP_SEQUENCER_MENU, 1);
-              playStepSequencer();
-            */
+            playStepSequencer();
             }
         break;
 #endif

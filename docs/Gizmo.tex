@@ -38,7 +38,7 @@
 \begin{document}
 
 \noindent {\Huge\bf Gizmo}\\[0.5em]
-{\large \bf An Arduino MIDI Tool, Version 8\\
+{\large \bf An Arduino MIDI Tool, Version 10\\
 By Sean Luke\quad sean@cs.gmu.edu} 
 \hspace{\fill}{\it \textbf{For Aric}}\\
 
@@ -172,7 +172,7 @@ to
 #define TWO_SCREENS_VERTICAL
 \end{verbatim}
 
-You can in fact use for 8x8 backpacks as a square, but I would not recommend it: too many calls to I2C.   
+You can in fact use four 8x8 backpacks as a square, but I would not recommend it: too many calls to I2C.   
 
 {\color{red}\bf Warning:} LED screens draw significant current. Doubling the screens will double the current draw on the Arduino's regulator.  According to Adafruit, each 8x8 screen draws 160mA maximum at full brightness with all LEDs lit: thus a vertical stack would draw at most 640mA.  The regulator maxes out at 800mA, so you may want to run the screens at a lower brightness. I've not had any problems (and the regulator does not get warm) running for long periods of time with my customary brightness of 4 on a Mega.
 
@@ -190,7 +190,7 @@ You can in fact use for 8x8 backpacks as a square, but I would not recommend it:
 \item A screen consisting of a single 16x8 backpack will use \texttt{I2C\char`_ADDRESS\char`_1}.
 \item A screen consisting of two 8x8 backpacks will use \texttt{I2C\char`_ADDRESS\char`_1} for the right backpack and  \texttt{I2C\char`_ADDRESS\char`_2} for the left backpack.
 \item A screen consisting of two 16x8 backpacks stacked vertically will use \texttt{I2C\char`_ADDRESS\char`_1} for the bottom backpack and  \texttt{I2C\char`_ADDRESS\char`_3} for the top backpack.
-\item A screen consisting of four 8x8 backpacks arranged in a square will use \texttt{I2C\char`_ADDRESS\char`_1} for the bottom right,   \texttt{I2C\char`_ADDRESS\char`_2} for the bottom left, \texttt{I2C\char`_ADDRESS\char`_3} for the top right, and \texttt{I2C\char`_ADDRESS\char`_4} for the top left backpack, 
+\item A screen consisting of four 8x8 backpacks arranged in a square will use \texttt{I2C\char`_ADDRESS\char`_1} for the bottom right,   \texttt{I2C\char`_ADDRESS\char`_2} for the bottom left, \texttt{I2C\char`_ADDRESS\char`_3} for the top right, and \texttt{I2C\char`_ADDRESS\char`_4} for the top left backpack.
 \end{itemize}
 
 You may need to change these I2C addresses as necessary.
@@ -277,7 +277,7 @@ Again, be warned that certain recent versions of the Arduino software may have t
 
 \item {\bf Switch the MIDI Shield to ``Run''}\quad  You can plug in MIDI cables now.
 
-\item {\bf Do a Full Reset of Gizmo}\quad Power up the Arduino.  Then hold down all three pushbuttons on the MIDI Shield.  While doing so, press and release the reset button on the MIDI Shield.  Continue to hold down the three push buttons until the two LEDs on the MIDI Shield light up.\footnote{Sometimes you have to do this a couple of times on the Mega to get the lights to light up.}  Let go of the pushbuttons.  This procedure initializes the memory, options, and files in the device.  See Section~\ref{initializinggizmo} for more details about the full reset and other reset options.  
+\item {\bf Do a Full Reset of Gizmo}\quad Power up the Arduino.  Then hold down all three pushbuttons on the MIDI Shield.  While doing so, press and release the reset button on the MIDI Shield.  Continue to hold down the three push buttons until the two LEDs on the MIDI Shield light up.\footnote{Sometimes you have to do this a couple of times on the Mega to get the lights to light up.}  Let go of the pushbuttons.  This procedure initializes the memory, options, and all files in the device.  See Section~\ref{initializinggizmo} for more details about the full reset and other, gentler, reset options.  
 
 \item {\bf Now you're ready to go!}
 
@@ -802,6 +802,8 @@ Similarly, if you press mute, you {\it schedule} the track to be muted (or not),
 
 If you include a CC control surface (see {\it Remote Control over CC} below) you have the further option of advancing mute on any track individually.  This is useful to perform with Gizmo as a groove surface, where you trigger various tracks to play once or turn them on or off during the performance.
 
+\paragraph{Chords {\it (Advanced Step Sequencer Only)}} You can have a track play chords instead of notes: just choose {\bf Chord (Track)} (see {\bf Menu Options} below) and select a chord.  Now the note you enter forms the root of that chord.  Note that you can't have a track fader when you have selected chords for a track.
+
 \paragraph{Sequencing Data {\it (Advanced Step Sequencer Only)}} The Step Sequencer allows you to store other kinds of data besides Note-On and Note-Off.  Specifically, you can set a given track to store and replay any one of (raw) CC, 14 Bit CC, NRPN, RPN, Pitch Bend, Channel Aftertouch, or Program Change commands by choosing {\bf Type} from the menu (see {\bf Menu Options} below).  If you select (raw) CC, 14 Bit CC, NRPN, or RPN, you will be further prompted to specify which parameter number you'd like to sequence (for example, CC\# 42 or NRPN\# 12312).
 
 Non-note data is entered differently than note data.  To enter non-note events, send an event to the MIDI In Channel, then press the {\bf middle button}: the most recent sent event will then be recorded at the current position.  You can erase data at the current position (essentially send a rest) by long-pressing the middle button.\footnote{This may be confusing as rests are entered by simply {\it pressing} the middle button for note data, but I figured entering data was more important than entering rests in the non-note case.  Sorry.}
@@ -833,10 +835,10 @@ If you have chosen a {\bf Monophonic} format, then the following things have cha
 \item When in Performance Mode, the region reserved to display the current track channel will instead display the current track being played (which is not the same as the current selected track!).  Also the first LED will blink on the current track being played; though you may not see it if you have scrolled the track off the screen.
 \end{itemize}
 
-A {\bf Duophonic} format works very similarly, except that two tracks play at the same time in Performance Mode.  Duophonic is not available for 64 note tracks.  It differs from the Monophonic formats in the following ways;
+A {\bf Duophonic} format works very similarly, except that two tracks play at the same time in Performance Mode.  Duophonic is not available for 64 note tracks.  It differs from the Monophonic formats in the following ways:
 
 \begin{itemize} 
-\item In all modes, {\it pairs} of tracks are played rather than single tracks.
+\item In all modes, {\it pairs} of tracks are played rather than single tracks.  You can have 6 pairs (totaling 12 tracks) of 16 steps each, 4 pairs (8 tracks) of 24 steps, 3 pairs (6 tracks) of 32 steps, or 2 pairs (4 tracks) of 64 steps.
 \item The {\bf Repeats} menu sets values for {\it pairs} of tracks.  
 \item When in Performance Mode, the first track {\it pair} will play {\it repeats} number of times: then the second track {\it pair} will play {\it repeats} number of times, and so on.
 \item When in Performance Mode, pressing the middle button will {\bf schedule the next track pair} to start playing.
@@ -847,7 +849,7 @@ A {\bf Duophonic} format works very similarly, except that two tracks play at th
 
 An {\bf important hint regarding Duophonic formats}.  When playing two notes simultaneously, {\it some} note has to be sent to MIDI first, and some duophonic synthesizers may sound different depending on the order in which the two notes are played.  In Gizmo, notes in earlier tracks are sent to MIDI before their simultaneous brethren in later tracks.  If you need to change this order, Gizmo has a {\bf Swap} option in the {\bf Edit} menu to swap the order of two tracks.
 
-
+Although it sounds odd, you can set up tracks in Monophonic and Duophonic formats to use chords.
 
 \paragraph{Menu Options}
 
@@ -859,7 +861,19 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 \item {\bf Note Length (Track)}\quad This specifies the note length of notes in the track, as a percentage (0 is fully staccato and 100 is fully legato).   You can choose numerical values, or choose \texttt{DFLT}, which tells the Step Sequencer to use the default note length specified in the Options menu (see Section \ref{options}).
 \item {\bf Out MIDI (Track)}\quad This specifies the MIDI Out Channel for notes in the track,    You can choose a value 1...16, or \texttt{- - - -} ({\it none}), or \texttt{DFLT}, which tells the Step Sequencer to use the default MIDI Out Channel specified in the Options menu (see Section \ref{options}).  By default, track 1 is set to \texttt{DFLT}, track 2 is set to 2, track 3 is set to 3, and so on.  In Mono/Duo mode, all the tracks are by default set to \texttt{DFLT}.
 \item {\bf Velocity (Track)}\quad This lets you specify a key velocity\footnote{By velocity we mean in the MIDI sense: how fast the key is struck; this basically translates to loudness.} that {\it all} notes in the track will use (as a value 1...127).  If you would instead prefer that each note in the track use its own independent key velocity as you had entered them, you can choose {\it none}.  
-\item {\bf Fader (Track)}\quad This lets you specify a volume modifier which is multiplied against the velocities of the notes in the track.  Possible values are 0 ... 15 as follows: 0 is fully hushed, 1 is 1/8 velocity, 2 is 1/4 velocity .... 4 is 1/8 velocity ... 8 is normal velocity ... 15 is almost twice velocity.
+\item {\bf Chord (Track)  {\it (Advanced Step Sequencer Only)}}\quad This lets you indicate that a track plays chords rather than single notes.  The chord options are: 
+
+\begin{itemize}
+\item None (\texttt{----})
+\item {\it Intervals:} minor 3, Major 3, 4th, 5th, minor sixth, Major sixth, octave, octave + minor 3, octave + Major 3 interval, octave + fifth, 2 octaves, octave {\it below}, 2 octaves {\it below}
+\item {\it Triads:} minor, minor 1st inversion, minor 2nd inversion, Major, Major 1st inversion, Major 2nd inversion
+\item {\it Sevenths:} dominant, Major, minor, diminished
+\end{itemize}
+
+If you'd like to customize the chords, they're located in the array {\tt const int8\_t PROGMEM CHORDS[24][4]}, and their names are in the menu string array immediately afterwards, in the file {\tt StepSequencer.cpp}.
+
+
+\item {\bf Fader (Track)}\quad This lets you specify a volume modifier which is multiplied against the velocities of the notes in the track.  Possible values are 0 ... 15 as follows: 0 is fully hushed, 1 is 1/8 velocity, 2 is 1/4 velocity .... 4 is 1/8 velocity ... 8 is normal velocity ... 15 is almost twice velocity.  {\it The Fader is not available when using chords}, sorry.
 \item {\bf Type (Track)} {\it (Advanced Step Sequencer Only)}\quad Lets you specify the type of data stored in this track.  See {\bf Sequencing Data} discussion earlier.
 \item {\bf Pattern (Track)} {\it (Non-Mono/Duo only)}\quad Lets you specify the four-bar pattern for this track in this group.  Your options are: \texttt{OOOO, O-O-, -O-O, OOO-, ---O, O--O, -OO-, OO--, --OO, OO-O, --O-, R1/8, R1/4, R1/2, ---X,} or\ \ {\tt XXXX}.  An {\tt O} indicates that the track will be played, and a {\tt -} indicates that it will be hushed.  The {\tt O} patterns are in pairs so you can swap the track being played with some other track.  The three patterns which start with {\tt R} hush at random each bar: the fraction indicates the probability that the track will be hushed.  An {\tt X} indicates {\it exclusive random:} if multiple tracks are designated as {\tt X} for a given bar, then exactly one of them will be played then (the others will be hushed).   {\tt ---X} is exclusive random for the fourth bar only and hushed otherwise; this makes possible random fills, and would be useful with {\tt OOO-}.   If only one track is {\tt X}, it's always played.  If two tracks are {\tt X}, they alternate.  Otherwise Gizmo tries to select a different track each time.
 \item {\bf Repeat (Track)} {\it (Mono/Duo only)}\quad Lets you specify how many times a track will repeat in Performance Mode before going on to the next track: you can also mark a track as the End of a sequence.  Your options are {\tt LOOP}, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 15, 24, 32, 64, or {\tt END}.
@@ -1253,7 +1267,7 @@ There are also {\bf special transitions}, chosen by selecting {\tt - - - -} for 
 \item Play 1, 2, 3, or 4 times, or repeat forever (\texttt{LOOP}).  Each time, randomly select from among groups 1--2 which group to play.  These are denoted by {\tt R2-1} ... {\tt R2-4} or {\tt R2-L}.
 \item Play 1, 2, 3, or 4 times, or repeat forever (\texttt{LOOP}).  Each time, randomly select from among groups 1--3 which group to play (or 1--2 if there are only 2 groups).  These are denoted by {\tt R3-1} ... {\tt R3-4}  or {\tt R3-L}.
 \item Play 1, 2, 3, or 4 times, or repeat forever (\texttt{LOOP}).  Each time, randomly select from among groups 1--4 which group to play (or 1--3 if there are only 3 groups; or 1--2 if only 2).  These are denoted by {\tt R4-1} ... {\tt R4-4} or {\tt R4-L}.
-\item Mark this transition as the {\texttt{END}}.  When at the end of the transitions, the Drum Sequencer will stop, repeat the whole chain, or continue to the next sequence depending on what you specify in the {\bf Performance Menu} options.  If none of your transitions is {\bf end}, then the end will be the end of the chain.   The very first transition in a chain is not permitted to be {\bf end}.
+\item Mark this transition as the {\texttt{END}}.  When at the end of the transitions, the Drum Sequencer will stop, repeat the whole chain, or continue to the next sequence depending on what you specify in the {\bf Performance Menu} options.  If none of your transitions is {\bf end}, then the chain will end after transition 20.   Transition~1 in a chain is not permitted to be {\bf end}.
 \end{itemize}
 
 \begin{figure}[t]
@@ -1270,7 +1284,7 @@ This is all fine and good, but another common need would be to loop though sever
 One weakness of BIG LOOP is that the final transition in the loop will be played exactly 1 time.  That's the way it is: Gizmo doesn't have the storage to do otherwise. If you need its group played \(n\) times, set up the previous transition to be that same group played \(n-1\) times.  Other transitions in the loop may be repeated multiple (non-infinite) times, as shown in Figure~\ref{bigloop}, though most commonly they'd be 1 time each as well.
 
 
-\paragraph{Performance Mode}  The function of Performance Mode is to make it easy to perform a chain of transitions; it works much like Performance Mode does in the Step Sequencer. No, we've not discussed how to edit transitions yet\,---\,we'll get to that when we discuss the menus.  Performance Mode is entered by long-pressing the Select and Middle buttons together while in any of the other three modes.  In Performance Mode, the cursor will look the same as the Play Position cursor.
+\paragraph{Performance Mode}  The function of Performance Mode is to make it easy to perform a chain of transitions; it works much like Performance Mode does in the Step Sequencer. No, we've not discussed how to edit transitions yet\,---\,we'll get to that when we discuss the menus (see the {\bf Chain} menu).  Performance Mode is entered by long-pressing the Select and Middle buttons together while in any of the other three modes.  In Performance Mode, the cursor will look the same as the Play Position cursor.
 
 Pressing the Select button does a start/stop, but not in the same way it does in the other modes.  Instead of starting playing the given group, this button will {\it start the transition chain}, and so begin playing the group associated with the first transition.  When the transition is finished, Performance Mode will then continue on to the next transition, and so on.   Pressing the Select button while playing will stop and reset to the beginning of the chain when the latest iteration of is complete.  There is a performance menu option to specify whether stopping will occur at the last note of the current iteration, or the first note of the {\it next} iteration.  If you press the Select button a second time before stopping has occurred, then it will stop and reset immediately.  There is also a menu option to pause performance without resetting.  
 
@@ -2579,7 +2593,7 @@ You will also need to change the {\tt ARDUINO\_CLICK\_PIN} to the pin attached t
 %		Toggles whether Gizmo will send control voltage and gate information.  If {\bf CV+Velocity}, then control voltage will be sent out DAC A (I2C address 0x62), velocity will be sent out DAC B (I2C address 0x63), and digital pin 8 will be set HIGH (5V) when a note is played (or LOW (0V) when a note is released), thus acting as a Gate.\footnote{As mentioned in an earlier footnote, Gizmo assumes you're DACs of this kind: https:/\!/www.adafruit.com/product/935} If {\bf CV+Aftertouch}, then the same is done except that aftertouch will be sent out DAC B instead of velocity.  If {\bf No CV}, then nothing is sent.  Pitch Bend at present has no effect.	\footnote{Note that at present if you have set either knob in the Controller to control voltage, that DAC will be unavailable even outside the Controller.  I'll fix that soon.}
 		
 	\item{\bf The About Screen}\\
-		Presently says:\quad \texttt{GIZMO V9 (C) 2021 BY SEAN LUKE}
+		Presently says:\quad \texttt{GIZMO V10 (C) 2021 BY SEAN LUKE}
 	\end{description}
 
 \clearpage

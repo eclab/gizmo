@@ -104,7 +104,7 @@
 #define INCLUDE_MEASURE
 
 // If you have a piezoelectric buzzer or whatnot, you can attach it to make a click rather than using MIDI
-#define INCLUDE_ARDUINO_CLICK
+//#define INCLUDE_ARDUINO_CLICK
 
 
 #define INCLUDE_MEGA_POTS

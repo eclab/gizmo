@@ -327,7 +327,7 @@ GLOBAL static int8_t potFineTune;
 GLOBAL uint8_t secondGlyph = NO_GLYPH;
 
 uint8_t doNumericalDisplay(int16_t minValue, int16_t maxValue, int16_t defaultValue, uint8_t includeOff, 
-	uint8_t includeOther, uint8_t includeOther2 = GLYPH_NONE, uint8_t rightPot = false)
+    uint8_t includeOther, uint8_t includeOther2 = GLYPH_NONE, uint8_t rightPot = false)
     {
     if (maxValue > 19999)
         maxValue = 19999;
@@ -805,9 +805,9 @@ void goDownStateWithBackup(uint8_t _nextState)
 // Starting at position pos, distributes the bits of the given byte among the high bytes >= pos
 // Note that the bits are in reverse order: the high bit is the first one,
 // and the low bit is the last one.
-void distributeByte(uint16_t pos, uint8_t byte)
+void distributeByte(uint16_t pos, uint8_t byte, uint8_t upTo=8)
     {
-    for(uint8_t i = 0; i < 8; i++)
+    for(uint8_t i = 0; i < upTo; i++)
         {
         data.slot.data.stepSequencer.buffer[pos + i] = 
             ((data.slot.data.stepSequencer.buffer[pos + i] & 127) | (byte & 128));
@@ -916,7 +916,13 @@ void stateSave(uint8_t backState)
                             distributeByte(pos + 14, local.stepSequencer.velocity[i] << 1);      
                             distributeByte(pos + 21, local.stepSequencer.transposable[i] << 7);      
                             distributeByte(pos + 22, local.stepSequencer.fader[i] << 3);
-                            distributeByte(pos + 27, local.stepSequencer.pattern[i] << 4);
+                            
+                            // At this point we have to limit what distributeByte does, or for the
+                            // last track it can walk right off the buffer space.
+                            distributeByte(pos + 27, local.stepSequencer.pattern[i] << 4, 4);
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+                            distributeByte(pos + 31, local.stepSequencer.chord[i] << 7, 1);
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
                             }
                         else
                             {
@@ -1047,6 +1053,9 @@ void stateLoad(uint8_t selectedState, uint8_t initState, uint8_t backState, uint
                                         local.stepSequencer.transposable[i] = (gatherByte(pos + 21) >> 7); // top 1 bits moved down 7
                                         local.stepSequencer.fader[i] = (gatherByte(pos + 22) >> 3);  // top 5 bits moved down 3
                                         local.stepSequencer.pattern[i] = (gatherByte(pos + 27) >> 4);  // top 4 bits moved down 4
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+                                        local.stepSequencer.chord[i] = (gatherByte(pos + 31) >> 7);             // top 1 bits moved down 7
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
                                         }
                                     else                        // It's a control sequence
                                         {                               
@@ -1437,7 +1446,7 @@ GLOBAL static uint8_t clickNote = NO_NOTE;
         
 void doClick()
     {
-    #ifdef INCLUDE_ARDUINO_CLICK
+#ifdef INCLUDE_ARDUINO_CLICK
     if (pulse && (clickNote != NO_NOTE))
         {
         noTone(ARDUINO_CLICK_PIN);
@@ -1450,7 +1459,7 @@ void doClick()
         tone(ARDUINO_CLICK_PIN, ARDUINO_CLICK_FREQUENCY);
         clickNote = options.click;
         }
-    #else
+#else
     // turn off previous click
     if (pulse && (clickNote != NO_NOTE))
         {
@@ -1464,7 +1473,7 @@ void doClick()
         sendNoteOn(options.click, options.clickVelocity, options.channelOut);
         clickNote = options.click;
         }
-    #endif INCLUDE_ARDUINO_CLICK
+#endif INCLUDE_ARDUINO_CLICK
     }
 
 
