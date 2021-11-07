@@ -473,7 +473,7 @@ void handleNoteOff(byte channel, byte note, byte velocity)
         if (updateMIDI(channel, MIDI_NOTE_OFF, note, velocity))
             {
 #if defined(__MEGA__)
-            if (state == STATE_ROOT && options.routeMIDI)
+            if (!bypass && state == STATE_ROOT && options.routeMIDI)
                 {
                 sendNoteOff(note, velocity, options.routeMIDI);
                 TOGGLE_OUT_LED();
@@ -640,7 +640,7 @@ void handleNoteOn(byte channel, byte note, byte velocity)
         if (updateMIDI(channel, MIDI_NOTE_ON, note, velocity))
             {
 #if defined(__MEGA__)
-            if (state == STATE_ROOT && options.routeMIDI)
+            if (!bypass && state == STATE_ROOT && options.routeMIDI)
                 {
                 sendNoteOn(note, velocity, options.routeMIDI);
                 TOGGLE_OUT_LED();
@@ -750,7 +750,7 @@ void handleAfterTouchPoly(byte channel, byte note, byte pressure)
     if (updateMIDI(channel, MIDI_AFTERTOUCH_POLY, note, pressure))
         {
 #if defined(__MEGA__)
-        if (state == STATE_ROOT && options.routeMIDI)
+        if (!bypass && state == STATE_ROOT && options.routeMIDI)
             {
             sendPolyPressure(note, pressure, options.routeMIDI);
             TOGGLE_OUT_LED();
@@ -1531,7 +1531,7 @@ void handleGeneralControlChange(byte channel, byte number, byte value)
         }
     else
 #if defined(__MEGA__)
-        if (!bypass && state == STATE_ROOT && options.routeMIDI)
+        if (!bypass && !bypass && state == STATE_ROOT && options.routeMIDI)
             {
             MIDI.sendControlChange(number, value, options.routeMIDI);
             TOGGLE_OUT_LED();
@@ -1630,7 +1630,7 @@ void handleProgramChange(byte channel, byte number)
     if (!bypass) 
         {
 #if defined(__MEGA__)
-        if (state == STATE_ROOT && options.routeMIDI)
+        if (!bypass && state == STATE_ROOT && options.routeMIDI)
             {
             MIDI.sendProgramChange(number, options.routeMIDI);
             TOGGLE_OUT_LED();
@@ -1713,7 +1713,7 @@ void handleAfterTouchChannel(byte channel, byte pressure)
     if (!bypass) 
         {
 #if defined(__MEGA__)
-        if (state == STATE_ROOT && options.routeMIDI)
+        if (!bypass && state == STATE_ROOT && options.routeMIDI)
             {
             MIDI.sendAfterTouch(pressure, options.routeMIDI);
             TOGGLE_OUT_LED();
@@ -1789,7 +1789,7 @@ void handlePitchBend(byte channel, int bend)
         if (application == STATE_ARPEGGIATOR)
             {
 #if defined(__MEGA__)
-            if (state == STATE_ROOT && options.routeMIDI)
+            if (!bypass && state == STATE_ROOT && options.routeMIDI)
                 {
                 MIDI.sendPitchBend(bend, options.routeMIDI);
                 TOGGLE_OUT_LED();
