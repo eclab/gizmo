@@ -550,7 +550,14 @@ void arpeggiatorClearLatch()
 void toggleAccompaniment()
     {
     if (local.arp.accompaniment == 0) local.arp.accompaniment = 12;
-    else local.arp.accompaniment = 0;
+    else 
+    	{
+    	// unplay the accompaniment
+    	uint8_t off = local.arp.noteOff + 12;
+    	if (off < 128)
+	        sendNoteOff(off, 127, options.channelOut);
+    	local.arp.accompaniment = 0;
+    	}
     }
 
 void arpeggiatorArmClock()
