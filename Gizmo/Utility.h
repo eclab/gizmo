@@ -61,20 +61,14 @@ void drawMIDIChannel(uint8_t channel);
 #define GLYPH_LOOP 21									// LOOP
 #define GLYPH_PICK 22									// PICK
 #define GLYPH_CANT 23									// CANT
-#define GLYPH_MUTE 23									// MUTE
+#define GLYPH_MUTE 24									// MUTE
+#define GLYPH_TRANSPOSE_PASSTHROUGH 25					// TRNP
 
 #define GLYPH_OTHER (254)	// reserved to represent "use this glyph instead"
 #define GLYPH_NONE	(255)	// reserved to represent "no glyph"
 
 // Writes any of the above glyph sets to the screen
 void write3x5Glyphs(uint8_t index);
-
-//void write3x5GlyphPair(uint8_t glyph1, uint8_t glyph2)
-//    {
-//    write3x5Glyph(led2, glyph1, 0);
-//    write3x5Glyph(led2, glyph2, 4);
-//    }
-
 
 // Clears the screen buffers.
 void clearScreen();

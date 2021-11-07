@@ -1376,7 +1376,7 @@ void clearScreen()
 
 
 
-GLOBAL static uint8_t glyphTable[25][4] = 
+GLOBAL const static uint8_t glyphTable[26][4] PROGMEM = 
     {
     // These first: ----, ALLC, DFLT, DECR, and INCR, must be the FIRST ones
     // because they correspond to the five glyph types in doNumericalDisplay
@@ -1405,13 +1405,17 @@ GLOBAL static uint8_t glyphTable[25][4] =
     {GLYPH_3x5_P, GLYPH_3x5_I, GLYPH_3x5_C, GLYPH_3x5_K},   // PICK
     {GLYPH_3x5_C, GLYPH_3x5_A, GLYPH_3x5_N, GLYPH_3x5_T},   // CANT
     {GLYPH_3x5_M, GLYPH_3x5_U, GLYPH_3x5_T, GLYPH_3x5_E},   // MUTE
+    {GLYPH_3x5_T, GLYPH_3x5_R, GLYPH_3x5_N, GLYPH_3x5_P},   // TRNP
     };
 
 
 // Writes any of the above glyph sets to the screen
 void write3x5Glyphs(uint8_t index)
     {
-    uint8_t *glyphs = glyphTable[index];
+	int8_t glyphs[4];
+	memcpy_P(glyphs, glyphTable[index], 4);
+
+//    uint8_t *glyphs = glyphTable[index];
     write3x5Glyph(led2, glyphs[0], 0);
     write3x5Glyph(led2, glyphs[1], 4);
     write3x5Glyph(led, glyphs[2], 0);
