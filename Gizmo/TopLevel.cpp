@@ -49,7 +49,7 @@ void toggleBypass(uint8_t channel)
 #ifdef TOPLEVEL_BYPASS
     // the first time through bypass is BYPASS_FIRST_ON.
     // only after it's been turned off (or back on again) do we start doing all-sounds-off.
-    if (bypass !=  BYPASS_FIRST_ON)
+    if (bypass != BYPASS_FIRST_ON)
         sendAllSoundsOffDisregardBypass(channel);
 #else
     sendAllSoundsOffDisregardBypass(channel);
