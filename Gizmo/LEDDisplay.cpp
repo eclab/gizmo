@@ -1311,6 +1311,36 @@ void initLED()
     }
 
 
+// Stolen from https://stackoverflow.com/questions/2602823/in-c-c-whats-the-simplest-way-to-reverse-the-order-of-bits-in-a-byte/2602871
+unsigned char reverseBits(unsigned char b) 
+	{
+	b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
+	b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
+	b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
+	return b;
+	}
+
+// Flips a matrix in place, in either in the X or Y directions (flip == FLIP_X or FLIP_Y)
+void flipMatrix(unsigned char* in, uint8_t flip)
+	{
+	if (flip == FLIP_X)
+		{
+		for(uint8_t i = 0; i < 4; i++)
+			{
+			unsigned char temp = in[i];
+			in[i] = in[7 - i];
+			in[7 - i] = temp;
+			}
+		}
+	else		// FLIP_Y
+		{
+		for(uint8_t i = 0; i < 8; i++)
+			{
+			in[i] = reverseBits(in[i]);
+			}
+		}
+	}
+
 // Rotates a matrix in the given direction.
 // There are lots of clever rotation code snippets out there, many derived
 // from Hacker's Delight, but they're largely all 16- or 32-bit, and their

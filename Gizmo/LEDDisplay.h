@@ -35,7 +35,7 @@
 
 ///// Have we stacked two screens vertically?
 ///// If defined, then I2C_ADDRESS_3 (and if two 8x8 backpacks used, I2C_ADDRESS_4) are the secondary screen (led3 and led4)
-//#define TWO_SCREENS_VERTICAL
+// #define TWO_SCREENS_VERTICAL
 
 
 ///// SHOULD WE ROTATE THE ENTIRE 16x8 SCREEN 180 DEGREES?
@@ -256,6 +256,11 @@ void initLED();
 #define DIR_180 (2)
 #define DIR_COUNTERCLOCKWISE_90 (3)
 
+// Flip Directions
+
+#define FLIP_X (0)
+#define FLIP_Y (1)
+
 // Sets the rotation of the scren.  For a single 8x8 matrix, all four rotations
 // make sense.  For a 16x8 matrix, only DIR_180 and DIR_NONE make sense; other
 // rotations will be ignored.
@@ -265,6 +270,8 @@ void setRotation(uint8_t dir);
 // matrix2 can be NULL only if we're using the 8x8 screens
 void sendMatrix(unsigned char* matrix, unsigned char* matrix2, uint8_t i2cAddress = I2C_ADDRESS_1, uint8_t i2cAddress2 = I2C_ADDRESS_2);
 
+// Flips a matrix in the given flip direction
+void flipMatrix(unsigned char* in, uint8_t flip);
 
 // Rotates a matrix in the given direction.
 void rotateMatrix(unsigned char* in, uint8_t dir);
