@@ -55,7 +55,7 @@ Gizmo is the unholy union of an Arduino Uno or (much better) an Arduino Mega 256
 
 This is a software project: the hardware is just three off-the-shelf boards and four wires.  There's no enclosure, no custom board.  If you'd like to make an enclosure, I'd love to see it!  In fact the Gizmo web page\footnote{http:/\!/cs.gmu.edu/\(\sim\)sean/projects/gizmo/} has a number of examples.
 
-Gizmo comes built-in with a number of applications and other capabilities.  All of these capabilities are modular, because the Arduino Uno cannot handle many of them at one time.  In previous versions of Gizmo, I attempted to cram multiple simplified versions of these applications on the Uno: but nowadays Gizmo permits only a single application at a time on the Uno (see the file \texttt{All.h}).  And the Drum Sequencer is too large to fit on the Uno at all, and the Step Sequencer can only fit in simplified form.  All of the applications combined fit just fine on the Mega (which you definitely ought to get instead of an Uno).
+Gizmo comes built-in with a number of applications and other capabilities.  All of these capabilities are modular, because the Arduino Uno cannot handle many of them at one time.  In previous versions of Gizmo, I attempted to cram multiple simplified versions of these applications on the Uno: but nowadays Gizmo permits only a single application at a time on the Uno (see the file \texttt{All.h}).  The Drum Sequencer is too large to fit on the Uno at all, and the Step Sequencer can only fit in simplified form.  All of the applications combined fit just fine on the Mega (which you definitely ought to get instead of an Uno).
 
 
 \paragraph{Applications}
@@ -67,7 +67,7 @@ Gizmo comes built-in with a number of applications and other capabilities.  All 
 In the {\bf advanced version of the sequencer},\footnote{This is an \texttt{\#include} option found in \texttt{All.h}} which only fits on the Mega, you can also sequence CC, RPN/NRPN, Pitch Bend, Aftertouch, or PC data in addition to note data.  The advanced version also allows tracks to be played one at a time, with repeats, in a fashion more useful when controlling a monophonic or duophonic synthesizer.
 
 
-\item {\bf Drum Sequencer.}\quad The drum sequencer is similar to the step sequencer but has many features more oriented towards controlling drum synthesizers in the vein of a drum machine, rather than playing notes.  Whereas the step sequencer repeats a single 16-to-64-step sequence, the drum sequencer is has up to 15 such sequences (called {\it groups}) and can chain them together in a series of up to 20 transitions from sequence to sequence in order to define drum patterns for an entire song.  Each group can have from 1 to 64 steps, and up to 20 tracks, depending on the organization (there are 16 organization choices). Each track plays a single drum note on a single MIDI channel at a given velocity; the steps in the track simply state when the note should be played.  Like the step sequencer, you can specify a mute pattern for each track (and for each group). You have many speed options, including independent speed of groups, plus swing and other features.  Also like the step sequencer there's an edit mode which allows you to toggle steps x0x-style, and another mode which lets you enter notes in real time as the sequencer is playing.  There's also a `performance mode'' which allows chaining, playing along, etc., plus an additional ``group mode'' for changing and editing groups.  You can stipulate whether starting/stopping the sequencer will also start/stop the MIDI clock.    The drum sequencer will only fit on the Mega, and can store up to nine sequences.
+\item {\bf Drum Sequencer.}\quad The drum sequencer is similar to the step sequencer but has many features more oriented towards controlling drum synthesizers in the vein of a drum machine, rather than playing notes.  Whereas the step sequencer repeats a single 16-to-64-step sequence, the drum sequencer is has up to 15 such sequences (called {\it groups}) and can chain them together in a series of up to 20 transitions from group to group in order to define drum patterns for an entire song.  Each group can have from 1 to 64 steps, and up to 20 tracks, depending on the organization (there are 16 organization choices). Each track plays a single drum note on a single MIDI channel at a given velocity; the steps in the track simply state when the note should be played.  Like the step sequencer, you can specify a mute pattern for each track (and for each group). You have many speed options, including independent speed of groups, plus swing and other features.  There's an edit mode which allows you to toggle steps x0x-style, and another edit mode which lets you enter notes in real time as the sequencer is playing.  There's also a ``performance mode'' which allows chaining, playing along, etc., plus an additional ``group mode'' for changing and editing groups.  You can stipulate whether starting/stopping the sequencer will also start/stop the MIDI clock.    The drum sequencer will only fit on the Mega, and can store up to nine sequences.
 
 \item {\bf Recorder.}\quad The Arduino doesn't have a lot of memory, but we provide a note recorder which records and plays back up to 64 notes (pitch and velocity) played over 21 measures. The recorder has 16-voice polyphony.   It's enough to record a very short ditty.  You can also set the recorder to loop the recording while playing, and to provide a click track.  The Arduino Uno can store up to two recordings in its slots (shared with the Step Sequencer).  The recorder gives you the option of auto-repeating a recording or stopping when it is finished.  The Uno can store up to two recordings; the Mega can store up to nine.
 
@@ -119,7 +119,7 @@ Gizmo applications can also be set with a {\it note value} (or {\it note speed})
 
 \begin{enumerate}
 
-\item {\bf Assemble the Hardware}\quad Gizmo consists of an Arduino Uno or Arduino Mega, a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898}, and an Adafruit 16x8 LED Matrix\footnote{This matrix comes in various colors LED shapes (round, square), and matrix sizes (0.8 inch, 1.2 inch).  I personally use a 1.2 inch round red matrix.  The URL for my model is https:/\!/www.adafruit.com/products/2037\quad I also have a round green matrix: it looks cool but it's significantly louder and has more electrical noise.  I prefer the red.} attached via four wires (I2C).  The SparkFun MIDI Shield does not come with headers to plug into the Arduino, and you'll need to get those too: it's assumed you'll either use plain headers, or use stackable headers.  I use stackable headers as it makes it easy for me to plug my four I2C wires into it.  See Section \ref{debouncing} for a warning about the low-quality buttons supplied with the MIDI Shield and what to do about it.
+\item {\bf Assemble the Hardware}\quad Gizmo consists of an Arduino Uno or Arduino Mega, a SparkFun MIDI Shield\footnote{https:/\!/www.sparkfun.com/products/12898}, and an Adafruit 16x8 LED Matrix\footnote{This matrix comes in various colors LED shapes (round, square), and matrix sizes (0.8 inch, 1.2 inch).  I personally use a 1.2 inch round red matrix.  The URL for my model is https:/\!/www.adafruit.com/products/2037\quad I also have a round green matrix: it looks cool but it's significantly louder and has more electrical noise.  I prefer the red.} attached via four wires (I2C).  The SparkFun MIDI Shield does not come with headers to plug into the Arduino, and you'll need to get those too: it's assumed you'll either use plain headers, or use stackable headers.  I use stackable headers on the Uno (but {\it not} the Mega, as you'll see below) as it makes it easy for me to plug my four I2C wires into the Uno: but they are inconvenient when trying to press buttons.  See Section \ref{debouncing} for a warning about the low-quality buttons supplied with the MIDI Shield and what to do about it.
 
 Attach the four wires for SDA, SCL, 5V (VCC), and GND between the MIDI Shield and the LED Matrix.  On the Mega, these four connections are particularly easy to make: SDA has a dedicated port (20), as does SCL (21), and there are exposed 5V and GND ports in the corners: none of these covered by the SparkFun MIDI Shield and are easily accessed.
 
@@ -174,10 +174,10 @@ to
 
 You can in fact use four 8x8 backpacks as a square, but I would not recommend it: too many calls to I2C.   
 
-{\color{red}\bf Warning:} LED screens draw significant current. Doubling the screens will double the current draw on the Arduino's regulator.  According to Adafruit, each 8x8 screen draws 160mA maximum at full brightness with all LEDs lit: thus a vertical stack would draw at most 640mA.  The regulator maxes out at 800mA, so you may want to run the screens at a lower brightness. I've not had any problems (and the regulator does not get warm) running for long periods of time with my customary brightness of 4 on a Mega.
+{\color{red}\bf Warning:} LED screens draw significant current. Doubling the screens will double the current draw on the Arduino's regulator.  According to Adafruit, each 8x8 screen draws 160mA maximum at full brightness with all LEDs lit: thus a vertical stack would draw at most 640mA.  The regulator maxes out at 800mA, so you may want to run the screens at a lower brightness. I've not had any problems (and the regulator does not get warm) running two screens for long periods of time with my customary brightness of 4 on a Mega.
 
 
-\paragraph{Customizing the Screen I2C Address}  The four I2C addresses potentially used by the screen are found in the Gizmo file \texttt{LEDDisplay.h}, and are by default:
+\paragraph{Customizing the Screen I2C Address}  Perhaps you might need to change the I2C addresses used to control your backpacks.  In this case, the four I2C addresses potentially used by the screen LEDs are found in the Gizmo file \texttt{LEDDisplay.h}.  They are by default (change them as you see fit):
 
 \begin{verbatim}
 #define I2C_ADDRESS_1        ((uint8_t) 0x70)
@@ -193,7 +193,6 @@ You can in fact use four 8x8 backpacks as a square, but I would not recommend it
 \item A screen consisting of four 8x8 backpacks arranged in a square will use \texttt{I2C\char`_ADDRESS\char`_1} for the bottom right,   \texttt{I2C\char`_ADDRESS\char`_2} for the bottom left, \texttt{I2C\char`_ADDRESS\char`_3} for the top right, and \texttt{I2C\char`_ADDRESS\char`_4} for the top left backpack.
 \end{itemize}
 
-You may need to change these I2C addresses as necessary.
 
 \paragraph{Rotating the Screen} If your screen is upside down (depending on how you installed it), then in \texttt{LEDDisplay.h}, change the line:
 
@@ -573,7 +572,7 @@ Example Arpeggio\\[2em]
 %Ascending Notes\\in Dense Mode\\
 \end{center}
 %\vspace{-1em}\caption{\small Example Arpeggio Editing Displays}
-\vspace{-2em}
+\vspace{-3em}
 \label{arpeggioediting}
 \end{wrapfigure}
 %
@@ -581,7 +580,7 @@ Example Arpeggio\\[2em]
 
 The last menu option in the top-level Arpeggiator menu is {\bf Create}.  If you choose this, you can create an Arpeggio.  To do this you enter notes one by one.  These won't be the {\it actual} notes that are played when you hold down a chord.  Rather, after you save the result, the Arpeggiator will compact these notes into a sequence of consecutive numbers.  For example, if you play C3 E3 G3 E3 G2, then the Arpeggiator will compact these into 2 3 4 3 1.  Then when you play this as an arpeggio, the Arpeggiator will assign each of these numbers, in order, to the notes in your chord. 
 
-The first question you will be asked is \texttt{NOTE}:\ the Arpeggiator is asking you to specify the note in your arpeggio pattern which will correspond to the root (lowest) note in a played chord.  This allows you to make a pattern which plays notes both above and below the played chord.  Consider the above pattern (C3 E3 G3 E3 G2, thus 2 3 4 3 1).  If you assigned C3 (thus 2) to be the root, then the Arpeggiator will play its final note (1) {\it below} the lowest not in your played chord.
+The first question you will be asked is \texttt{NOTE}:\ the Arpeggiator is asking you to state the note in your arpeggio pattern which corresponds to the root (lowest) note in a played chord.  This allows you to make a pattern which plays notes both above and below the played chord.  Consider the above pattern (C3 E3 G3 E3 G2, thus 2 3 4 3 1).  If you assigned C3 (thus 2) to be the root, then the Arpeggiator will play its final note (1) {\it below} the lowest not in your played chord.
 
 After you have entered the root, the Arpeggiator will wait for you to start playing notes.  You can enter a sequence of up to 32 notes, including 14 unique notes.  If you enter too many unique notes, or more than 32 notes in total, the Arpeggiator will simply refuse to accept the next note.  You can enter rests by pressing the Select button.  You can also enter ties (stretching the last note) by pressing the Middle button.  The first note may not be a tie: what would it be tying?
 
@@ -825,8 +824,8 @@ If you have chosen a {\bf Monophonic} format, then the following things have cha
 
 \begin{itemize} 
 \item When in Edit or Play Position mode, the only track played is the current track.
-\item The Patterns menu has been replaced with a menu called {\bf Repeats}, which indicates how a track is played in Performance mode.  Here you can set up a track to {\tt LOOP} forever, or to play 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 15, 24, 32, or 64 times, or you can mark the track as the {\tt END}.  This doesn't affect Edit or Play Position mode.
-\item Specifically, in Performance Mode the first track will play {\it repeats} number of times: then the second track will play {\it repeats} number of times, and so on, until we reach an {\tt END} track or we finish all the tracks. At that point will the sequence terminate, loop back to the beginning, or go to a new sequence as usual.
+\item The Patterns menu has been replaced with a menu called {\bf Repeats}, which indicates how a track is played in Performance mode.  Here you can set up a track to {\tt LOOP} forever, or to play 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, or 64 times, or you can mark the track as the {\tt END}.  This doesn't affect Edit or Play Position mode.
+\item Specifically, in Performance Mode the first track will play its {\it repeats} number of times: then the second track will play its (possibly different) {\it repeats} number of times, and so on, until we reach an {\tt END} track or we finish all the tracks. At that point will the sequence terminate, loop back to the beginning, or go to a new sequence as usual.
 \item There is only one MIDI channel.  Changing the channel on any track will change it on all tracks.
 \item The Solo menu option no longer serves any purpose and does not function.
 \item When in Play Position Mode, pressing the middle button will {\bf jump to the next track} to start playing (rather than mute).
@@ -840,7 +839,7 @@ A {\bf Duophonic} format works very similarly, except that two tracks play at th
 \begin{itemize} 
 \item In all modes, {\it pairs} of tracks are played rather than single tracks.  You can have 6 pairs (totaling 12 tracks) of 16 steps each, 4 pairs (8 tracks) of 24 steps, 3 pairs (6 tracks) of 32 steps, or 2 pairs (4 tracks) of 64 steps.
 \item The {\bf Repeats} menu sets values for {\it pairs} of tracks.  
-\item When in Performance Mode, the first track {\it pair} will play {\it repeats} number of times: then the second track {\it pair} will play {\it repeats} number of times, and so on.
+\item When in Performance Mode, the first track {\it pair} will play its {\it repeats} number of times: then the second track {\it pair} will play is (possibly different) {\it repeats} number of times, and so on.
 \item When in Performance Mode, pressing the middle button will {\bf schedule the next track pair} to start playing.
 \item When in Performance Mode, long-pressing the middle button will {\bf schedule the pair containing the currently selected track} to start playing.
 \item When in Performance Mode, the region reserved to display the current track channel will instead display the {\it first track of the current track pair being played}. Also the first LED will blink on the current track {\it pair} being played.
@@ -865,15 +864,15 @@ If you Long Press the Select button, you'll call up the Step Sequencer's menu.  
 
 \begin{itemize}
 \item None (\texttt{----})
-\item {\it Intervals:} minor 3, Major 3, 4th, 5th, minor sixth, Major sixth, octave, octave + minor 3, octave + Major 3 interval, octave + fifth, 2 octaves, octave {\it below}, 2 octaves {\it below}
+\item {\it Intervals:} minor 3, Major 3, 4th, 5th, minor sixth, Major sixth, octave, octave + minor 3, octave + Major 3, octave + fifth, 2 octaves, 1 octave {\it below}, 2 octaves {\it below}
 \item {\it Triads:} minor, minor 1st inversion, minor 2nd inversion, Major, Major 1st inversion, Major 2nd inversion
-\item {\it Sevenths:} dominant, Major, minor, diminished
+\item {\it Sevenths:} dominant, Major, minor, fully diminished
 \end{itemize}
 
 If you'd like to customize the chords, they're located in the array {\tt const int8\_t PROGMEM CHORDS[24][4]}, and their names are in the menu string array immediately afterwards, in the file {\tt StepSequencer.cpp}.
 
 
-\item {\bf Fader (Track)}\quad This lets you specify a volume modifier which is multiplied against the velocities of the notes in the track.  Possible values are 0 ... 15 as follows: 0 is fully hushed, 1 is 1/8 velocity, 2 is 1/4 velocity .... 4 is 1/8 velocity ... 8 is normal velocity ... 15 is almost twice velocity.  {\it The Fader is not available when using chords}, sorry.
+\item {\bf Fader (Track)}\quad This lets you specify a volume modifier which is multiplied against the velocities of the notes in the track.  Possible values are 0 ... 15 as follows: 0 is fully hushed, 1 is 1/8 velocity, 2 is 1/4 velocity .... 4 is 1/8 velocity ... 8 is normal velocity ... 15 is almost twice velocity.  {\it The Fader is not available when using chords}, sorry (they use the same memory).
 \item {\bf Type (Track)} {\it (Advanced Step Sequencer Only)}\quad Lets you specify the type of data stored in this track.  See {\bf Sequencing Data} discussion earlier.
 \item {\bf Pattern (Track)} {\it (Non-Mono/Duo only)}\quad Lets you specify the four-bar pattern for this track in this group.  Your options are: \texttt{OOOO, O-O-, -O-O, OOO-, ---O, O--O, -OO-, OO--, --OO, OO-O, --O-, R1/8, R1/4, R1/2, ---X,} or\ \ {\tt XXXX}.  An {\tt O} indicates that the track will be played, and a {\tt -} indicates that it will be hushed.  The {\tt O} patterns are in pairs so you can swap the track being played with some other track.  The three patterns which start with {\tt R} hush at random each bar: the fraction indicates the probability that the track will be hushed.  An {\tt X} indicates {\it exclusive random:} if multiple tracks are designated as {\tt X} for a given bar, then exactly one of them will be played then (the others will be hushed).   {\tt ---X} is exclusive random for the fourth bar only and hushed otherwise; this makes possible random fills, and would be useful with {\tt OOO-}.   If only one track is {\tt X}, it's always played.  If two tracks are {\tt X}, they alternate.  Otherwise Gizmo tries to select a different track each time.
 \item {\bf Repeat (Track)} {\it (Mono/Duo only)}\quad Lets you specify how many times a track will repeat in Performance Mode before going on to the next track: you can also mark a track as the End of a sequence.  Your options are {\tt LOOP}, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 15, 24, 32, 64, or {\tt END}.
@@ -909,7 +908,8 @@ If you'd like to customize the chords, they're located in the array {\tt const i
 	\item {\texttt{-~-~-~-}}\quad Played notes are entered into the current track.  If the user has just changed the current track, then upon playing the first note the track is first cleared.
 	\item {0} \quad Play along with the sequencer: MIDI data is routed out the default MIDI Out channel.
 	\item {1--16} \quad Play along with the sequencer: MIDI data is routed out the channel specified.
-	\item {\texttt{TRAN}} \quad When you press a key, this transposes sequenced notes (on those tracks which have been set to be transposable).
+	\item {\texttt{TRAN}} \quad When you press a key, this transposes sequenced notes (on those tracks which have been set to be transposable). The key is not played.
+	\item {\texttt{TRNP}}  {\it (Advanced Step Sequencer Only)} \quad Like \texttt{TRAN}, except the key is played as well (transpose with pass-through).
 \end{itemize}
 
 \item {\bf Repeat Sequence}\quad This specifies how many bars the sequence plays before it stops.  The default is {\tt LOOP} (forever), but you also have 1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 24, 32, 64, or 128 bars as options.
@@ -1047,7 +1047,7 @@ The Drum Sequencer is similar in some respects to the Step Sequencer, but it has
 
 \begin{itemize}
 \item The Drum Sequencer can string these (up to 15) groups in a {\bf chain} 20 groups long; the same group can show up multiple times.  Each step in the chain (known as a {\bf transition}) states the group and how many times to repeat it before going on to the next; and there are some randomization options as well.
-\item The Drum Sequenecer has sufficient memory for these things because it doesn't store nearly the amount of per-step information the Step Sequencer does. The Step Sequencer stores in its steps {\it notes} with pitches and velocities; or {\it control changes} like CC or NRPN.  But in the Drum Sequencer each track is tied to a single {\bf drum note} played at a certain velocity on a certain MIDI channel.  Thus each step in the track is just an ``on'' or ``off'', indicating that the drum should be triggered.
+\item The Drum Sequencer has sufficient memory for these things because it doesn't store nearly the amount of per-step information the Step Sequencer does. The Step Sequencer stores in its steps {\it notes} with pitches and velocities; or {\it control changes} like CC or NRPN.  But in the Drum Sequencer each track is tied to a single {\bf drum note} played at a certain velocity on a certain MIDI channel.  Thus each step in the track is just an ``on'' or ``off'', indicating whether the drum should be triggered or not.
 \item The Step Sequencer both plays notes (MIDI Note On) and releases them (MIDI Note Off).  The Drum Sequencer only plays notes (MIDI Note On).  It never releases them: drums typically don't need that.
 \item The Drum Sequencer offers many more {\bf tracks} and {\bf initialization formats} than the Step Sequencer.
 \end{itemize}
@@ -1055,9 +1055,9 @@ The Drum Sequencer is similar in some respects to the Step Sequencer, but it has
 \paragraph{Basic Organization} A drum sequence is organized as follows:
 
 \begin{itemize} 
-\item The sequence is divided into \(\leq 15\) {\bf groups,} depending on the initialization format.\footnote{In terminology of other drum sequencers, notably Roland-style drum machines, these are commonly called {\bf patterns}.  Why aren't we using this terminology?  Because Gizmo already uses {\it pattern} to mean something else.} Each group is a repeating ``sequence'' in and of itself in the Step Sequencer sense of the term.  Each group has a maximum length (number of steps) which you specify up front when you choose the drum sequence format\,---\,8, 16, 32, or 64\,---\,but you can shorten individual group lengths to less than this.  Each group also has a {\it speed} which may be a multiple or fraction of the standard tempo.
+\item The sequence is made of up to 15 {\bf groups,} depending on the initialization format.\footnote{In terminology of other drum sequencers, notably Roland-style drum machines, these are commonly called {\bf patterns}.  Why aren't we using this terminology?  Because Gizmo already uses {\it pattern} to mean something else.} Each group is a repeating ``sequence'' in and of itself in the Step Sequencer sense of the term.  Each group has a maximum length (number of steps) which you specify up front when you choose the drum sequence format\,---\,8, 16, 32, or 64\,---\,but you can shorten individual group lengths to less than this.  Each group also has a {\bf speed} which may be a multiple or fraction of the standard tempo.
 \item Each group has \(\leq 20\) rows of steps, again depending on the initialization format.  A thread of rows through all the groups\,---\,row \#5 running through groups 0...15, say\,---\, is called a {\bf track}.  Each track is associated with a {\bf drum note}, which is a MIDI note pitch, note velocity, and MIDI channel.  When a step on that track is played, Gizmo will send a Note On message with that pitch and velocity to that channel.  A global accent track is available, and you can make per-drum-note accent tracks. Tracks can also be muted and soloed.
-\item Each row in each group can have its own four-bar {\it pattern} in the Step Sequencer sense of the term.
+\item Each row in each group can have its own four-bar {\bf pattern} in the Step Sequencer sense of the term.
 \item Just like the Step Sequencer, the Drum Sequencer has a {\bf Performance Mode}.  In performance mode, the sequencer will (among other things) play groups in a certain order according to a {\bf chain} of up to 20 {\bf transitions}.\footnote{Again, traditionally, the term for this is probably a {\it chain} of {\it patterns}.}  Each transition specifies a group to play, plus how many times to play it before transitioning to the next one.  Transitions can also be set up to play random groups and to do small loops.  In performance mode you can trigger a premature transition manually, as well as a fill.
 \end{itemize}
 
@@ -1106,7 +1106,9 @@ If you have chosen {\it none}, or have chosen an empty slot or one presently fil
 \label{trackgrouptransitionnumber}
 \end{wrapfigure}
 
-\vspace{1em}Each option is displayed on-screen as {\it steps/groups/tracks}.  Why these choices in particular? Because they squeeze the most out of Gizmo's very limited memory.   After you have chosen a format, you will be asked to provide one more piece of information: a {\bf base drum note}.  Drum synthesizers typically have all their notes laid out in order, starting with one lowest note.  For example, the Novation Drumstation places its TR-808 Kick at C0 (MIDI note key 24), then the TR-808 Rimshot at C\#0, then the TR-808 Snare at D0, and so on.  If you give C0 as your base note, then Gizmo will set the drum note pitch of track 1 to C0, the pitch of track 2 to C\#0, the pitch of track 3 to D0, and so on, and so will set up each track to play a different drum. This can help greatly in laying out the drums for your sequence.  (You can of course modify all of this afterwards).
+\vspace{1em}Each option is displayed on-screen as {\it steps/groups/tracks}.  Why these choices in particular? Because they squeeze the most out of Gizmo's very limited memory.   
+
+After you have chosen a format, you will be asked to provide one more piece of information: a {\bf base drum note}.  Drum synthesizers typically have all their notes laid out in order, starting with one lowest note.  For example, the Novation Drumstation places its TR-808 Kick at C0 (MIDI note key 24), then the TR-808 Rimshot at C\#0, then the TR-808 Snare at D0, and so on.  If you give C0 as your base note, then Gizmo will set the drum note pitch of track 1 to C0, the pitch of track 2 to C\#0, the pitch of track 3 to D0, and so on, and so will set up each track to play a different drum. This can help greatly in laying out the drums for your sequence.  (You can of course modify all of this afterwards).
 
 \paragraph{Screen Layout} The screen layout, shown in Figure~\ref{drumsequencer}, is much like the one in the Step Sequencer, except that the screen is showing you only one group at a time.  The {\it Group or Transition Number} area tells you the group being displayed.  The {\it Tracks} region is where sequencer notes are displayed and edited in that group: each horizontal row corresponds to a track.  The {\it Track Number} area tells you the number of the currently-edited track.  Figure~\ref{trackgrouptransitionnumber} explains how to interpret this.
 
@@ -1183,7 +1185,7 @@ The current operation is chosen by  pressing a black key.  If you press C\#, the
 
 For obvious reasons, and given its name, Play Position Mode really only works properly when you are playing the sequence.  Just like in Edit mode, you start playing (or stop playing) by pressing the Select button.  Again, this works much like the Step Sequencer in that only the current group is played (and repeatedly); see the Edit Mode for information about how this interacts with the MIDI clock.   Also like Edit mode, if you long-press the Select button, you'll be taken to the {\bf menu}.    Just as in the Step Sequencer, pressing the Middle button mutes or unmutes the current track.    And likewise, long-pressing the Middle button clears the track (within the current group only), but with a twist: if the track is {\it already} clear, there is a menu option to optionally randomize notes in the track when clearing a second time.  Finally, long-pressing the Select and Middle buttons together enters {\bf Performance Mode}.
 
-\paragraph{Velocity Curves}  The Drum Sequencer's velocities are simply the numbers 1...8.  How do these translate to MIDI velocities 0...127?  There are two options.  We can either interpret 1...8 as {\it linear} or {\it exponentially increasing} values: which you prefer would depend on what fits better with the velocity curve of your drum synthesizer.  The default is a linear curve, but you may prefer an exponential curve if it makes accents more consistent. 
+\paragraph{Velocity Curves}  The Drum Sequencer's velocities are the numbers 1...8.  How do these translate to MIDI velocities 0...127?  There are two options.  We can either interpret 1...8 as {\it linear} or as {\it exponentially increasing} values: which you prefer would depend on what fits better with the velocity curve of your drum synthesizer.  The default is a linear curve, but you may prefer an exponential curve if it makes accents more consistent. 
 
 {\small
 \begin{center}\begin{tabular}{r|rrrrrrrr}
@@ -1193,7 +1195,7 @@ For obvious reasons, and given its name, Play Position Mode really only works pr
 \end{tabular}\end{center}
 }
 
-Notice that with the exponential curve, increasing (accenting) by +1 changes the MIDI velocity, and perhaps the underlying volume by +25\%; increasing by +2 changes by +60\%; increasing by +3 changes by +100\%; increasing by +4 changes by +150\%; and so on.  That's convenient.  But your drum machine might {\it already} have an exponential curve built in, and so then you'd want the linear velocity curve.  You can switch between curves with a menu option.
+Notice that with the exponential curve, increasing (accenting) by +1 changes the MIDI velocity, and perhaps the underlying volume, by about +25\%; increasing by +2 changes by +60\%; increasing by +3 changes by +100\%; increasing by +4 changes by +150\%; and so on.  That's convenient.  But your drum machine might {\it already} have an exponential curve built in, and so then you'd want the linear velocity curve.  You can switch between curves with a menu option.
 
 
 \paragraph{Accents}  The Drum Sequencer can only have one note velocity per track.  To play accents (louder beats than normal), you need to set up another track to do the accent notes for a given track, or you can have a 808-style {\bf global accent track}.  The former is more flexible, but the latter is easier and doesn't eat up as many tracks.
@@ -2562,7 +2564,7 @@ You will also need to change the {\tt ARDUINO\_CLICK\_PIN} to the pin attached t
 		
 		
 	\item{\bf  Menu Delay} (Mega Only)\\
-		Gizmo often will display text (such as \texttt{SWING}) by filling the screen with the first few letters (in this case, \texttt{SWI}), then {\it delaying} for a certain interval, then scrolling through the whole word horizontally. You can specify how long that delay is.
+		Gizmo often will display text (such as \texttt{SWING}) by filling the screen with the first few letters (in this case, \texttt{SWI}), then {\it delaying} for a certain interval, then scrolling through the whole text horizontally. You can specify how long that delay is.
 	
 		
 		\begin{description}
@@ -2570,7 +2572,7 @@ You will also need to change the {\tt ARDUINO\_CLICK\_PIN} to the pin attached t
 			\begin{tabbing}
 			0\hspace{2em}\=Seconds\hspace{0.5in}\=(scroll immediately)\\
 			1/4\>Seconds\\
-			1/3\>Seconds \>(really 3/8 seconds)\hspace{1in}\=\smash{\includegraphics[width=2in]{fractions.pdf}}\\
+			1/3\>Seconds \>(actually 3/8 seconds)\hspace{1in}\=\smash{\includegraphics[width=2in]{fractions.pdf}}\\
 			1/2\>Seconds\\
 			1\>Second\>(default)\\
 			2\>Seconds\\

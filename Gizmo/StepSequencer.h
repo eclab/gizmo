@@ -356,6 +356,7 @@ struct _stepSequencerLocal
 #define CHANNEL_DEFAULT_MIDI_OUT (0)			// Performance notes are routed to MIDI_OUT
 												// Values 1...16: performance notes are routed to this channel number
 #define CHANNEL_TRANSPOSE (17)					// Use performance note to do transposition
+#define CHANNEL_TRANSPOSE_PASSTHROUGH (18)		// Use performance note to do transposition
 
 #define STEP_SEQUENCER_BUFFER_SIZE		(SLOT_DATA_SIZE - 3)		// 384 bytes
 

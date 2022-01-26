@@ -401,7 +401,11 @@ void stateStepSequencerMenuPattern()
 //// items, and so should go back into the menu.
 void stateStepSequencerMenuPerformanceKeyboard()
     {
-    uint8_t result = doNumericalDisplay(CHANNEL_ADD_TO_STEP_SEQUENCER, CHANNEL_TRANSPOSE, options.stepSequencerPlayAlongChannel, true, GLYPH_TRANSPOSE);
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+    uint8_t result = doNumericalDisplay(CHANNEL_ADD_TO_STEP_SEQUENCER, CHANNEL_TRANSPOSE_PASSTHROUGH, options.stepSequencerPlayAlongChannel, true, GLYPH_TRANSPOSE_PASSTHROUGH, GLYPH_TRANSPOSE);
+#else
+    uint8_t result = doNumericalDisplay(CHANNEL_ADD_TO_STEP_SEQUENCER, CHANNEL_TRANSPOSE_PASSTHROUGH, options.stepSequencerPlayAlongChannel, true, GLYPH_TRANSPOSE);
+#endif  INCLUDE_ADVANCED_STEP_SEQUENCER
     playStepSequencer();
     switch (result)
         {
@@ -1743,6 +1747,9 @@ void stateStepSequencerPlay()
         itemType != MIDI_CUSTOM_CONTROLLER && 
         local.stepSequencer.performanceMode && 
         options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE && 
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+        options.stepSequencerPlayAlongChannel != CHANNEL_TRANSPOSE_PASSTHROUGH && 
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
         options.stepSequencerPlayAlongChannel != CHANNEL_ADD_TO_STEP_SEQUENCER)
         {
         TOGGLE_IN_LED();
@@ -1788,18 +1795,40 @@ void stateStepSequencerPlay()
                 }
             }
         }
+        
+#define MIDDLE_C (60)
+
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+    // transposition with passthrough
+    else if (newItem && 
+        (itemType == MIDI_NOTE_ON || itemType == MIDI_NOTE_OFF) &&
+        local.stepSequencer.performanceMode && 
+        options.stepSequencerPlayAlongChannel == CHANNEL_TRANSPOSE_PASSTHROUGH)
+        {
+        TOGGLE_IN_LED();
+
+        local.stepSequencer.transpose = ((int8_t)itemNumber) - (int8_t) MIDDLE_C;  // this can only range -60 ... 67
+
+        if (itemType == MIDI_NOTE_ON)
+            {
+            sendNoteOn(itemNumber, itemValue, itemChannel);
+            }
+        else if (itemType == MIDI_NOTE_OFF)
+            {
+            sendNoteOff(itemNumber, itemValue, itemChannel);
+            }
+        }
+#else
     // transposition
     else if (newItem && 
         itemType == MIDI_NOTE_ON &&
         local.stepSequencer.performanceMode && 
-        options.stepSequencerPlayAlongChannel == CHANNEL_TRANSPOSE)
+        options.stepSequencerPlayAlongChannel == CHANNEL_TRANSPOSE_PASSTHROUGH)
         {
         TOGGLE_IN_LED();
-
-#define MIDDLE_C (60)
-
         local.stepSequencer.transpose = ((int8_t)itemNumber) - (int8_t) MIDDLE_C;  // this can only range -60 ... 67
         }
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
 
 
     else if (newItem && (itemType == MIDI_NOTE_ON)  //// there is a note played

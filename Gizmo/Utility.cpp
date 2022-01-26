@@ -1412,8 +1412,8 @@ GLOBAL const static uint8_t glyphTable[26][4] PROGMEM =
 // Writes any of the above glyph sets to the screen
 void write3x5Glyphs(uint8_t index)
     {
-	int8_t glyphs[4];
-	memcpy_P(glyphs, glyphTable[index], 4);
+    int8_t glyphs[4];
+    memcpy_P(glyphs, glyphTable[index], 4);
 
 //    uint8_t *glyphs = glyphTable[index];
     write3x5Glyph(led2, glyphs[0], 0);
