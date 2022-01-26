@@ -29,7 +29,13 @@
 #define SCREEN_TYPE_ADAFRUIT_16x8_BACKPACK
 //#define SCREEN_TYPE_ADAFRUIT_16x8_FEATHERWING_BACKPACK
 //#define SCREEN_TYPE_TWO_ADAFRUIT_8x8_BACKPACKS
+//#define SCREEN_TYPE_MJKDZ_16x8_BACKPACK
 
+// Note.  The MOKCUM MJKDZ 16x8 can be found here 
+// https://www.aliexpress.com/item/4000369735317.html
+// And appears to be knockoff of the Adafruit backpacks, 
+// except that the LED Matrix display data is flipped.
+// Thanks to Daniel Feliciano Branco (danielblues on github)
 
 
 

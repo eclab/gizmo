@@ -1263,6 +1263,72 @@ void sendMatrix(unsigned char* matrix, unsigned char* matrix2, uint8_t i2cAddres
 #endif SCREEN_TYPE_TWO_ADAFRUIT_8x8_BACKPACKS
 
 
+#ifdef SCREEN_TYPE_MJKDZ_16x8_BACKPACK
+// i2cAddress2 is ignored
+void sendMatrix(unsigned char* matrix, unsigned char* matrix2, uint8_t i2cAddress = I2C_ADDRESS_1, uint8_t i2cAddress2 = I2C_ADDRESS_2)
+    {
+    // rotate as necessary
+    uint8_t mat[8];
+    uint8_t mat2[8];
+
+#ifdef ROTATE_WHOLE_SCREEN
+    // swap the two matrices. We'll rotate each one 180 later. This results in a full rotation of the combined screen
+    unsigned char* temp = matrix;
+    matrix = matrix2;
+    matrix2 = temp;
+#endif ROTATE_WHOLE_SCREEN
+
+    // the display of the matrices is rotated 90 degrees, so we need to tweak here
+    if (rotation >= DIR_180)  // rotate to 180 if we're DIR_180 or DIR_COUNTERCLOCKWISE_90, nothing else
+        {
+        memcpy(mat, matrix, 8);
+        memcpy(mat2, matrix2, 8);
+        rotateMatrix(mat, DIR_NONE);
+        rotateMatrix(mat2, DIR_NONE);
+        matrix2 = mat;  // note we're flipping them
+        matrix = mat2;
+        }
+    else    // other rotations are considered DIR_NONE
+        {
+        memcpy(mat, matrix, 8);
+        memcpy(mat2, matrix2, 8);
+        rotateMatrix(mat, DIR_180);
+        rotateMatrix(mat2, DIR_180);
+        matrix2 = mat;  
+        matrix = mat2;
+        }
+
+#ifdef ROTATE_WHOLE_SCREEN
+    // rotate the two matrices. We swapped them earlier. This results in a full rotation of the combined screen
+    rotateMatrix(matrix, DIR_180);
+    rotateMatrix(matrix2, DIR_180);
+#endif ROTATE_WHOLE_SCREEN
+
+    flipMatrix(matrix, FLIP_X);
+    flipMatrix(matrix2, FLIP_X);
+    unsigned char* temp = matrix;
+    matrix = matrix2;
+    matrix2 = temp;
+
+    Wire.beginTransmission(i2cAddress);
+    Wire.write(0);
+
+    for (uint8_t i=0; i<8; i++) 
+        {
+        Wire.write(matrix2[i]);    
+        Wire.write(matrix[i]);    
+        }
+    Wire.endTransmissionNonblocking();  
+    blinkToggle++;
+    if (blinkToggle > blinkOff)
+        blinkToggle = 0;
+    }
+#endif SCREEN_TYPE_MJKDZ_16x8_BACKPACK
+
+
+
+
+
 
 // At present the KIT is about 3127 in 10000 ms
 // The backpack at 100KHz is 3624 in 10000 ms :-(
@@ -1313,33 +1379,33 @@ void initLED()
 
 // Stolen from https://stackoverflow.com/questions/2602823/in-c-c-whats-the-simplest-way-to-reverse-the-order-of-bits-in-a-byte/2602871
 unsigned char reverseBits(unsigned char b) 
-	{
-	b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
-	b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
-	b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
-	return b;
-	}
+    {
+    b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
+    b = (b & 0xCC) >> 2 | (b & 0x33) << 2;
+    b = (b & 0xAA) >> 1 | (b & 0x55) << 1;
+    return b;
+    }
 
 // Flips a matrix in place, in either in the X or Y directions (flip == FLIP_X or FLIP_Y)
 void flipMatrix(unsigned char* in, uint8_t flip)
-	{
-	if (flip == FLIP_X)
-		{
-		for(uint8_t i = 0; i < 4; i++)
-			{
-			unsigned char temp = in[i];
-			in[i] = in[7 - i];
-			in[7 - i] = temp;
-			}
-		}
-	else		// FLIP_Y
-		{
-		for(uint8_t i = 0; i < 8; i++)
-			{
-			in[i] = reverseBits(in[i]);
-			}
-		}
-	}
+    {
+    if (flip == FLIP_X)
+        {
+        for(uint8_t i = 0; i < 4; i++)
+            {
+            unsigned char temp = in[i];
+            in[i] = in[7 - i];
+            in[7 - i] = temp;
+            }
+        }
+    else            // FLIP_Y
+        {
+        for(uint8_t i = 0; i < 8; i++)
+            {
+            in[i] = reverseBits(in[i]);
+            }
+        }
+    }
 
 // Rotates a matrix in the given direction.
 // There are lots of clever rotation code snippets out there, many derived
