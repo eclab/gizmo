@@ -496,4 +496,54 @@ void stateOptionsMenuDelay()
         }
     playApplication();     
     }
+
+/*
+void stateOptionsProgramChange()
+    {
+    uint8_t result;
+    if (entry)
+        {
+        backupOptions = options; 
+        const uint8_t _glyphs[11] = { 
+            (FONT_3x5) + GLYPH_3x5_0,
+            (FONT_8x5) + GLYPH_8x5_ONE_FOURTH,
+            (FONT_8x5) + GLYPH_8x5_ONE_THIRD,
+            (FONT_8x5) + GLYPH_8x5_ONE_HALF,
+            (FONT_3x5) + GLYPH_3x5_1,
+            (FONT_3x5) + GLYPH_3x5_2,
+            (FONT_3x5) + GLYPH_3x5_3,
+            (FONT_3x5) + GLYPH_3x5_4,
+            (FONT_3x5) + GLYPH_3x5_8,
+            (FONT_8x5) + GLYPH_8x5_INFINITY,
+            (FONT_3x5) + GLYPH_3x5_S
+            };
+        result = doGlyphDisplay(_glyphs, 11, NO_GLYPH, options.menuDelay );
+        }
+    else result = doGlyphDisplay(NULL, 11, NO_GLYPH, options.menuDelay);
+    switch (result)
+        {
+        case NO_MENU_SELECTED:
+            {
+            options.menuDelay = currentDisplay;
+            setMenuDelay(options.menuDelay);
+            }
+        break;
+        case MENU_SELECTED:
+            {
+            if (options.menuDelay != backupOptions.menuDelay)
+                saveOptions();
+            }
+        // FALL THRU
+        case MENU_CANCELLED:
+            {
+            goUpStateWithBackup(STATE_OPTIONS);
+            setMenuDelay(options.menuDelay);
+            }
+        break;
+        }
+    playApplication();     
+    }
+*/
+
+
 #endif defined(__MEGA__)

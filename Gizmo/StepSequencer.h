@@ -67,18 +67,27 @@
 ////	 4 bits pattern
 ////     5 bits unused
 
+//// This comprises 384 bytes.  There are also three additional bytes, which are
+//// used as follows:
+////
+//// 	3 bits: step sequencer format
+////	5 bits: custom track length
+////	4 bits: iterations until the sequence stops (forever, 1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 18, 24, 32, 64, 128)
+////	4 bits: where to go when we're done
+////	2 bits:	mode: standard, mono, duo, and (unused, reserved for future) trio
+////	6 bits: unused
+
 //// In MONO MODE:
-////	Pattern is replaced with REPEATS
-//// 		The REPEATS are END, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 64, 128
+////	4-bits PATTERN is replaced with TRACK REPEATS
+//// 		The TRACK REPEATS are END, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 64, 128
 ////	The only MIDI channel used is for the first track
 
-/*
 //// In DUO MODE:
-////	Exactly the same as mono mode except that the even track's pattern and MIDI Channel are completely ignored
+////	Exactly the same as mono mode except that each even track's pattern is completely ignored
 
 //// In (unused) TRIO MODE:
-////	Exactly the same as mono mode except that the second and third (of three) track's pattern and MIDI Channel are completely ignored
-*/
+////	Exactly the same as mono mode except that the second and third (of three) track's pattern are completely ignored
+
 
 //
 // This extra data is packed and unpacked in Utilities.stateSave and Utilities.stateLoad, using the private functions

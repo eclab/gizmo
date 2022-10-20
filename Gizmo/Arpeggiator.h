@@ -157,6 +157,7 @@
 struct _arpLocal
     {
     uint32_t offTime;                                                   // When should we send the next noteOff?
+    uint16_t pots[2];													// Pot values (left and right)
     uint8_t noteOff;                                                    // What note should be given a noteOff?
     uint8_t steadyNoteOff;                                              // doesn't get erased by a NOTE OFF
     uint8_t number;                                                     // The arpeggio number.  0...4 are ARPEGGIATOR_NUMBER_UP...ARPEGGIATOR_NUMBER_RANDOM, 
@@ -177,7 +178,6 @@ struct _arpLocal
 	uint8_t transposeRoot;
 //	uint16_t oldLeftPot;
 //	uint16_t oldRightPot;
-    uint16_t pots[2];				// Pot values (left and right)
 	int8_t accompaniment;
 	uint8_t clockArmed;
     // We have to jump by at least 2 to start scrolling -- this is an anti-noise measure

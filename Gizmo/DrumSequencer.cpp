@@ -214,7 +214,7 @@ void setNoteSpeed(uint8_t group, uint8_t noteSpeed)
     SET_GROUP(group, gt);
     }
 
-// Get the MIDI channel for a track.  Channels are 0 = Off, 1...16, 17 = Default
+// Get the MIDI channel for a track.  Channels are 0 = Off, 1...16, 17 = Default, 18 = Choke, 19 = Self Choke
 uint8_t getMIDIChannel(uint8_t track)
     {
     uint8_t gt = GET_TRACK0(track);
@@ -230,6 +230,11 @@ void setMIDIChannel(uint8_t track, uint8_t channel)
         {
         channel = 0;
         }
+        
+    if (track == 0 && (channel == DRUM_SEQUENCER_MIDI_CHOKE || channel == DRUM_SEQUENCER_MIDI_SELF_CHOKE))
+    	{
+    	channel = 0;
+    	}
 
     uint8_t gt = GET_TRACK0(track);
     // MIDI Channel is the high 5 bits of byte 0
@@ -326,7 +331,8 @@ uint8_t numFormatNotes(uint8_t format)
 // For a given format (layout), returns the number of tracks
 uint8_t numFormatTracks(uint8_t format)
     {
-    const uint8_t tracks[DRUM_SEQUENCER_NUM_FORMATS] = { 20, 20, 20, 16, 16, 16, 16, 12, 12, 12, 12, 8, 8, 8, 6, 4 };
+//    const uint8_t tracks[DRUM_SEQUENCER_NUM_FORMATS] = { 20, 20, 20, 16, 16, 16, 16, 12, 12, 12, 12, 8, 8, 8, 6, 4 };
+    const uint8_t tracks[DRUM_SEQUENCER_NUM_FORMATS] = { 20, 20, 22, 16, 16, 16, 18, 12, 14, 12, 12, 8, 8, 8, 6, 4 };
     return tracks[format];
     } 
 
@@ -504,7 +510,8 @@ void stateDrumSequencerFormat()
     {
     uint8_t result;
     defaultMenuValue = DRUM_SEQUENCER_DEFAULT_FORMAT;
-    const char* menuItems[16] = {  PSTR("8/10/20"), PSTR("16/6/20"), PSTR("32/3/20"), PSTR("8/13/16"), PSTR("16/8/16"), PSTR("32/4/16"), PSTR("64/2/16"), PSTR("8/15/12"), PSTR("16/11/12"), PSTR("32/6/12"), PSTR("64/3/12"), PSTR("16/15/8"), PSTR("32/9/8"), PSTR("64/5/8"), PSTR("32/12/6"), PSTR("64/10/4") }; 
+//    const char* menuItems[16] = {  PSTR("8/10/20"), PSTR("16/6/20"), PSTR("32/3/20"), PSTR("8/13/16"), PSTR("16/8/16"), PSTR("32/4/16"), PSTR("64/2/16"), PSTR("8/15/12"), PSTR("16/11/12"), PSTR("32/6/12"), PSTR("64/3/12"), PSTR("16/15/8"), PSTR("32/9/8"), PSTR("64/5/8"), PSTR("32/12/6"), PSTR("64/10/4") }; 
+    const char* menuItems[16] = {  PSTR("8/10/20"), PSTR("16/6/20"), PSTR("32/3/22"), PSTR("8/13/16"), PSTR("16/8/16"), PSTR("32/4/18"), PSTR("64/2/18"), PSTR("8/15/14"), PSTR("16/11/12"), PSTR("32/6/12"), PSTR("64/3/12"), PSTR("16/15/8"), PSTR("32/9/8"), PSTR("64/5/8"), PSTR("32/12/6"), PSTR("64/10/4") }; 
     result = doMenuDisplay(menuItems, 16, STATE_NONE, 0, 1);
     switch (result)
         {
@@ -1392,7 +1399,7 @@ void stateDrumSequencerMenuCopyTrack()
 
 
 // Copies two tracks, including info
-void stateDrumSequencerMenuAccentTrack()
+void stateDrumSequencerMenuAccentTrack(int8_t amount)
     {
     uint8_t fromTrack = local.drumSequencer.currentTrack;
     uint8_t toTrack = local.drumSequencer.currentTrack + 1;
@@ -1406,8 +1413,9 @@ void stateDrumSequencerMenuAccentTrack()
         {
         // don't need to stop the sequencer
         uint8_t fromNoteVelocity = getNoteVelocity(fromTrack);
-        fromNoteVelocity = fromNoteVelocity + 2;                                // 150%
+        fromNoteVelocity = fromNoteVelocity + amount;                                // 150%
         if (fromNoteVelocity > 7) fromNoteVelocity = 7;
+        if (fromNoteVelocity < 0) fromNoteVelocity = 0;
         setNoteVelocity(toTrack, fromNoteVelocity);
         uint8_t fromNotePitch = getNotePitch(fromTrack);
         setNotePitch(toTrack, fromNotePitch);
@@ -1422,7 +1430,9 @@ void stateDrumSequencerMenuAccentTrack()
 // Distributes track info from current track, except for note pitch
 void stateDrumSequencerMenuDistributeTrackInfo()
     {
-    if (isAccentTrack(local.drumSequencer.currentTrack))
+    if (isAccentTrack(local.drumSequencer.currentTrack) ||
+    	getMIDIChannel(local.drumSequencer.currentTrack) == DRUM_SEQUENCER_MIDI_CHOKE || 
+    	getMIDIChannel(local.drumSequencer.currentTrack) == DRUM_SEQUENCER_MIDI_SELF_CHOKE)
         {
         goDownState(STATE_DRUM_SEQUENCER_CANT);
         }
@@ -1915,24 +1925,16 @@ void stateDrumSequencerMenuPerformanceNextSequence()
 
 void stateDrumSequencerMIDIChannelOut()
     {
-/*
-  uint8_t result;
-  if (entry) 
-  {
-  local.drumSequencer.backup = getMIDIChannel(local.drumSequencer.currentTrack);
-  }
-  result = doNumericalDisplay(0, 17, local.drumSequencer.backup, true, GLYPH_DEFAULT);
-*/
     uint8_t result;
     if (entry) 
         {
         local.drumSequencer.backup = getMIDIChannel(local.drumSequencer.currentTrack);
         defaultMenuValue = local.drumSequencer.backup;
         }
-    const char* menuItems[24] = { PSTR("----"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), 
+    const char* menuItems[25] = { PSTR("----"), PSTR("1"), PSTR("2"), PSTR("3"), PSTR("4"), PSTR("5"), PSTR("6"), PSTR("7"), 
                                   PSTR("8"), PSTR("9"), PSTR("10"), PSTR("11"), PSTR("12"), PSTR("13"), PSTR("14"), PSTR("15"), PSTR("16"),
-                                  PSTR("DFLT"), PSTR("A +1"), PSTR("A +2"), PSTR("A +3"), PSTR("A +4"), PSTR("A +5"), PSTR("A +6") };
-    result = doMenuDisplay(menuItems, (local.drumSequencer.currentTrack == local.drumSequencer.numTracks - 1) ? 24 : 18, STATE_NONE, STATE_NONE, 1);
+                                  PSTR("DFLT"), PSTR("CHOKE"), PSTR("SELF CHOKE"), PSTR("A +1"), PSTR("A +2"), PSTR("A +3"), PSTR("A -1"), PSTR("A -2") };
+    result = doMenuDisplay(menuItems, (local.drumSequencer.currentTrack == local.drumSequencer.numTracks - 1) ? 24 : 20, STATE_NONE, STATE_NONE, 1);
     switch (result)
         {
         case NO_MENU_SELECTED:
@@ -2897,11 +2899,53 @@ void drawDrumSequencer(uint8_t playGroup, uint8_t drawFooters, uint8_t topScreen
 
 /////// PLAYING NOTES
 
+// Chokes the given track on the given channel.  The channel is provided because
+// it may differ from the track's channel is we're doing SELF CHOKE
+void choke(uint8_t track, uint8_t out)
+	{
+	if (out == 0 || out >= DRUM_SEQUENCER_MIDI_CHOKE) return;	// "off"
+	if (out == DRUM_SEQUENCER_MIDI_OUT_DEFAULT)         // 17 
+		{
+		out = options.channelOut;
+		}
 
-
-// Sends a Note ON to the appropriate MIDI channel at the appropriate pitch and velocity
+	for(uint8_t i = 0; i < local.drumSequencer.chokeCount[track]; i++)
+		{
+        sendNoteOn(getNotePitch(track), 0, out);		// note on(0) = note off
+		}
+	local.drumSequencer.chokeCount[track] = 0;
+	}
+	
+// Sends a Note ON to the appropriate MIDI channel at the appropriate pitch and velocity.
+// May also send a Note OFF to a choked channel
 void sendTrackNote(uint8_t track, uint8_t accent)
     {
+    uint8_t out = getMIDIChannel(track);  
+    if (out >= DRUM_SEQUENCER_MIDI_ACCENT) return; // uh... 
+
+	if (out == DRUM_SEQUENCER_MIDI_OUT_DEFAULT)         // 17 
+		{
+		out = options.channelOut;
+		}
+        
+   // Handle chokes
+    if (out == DRUM_SEQUENCER_MIDI_CHOKE || out == DRUM_SEQUENCER_MIDI_SELF_CHOKE) 
+    	{
+    	if (track == 0)	return;		// we assume we're off
+    	// find the correct channel
+    	for(uint8_t i = track - 1; i >= 0; i--)
+    		{
+    		if (getMIDIChannel(i) < DRUM_SEQUENCER_MIDI_CHOKE) 	// got it
+    			{
+    			if (out == DRUM_SEQUENCER_MIDI_CHOKE)
+    				choke(i, getMIDIChannel(i));		// choke the other channel
+    			if (out == DRUM_SEQUENCER_MIDI_SELF_CHOKE)
+    				choke(track, getMIDIChannel(i));	// choke me
+    			break;
+    			}
+    		}
+    	}
+    	
     uint8_t vel = getNoteVelocity(track);
     
     // change velocity if there is an accent
@@ -2909,23 +2953,27 @@ void sendTrackNote(uint8_t track, uint8_t accent)
         {
         // These deltas correspond to 1.25, 1.50, 2.0, 2.50, and 3.0
         // const uint8_t accentDeltas[5] = { 1, 2, 3, 4, 5 };
-        vel =  vel + (accent - DRUM_SEQUENCER_MIDI_ACCENT) + 1;
-        if (vel > 7) vel = 7;
+        if (accent < DRUM_SEQUENCER_MIDI_GHOST)
+        	{
+        	vel =  vel + (accent - DRUM_SEQUENCER_MIDI_ACCENT) + 1;
+	        if (vel > 7) vel = 7;
+	    	}
+	    else
+	    	{
+	    	vel += 2;	// it's uint, so we can't drop below zero
+        	vel = vel - (accent - DRUM_SEQUENCER_MIDI_GHOST) - 1;
+        	if (vel < 2) vel = 2;
+        	vel -= 2;
+	    	}
         }
             
     uint8_t velocity = getNoteMIDIVelocity((uint8_t)vel);
-
-    uint8_t out = getMIDIChannel(track);  
-    if (out >= DRUM_SEQUENCER_MIDI_ACCENT) return; // uh... 
-
     uint8_t note = getNotePitch(track);
-    if (out == DRUM_SEQUENCER_MIDI_OUT_DEFAULT)         // 17 
-        {
-        out = options.channelOut;
-        }
     if (out != DRUM_SEQUENCER_NO_MIDI_OUT)
         {
         sendNoteOn(note, velocity, out);
+        if (local.drumSequencer.chokeCount[track] < DRUM_SEQUENCER_MAX_TRACK_LENGTH)	// something rational...
+        	local.drumSequencer.chokeCount[track]++;
         }
     }
 
@@ -2938,7 +2986,7 @@ void sendTrackNote(uint8_t track)
     }
 
 // Sends a Note ON to the appropriate MIDI channel at the appropriate pitch and velocity
-// for the current playing note.  If there is an  accent track, then the accent is added.
+// for the current playing note.  If there is an accent track, then the accent is added.
 // If the track equals the accent track then nothing is played.
 void sendCurrentTrackNote(uint8_t track)
     {
@@ -3715,6 +3763,12 @@ void stateDrumSequencerPlay()
                 goDownState(STATE_DRUM_SEQUENCER_GROUP_SWAP);
                 break;
                 }
+            case CC_EXTRA_PARAMETER_17:
+                {
+                // Schedule Next Sequence
+                local.drumSequencer.goNextSequence = !local.drumSequencer.goNextSequence;
+                break;
+                }
 
 
             case CC_EXTRA_PARAMETER_7:
@@ -3741,13 +3795,6 @@ void stateDrumSequencerPlay()
                 {
                 // (Performance Mode) Pause
                 pauseDrumSequencer();
-                break;
-                }
-                        
-            case CC_EXTRA_PARAMETER_17:
-                {
-                // Schedule Next Sequence
-                local.drumSequencer.goNextSequence = !local.drumSequencer.goNextSequence;
                 break;
                 }
                         

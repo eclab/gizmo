@@ -50,13 +50,13 @@ A sequence is thus a double array of GROUP by TRACK.  Each cell in this array is
 within that group.  Each such sequence can also be assigned a PATTERN of muting or playing while the group is playing.
 
 There can be no more than 15 groups.
-The number of tracks must be even.  At present we permit 4, 6,8, 12, 16, and 20.
+The number of tracks must be even.  At present we permit 4, 6, 8, 12, 16, and 20.
 The number of notes must be a multiple of 8.  At present we permit 8, 16, 32, and 64.
 
 - Each note is 1 bit, so they are packed 8 notes to the byte.
 
 - Additionally there are 2 bytes per track:
-		5 bits MIDI channel (0 = "off", 1...16, 17 = "default", 18 = "accent")
+		5 bits MIDI channel (0 = "off", 1...16, 17 = "default", 18 = "choke", 19 = "self choke", 20 = "accent + 1", 21 = "accent + 2", 22 = "accent + 3", 23 = "accent + 4", 24 = "accent + 5")
 		3 bits velocity 
 		7 bits note
 		1 bit mute
@@ -73,14 +73,18 @@ Combinations of the above data comprise the LAYOUT or FORMAT of the sequence.  H
 		8 notes, 10 groups, 20 tracks = (8/8 * 20 + 1/2 * 20 + 1) * 10 + (2 * 20) = 350
 		16 notes, 6 groups, 20 tracks = (16/8 * 20 + 1/2 * 20 + 1) * 6 + (2 * 20) = 346
 		32 notes, 3 groups, 20 tracks = (32/8 * 20 + 1/2 * 20 + 1) * 3 + (2 * 20) = 313
+		// 32 notes, 3 groups, 22 tracks = (32/8 * 22 + 1/2 * 22 + 1) * 3 + (2 * 22) = 344
 
 		8 notes, 13 groups, 16 tracks = (8/8 * 16 + 1/2 * 16 + 1) * 13 + (2 * 16) = 357
 		16 notes, 8 groups, 16 tracks = (16/8 * 16 + 1/2 * 16 + 1) * 8 + (2 * 16) = 360
 		32 notes, 4 groups, 16 tracks = (32/8 * 16 + 1/2 * 16 + 1) * 4 + (2 * 16) = 324
+		// 32 notes, 4 groups, 18 tracks = (32/8 * 18 + 1/2 * 18 + 1) * 4 + (2 * 18) = 364
 		64 notes, 2 groups, 16 tracks = (64/8 * 16 + 1/2 * 16 + 1) * 2 + (2 * 16) = 306
+		// 64 notes, 2 groups, 18 tracks = (64/8 * 18 + 1/2 * 18 + 1) * 2 + (2 * 18) = 344
 
 		8 notes, 15 groups, 12 tracks = (8/8 * 12 + 1/2 * 12 + 1) * 15 + (2 * 12) = 309
          ** Note that there is room for 17 groups, but we can only refer to 15 of them
+		// 8 notes, 15 groups, 14 tracks = (8/8 * 14 + 1/2 * 14 + 1) * 15 + (2 * 14) = 358
 		16 notes, 11 groups, 12 tracks = (16/8 * 12 + 1/2 * 12 + 1) * 11 + (2 * 12) = 365
 		32 notes, 6 groups, 12 tracks = (32/8 * 12 + 1/2 * 12 + 1) * 6 + (2 * 12) = 354
 		64 notes, 3 groups, 12 tracks = (64/8 * 12 + 1/2 * 12 + 1) * 3 + (2 * 12) = 333
@@ -92,6 +96,10 @@ Combinations of the above data comprise the LAYOUT or FORMAT of the sequence.  H
 
 		32 notes, 12 groups, 6 tracks = (32/8 * 6 + 1/2 * 6 + 1) * 12 + (2 * 6) = 348
 		64 notes, 10 groups, 4 tracks = (64/8 * 4 + 1/2 * 4 + 1) * 10 + (2 * 4) = 358
+
+This was computed by first setting either 20, 16, 12, 8, 6, or 4 tracks for each of 8, 16, 32, or 64 notes,
+then computing the maximum number of possible groups.  Once these are determined we see if we can up the
+track count a little bit and not go over 365 (our maximum).
 
 Notes MUST be a mulitple of 8, because we're packing them into bytes.
 Tracks MUST be an even number, so we can lay out the group per track half-bytes properly.
@@ -153,7 +161,7 @@ Temporary data is stored in local.drumSequencer.
 Some limited sequence data (transition group, 
 transition repeat, track muted) are copied to these globals mostly to be compatible with original StepSequencer code.
 These might ultimately be removed.  At present the packDrumSequenceData() and unpackDrumSequenceData() functions load
-and unlload these globals, plus set up some other stuff.
+and unload these globals, plus set up some other stuff.
 
 
 
@@ -476,7 +484,8 @@ Menus
 #define DRUM_SEQUENCER_SOLO_ON_SCHEDULED (2)
 #define DRUM_SEQUENCER_SOLO_OFF_SCHEDULED (3)
 
-#define MAX_DRUM_SEQUENCER_TRACKS 								(20)
+//#define MAX_DRUM_SEQUENCER_TRACKS 								(20)
+#define MAX_DRUM_SEQUENCER_TRACKS 								(22)
 #define MAX_DRUM_SEQUENCER_GROUPS 								(15)
 #define MAX_DRUM_SEQUENCER_REPEATS							(16)
 #define DRUM_SEQUENCER_DEFAULT_FORMAT 						(8)			// 16 note 11 group 12 track
@@ -486,8 +495,11 @@ Menus
 #define DRUM_SEQUENCER_GROUP_LENGTH_DEFAULT					(0)
 #define DRUM_SEQUENCER_NOTE_SPEED_DEFAULT						(0)
 #define DRUM_SEQUENCER_NO_MIDI_OUT 							(0)
-#define DRUM_SEQUENCER_MIDI_OUT_DEFAULT						(17)		// for now?  I'd prefer zero, see initDrumSequencer
-#define DRUM_SEQUENCER_MIDI_ACCENT 								(18)	
+#define DRUM_SEQUENCER_MIDI_OUT_DEFAULT							(17)		// for now?  I'd prefer zero, see initDrumSequencer
+#define DRUM_SEQUENCER_MIDI_CHOKE 								(18)	
+#define DRUM_SEQUENCER_MIDI_SELF_CHOKE 							(19)	
+#define DRUM_SEQUENCER_MIDI_ACCENT 								(20)		// A+1.  There's also A+2, A+3	
+#define DRUM_SEQUENCER_MIDI_GHOST 								(23)		// A-1.  There's also A-2.
 #define DRUM_SEQUENCER_MAX_NOTE_VELOCITY						(7)			// 127
 #define DRUM_SEQUENCER_INITIAL_NOTE_PITCH						(60)
 #define DRUM_SEQUENCER_TRANSITION_GROUP_OTHER					(15)
@@ -517,6 +529,8 @@ Menus
 #define DRUM_SEQUENCER_ACTION_FILL (0)
 #define DRUM_SEQUENCER_ACTION_MUTE (1)
 #define DRUM_SEQUENCER_ACTION_EITHER (2)
+
+#define DRUM_SEQUENCER_MAX_TRACK_LENGTH (64)			// this is mostly a "reasonable" stopping point for NOTE_ON choke counts
 
 struct _drumSequencerLocal
     {
@@ -562,6 +576,7 @@ struct _drumSequencerLocal
 	uint8_t scheduleFill;											// are we filling right now?
     uint8_t lastExclusiveTrack;										// The last track chosen for exclusive random
     uint8_t displayGroup;											// display the group in the chain editing?  Dunno if this should be a preference
+    uint8_t chokeCount[MAX_DRUM_SEQUENCER_TRACKS];					// Number of NOTE ON messages. Without choking, each will quickly grow to DRUM_SEQUENCER_MAX_TRACK_LENGTH
     };
 
 
@@ -646,7 +661,7 @@ void stateDrumSequencerVelocity();
 void stateDrumSequencerMenuCopyTrack();
 void stateDrumSequencerMenuSwapTracks();
 void stateDrumSequencerMenuDistributeTrackInfo();
-void stateDrumSequencerMenuAccentTrack();
+void stateDrumSequencerMenuAccentTrack(int8_t amount);
 void stateDrumSequencerGroupLength();
 void stateDrumSequencerGroupSpeed();
 void stateDrumSequencerMenuCopyGroup();

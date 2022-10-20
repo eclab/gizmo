@@ -1150,6 +1150,7 @@ void removeSuccessiveTies(uint8_t p, uint8_t trackLen)
                                                 
 #ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
 #define CHORD_END ( -128 )
+#define MAX_CHORD_NOTES (4)
 
 // If you want to change chords, the chord structure is simple.
 // Each chord is four numbers indicating the (up to) four notes
@@ -1158,13 +1159,18 @@ void removeSuccessiveTies(uint8_t p, uint8_t trackLen)
 // offset is 0, because all these chords have their lowest note
 // set to the note in the sequence.  The offset CHORD_END tells
 // Gizmo that there are no more notes in the sequence.  Note that
-// I set the offset after CHORD_END to 0 -- I had to set it to
-// *something*.
+// I set the (unused) offset after CHORD_END to 0 -- I had to set 
+// it to *something*.
+//
+// There are four notes for each chord.  If you want more notes than
+// this, you'll need to change MAX_CHORD_NOTES and then modify each
+// of the subarray lengths below, adding CHORD_END as necessary.
 //
 // Why are there only 24 chords, when there is enough space bitwise
 // to store 32 chords?  Because Gizmo's menuDisplay maxes out
 // at 25 elements for the time being.  I need one more element
 // to indicate "no chord".  Hence 24.
+
 
 const int8_t PROGMEM CHORDS[24][4] = { 
     { 0, 3, CHORD_END, 0 },         // m3
@@ -1187,10 +1193,10 @@ const int8_t PROGMEM CHORDS[24][4] = {
     { 0, 4, 7, CHORD_END },         // Maj
     { 0, 3, 8, CHORD_END },         // Maj1
     { 0, 5, 9, CHORD_END },         // Maj2
-    { 0, 4, 7, 10 },                        // 7
-    { 0, 4, 7, 11 },                        // Maj7
-    { 0, 3, 7, 10 },                        // min7
-    { 0, 3, 6, 9 },                         // dim7
+    { 0, 4, 7, 10 },                // 7
+    { 0, 4, 7, 11 },                // Maj7
+    { 0, 3, 7, 10 },                // min7
+    { 0, 3, 6, 9 },                 // dim7
     };
 
 void stateStepSequencerChord()
@@ -1205,7 +1211,7 @@ void stateStepSequencerChord()
 // to try to maximize the information on the first screen, and possibly provide additional
 // information when scrolling if the user is confused.
 
-    const char* menuItems[25] = { 
+    const char* chordMenuItems[25] = { 
         // NONE
         PSTR("----"), 
         // SMALL INTERVALS
@@ -1222,7 +1228,7 @@ void stateStepSequencerChord()
         defaultMenuValue = (local.stepSequencer.chord ? local.stepSequencer.CHORD_TYPE[local.stepSequencer.currentTrack] + 1 : 0);
         }
         
-    result = doMenuDisplay(menuItems, 25, STATE_NONE, STATE_NONE, true);
+    result = doMenuDisplay(chordMenuItems, 25, STATE_NONE, STATE_NONE, true);
 
     playStepSequencer();
     switch (result)
@@ -1275,10 +1281,10 @@ void sendTrackNote(uint8_t note, uint8_t velocity, uint8_t track)
             // we have to first do a memcpy_P because you can't do a double-dereference
             // from PROGMEM.  But the compiler doesn't know that so it happily wanders
             // off into crazytown memory.
-            int8_t chordNotes[4];
-            memcpy_P(chordNotes, CHORDS[local.stepSequencer.CHORD_TYPE[track]], 4);
+            int8_t chordNotes[MAX_CHORD_NOTES];
+            memcpy_P(chordNotes, CHORDS[local.stepSequencer.CHORD_TYPE[track]], MAX_CHORD_NOTES);
 
-            for(uint8_t i = 0; i < 4; i++)
+            for(uint8_t i = 0; i < MAX_CHORD_NOTES; i++)
                 {
                 if (chordNotes[i] == CHORD_END)
                     break;
@@ -1711,7 +1717,18 @@ void stateStepSequencerPlay()
             if (potChangedBy(local.stepSequencer.pots, RIGHT_POT, BIG_POT_UPDATE))
                 {
                 AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
-                goDownState(STATE_STEP_SEQUENCER_FADER);
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+                    if (local.stepSequencer.chord[local.stepSequencer.currentTrack])
+                        {
+                        goDownState(STATE_STEP_SEQUENCER_MENU_CANT);  // failed
+                        }
+                    else
+                        {
+                        goDownState(STATE_STEP_SEQUENCER_FADER);
+                        }
+#else
+                    goDownState(STATE_STEP_SEQUENCER_FADER);
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
                 }
             }
         else
@@ -2189,7 +2206,19 @@ void stateStepSequencerPlay()
                 goDownState(STATE_STEP_SEQUENCER_MENU_SHIFT);
                 break;
                 }
-                        
+        
+        // Weird discontinuity 
+        
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+            case CC_EXTRA_PARAMETER_17:
+            	{
+            	// FIXME: I think this should work?
+                // Save
+                AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
+                goDownState(STATE_STEP_SEQUENCER_CHORD);
+                break;
+            	}   
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
                         
             // this is a discontinuity, hope compiler can handle it
                         
@@ -2222,7 +2251,18 @@ void stateStepSequencerPlay()
                 // fader
                 AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
                 leftPotParameterEquivalent = true;
-                goDownState(STATE_STEP_SEQUENCER_FADER);
+#ifdef INCLUDE_ADVANCED_STEP_SEQUENCER
+                    if (local.stepSequencer.chord[local.stepSequencer.currentTrack])
+                        {
+                        goDownState(STATE_STEP_SEQUENCER_MENU_CANT);  // failed
+                        }
+                    else
+                        {
+                        goDownState(STATE_STEP_SEQUENCER_FADER);
+                        }
+#else
+                    goDownState(STATE_STEP_SEQUENCER_FADER);
+#endif INCLUDE_ADVANCED_STEP_SEQUENCER
                 break;
                 }
             case CC_LEFT_POT_PARAMETER_EQUIVALENT_5:
@@ -2304,8 +2344,16 @@ void stateStepSequencerPlay()
                 goDownState(STATE_STEP_SEQUENCER_MENU_LENGTH);
                 break;
                 }
-            case CC_LEFT_POT_PARAMETER_EQUIVALENT_6_LSB:
+            case CC_LEFT_POT_PARAMETER_EQUIVALENT_16:
                 {
+                // Save
+                leftPotParameterEquivalent = true;
+                goDownState(STATE_STEP_SEQUENCER_SAVE);
+                break;
+                }
+           	case CC_LEFT_POT_PARAMETER_EQUIVALENT_6_LSB:
+                {
+                // Tempo
                 leftPotParameterEquivalent = true;
                 AUTO_RETURN(STATE_STEP_SEQUENCER_PLAY);
                 goDownState(STATE_OPTIONS_TEMPO);
@@ -3127,4 +3175,3 @@ void stateStepSequencerMenuTie()
 #endif INCLUDE_ADVANCED_STEP_SEQUENCER
 
 #endif INCLUDE_STEP_SEQUENCER
-

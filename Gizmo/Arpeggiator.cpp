@@ -650,8 +650,8 @@ void stateArpeggiatorPlay()
     if (entry)
         {
         local.arp.clockArmed = options.arpeggiatorArmClock;
-        local.stepSequencer.pots[LEFT_POT] = pot[LEFT_POT];
-        local.stepSequencer.pots[RIGHT_POT] = pot[RIGHT_POT];
+        local.arp.pots[LEFT_POT] = pot[LEFT_POT];
+        local.arp.pots[RIGHT_POT] = pot[RIGHT_POT];
         local.arp.playing = 1;
         // Load the arpeggiator data
         if (local.arp.number > ARPEGGIATOR_NUMBER_CHORD_HOLD)

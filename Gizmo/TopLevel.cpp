@@ -771,11 +771,11 @@ void go()
             checkForClockStartStop();
                         
 #if defined(__MEGA__)
-            const char* menuItems[16] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
+            const char* menuItems[17] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
                                           PSTR("VOLUME"), PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), 
                                           PSTR("CONTROL MIDI"), PSTR("CLOCK"), PSTR("DIVIDE"), ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
-                                          PSTR("BRIGHTNESS"), PSTR("MENU DELAY"), PSTR("AUTO RETURN"), PSTR("GIZMO V9 (C) 2021 SEAN LUKE") };
-            doMenuDisplay(menuItems, 16, STATE_OPTIONS_TEMPO, immediateReturnState, 1);
+                                          PSTR("BRIGHTNESS"), PSTR("MENU DELAY"), PSTR("AUTO RETURN"), PSTR("PROGRAM CHANGE"), PSTR("GIZMO V9 (C) 2021 SEAN LUKE") };
+            doMenuDisplay(menuItems, 17, STATE_OPTIONS_TEMPO, immediateReturnState, 1);
 #endif
 #if defined(__UNO__)
             const char* menuItems[11] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("LENGTH"), 
@@ -1102,9 +1102,9 @@ void go()
         break;
         case STATE_DRUM_SEQUENCER_TRACK:
             {
-            const char* menuItems[8] = { PSTR("VELOCITY"), PSTR("OUT MIDI"), PSTR("COPY WHOLE TRACK"), PSTR("SWAP WHOLE TRACKS"),  PSTR("DISTRIBUTE"), PSTR("ACCENT"), PSTR("DEFAULT VELOCITY"),
+            const char* menuItems[9] = { PSTR("VELOCITY"), PSTR("OUT MIDI"), PSTR("COPY WHOLE TRACK"), PSTR("SWAP WHOLE TRACKS"),  PSTR("DISTRIBUTE"), PSTR("ACCENT"), PSTR("GHOST"), PSTR("DEFAULT VELOCITY"),
                                          (options.drumSequencerLinearCurve ? PSTR("LINEAR CURVE") : PSTR("EXPONENTIAL CURVE")) };
-            doMenuDisplay(menuItems, 8, STATE_DRUM_SEQUENCER_TRACK_VELOCITY, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
+            doMenuDisplay(menuItems, 9, STATE_DRUM_SEQUENCER_TRACK_VELOCITY, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
             playDrumSequencer();
             }
         break;
@@ -1184,7 +1184,12 @@ void go()
         break;
         case STATE_DRUM_SEQUENCER_TRACK_ACCENT:
             {
-            stateDrumSequencerMenuAccentTrack();
+            stateDrumSequencerMenuAccentTrack(2);
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_TRACK_GHOST:
+            {
+            stateDrumSequencerMenuAccentTrack(-2);
             }
         break;
         case STATE_DRUM_SEQUENCER_TRACK_DEFAULT_VELOCITY:
@@ -1773,6 +1778,14 @@ void go()
             playApplication();
             }
         break;
+/*
+        case STATE_OPTIONS_PROGRAM_CHANGE:
+            {
+            stateOptionsProgramChange();    
+            playApplication();
+            }
+        break;
+*/
 #endif defined(__MEGA__)
         case STATE_OPTIONS_ABOUT:
             {

@@ -181,6 +181,7 @@ void stateOptionsClick();
 void stateOptionsScreenBrightness();
 #if defined(__MEGA__)
 void stateOptionsMenuDelay();
+//void stateOptionsProgramChange();
 #endif defined(__MEGA__)
 
 
