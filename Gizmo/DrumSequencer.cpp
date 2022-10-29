@@ -332,7 +332,7 @@ uint8_t numFormatNotes(uint8_t format)
 uint8_t numFormatTracks(uint8_t format)
     {
 //    const uint8_t tracks[DRUM_SEQUENCER_NUM_FORMATS] = { 20, 20, 20, 16, 16, 16, 16, 12, 12, 12, 12, 8, 8, 8, 6, 4 };
-    const uint8_t tracks[DRUM_SEQUENCER_NUM_FORMATS] = { 20, 20, 22, 16, 16, 16, 18, 12, 14, 12, 12, 8, 8, 8, 6, 4 };
+    const uint8_t tracks[DRUM_SEQUENCER_NUM_FORMATS] = { 20, 20, 22, 16, 16, 16, 18, 14, 12, 12, 12, 8, 8, 8, 6, 4 };
     return tracks[format];
     } 
 
