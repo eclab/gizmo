@@ -774,13 +774,13 @@ void go()
             const char* menuItems[17] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("TRANSPOSE"), 
                                           PSTR("VOLUME"), PSTR("LENGTH"), PSTR("IN MIDI"), PSTR("OUT MIDI"), 
                                           PSTR("CONTROL MIDI"), PSTR("CLOCK"), PSTR("DIVIDE"), ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")),
-                                          PSTR("BRIGHTNESS"), PSTR("MENU DELAY"), PSTR("AUTO RETURN"), PSTR("PROGRAM CHANGE"), PSTR("GIZMO V9 (C) 2021 SEAN LUKE") };
+                                          PSTR("BRIGHTNESS"), PSTR("MENU DELAY"), PSTR("AUTO RETURN"), PSTR("PROGRAM CHANGE"), PSTR("GIZMO V11 (C) 2022 SEAN LUKE") };
             doMenuDisplay(menuItems, 17, STATE_OPTIONS_TEMPO, immediateReturnState, 1);
 #endif
 #if defined(__UNO__)
             const char* menuItems[11] = { PSTR("TEMPO"), PSTR("NOTE SPEED"), PSTR("SWING"), PSTR("LENGTH"), 
                                           PSTR("IN MIDI"), PSTR("OUT MIDI"), PSTR("CONTROL MIDI"), PSTR("CLOCK"), 
-                                          ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")), PSTR("BRIGHTNESS"), PSTR("GIZMO V10 (C) 2021 SEAN LUKE") };
+                                          ((options.click == NO_NOTE) ? PSTR("CLICK") : PSTR("NO CLICK")), PSTR("BRIGHTNESS"), PSTR("GIZMO V11 (C) 2022 SEAN LUKE") };
             doMenuDisplay(menuItems, 11, STATE_OPTIONS_TEMPO, immediateReturnState, 1);
 #endif
 
@@ -1095,8 +1095,8 @@ void go()
         break;
         case STATE_DRUM_SEQUENCER_LOCAL:
             {
-            const char* menuItems[4] = { PSTR("PATTERN"), PSTR("RANDOMIZE"), PSTR("COPY TRACK"), PSTR("SWAP TRACKS") };
-            doMenuDisplay(menuItems, 4, STATE_DRUM_SEQUENCER_LOCAL_PATTERN, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
+            const char* menuItems[5] = { PSTR("PATTERN"), PSTR("RANDOMIZE"), PSTR("COPY TRACK"), PSTR("SWAP TRACKS"), PSTR("ROTATE TRACK") };
+            doMenuDisplay(menuItems, 5, STATE_DRUM_SEQUENCER_LOCAL_PATTERN, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
             playDrumSequencer();
             }
         break;
@@ -1110,8 +1110,8 @@ void go()
         break;
         case STATE_DRUM_SEQUENCER_GROUP:
             {
-            const char* menuItems[6] = { PSTR("LENGTH"), PSTR("SPEED MULTPLIER"), PSTR("STAMP"), PSTR("COPY"), PSTR("SWAP"), PSTR("UNROLL") };
-            doMenuDisplay(menuItems, 5, STATE_DRUM_SEQUENCER_GROUP_LENGTH, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
+            const char* menuItems[7] = { PSTR("LENGTH"), PSTR("SPEED MULTPLIER"), PSTR("STAMP"), PSTR("COPY"), PSTR("SWAP"), PSTR("ROTATE"), PSTR("UNROLL") };
+            doMenuDisplay(menuItems, 7, STATE_DRUM_SEQUENCER_GROUP_LENGTH, immediateReturn ? immediateReturnState : STATE_DRUM_SEQUENCER_MENU, 1);
             playDrumSequencer();
             }
         break;
@@ -1155,6 +1155,11 @@ void go()
         case STATE_DRUM_SEQUENCER_LOCAL_SWAP:
             {
             stateDrumSequencerMenuSwapGroupTracks();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_LOCAL_ROTATE:
+            {
+            stateDrumSequencerMenuRotateTrack();
             }
         break;
         case STATE_DRUM_SEQUENCER_TRACK_VELOCITY:
@@ -1216,11 +1221,6 @@ void go()
             stateDrumSequencerPitchBack();
             }
         break;
-        case STATE_DRUM_SEQUENCER_GROUP_UNROLL:
-            {
-            jointStateDrumSequencerMenuUnroll(true);
-            }
-        break;
         case STATE_DRUM_SEQUENCER_GROUP_LENGTH:
             {
             stateDrumSequencerGroupLength();
@@ -1231,9 +1231,14 @@ void go()
             stateDrumSequencerGroupSpeed();
             }
         break;
-        case STATE_DRUM_SEQUENCER_COPY_TO_NEXT:
+        case STATE_DRUM_SEQUENCER_GROUP_COPY_TO_NEXT:
             {
             stateDrumSequencerCopyGroupToNext();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_GROUP_UNROLL:
+            {
+            jointStateDrumSequencerMenuUnroll(true);
             }
         break;
         case STATE_DRUM_SEQUENCER_GROUP_COPY:
@@ -1244,6 +1249,11 @@ void go()
         case STATE_DRUM_SEQUENCER_GROUP_SWAP:
             {
             stateDrumSequencerMenuSwapGroup();
+            }
+        break;
+        case STATE_DRUM_SEQUENCER_GROUP_ROTATE:
+            {
+            stateDrumSequencerMenuRotateGroup();
             }
         break;
         case STATE_DRUM_SEQUENCER_GROUP_CLEAR_SURE:

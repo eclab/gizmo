@@ -1357,6 +1357,94 @@ void stateDrumSequencerMenuSwapTracks()
 
 
 
+// Rotates a track.  The mark must be correct, and the edit position must be >= 0 
+void rotateTrack(uint8_t fromTrack)
+    {
+    uint8_t fromGroup = local.drumSequencer.currentGroup;
+    uint8_t fromPos = local.drumSequencer.markPosition;
+    uint8_t toPos = (uint8_t) local.drumSequencer.currentEditPosition;
+    uint8_t trackLen = getGroupLength(fromGroup);
+    
+	int8_t rotate = (int8_t)toPos - (int8_t)fromPos;
+	if (rotate > 0)
+		{
+		for(uint8_t i = 0; i < rotate; i++)
+			{
+			uint8_t lastNote = getNote(fromGroup, fromTrack, trackLen - 1);
+			for(uint8_t j = trackLen - 1; j > 0; j--)
+				{
+				setNote(fromGroup, fromTrack, j, getNote(fromGroup, fromTrack, j - 1));
+				}
+			setNote(fromGroup, fromTrack, 0, lastNote);
+			}
+		}
+	else
+		{
+		rotate = 0 - rotate;
+		for(uint8_t i = 0; i < rotate; i++)
+			{
+			uint8_t firstNote = getNote(fromGroup, fromTrack, 0);
+			for(uint8_t j = 0; j < trackLen - 1; j++)
+				{
+				setNote(fromGroup, fromTrack, j, getNote(fromGroup, fromTrack, j + 1));
+				}
+			setNote(fromGroup, fromTrack, trackLen - 1, firstNote);
+			}
+		}
+	}
+
+
+void stateDrumSequencerMenuRotateTrack()
+    {
+    uint8_t fromTrack = local.drumSequencer.markTrack;
+    uint8_t fromGroup = local.drumSequencer.markGroup;
+    uint8_t fromPos = local.drumSequencer.markPosition;
+    int8_t toPos = local.drumSequencer.currentEditPosition;
+    
+    if (toPos < 0 || 
+    		fromTrack != local.drumSequencer.currentTrack ||		// including  DRUM_SEQUENCER_NO_MARK
+    		fromGroup != local.drumSequencer.currentGroup ||
+    		fromPos == toPos)
+    	{
+        goDownState(STATE_DRUM_SEQUENCER_CANT);
+    	}
+	else
+		{
+		rotateTrack(fromTrack);
+        clearMark();
+        goUpState(STATE_DRUM_SEQUENCER_PLAY);
+        }
+    playDrumSequencer();
+    }
+
+void stateDrumSequencerMenuRotateGroup()
+    {
+    uint8_t fromTrack = local.drumSequencer.markTrack;
+    uint8_t fromGroup = local.drumSequencer.markGroup;
+    uint8_t fromPos = local.drumSequencer.markPosition;
+    int8_t toPos = local.drumSequencer.currentEditPosition;
+    uint8_t numTracks = local.drumSequencer.numTracks;
+    
+    if (toPos < 0 || 
+    		fromTrack == DRUM_SEQUENCER_NO_MARK ||
+    		fromGroup != local.drumSequencer.currentGroup ||
+    		fromPos == toPos)
+    	{
+        goDownState(STATE_DRUM_SEQUENCER_CANT);
+    	}
+	else
+		{
+		for(uint8_t i = 0; i < numTracks; i++)
+			{
+			rotateTrack(i);
+			}
+        clearMark();
+        goUpState(STATE_DRUM_SEQUENCER_PLAY);
+        }
+    playDrumSequencer();
+    }
+
+
 // Copies two tracks, including info
 void stateDrumSequencerMenuCopyTrack()
     {
@@ -3774,7 +3862,7 @@ void stateDrumSequencerPlay()
             case CC_EXTRA_PARAMETER_7:
                 {
                 // Stamp Group
-                goDownState(STATE_DRUM_SEQUENCER_COPY_TO_NEXT);
+                goDownState(STATE_DRUM_SEQUENCER_GROUP_COPY_TO_NEXT);
                 break;
                 }
             case CC_EXTRA_PARAMETER_8:
@@ -3786,9 +3874,9 @@ void stateDrumSequencerPlay()
                 }
             case CC_EXTRA_PARAMETER_9:
                 {
-                // Distribute Track Info
+                // Rotate Group
                 IMMEDIATE_RETURN(STATE_DRUM_SEQUENCER_PLAY);
-                goDownState(STATE_DRUM_SEQUENCER_TRACK_DISTRIBUTE);
+                goDownState(STATE_DRUM_SEQUENCER_GROUP_ROTATE);
                 break;
                 }
             case CC_EXTRA_PARAMETER_10:

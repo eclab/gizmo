@@ -38,7 +38,7 @@
 \begin{document}
 
 \noindent {\Huge\bf Gizmo}\\[0.5em]
-{\large \bf An Arduino MIDI Tool, Version 10\\
+{\large \bf An Arduino MIDI Tool, Version 11\\
 By Sean Luke\quad sean@cs.gmu.edu} 
 \hspace{\fill}{\it \textbf{For Aric}}\\
 
@@ -1240,7 +1240,7 @@ In the Step Sequencer, each track can be set up to follow some four-bar {\bf pat
 
 With some care, you can set up a track to {\bf choke} another track, or to choke itself whenever a note is played in the track.  To choke a track means to hush all currently playing sounds in the track.  This is often done with crash cymbals, for example.  
 
-Due to space restrictions, choking is done in an odd way.  To set up track B to choke track A, you must first arrange for track B to be {\it immediately below} track A.  Then set the MIDI Channel of track B to \texttt{CHOKE}.  Track B will use the same MIDI Channel as A, and will choke it.  If you want multiple tracks (such as B and C), set B directly below A, and set C directly below B.  Then set the MIDI Channel of {\it both} B and C to  \texttt{CHOKE}.  Muting or (via Patterns) hushing Track B disables its choking, so to set up track B to {\it only} choke A, but play no notes itself, set Track B's drum note to something out of the drum synth's range.  Finally, if you'd like a track B to choke {\it itself} prior to playing a note, set it below some other track A with the same MIDI Channel, and then set B's MIDI Channel to  \texttt{SELF CHOKE}.  Track B will use the same MIDI Channel as A, but will choke itself.\footnote{Yes, I know this is weird\,---\,it's the only way I could fit it in with memory restrictions.} 
+Due to memory restrictions, choking is done in an odd way.  To set up track B to choke track A, track B must be {\it immediately below} track A.  Then set the MIDI Channel (the \texttt{TRACK}\(\rightarrow\){\texttt{OUT} menu) of track B to \texttt{CHOKE}.   B will use the same MIDI Channel as A, and will choke it.  If you want multiple tracks (B and C say) to choke A, have them both directly below A.  Then set the MIDI Channel of {\it both} B and C to  \texttt{CHOKE}.  Muting or (via Patterns) hushing Track B disables its choking, so to set up track B to {\it only} choke A, but play no notes itself, set Track B's drum note to something out of the drum synth's range.  Finally, if you'd like a track B to choke {\it itself} prior to playing a note, set it below some other track A, and then set B's MIDI Channel to  \texttt{SELF CHOKE}.  Track B will use the same MIDI Channel as A, but will choke itself.\footnote{Yes, I know this is weird\,---\,it's the only way I could fit it in with memory restrictions.} 
 
 Some notes.  First, keep in mind that if you move a choke track, or the track it's choking, it's now choking a different track.  Likewise a self-choke track would now be using the MIDI Channel of the new track above it.  This can be confusing if you're not careful.  Also you can't distribute the track info of a choke or self-choke track.  Second note that the first track cannot be a choke or self-choke track: it's not below anything.  If you copy or swap a choke/self-choke track to the first position, it will automatically be set to MIDI Channel OFF.  
 
@@ -1312,7 +1312,7 @@ Pressing the Select button does a start/stop, but not in the same way it does in
 \hspace{\fill}\includegraphics[width=4in]{TransitionKeys}
 \vspace{-1.5em}
 \caption{\small Transitions scheduled by key using {\tt PICK} in Performance Mode. (You can change the Middle C to a different C from the menu).}
-%\vspace{-1em}
+\vspace{-1em}
 \label{transitionkeys}
 \end{wrapfigure}
 
@@ -1358,6 +1358,7 @@ If you Long Press the Select button at any time, you'll call up the Drum Sequenc
 \item {\bf Randomize}\quad Specifies the probability (1--100) that when you clear an already empty track, a given step will instead be randomly turned on.  If \texttt{- - - -}  then the track is  left empty (the default).
 \item {\bf Copy Track}\quad Copies the track specified by the {\it mark} onto the current track,  just within this group.  The mark is then cleared.
 \item {\bf Swap Tracks}\quad Swaps the track specified by the {\it mark} with the current track, just within this group.  The mark is then cleared.
+\item {\bf Rotate Track}\quad Shifts and rotates the local track notes so that the note at the mark is move to the current position.  The mark is then cleared.  If the mark and current position are the same, or are on different tracks, or the mark is not yet set, or the mark is in another group, \texttt{CANT} is displayed.
 \end{itemize}
 
 \item {\bf Track}\quad{\it Submenu for dealing with entire sequence-wide tracks.  Note: to change the Drum Note, Long-Press the Middle button in Edit Mode.}
@@ -1445,9 +1446,8 @@ Double Whole Note&\cm		&\cm	&	\\
 \item {\bf Stamp Group}\quad Copies the current group to the next one, then switches to that next group.    The mark is then cleared.  If there is no next group (if we're at the last group), then nothing is done and \texttt{CANT} is displayed.
 \item {\bf Copy Group}\quad Copies the  {\it mark} group to the current group.  The mark is then cleared.
 \item {\bf Swap Groups}\quad Swaps the {\it mark} group with the current group.  The mark is then cleared.
+\item {\bf Rotate Group}\quad Shifts and rotates all notes in the group so that the note at the mark is move to the current position.  The mark is then cleared.  If the mark and current position are the same, or the mark is not yet set, or the mark is in another group, \texttt{CANT} is displayed.
 \end{itemize}
-
-\bump
 
 \item {\bf Chain}\quad{\it Submenu for editing the chain of transitions}
 \end{itemize}
@@ -1652,7 +1652,7 @@ Also note that {\bf Save} (CC 25) and {\bf Schedule Fill} (CC 22) are in unusual
  115	&	Any		& Swap Groups\\
  116	&	Any		& Stamp Group\\
  117	&	Any		& Accent Track\\
- 118	&	Any		& Distribute Track Info\\
+ 118	&	Any		& Rotate Group\\
  119	&	Any		& Pause\\
  120	&	Any		& Schedule Next Sequence&{\it Only separate from Next Transition (91) via CC}\\
 16	&	0--127		& Set Group Speed Multiplier (Select to set, Back to cancel)\\
