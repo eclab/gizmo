@@ -788,7 +788,7 @@ void stateArpeggiatorPlay()
 
     else if (potUpdated[LEFT_POT]) 
         {
-        if (potChangedBy(local.stepSequencer.pots, LEFT_POT, BIG_POT_UPDATE))
+        if (potChangedBy(local.arp.pots, LEFT_POT, BIG_POT_UPDATE))
             {
             AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
             goDownState(STATE_OPTIONS_PLAY_LENGTH);
@@ -796,7 +796,7 @@ void stateArpeggiatorPlay()
         }
     else if (potUpdated[RIGHT_POT])
         {
-        if (potChangedBy(local.stepSequencer.pots, RIGHT_POT, BIG_POT_UPDATE))
+        if (potChangedBy(local.arp.pots, RIGHT_POT, BIG_POT_UPDATE))
             {
             AUTO_RETURN(STATE_ARPEGGIATOR_PLAY);
             goDownState(STATE_OPTIONS_TEMPO);
